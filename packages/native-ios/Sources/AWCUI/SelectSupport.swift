@@ -1,4 +1,5 @@
 import SwiftUI
+import QuartzCore
 
 // MARK: Options (utils/select-options.ts)
 
@@ -147,6 +148,9 @@ public extension View {
     @ObservationIgnored var lastEmit: String?
     @ObservationIgnored var lastValidityKey: String?
     @ObservationIgnored var openedByKey = false
+    /// Time (CACurrentMediaTime ms) of the last open/close write by an input handler: the caret rotation starts there (6-6).
+    @ObservationIgnored var openWriteAt: Double = 0
+    @ObservationIgnored var openSynced: Bool?
     @ObservationIgnored var valueNow = ""
     @ObservationIgnored var disabledNow = false
     @ObservationIgnored var validityNow = AWCConstraintValidity.validState

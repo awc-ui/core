@@ -138,7 +138,13 @@ struct AvatarGrid { let x: Int, y: Int, w: Int, h: Int; var v: [Double]
     }
     static func paint(_ c: AWCValue, shots: URL) {
         let name = c["name"].string
-        guard c["hidden"].bool != true, !s(c["slot"]).contains("<svg") else { return }
+        if c["hidden"].bool == true {
+            // `:host([hidden]) { display: none }`: the dispatched host renders no node (Chrome: display none, 0×0 box).
+            state.dispatch = true; state.c = c; state.props = props(c); state.props["hidden"] = true; state.epoch += 1; pump(0.25)
+            check(node("md-avatar") == nil && c["style"]["display"].string == "none" && c["rect"]["width"].number == 0, "\(name) hidden host renders nothing")
+            state.dispatch = false; return
+        }
+        guard !s(c["slot"]).contains("<svg") else { return }
         state.dispatch = false; state.c = c; state.props = props(c); state.epoch += 1; pump(0.25)
         var tries = 0; while tries < 20, state.props["src"]?.string.isEmpty == false, node("image") == nil, node("initials") == nil, node("icon") == nil, node("slot") == nil { pump(0.05); tries += 1 }
         guard let a = node("md-avatar") else { check(false, "\(name) measured"); return }

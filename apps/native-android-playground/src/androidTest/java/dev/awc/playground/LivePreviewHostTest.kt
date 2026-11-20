@@ -329,12 +329,21 @@ class LivePreviewHostTest {
             .put("properties",JSONObject().put("fullWidth",true)))
         assertEquals("[false,true,false]",initial.getJSONArray("buttonGroupSelection").toString())
         val root=initial.getJSONObject("inspection").getJSONArray("nodes").getJSONObject(0).getJSONObject("bounds")
+        // R1-08: the three children are measured as the group's parts (SwiftUI: component.child.<id>).
+        fun ids(frame:JSONObject)=frame.optJSONObject("inspection")?.getJSONArray("nodes")?.let { n -> (0 until n.length()).map { n.getJSONObject(it).getString("id") } }.orEmpty()
+        var inspected=initial
+        repeat(10) { if((0..2).any { "component.child.segment-$it" !in ids(inspected) }) inspected=command(JSONObject().put("command","frame")) }
+        assertTrue(ids(inspected).toString(),(0..2).all { "component.child.segment-$it" in ids(inspected) })
         assertEquals(960.0,root.getDouble("width"),.5);assertEquals(64.0,root.getDouble("height"),.5)
         val clicked=command(JSONObject().put("command","click").put("x",200).put("y",root.getDouble("y")+32))
         var measured=clicked
         repeat(10) { if(!measured.has("buttonGroupSelection")) measured=command(JSONObject().put("command","frame")) }
         assertEquals("[true,false,false]",measured.getJSONArray("buttonGroupSelection").toString())
         val events=clicked.getJSONArray("events")
+        // R1-08: child events keep the child identity (md-button, segment-N), as on SwiftUI; the group's own event stays the group's.
+        val child=(0 until events.length()).map { events.getJSONObject(it) }.filter { it.getString("name") in setOf("mdClick","mdChange") }
+        assertTrue("child events $child",child.isNotEmpty() && child.all { it.getString("tag")=="md-button" && it.getString("nodeID")=="segment-0" })
+        assertEquals("md-button-group",events.getJSONObject(events.length()-1).getString("tag"))
         assertEquals("mdSelectionChange",events.getJSONObject(events.length()-1).getString("name"))
         assertEquals("[\"day\"]",events.getJSONObject(events.length()-1).getJSONObject("detail").getJSONArray("values").toString())
     }
@@ -406,7 +415,10 @@ class LivePreviewHostTest {
         repeat(20) { if(!opened.has("inspection")) { Thread.sleep(20);opened=send(JSONObject().put("command","frame")) } }
         assertTrue(opened.toString(),opened.has("inspection"))
         val openNodes=opened.getJSONObject("inspection").getJSONArray("nodes")
-        val overlay=(0 until openNodes.length()).map { openNodes.getJSONObject(it) }.single { it.getString("id")=="component" }
+        // R1-06: the open menu's component is the item stack (the Web md-fab-menu box, 3 × 48 + 2 × 4); the overlay is a part.
+        val stack=(0 until openNodes.length()).map { openNodes.getJSONObject(it) }.single { it.getString("id")=="component" }
+        assertEquals("md-fab-menu",stack.getString("name"));assertEquals(152.0,stack.getJSONObject("bounds").getDouble("height"),1.0)
+        val overlay=(0 until openNodes.length()).map { openNodes.getJSONObject(it) }.single { it.getString("id")=="component.overlay" }
         assertEquals("md-fab-menu overlay",overlay.getString("name"))
         // Items are laid out at the anchor (centred FAB, placement down), in canvas coordinates, as menu parts.
         val first=(0 until openNodes.length()).map { openNodes.getJSONObject(it) }.single { it.getString("id")=="component.item-1" }.getJSONObject("bounds")

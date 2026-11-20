@@ -1,3 +1,79 @@
+# Gate 7 re-check (s7-15, 2026-11-16): md-table, md-table-pagination, md-table-cell (re-check of s7-9 findings R5-18, R5-12)
+
+**Verdict: md-table FAIL (blocking S7-15-01, S7-15-02); md-table-pagination PASS (R5-18 closed); md-table-cell PASS (R5-12 closed). The other eight tags keep their s7-9 PASS.**
+
+Reviewer s7-15 (lane r5, Android lane a6 emulator-5566, simulator AWC-r5). Snapshot `work/audit/s7-15-tree` (canonical at 2026-11-16 20:46 Mac time, includes install 9-11-100). Evidence root `work/audit/s7-15/`, jobs `work/claude-runner/done/7-15-*.log`.
+
+## Re-run counts
+| Suite | Platform | Result | Job |
+|---|---|---|---|
+| NativeTablePaintIntegration | macOS | 7403/7403 (6 span assertions) | 7-15-002-macos-table |
+| NativeTableStatesIntegration | macOS | 3858/3859 (load 275 at start, 1 motion check), then 3859/3859 twice | 7-15-002-macos-table, 7-15-005-rerun (r2, r3) |
+| NativeTablePaintIntegration | iPhone 26.3 | 7400/7400 (3 span assertions) | 7-15-004-ios |
+| NativeTableStatesIntegration | iPhone 26.3 | 3862/3862, 3862/3862, 3860/3862; rerun 3862/3862, 3860/3862 | 7-15-004-ios, 7-15-005-rerun |
+| NativeTableStatesIntegration | iOS 18.6 | 3860/3862 | 7-15-004-ios |
+| NativeTablePaintTest / NativeTableStatesTest | Android emulator-5566 | 1/1, 1/1 (BUILD SUCCESSFUL) | 7-15-A002-android |
+| LivePreviewTableHostTest | Android | 3/3 | 7-15-A002-android |
+| tools/ax md-table-pagination x3 | macOS | 0 open each | 7-15-003-ax-mac |
+| tools/ax md-otp-field (5 cases), md-autocomplete (7 cases) | macOS | 0 open | 7-15-003-ax-mac |
+| tools/ax md-table, md-table-cell, md-table-pagination compare | macOS+web+iOS | 0 open (7 cases) | 7-15-005-rerun |
+| tools/ax same, with web | macOS+web+Android | md-table-cell 0, md-table-pagination 0, md-table 5 open (macOS name x4, focus x1: S7-15-02) | 7-15-A004-ax-android-web |
+
+## R5-18 (md-table-pagination, macOS Tab order): FIXED, VERIFIED
+Three consecutive macOS tools/ax runs of md-table-pagination on the s7-15 snapshot have 0 open findings (7-15-003-ax-mac pag run 1..3); Tab leaves the rows-per-page field. The same host branch for md-otp-field and md-autocomplete is unchanged: 0 open. iOS and Android compare 0 open.
+
+## R5-12 (md-table-cell rowSpan): FIXED, VERIFIED
+The rowspan case asserts a span > 1 on every platform: Web aria-rowspan 2; macOS AXCell rowIndexRange [1,2]; iOS rowRange [1,2]; Android CollectionItemInfo rowSpan 2 (7-15-A004-ax-android-web, compare without span finding). Paint suites assert the span as a layout metric (macOS 6, iOS 3). Note: the Android-only run 7-15-A002 skipped the Web side and proves nothing about spans; only A004 does.
+
+## Blocking findings (md-table), see work/audit/DEFECTS.md
+- S7-15-01: iOS `tb-contract click-calories-default-desc` motion order check fails in 3 of 6 iPhone/iOS 18 runs (native row-order animation starts 40 ms after the Web one); no KNOWN-CAUSES row, not explained by load (load 103 in the failing rerun).
+- S7-15-02: md-table Web role flips between `table` and `treegrid` for identical fixtures; with `table` tools/ax reports macOS row names and focus as open (10 open in 7-15-003, 5 in 7-15-A004, 0 in 7-15-005). KNOWN-CAUSES row 63 describes it; the tools/ax wait installed by 9-11 does not remove it.
+
+## Exceptions
+No new exceptions proposed; the accepted ones from s7-9 stand (Android heading/option name conventions, iOS 44 pt target note on the sort button).
+
+
+---
+
+## Earlier review (s7-9, 2026-11-16), superseded by the section above where they differ
+
+# Gate 7 re-check (s7-9, 2026-11-16): md-table family (md-table, -container, -head, -body, -foot, -row, -cell, -toolbar, -sort-label, -pagination, -expand-toggle)
+
+**Verdict: FAIL for md-table and md-table-pagination (blocking R5-18); md-table-cell FAIL, non-blocking (R5-12); the other 8 tags PASS**
+
+
+
+## Re-run counts (reviewer s7-9, 2026-11-16, snapshot work/audit/s7-9-tree)
+| Suite | Platform | Result | Job |
+|---|---|---|---|
+| NativeTablePaintIntegration | macOS | 7403/7403 (141 cases) | s7-9-002-macos |
+| NativeTablePaintIntegration | iPhone 26.3 / iOS 18 | 7400/7400 (141 cases, 3 span assertions) each | s7-9-003 / s7-9-004 |
+| NativeTableStatesIntegration | macOS | 3859/3859 | s7-9-002-macos |
+| NativeTableStatesIntegration | iPhone 26.3 x3 / iOS 18 x1 | 3862/3862 each (no failure; latency gaps 154-161 recorded) | s7-9-003 / s7-9-004 |
+| Android NativeTablePaintTest, NativeTableStatesTest, LivePreviewTableHostTest | Android | BUILD SUCCESSFUL, 3 of 3 | s7-9-A003-android |
+| test-live-table, stdio host, 4177 probes | Laboratory | 107 checks; probes ok | s7-9-005-lab-ax |
+| Compiled examples | Swift typecheck / Kotlin compile | 93 / 93 | s7-9-006, s7-9-A004 |
+| tools/ax, 11 table tags, Android | Android | pass for all 11 tags (accepted: pagination 13, md-table 21) | s7-9-A005-ax-android |
+| tools/ax, 11 table tags, macOS | macOS | pass for 10 tags; md-table-pagination 1 OPEN focus, reproduced 3/3 | s7-9-005-lab-ax, s7-9-007-ax-mac-pagination (runs 1, 2) |
+| tools/ax iOS | iOS | pass for 11 tags (pagination 4 accepted) | s7-9-005-lab-ax |
+
+## Blocking finding
+- **R5-18** (md-table-pagination, md-table; macOS gate 6): Tab never leaves the rows-per-page field editor (Web: field, Next page, Last page; macOS: field x6). Cause: the host half of the story 4-2 fix (`"md-table-pagination"` in the field-editor Tab list of `apps/native-ios-playground/LiveRenderer/main.swift`) is not on canonical; the install guard `grep -q md-table-pagination` matched unrelated occurrences and skipped the patch. Suggested fix in DEFECTS.md. R5-09 therefore stays open on macOS (iOS and Android re-confirmed pass).
+
+## Non-blocking finding
+- **R5-12** (md-table-cell): rowSpan reaches the semantics (NativeTableAccessibility rowSpan, Android CollectionItemInfo) and the paint fixture has a rowSpan 2 cell whose metric is asserted (3 span assertions), but no AX test asserts a row range > 1 in tools/ax. Contract row without a semantic test: verdict FAIL for md-table-cell until added.
+
+## Other findings re-checked
+- R5-07 (33 table parts typed): FIXED, paint 7403/7403 / 7400/7400. R5-10, R5-11, R5-14, R5-16: FIXED (iOS states 3862/3862 x3, no failure; Android states class passes; table tools/ax iOS pass).
+- R5-13: summary, loader slot, title-area slot, defaultOrder, sortedAscendingLabel and the not-selectable checkbox click are present in the Chrome oracle fixtures (table-web-paint.json / table-web-states.json) and are compared by the fixture-driven suites; accepted as covered. A dedicated lone-label mdSortRequest assertion exists (states suite).
+- R5-15: FIXED (suites registered and run by name).
+- Exceptions: none outstanding.
+
+
+---
+
+## Earlier review (r5, 2026-10-31), superseded by the section above
+
 # Gate 7 audit — `md-table` (+ md-table-container, -head, -body, -foot, -row, -cell, -toolbar, -sort-label, -pagination, -expand-toggle)
 
 Reviewer: gate-7 reviewer r5, 2026-10-31. **Verdict: FAIL** for md-table and its ten supporting tags — findings R5-07, R5-09, R5-10, R5-11, R5-12, R5-13, R5-14, R5-15, R5-16. Exceptions: (1) iOS arrow-key container scroll **rejected**, (2) iOS data-table semantics **rejected**.
@@ -76,3 +152,28 @@ Fields present; user impact real (VoiceOver users lose row / column position and
 
 - The cited dependency md-select is outside this audit; md-checkbox, md-icon-button, md-tooltip, md-progress-indicator have their own rows.
 - Supporting-tag verdicts follow md-table: a parent cannot pass with a failing required child (md-table-pagination), and the family-wide findings (R5-07, R5-13, R5-15) apply to every tag.
+
+## Gate 7 re-check (s7-19, 2026-11-19): FAIL (blocking S7-15-01 residual; open S9-16-03)
+
+Scope: S7-15-01, S7-15-02 (fixes of story 9-16) and C910-01 (story 9-15). Verdicts of md-table-pagination and md-table-cell (s7-15) stand. Snapshot `work/audit/s7-19-tree`, lanes r6 / a1 (emulator-5556), simulators AWC-r6 (iPhone 26.3), iOS 18.6 clone, AWC-r6-ipad. Job logs: `claude-runner/done/7-19-recheck-table-2-*.log`; outputs `work/audit/s7-19/out/`.
+
+| Run | Result | Load (1-min) |
+| --- | --- | --- |
+| macOS Table paint | 7403/7403 | (002) |
+| macOS Table states | 3859/3859 | (002) |
+| iPhone 26.3 states, 8 runs (s1..s8) | 3829, 3861, 3862, 3862, 3862, 3862, 3862, 3858 of 3862 | median 367, 16, 152, 43, 48, 82, 136, 80 |
+| iOS 18.6 states, 2 runs | 3862/3862 twice | median 134, 42 |
+| iPad 26.3 states, 5 runs | 3862, 3862, 3857, 3862, 3862 | median 103, 43, 55, 12, 18 |
+| iPhone paint | 7400/7400 | |
+| Android NativeTablePaintTest / NativeTableStatesTest / LivePreviewTableHostTest | 1/1, 1/1, 3/3 pass | |
+| tools/ax md-table, macOS x3 | 0 open each (run 1: multiple case timed out in `configure` at load 158, exit 1; runs 2 and 3 complete) | |
+| tools/ax iOS (macOS+iOS+Web+compare, 7 cases) | 0 open | |
+| tools/ax Android (macOS+Android+Web+compare, out.json 184 KB) | 0 open | |
+
+S7-15-02: the Web role of every md-table capture (loading, rowspan, sorted always; multiple in runs 2, 3, iOS, Android) is `treegrid`; no `table`. Accepted as fixed. Note: the first iOS and Android ax jobs (006, A001, run without the macOS phase / without AWC_A_TEST) captured 0 cases and reported "0 open"; they are not evidence and were repeated (008, A003). See S7-19-01.
+
+S7-15-01 residual (not closed): iPhone run s2 ran in a quiet machine (median load 16) and failed `tb-sort-ltr [3] click-dessert: motion order 38/44`; the 9-16 A/B rate (2 of 10) fits. Misses in s1, iPad s3 and s8 were at load above 30 and are class load, not counted. Story 9-38 found the Table suite catches a product delay of 33 ms but not of 17 ms: this is the shared window, not a Table defect. Lost clicks (tb-hover-select-rtl click-head-checkbox in s1, tb-hover-select-ltr click-row-3-cell-rowclick in s8, both at high load) match S9-16-03, which stays open.
+
+C910-01: five iPad rounds, no Tab focus-name failure in any (the 5 failures of s3 are sort motion and a pagination phase shot at load 109). Fixed. Regression compare: iPad TextField states tf1 2047/2052 (5 fail, all motion, load median 22) against Button 1 / TextField 6 in 9-15 job 012: no regression.
+
+Limits of the evidence: the macOS runner pins the overlay scroller style (`-AppleShowScrollBars WhenScrolling`); the always-visible scroller mode is not a tested configuration (open question with the user). The Android and iOS 18.6 runs are single or double runs. Most iOS runs ran at load above 30.

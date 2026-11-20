@@ -84,7 +84,8 @@ class NativeNavigationBarParityTest {
     private fun navParts(c: JSONObject): AWCNavigationTabPartAppearance {
         val r = partRules(c.optString("parts")); fun p(part: String, prop: String) = r["md-navigation-tab::$part"]?.get(prop)
         return AWCNavigationTabPartAppearance(p("state-layer", "background-color"), p("state-layer", "opacity")?.toDoubleOrNull(), p("icon", "color"), p("label", "color"),
-            p("indicator", "background-color"), p("badge", "background-color"), p("badge", "color"))
+            p("indicator", "background-color"), p("badge", "background-color"), p("badge", "color"),
+            PartBoxParity.box(r["md-navigation-tab::container"]), PartBoxParity.box(r["md-navigation-tab::icon-container"]))
     }
     private fun hooks(o: JSONObject?): AWCNavigationBarAppearance {
         val h = o?.optJSONObject("properties")?.optJSONObject("_hooks") ?: return AWCNavigationBarAppearance()
@@ -179,13 +180,30 @@ class NativeNavigationBarParityTest {
             near(m["alpha"] as? Double, wt.optString("opacity").toDoubleOrNull(), "$id opacity", .005)
             if (i < ax.size) check(m["name"] == ax[i].getString("name"), "$name $id name ${m["name"]} vs ${ax[i].getString("name")}")
             near(m["layer"] as? Double, wt.getJSONObject("state-layer").optString("opacity").toDoubleOrNull(), "$id state layer", .001)
-            for ((part, key) in listOf("container" to "container", "icon-container" to "indicator", "icon" to "icon")) {
+            for ((part, key) in listOf("container" to "container", "icon-container" to "iconContainer", "icon" to "icon")) {
                 val wp = wt.optJSONObject(part) ?: continue; val wr = wp.getJSONObject("rect")
                 val pr = rect(m, key) ?: run { check(false, "$name $id $part measured"); null } ?: continue
                 near(tx + pr[0], wr.getDouble("x"), "$id $part x"); near(ty + pr[1], wr.getDouble("y"), "$id $part y")
                 near(pr[2], wr.getDouble("width"), "$id $part width", 1.0); near(pr[3], wr.getDouble("height"), "$id $part height", 1.0)
+                // ::part(container) / ::part(icon-container) boxes (gate-7 R6-17): the typed box against Chrome's computed box.
+                if (part != "icon" && PartBoxParity.box(partRules(c.optString("parts"))["md-navigation-tab::$part"]) != null) {
+                    @Suppress("UNCHECKED_CAST") val pb = (m["boxes"] as? Map<String, Any?>)?.get(part) as? Map<String, Any?>
+                    for ((ok, l) in PartBoxParity.checks("$name $id $part", pb, wp.getString("bg"), wp.getString("bw"), wp.getString("bc"), wp.getString("radius"),
+                        wp.getJSONArray("pad").let { a -> (0 until a.length()).map { a.getString(it) } })) check(ok, l)
+                }
             }
             wt.optJSONObject("icon")?.let { check(colorClose(m["iconColor"], it.getString("color")), "$name $id icon colour ${rgba(m["iconColor"])} vs ${it.getString("color")}") }
+            // A text icon slot (R6-11): the family the hook's list resolves to on Android, and the run's box. Chrome on macOS lays the
+            // run in Menlo / system-ui: a monospace run (0.6 em advances in Menlo and in Android's monospace) matches its width;
+            // a system-ui run is Roboto here (SF there), so only its centring on the icon box is compared.
+            wt.optJSONArray("slotted")?.objects()?.filter { !it.isNull("textRect") }?.forEach { sl ->
+                val b = (m["slotted"] as? DoubleArray)?.takeIf { a -> !a[2].isNaN() }
+                if (b == null) { check(false, "$name $id slotted icon measured"); return@forEach }
+                val tr = sl.getJSONObject("textRect"); val mono = sl.getString("fontFamily").contains("Menlo")
+                check(m["slottedFamily"] == (if (mono) "monospace" else "sans-serif"), "$name $id slotted icon family ${m["slottedFamily"]}")
+                near(tx + b[0] + b[2] / 2, tr.getDouble("x") + tr.getDouble("width") / 2, "$id slotted icon centre x")
+                if (mono) near(b[2], tr.getDouble("width"), "$id slotted icon width", 1.0)
+            }
             val lr = rect(m, "label"); val wl = wt.optJSONObject("label")
             check((lr != null) == (wl != null), "$name $id label presence")
             if (wl != null && lr != null) { val wr = wl.getJSONObject("rect")

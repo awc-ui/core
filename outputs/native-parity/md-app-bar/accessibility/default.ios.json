@@ -1,0 +1,134 @@
+{
+ "tag": "md-app-bar",
+ "case": "default",
+ "elements": [
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup",
+    "semanticGroup"
+   ],
+   "depth": 9,
+   "frame": [
+    36,
+    376,
+    48,
+    48
+   ],
+   "interactive": true,
+   "label": "Open navigation",
+   "traits": [
+    "button"
+   ]
+  },
+  {
+   "class": "AccessibilityNode",
+   "containers": [
+    "semanticGroup"
+   ],
+   "depth": 8,
+   "frame": [
+    96,
+    387,
+    157,
+    26
+   ],
+   "label": "Your workspace",
+   "traits": [
+    "staticText"
+   ]
+  },
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup",
+    "semanticGroup"
+   ],
+   "depth": 9,
+   "frame": [
+    556,
+    376,
+    48,
+    48
+   ],
+   "interactive": true,
+   "label": "Search",
+   "traits": [
+    "button"
+   ]
+  }
+ ],
+ "focus": [
+  {
+   "firstResponder": {
+    "class": "AWCNativeButtonFocusView",
+    "frame": [
+     36,
+     376,
+     48,
+     48
+    ],
+    "interactive": true,
+    "label": "Open navigation",
+    "traits": [
+     "button"
+    ]
+   },
+   "focusSystem": {
+    "class": "AWCNativeButtonFocusView",
+    "frame": [
+     36,
+     376,
+     48,
+     48
+    ],
+    "interactive": true,
+    "label": "Open navigation",
+    "traits": [
+     "button"
+    ]
+   }
+  },
+  {
+   "firstResponder": {
+    "class": "AWCNativeButtonFocusView",
+    "frame": [
+     556,
+     376,
+     48,
+     48
+    ],
+    "interactive": true,
+    "label": "Search",
+    "traits": [
+     "button"
+    ]
+   },
+   "focusSystem": {
+    "class": "AWCNativeButtonFocusView",
+    "frame": [
+     556,
+     376,
+     48,
+     48
+    ],
+    "interactive": true,
+    "label": "Search",
+    "traits": [
+     "button"
+    ]
+   }
+  }
+ ],
+ "id": "md-app-bar/default",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "ios": "26.3.1",
+ "platform": "ios"
+}

@@ -29,6 +29,7 @@ struct AWCNativeActionControl<Style: ButtonStyle, Label: View>: View {
     @Environment(\.awcFabMenuSession) private var menuSession
     @Environment(\.awcPopupTarget) private var popupTarget
     @Environment(\.awcNativeSegmentedContext) private var segmentedContext
+    @Environment(\.awcCompositeKeyRouter) private var compositeKeys
     private var isSegment: Bool { policy.role == .radio || policy.role == .checkbox }
     private var keyRouter: ((String,Bool,Bool)->Bool)? {
         guard menuRegistry != nil || snackbarRegistry != nil || tooltipRegistry != nil || popupTarget?.escape != nil || isSegment else { return nil }
@@ -103,7 +104,7 @@ struct AWCNativeActionControl<Style: ButtonStyle, Label: View>: View {
                     group: isSegment ? nil:group, cell: cell, handle: focusHandle, focusChanged: { if $0 {menuSession?.focused(id)};focusChanged?(id, $0) }, activate: { activate(source: .unknown) },
                     activateFrom: { activate(source: $0) }, keyPress: { rawGroup?.press(id) },
                     routeKey:keyRouter,
-                    menuExpanded:menuRegistry?.presentations[id]?.open ?? mdMenuRegistry?.anchorExpanded(id),popup:popup,tooltipDescription:tooltipDescription,touchPress:touchHandler))
+                    menuExpanded:menuRegistry?.presentations[id]?.open ?? mdMenuRegistry?.anchorExpanded(id),popup:popup,tooltipDescription:tooltipDescription,touchPress:touchHandler,compositeKey:compositeKeys.map { route in { route(id, $0) } }))
                     .accessibilityHidden(false)
             }
             .accessibilityElement(children: .contain)

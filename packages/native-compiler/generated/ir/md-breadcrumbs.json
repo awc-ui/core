@@ -705,9 +705,16 @@
         "Dedicated native renderer (SwiftUI / Compose): the wrapping list, separators, the collapse window with the overflow toggle, the current-page promotion and the staggered entrance computed from the authored md-breadcrumb-item children, as the source.",
         "expand() / collapse() through AWCBreadcrumbsController emit mdExpand { expanded, itemCount } (cancelable like the source event; the state does not depend on it). The toggle moves focus to the first revealed link.",
         "The twelve hooks through .awcBreadcrumbsAppearance(…) / AWCBreadcrumbsAppearanceScope; density follows the md3 ladder including the rung-only spacing tokens.",
-        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against the Mac Chrome 153 oracles (paint, interaction states and motion); the trail is a labelled navigation container."
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against the Mac Chrome 153 oracles (paint, interaction states and motion); the trail is a labelled navigation container.",
+        "Typed ::part() targets (AWCBreadcrumbsPartAppearance): list (background, physical padding), separator (the overflow separator: colour, font size), overflow-button (background in every state, dots colour) and overflow as a box (AWCPartBox: background, border width / colour, corner radius and physical padding with the layout shift)."
       ],
       "verification": "not-device-verified",
+      "visualParts": [
+        "list",
+        "separator",
+        "overflow-button",
+        "overflow"
+      ],
       "appearance": {
         "api": ".awcBreadcrumbsAppearance(AWCBreadcrumbsAppearance)",
         "fields": [
@@ -755,9 +762,16 @@
         "Dedicated native renderer (SwiftUI / Compose): the wrapping list, separators, the collapse window with the overflow toggle, the current-page promotion and the staggered entrance computed from the authored md-breadcrumb-item children, as the source.",
         "expand() / collapse() through AWCBreadcrumbsController emit mdExpand { expanded, itemCount } (cancelable like the source event; the state does not depend on it). The toggle moves focus to the first revealed link.",
         "The twelve hooks through .awcBreadcrumbsAppearance(…) / AWCBreadcrumbsAppearanceScope; density follows the md3 ladder including the rung-only spacing tokens.",
-        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against the Mac Chrome 153 oracles (paint, interaction states and motion); the trail is a labelled navigation container."
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against the Mac Chrome 153 oracles (paint, interaction states and motion); the trail is a labelled navigation container.",
+        "Typed ::part() targets (AWCBreadcrumbsPartAppearance): list (background, physical padding), separator (the overflow separator: colour, font size), overflow-button (background in every state, dots colour) and overflow as a box (AWCPartBox: background, border width / colour, corner radius and physical padding with the layout shift)."
       ],
       "verification": "not-device-verified",
+      "visualParts": [
+        "list",
+        "separator",
+        "overflow-button",
+        "overflow"
+      ],
       "appearance": {
         "api": "AWCBreadcrumbsAppearanceScope(AWCBreadcrumbsAppearance)",
         "fields": [

@@ -2,6 +2,7 @@ package dev.awc.nativeui
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.background
+import androidx.compose.ui.draw.alpha
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.HoverInteraction
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -67,6 +68,34 @@ import kotlin.math.roundToInt
     }
 }
 internal val LocalAWCOTPFieldAppearance=staticCompositionLocalOf { AWCOTPFieldAppearance() }
+/** Typed counterparts of md-otp-field's `::part()` rules (cells, cell, separator, supporting-text). Part values come from the outer
+ *  tree, so they win over the hooks and every internal rule (focus, error, hover, read-only, disabled). Colours #RRGGBB(AA), lengths dp. */
+@Immutable data class AWCOTPFieldPartAppearance(
+    /** `::part(cell)`: border-color, border-width, background-color, color, caret-color. */
+    val cellBorderColor:String?=null,val cellBorderWidth:Double?=null,val cellBackgroundColor:String?=null,val cellTextColor:String?=null,val caretColor:String?=null,
+    /** `::part(cells) { gap }`. */
+    val cellsGap:Double?=null,
+    /** `::part(separator)`: color (slotted separator content) and opacity (the whole separator, the built-in dot included). */
+    val separatorColor:String?=null,val separatorOpacity:Double?=null,
+    /** `::part(supporting-text) { color }`. */
+    val supportingTextColor:String?=null) {
+    private fun l(v:Double?)=v?.takeIf { it.isFinite() && it>=0 }
+    internal fun normalized()=AWCOTPFieldPartAppearance(switchColorHex(cellBorderColor),l(cellBorderWidth),switchColorHex(cellBackgroundColor),switchColorHex(cellTextColor),
+        switchColorHex(caretColor),l(cellsGap),switchColorHex(separatorColor),separatorOpacity?.takeIf { it.isFinite() }?.coerceIn(0.0,1.0),switchColorHex(supportingTextColor))
+    fun merge(o:AWCOTPFieldPartAppearance)=AWCOTPFieldPartAppearance(o.cellBorderColor ?: cellBorderColor,o.cellBorderWidth ?: cellBorderWidth,o.cellBackgroundColor ?: cellBackgroundColor,
+        o.cellTextColor ?: cellTextColor,o.caretColor ?: caretColor,o.cellsGap ?: cellsGap,o.separatorColor ?: separatorColor,o.separatorOpacity ?: separatorOpacity,
+        o.supportingTextColor ?: supportingTextColor)
+    companion object {
+        fun fromValues(v:Map<String,AWCValue>):AWCOTPFieldPartAppearance {
+            fun n(k:String)=(v[k] as? Number)?.toDouble()
+            fun c(k:String)=(v[k] as? String)?.ifEmpty { null }
+            return AWCOTPFieldPartAppearance(c("cellBorderColor"),n("cellBorderWidth"),c("cellBackgroundColor"),c("cellTextColor"),c("caretColor"),n("cellsGap"),
+                c("separatorColor"),n("separatorOpacity"),c("supportingTextColor")).normalized() }
+    }
+}
+internal val LocalAWCOTPFieldPartAppearance=staticCompositionLocalOf { AWCOTPFieldPartAppearance() }
+@Composable fun AWCOTPFieldPartAppearanceScope(parts:AWCOTPFieldPartAppearance,content:@Composable ()->Unit)=
+    CompositionLocalProvider(LocalAWCOTPFieldPartAppearance provides LocalAWCOTPFieldPartAppearance.current.merge(parts.normalized()),content=content)
 @Composable fun AWCOTPFieldAppearanceScope(appearance:AWCOTPFieldAppearance,content:@Composable ()->Unit)=
     CompositionLocalProvider(LocalAWCOTPFieldAppearance provides LocalAWCOTPFieldAppearance.current.merge(appearance.normalized()),content=content)
 
@@ -179,7 +208,7 @@ internal fun NativeOTPField(p:Props,onEvent:EventSink,controlEvent:EventSink,slo
     val rt=remember { OTPFieldRuntime() }
     val focusScope=rememberCoroutineScope()
     val count=m.cellCount;rt.count=count
-    val appearance=LocalAWCOTPFieldAppearance.current
+    val appearance=LocalAWCOTPFieldAppearance.current;val parts=LocalAWCOTPFieldPartAppearance.current
     val controller=LocalAWCOTPFieldController.current
     val inspector=LocalAWCOTPFieldInspector.current
     val inspection=LocalAWCInspection.current
@@ -197,15 +226,17 @@ internal fun NativeOTPField(p:Props,onEvent:EventSink,controlEvent:EventSink,slo
     }
     val disabled=m.disabled
     if(!rt.started) { rt.started=true;val clean=m.sanitize(p.str("value")).first;rt.value=clean;rt.lastCommitted=clean;rt.lastProp=p["value"] }
-    val len=rt.value.length
-    val validity=run {
+    // Evaluated live for the methods: setCustomValidity / a programmatic value answer the next getValidity before recomposition.
+    val liveValidity={ val len=rt.value.length
         if(rt.customMessage.isNotEmpty()) AWCConstraintValidity.of("customError",rt.customMessage)
         else { val incomplete=m.required && m.incompleteLabel.isNotEmpty() && len>0 && len<count
             if(m.required && len==0 || incomplete) AWCConstraintValidity.of("valueMissing",if(incomplete) m.incompleteLabel else m.valueMissingLabel) else AWCConstraintValidity.VALID } }
+    val len=rt.value.length
+    val validity=liveValidity()
     val validationMessage=if(rt.revealed && !validity.valid) validity.validationMessage else ""
     val hasError=m.error || validationMessage.isNotEmpty()
     val supportText=run { val alt=m.errorText.ifEmpty { validationMessage };if(hasError && alt.isNotEmpty()) alt else m.supportingText }
-    rt.validity={ validity };rt.barred={ disabled || m.readOnly }
+    rt.validity=liveValidity;rt.barred={ disabled || m.readOnly }
     fun write(next:String) { rt.value=next;formField?.value=next }
     rt.clear={ write("");rt.lastCommitted="" }
     rt.blur={ focusManager.clearFocus(true) }
@@ -225,7 +256,7 @@ internal fun NativeOTPField(p:Props,onEvent:EventSink,controlEvent:EventSink,slo
     fun color(name:String,fallback:String)=switchColorHex(tokens["--md-sys-color-$name"]) ?: fallback
     fun length(name:String)=tokens[name]?.replace("px","")?.trim()?.toDoubleOrNull()
     val cellW=appearance.cellWidth ?: max(32.0,48+scale*4);val cellH=appearance.cellHeight ?: max(40.0,56+scale*4)
-    val gap=appearance.cellGap ?: (if(scale<=-3) 4.0 else length("--md-sys-spacing-gap-sm") ?: 8.0)
+    val gap=parts.cellsGap ?: appearance.cellGap ?: (if(scale<=-3) 4.0 else length("--md-sys-spacing-gap-sm") ?: 8.0)
     val shape=appearance.cellShape ?: length("--md-sys-shape-corner-small") ?: 8.0
     val fontSize=appearance.fontSize ?: max(16.0,24+scale)
     val outline=appearance.outlineColor ?: color("outline","#79747E");val focusColor=appearance.focusColor ?: color("primary","#6750A4")
@@ -234,14 +265,16 @@ internal fun NativeOTPField(p:Props,onEvent:EventSink,controlEvent:EventSink,slo
     val disabledBorder=alpha(onSurface,tokens["--md-sys-state-disabled-container-opacity"]?.toDoubleOrNull() ?: 0.12)
     val disabledContent=alpha(onSurface,tokens["--md-sys-state-disabled-content-opacity"]?.toDoubleOrNull() ?: 0.38)
     val sepW=max(8.0,12+scale);val dot=max(6.0,8+scale*0.5);val supportFont=max(10.0,12+scale*0.5)
-    fun border(i:Int):Pair<String,Double> {
+    fun stateBorder(i:Int):Pair<String,Double> {
         if(disabled) return disabledBorder to 1.0
         val focused=rt.focusedIndex==i;val hovered=rt.hoverIndex==i && !m.readOnly
         if(hasError) return if(focused) errorColor to 3.0 else (if(hovered) color("on-error-container","#8C1D18") else errorColor) to 1.0
         if(focused) return focusColor to 3.0
         return (if(hovered) onSurface else outline) to 1.0
     }
-    val textColor=if(disabled) disabledContent else if(hasError) errorColor else onSurface
+    // ::part(cell) wins over every state rule.
+    fun border(i:Int):Pair<String,Double> { val (c,w)=stateBorder(i);return (parts.cellBorderColor ?: c) to (parts.cellBorderWidth ?: w) }
+    val textColor=parts.cellTextColor ?: (if(disabled) disabledContent else if(hasError) errorColor else onSurface)
     val chars=(0 until count).map { rt.value.getOrNull(it)?.toString() ?: "" }
 
     // Border colour: `transition: border-color 100ms standard`; a cell taking focus snaps (`:focus { transition: none }`).
@@ -346,8 +379,8 @@ internal fun NativeOTPField(p:Props,onEvent:EventSink,controlEvent:EventSink,slo
 
     SideEffect { inspector?.invoke(buildMap {
         put("md-otp-field",mapOf("value" to rt.value,"focused" to (rt.focusedIndex!=null),"focusedIndex" to rt.focusedIndex,"validationMessage" to validationMessage,"valid" to validity.valid,"error" to hasError))
-        for(i in 0 until count) put("cell-$i",mapOf("border" to tracks[i].hex(t),"borderWidth" to border(i).second,"text" to chars[i],"color" to textColor,"focused" to (rt.focusedIndex==i),"secure" to m.mask,"fontSize" to fontSize))
-        put("supporting-text",mapOf("text" to supportText,"color" to (if(disabled) disabledContent else if(hasError) errorColor else supportColor),"role" to (if(hasError && supportText.isNotEmpty()) "alert" else "")))
+        for(i in 0 until count) put("cell-$i",mapOf("border" to tracks[i].hex(t),"borderWidth" to border(i).second,"accessibilityLabel" to otpCellLabel(m.cellLabelTemplate,i,count),"text" to chars[i],"color" to textColor,"background" to (parts.cellBackgroundColor ?: ""),"focused" to (rt.focusedIndex==i),"secure" to m.mask,"fontSize" to fontSize))
+        put("supporting-text",mapOf("text" to supportText,"color" to (parts.supportingTextColor ?: (if(disabled) disabledContent else if(hasError) errorColor else supportColor)),"role" to (if(hasError && supportText.isNotEmpty()) "alert" else "")))
     }) }
 
     val baseClipboardManager=LocalClipboardManager.current;val baseClipboard=LocalClipboard.current
@@ -368,12 +401,13 @@ internal fun NativeOTPField(p:Props,onEvent:EventSink,controlEvent:EventSink,slo
         LaunchedEffect(rt.selectAll) { if(rt.selectIndex==i && rt.focusedIndex==i) tfv=tfv.copy(selection=TextRange(0,tfv.text.length)) }
         val hover=remember { MutableInteractionSource() }
         LaunchedEffect(hover) { hover.interactions.collect { when(it) { is HoverInteraction.Enter->rt.hoverIndex=i; is HoverInteraction.Exit->if(rt.hoverIndex==i) rt.hoverIndex=null } } }
-        val label=m.cellLabelTemplate.replace("{index}","${i+1}").replace("{length}","$count")
+        val label=otpCellLabel(m.cellLabelTemplate,i,count)
         Box(Modifier.size(cellW.dp,cellH.dp).hoverable(hover,!disabled)
+            .then(parts.cellBackgroundColor?.let { Modifier.background(awcColor(it,Color.Transparent),RoundedCornerShape(shape.dp)) } ?: Modifier)
             .border(width.dp,awcColor(tracks[i].hex(t),awcColor(target,Color.Gray)),RoundedCornerShape(shape.dp))
             .inspectAWCNode(inspection,"cell-$i","cell-$i"),contentAlignment=Alignment.Center) {
             BasicTextField(value=tfv,onValueChange={ v-> tfv=edited(i,v,tfv) },enabled=!disabled,readOnly=m.readOnly,singleLine=true,textStyle=style,
-                cursorBrush=SolidColor(awcColor(if(disabled) disabledContent else if(hasError) errorColor else focusColor,Color.Black)),
+                cursorBrush=SolidColor(awcColor(parts.caretColor ?: (if(disabled) disabledContent else if(hasError) errorColor else focusColor),Color.Black)),
                 visualTransformation=if(m.mask) PasswordVisualTransformation() else VisualTransformation.None,
                 keyboardOptions=KeyboardOptions(keyboardType=keyboard,autoCorrectEnabled=false),
                 modifier=Modifier.width((cellW-6).dp).height(line.dp).focusRequester(rt.requester(i)).onFocusChanged { focusChanged(i,it.isFocused) }
@@ -391,11 +425,12 @@ internal fun NativeOTPField(p:Props,onEvent:EventSink,controlEvent:EventSink,slo
             Row(Modifier.inspectAWCNode(inspection,"cells","cells").semantics { contentDescription=m.label;isTraversalGroup=true },horizontalArrangement=Arrangement.spacedBy(gap.dp),verticalAlignment=Alignment.CenterVertically) {
                 for(i in 0 until count) {
                     if(m.group>0 && i>0 && i%m.group==0) { val k=i/m.group-1
-                        Box(Modifier.widthIn(min=sepW.dp).clearAndSetSemantics { }.inspectAWCNode(inspection,"separator-$k","separator-$k"),contentAlignment=Alignment.Center) {
+                        Box(Modifier.widthIn(min=sepW.dp).alpha((parts.separatorOpacity ?: 1.0).toFloat()).clearAndSetSemantics { }.inspectAWCNode(inspection,"separator-$k","separator-$k"),contentAlignment=Alignment.Center) {
                             // The separator slot fills the first gap; later gaps keep the built-in dot.
                             var slotted by remember { mutableStateOf(false) }
                             if(k==0 && slot!=null) {
-                                if(slotted) slot("separator")
+                                if(slotted) { val sc=parts.separatorColor
+                                    if(sc!=null) CompositionLocalProvider(androidx.compose.material3.LocalContentColor provides awcColor(sc,Color.Gray)) { slot("separator") } else slot("separator") }
                                 else androidx.compose.ui.layout.Layout(content={ slot("separator") },modifier=Modifier.size(0.dp)) { ms,_->
                                     val authored=ms.any { it.maxIntrinsicWidth(1000)>0 };if(authored!=slotted) slotted=authored;layout(0,0) {} }
                             }
@@ -413,7 +448,7 @@ internal fun NativeOTPField(p:Props,onEvent:EventSink,controlEvent:EventSink,slo
             if(supportText.isNotEmpty() || m.reserveSupportingSpace) {
                 // The support row's line is the host's 16px strut (line-height normal: 19); the 12px text sits on its baseline.
                 val strutAscent=kotlin.math.round(16*ROBOTO_ASCENT);val strut=strutAscent+kotlin.math.round(16*ROBOTO_DESCENT)
-                val color=if(disabled) disabledContent else if(hasError) errorColor else supportColor
+                val color=parts.supportingTextColor ?: (if(disabled) disabledContent else if(hasError) errorColor else supportColor)
                 Box(Modifier.padding(top=4.dp,start=4.dp,end=4.dp).height(strut.dp).fillMaxWidth()) {
                     // The measured box is the CSS line box (line-height normal: rounded ascent + rounded descent); the text is
                     // laid out on that line from its top.
@@ -431,3 +466,6 @@ internal fun NativeOTPField(p:Props,onEvent:EventSink,controlEvent:EventSink,slo
         }
     }
 }
+
+/** The accessibility label of cell [i] (md-otp-field `cellLabelTemplate`: {index} is 1-based, {length} the cell count). */
+internal fun otpCellLabel(template:String,i:Int,count:Int):String=template.replace("{index}","${i+1}").replace("{length}","$count")

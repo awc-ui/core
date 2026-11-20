@@ -193,6 +193,7 @@ struct AWCNativeButtonRipple: View {
     /// The host box at a keyboard activation, read by the host before the activation re-lays it out (gate-7 R4-10).
     var startBox: CGSize? = nil
     @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
+    @Environment(\.awcTouchPress) private var touchPress
     private var reduceMotion: Bool { honorsReducedMotion && systemReduceMotion }
     @State private var started: Date?
     @State private var released: Date?
@@ -203,7 +204,7 @@ struct AWCNativeButtonRipple: View {
 
     var body: some View {
         GeometryReader { geometry in
-            TimelineView(.animation(minimumInterval: 1 / 60, paused: started == nil || reduceMotion)) { context in
+            TimelineView(.animation(minimumInterval: nil, paused: started == nil || reduceMotion)) { context in
                 let elapsed = started.map { context.date.timeIntervalSince($0) } ?? 0
                 let growth = reduceMotion ? 1 : AWCNativeButtonTiming.cubic(min(1, max(0, elapsed / 0.45)), x1: 0.2, y1: 0, x2: 0, y2: 1)
                 let fadeStart = max(0.45, released.flatMap { release in started.map { release.timeIntervalSince($0) } } ?? .infinity)
@@ -236,6 +237,15 @@ struct AWCNativeButtonRipple: View {
                 let remaining = max(0, 0.45 - release.timeIntervalSince(started)) + 0.15
                 finish(after: remaining)
             }
+        }
+        .onChange(of: touchPress?.pressSerial ?? 0) { _, _ in
+            // A touch whose down and up came in one update never changed `pressed`: Chrome still grows the wave, from the touch
+            // point and fading from the growth's end, so start it here (the normal case starts it in onChange(of: pressed)).
+            guard !pressed, !nativePressed, !reduceMotion else { return }
+            completion?.cancel()
+            let now = Date(); started = now; released = now; waveOrigin = touchPress?.origin ?? origin
+            waveBox = freezesBoxAtStart && liveBox != .zero ? liveBox : nil
+            finish(after: 0.6)
         }
         .onChange(of: nativeActivation) { _, _ in
             // Keyboard/accessibility activation has no pointer location or
@@ -431,7 +441,7 @@ private struct AWCNativeButtonStyleBody: View {
         return bordered.overlay {
                 if focused {
                     outline.stroke(appearance.focusRingColor.map { Color(awcHex: $0) } ?? color("secondary"), lineWidth: 3)
-                        .padding(-3.5).animation(shapeAnimation, value: corners)
+                        .padding(-((appearance.focusRingOffset ?? 2) + 1.5)).animation(shapeAnimation, value: corners)
                 }
             }
             .background {
@@ -448,6 +458,7 @@ private struct AWCNativeButtonStyleBody: View {
             .onChange(of: buttonPressed) { _, down in
                 if down { groupContext?.press(nodeID); if groupContext != nil { pointerPressed() } }
             }
+            .onChange(of: active && heldPointer) { _, down in if down { groupContext?.press(nodeID) } }
             .onChange(of: configuration.isPressed) { _, down in if !down { touchPress?.swiftUIReleased() } }
             // A pointer press focuses the button even when activation is blocked (soft-disabled, loading): the source
             // host keeps tabindex 0, so Chrome moves focus to it on mousedown. Hard-disabled buttons are not focusable.
@@ -522,18 +533,20 @@ extension AWCNativeView {
                     .modifier(AWCButtonPartColor(hex: buttonAppearance.iconColor ?? buttonAppearance.labelColor, opacity: palette.labelOpacity))
                 let textChildren = node.children(inSlot: "")
                 if textChildren.isEmpty {
-                    Text(label).fixedSize().frame(height: metrics.lineHeight)
+                    AWCExactTextWidth(width: buttonExactLabelWidth(label, metrics)) { AWCNativeFonts.labelText(label, size: metrics.fontSize, weight: metrics.fontWeight).fixedSize() }.frame(height: metrics.lineHeight)
                         .awcInspect(nodeID: node.id, part: "label", parentPart: "content", name: "md-button ::part(label)") { size in
                             buttonLabelInspection(metrics, lineHeight: size.height)
                         }
                 }
                 else {
+                    AWCExactTextWidth(width: textChildren.count == 1 && textChildren[0].tag == "#text" ? buttonExactLabelWidth(textChildren[0].properties["text"]?.string ?? "", metrics) : nil) {
                     HStack(spacing: 0) {
                         ForEach(textChildren) { item in
-                            if item.tag == "#text" { Text(item.properties["text"]?.string ?? "") }
+                            if item.tag == "#text" { AWCNativeFonts.labelText(item.properties["text"]?.string ?? "", size: metrics.fontSize, weight: metrics.fontWeight) }
                             else { child(item) }
                         }
                     }.fixedSize()
+                    }
                         .frame(height: textChildren.allSatisfy { $0.tag == "#text" } ? metrics.lineHeight : nil)
                         .frame(minHeight: textChildren.allSatisfy { $0.tag == "#text" } ? nil : metrics.lineHeight)
                         .awcInspect(nodeID: node.id, part: "label", parentPart: "content", name: "md-button ::part(label)") { size in
@@ -594,7 +607,7 @@ extension AWCNativeView {
         // Plain slot text inherits its button part. Nested components keep their
         // own explicitly authored styling while still receiving the environment.
         if item.tag == "#text" { Text(item.properties["text"]?.string ?? "") }
-        else if item.tag == "#symbol" { AWCMaterialSymbol(item.properties["name"]?.string ?? "") }
+        else if item.tag == "#symbol" { AWCMaterialSymbol(item.properties["name"]?.string ?? "", size: item.properties["size"]?.number.map { CGFloat($0) }) }
         else if item.tag == "md-progress-indicator", item.properties["variant"]?.string == "circular",
                 item.properties["indeterminate"]?.bool == true, item.properties["wave"]?.bool != true {
             AWCNativeCircularProgress(size: CGFloat(min(240, max(24, item.properties["size"]?.number ?? 40))),
@@ -635,6 +648,14 @@ extension AWCNativeView {
                                 targetListeners: eventTargetListeners, activation: activation, observe: onEvent, commitSelected: { set("selected", .bool($0)) })
         nativeGroupContext?.activate(node.id,activation)
         return result
+    }
+}
+
+extension AWCNativeView {
+    /// The exact advance of a plain md-button label (CSS letter-spacing after every character) for the bundled Roboto weights.
+    func buttonExactLabelWidth(_ text: String, _ m: AWCNativeButtonMetrics) -> CGFloat? {
+        guard !text.isEmpty, [400.0, 500, 700].contains(m.fontWeight), !text.contains("\n") else { return nil }
+        return CGFloat(AWCNativeFonts.labelTextWidth(text, size: m.fontSize, weight: m.fontWeight, tracking: Double(m.letterSpacing)))
     }
 }
 

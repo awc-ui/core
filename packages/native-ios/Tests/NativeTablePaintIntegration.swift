@@ -16,11 +16,15 @@ struct TableFixtureCase: Decodable {
     struct Prepare: Decodable { let scroll: [Scroll]?, hover: Hover?, tabs: Int?, select: [Int]? }
     struct Element: Decodable { let tag: String, rect: [Double?], parts: [String: [Double?]], attrs: [String: String] }
     struct Web: Decodable { let grid: [Double], rows: [[Double]], pinned: [[AWCValue]], elements: [Element] }
+    /// ::part() rules the case authors (tag, part, CSS declarations).
+    struct PartRule: Decodable { let tag: String, part: String, declarations: [String: String] }
     let name: String, subset: String, theme: String, dir: String, width: Double, clip: Clip, nodes: [AWCNode], prepare: Prepare, shot: String, web: Web
+    let parts: [PartRule]?
 }
 
 @Observable final class TablePaintState {
     var nodes: [AWCNode] = []
+    var parts: [AWCTablePart: AWCTablePartStyle] = [:]
     var dark = false
     var rtl = false
     var forced = false
@@ -40,6 +44,7 @@ struct TablePaintFixture: View {
             .frame(width: state.width, alignment: .topLeading)
             .environment(\.layoutDirection, state.rtl ? .rightToLeft : .leftToRight)
             .awcTableForcedColors(state.forced)
+            .awcTablePartAppearance(state.parts)
             .awcTableReducedMotion(true)
             .awcTableScrollController(state.scroller)
             .environment(\.awcNativePointerState, state.pointer)
@@ -182,8 +187,12 @@ struct TableRaster {
         // Hover comes from the host pointer state only: the real mouse (on any screen) must not reach the fixture.
         window.ignoresMouseEvents = true
         if let screen = NSScreen.main?.frame {
+            // Row hover follows the pointer even with ignoresMouseEvents: place the window where it does not contain the pointer
+            // (a corner of the main screen; a 1728x1117 screen has none, so then hang it off the screen edge right of the pointer).
             let mouse = NSEvent.mouseLocation
-            window.setFrameOrigin(NSPoint(x: mouse.x < screen.midX ? screen.maxX - 1200 : screen.minX, y: mouse.y < screen.midY ? screen.maxY - 900 : screen.minY))
+            let corners = [NSPoint(x: screen.maxX - 1200, y: screen.minY), NSPoint(x: screen.minX, y: screen.minY), NSPoint(x: screen.maxX - 1200, y: screen.maxY - 900), NSPoint(x: screen.minX, y: screen.maxY - 900)]
+            let origin = corners.first { !NSRect(origin: $0, size: NSSize(width: 1200, height: 900)).insetBy(dx: -4, dy: -4).contains(mouse) } ?? NSPoint(x: mouse.x + 8, y: screen.minY)
+            window.setFrameOrigin(origin)
         }
         #endif
         window.orderFrontRegardless()
@@ -201,6 +210,7 @@ struct TableRaster {
             if let select = c.prepare.select { nodes = nodes.map { selectRows($0, select) } }
             let cellIDs = ids(nodes, "md-table-cell")
             state.inspect = ([tableID(nodes) ?? "n0"] + cellIDs).joined(separator: "|")
+            state.parts = (c.parts ?? []).reduce(into: [:]) { all, r in if let p = AWCTablePart(tag: r.tag, part: r.part) { all[p] = (all[p] ?? .init()).merging(AWCTablePartStyle(declarations: r.declarations)) } }
             state.nodes = nodes; state.width = c.width; state.epoch += 1
             settle(0.25)
             if let hover = c.prepare.hover {
@@ -239,6 +249,25 @@ struct TableRaster {
                     }
                 }
             }
+            // R5-12: rowspan / colspan above 1 reach the semantics (the cell's inspection metrics carry the values handed to the
+            // accessibility marker; on macOS the AppKit element's row range is read back as well).
+            let spans = cellSpans(nodes)
+            for id in cellIDs {
+                guard let sp = spans[id], sp.0 > 1 || sp.1 > 1, let m = state.measurements.first(where: { $0.id == id + ":component" }) else { continue }
+                if sp.0 > 1 { spanChecks += 1; check(Int(m.metrics["rowSpan"]?.number ?? 1) == sp.0, "\(c.name): cell \(id) rowSpan \(Int(m.metrics["rowSpan"]?.number ?? 1)) vs \(sp.0)") }
+                if sp.1 > 1 { spanChecks += 1; check(Int(m.metrics["colSpan"]?.number ?? 1) == sp.1, "\(c.name): cell \(id) colSpan \(Int(m.metrics["colSpan"]?.number ?? 1)) vs \(sp.1)") }
+            }
+            #if os(macOS)
+            if spans.values.contains(where: { $0.0 > 1 || $0.1 > 1 }) {
+                var rowRanges: [String: NSRange] = [:], colRanges: [String: NSRange] = [:]
+                func walk(_ v: NSView) { if let x = v as? AWCTableAXView, x.info.kind == .cell { rowRanges[x.info.identifier] = x.accessibilityRowIndexRange(); colRanges[x.info.identifier] = x.accessibilityColumnIndexRange() }; v.subviews.forEach(walk) }
+                walk(host)
+                for (id, sp) in spans where sp.0 > 1 || sp.1 > 1 {
+                    if sp.0 > 1 { spanChecks += 1; check(rowRanges[id]?.length == sp.0, "\(c.name): AX cell \(id) row range \(String(describing: rowRanges[id])) vs length \(sp.0)") }
+                    if sp.1 > 1 { spanChecks += 1; check(colRanges[id]?.length == sp.1, "\(c.name): AX cell \(id) column range \(String(describing: colRanges[id])) vs length \(sp.1)") }
+                }
+            }
+            #endif
             let columns = table?.metrics["columns"]?.array.compactMap(\.number) ?? []
             if !c.web.grid.isEmpty {
                 check(columns.count == c.web.grid.count && zip(columns, c.web.grid).allSatisfy { abs($0 - $1) <= 0.5 }, "\(c.name): columns \(columns.map { ($0 * 100).rounded() / 100 }) vs \(c.web.grid)")
@@ -260,8 +289,16 @@ struct TableRaster {
         }
         if let out = env["AWC_TABLE_REPORT"] { try? JSONSerialization.data(withJSONObject: report, options: [.prettyPrinted, .sortedKeys]).write(to: URL(fileURLWithPath: out)) }
         for f in failures.prefix(80) { print("FAIL", f) }
+        print("NativeTablePaintIntegration: span assertions \(spanChecks)")
         print("NativeTablePaintIntegration: \(checks - failures.count)/\(checks) checks, \(passed) cases fully passing")
         exit(failures.isEmpty ? 0 : 1)
+    }
+    static var spanChecks = 0
+    /// Authored (rowSpan, colSpan) of every md-table-cell by node id.
+    static func cellSpans(_ nodes: [AWCNode]) -> [String: (Int, Int)] {
+        var out: [String: (Int, Int)] = [:]
+        func walk(_ n: AWCNode) { if n.tag == "md-table-cell" { out[n.id] = (Int(n.properties["rowSpan"]?.number ?? 1), Int(n.properties["colSpan"]?.number ?? 1)) }; n.children.forEach(walk) }
+        nodes.forEach(walk); return out
     }
     static func r2(_ b: CGRect) -> String { "[\((b.minX * 100).rounded() / 100), \((b.minY * 100).rounded() / 100), \((b.width * 100).rounded() / 100), \((b.height * 100).rounded() / 100)]" }
     static func ids(_ nodes: [AWCNode], _ tag: String) -> [String] { nodes.flatMap { ($0.tag == tag ? [$0.id] : []) + ids($0.children, tag) } }

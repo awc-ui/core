@@ -17,6 +17,7 @@ A modal scope stands for the source's viewport and its `ModalSession`:
 | Inert content | page content is inert and hidden from accessibility while any owner is open; covered owners are inert too | content focus group: `canFocus = false`, traversal never enters; explicit requests still land and are recaptured |
 | Focus | first tabbable one frame after open (else the `tabindex=-1` container); the opener is restored on close, or forwarded to the owner below | `captureOpener` (saved focused child) → `focusFirst` (container + `moveFocus`) → `restoreFocusedChild` one frame after release; nothing saved → focus goes to the document target |
 | Focus trap | Tab / Shift+Tab cycle inside the top owner (`AWCModalFocusRegions`) | window `Callback` routes Tab to `session.tab`; Compose order inside the surface |
+| Tab order outside a modal | DOM order: the scope numbers the AWC focus views of its content in source order (SwiftUI preferences combine in view-tree order); Tab / Shift+Tab put them in that order into their key-view-loop positions on AppKit and UIKit, and other key views keep theirs (`NativeDocumentOrder.swift`) | composition order |
 | Escape | routed to the top owner only (`owner.escape`), consumed when the owner says so | window routing; the focused surface handles it first |
 | Android back | n/a | KEYCODE_BACK down/up and `OnBackInvokedCallback` (API 33+, `PRIORITY_OVERLAY`), registered only while an owner is open; same rules as Escape |
 | Document focus | `session.blur()` (first responder cleared) | `session.blur()` focuses a non-tabbable document target outside the page content, so Android does not move focus to a default control in keyboard mode |
@@ -84,6 +85,13 @@ restore touch mode when they finish. Without this, later suites' focus checks fa
 - **Overlay as state (SwiftUI).** `AWCModalScope` keeps the presented entries as state and draws them in a plain
   overlay. Preferences from inside an `overlayPreferenceValue` overlay stop reaching the ancestors once nothing else in
   the scope changes, so an inspector missed the exit motion and the removal of a closed modal.
+- **Owner `open` binding (SwiftUI, 2026-11-12, from d2's finding).** `AWCNativeView` hands the three owners their `open`
+  state as a location-based binding (`$local[awcBool: "open"]`). With `Binding(get:set:)` SwiftUI reported the binding as
+  changed on every graph update, so an owner's body ran again after every delivery of its own entries and republished them
+  (a new revision) three or four times per frame while a modal moved. A bound preference is delivered once per frame: when
+  the dropped change was the removal, the closed modal stayed mounted — invisible, its timeline still ticking, its nodes
+  still in the inspection (`test-live-modal` "close() closes the sheet"; d2's sequence stuck in 5 of 12 and 5 of 20 runs).
+  Now an owner's body runs when its inputs change (two evaluations and two deliveries per close). Evidence: d2's close sequence 0 of 60 for the bottom sheet and 0 of 60 for the modal side sheet (half under load), `test-live-modal` 8 of 8, the seven modal fixtures on macOS and the iOS simulator and the time-picker fixtures on macOS pass (work/d4-lab/bs/runs/090, 089; traces in runs/082-086).
 - **Live-host inspection (Android).** Compose lays out children inside `dispatchDraw` when the root size is unchanged,
   after a pre-draw listener runs. A host that snapshots inspection in pre-draw must settle measure and layout first,
   or a change that moves a surface without resizing anything (a Bottom Sheet switching to detached) is reported one
@@ -97,3 +105,13 @@ restore touch mode when they finish. Without this, later suites' focus checks fa
 Stack replay and focus restoration fixes, the hover re-evaluation, the scope overlay and inspection fixes and the live-host scopes are
 described in [md-dialog.md](md-dialog.md#session-note-2026-10-24).
 
+## Decisions (autonomous, 2026-10-27, reversible)
+
+- **Paint order — `sourceZIndex` (Chrome's rendering) stays the default.** A dialog (top layer, z-index 2147483647) paints above a
+  sheet opened on top of it, as Chrome renders the source; focus and keys follow owner order. Alternative: `ownerOrder`
+  (most recent owner on top), already implemented as `AWCModalPaintOrder.ownerOrder`. Revert: set the policy default to
+  `ownerOrder` and re-baseline the stack paint fixtures against a source change that raises the later owner.
+
+## Closure bindings audit (2026-11-16, story 6-4)
+
+d4 found that a closure-based `open` binding (`Binding(get:set:)`) handed to a view that publishes preferences made sheets republish every frame. Audit of `packages/native-ios/Sources/AWCUI`: `awcPreviewSheet(isPresented:)` was the one preference-publishing consumer still given closure bindings (`Overlays.swift` sheet, the legacy path of md-dialog / md-bottom-sheet / md-side-sheet without a modal scope; the unused `Inputs.swift` temporalPicker and `Options.swift` optionPicker). They now pass `$local[awcBool: "open"]` (a location binding) and report presentation-driven changes through `onChange` (mdCancel / mdOpen / mdClose). The other closure bindings feed TextField / Toggle / Picker only (no preferences) and stay. `Tests/NativeBindingStuckProbe.swift` (20 open/close cycles per tag, the surface must shrink after each close; part of `scripts/test-native-preview.sh`) passes 120/120 on the old and the new bindings: the preview-scope sheets did not reproduce the stuck state, so the conversion is preventive. Evidence: 6-4-002-binding-probe, 6-4-008-ios-focused.

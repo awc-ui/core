@@ -2098,7 +2098,7 @@ export namespace Components {
          */
         "placement": 'up' | 'down' | 'auto';
         /**
-          * Skip open/close animation.
+          * Close without the exit delay: `close()` commits `open=false` at once (mdClose, whenClosed). Entry motion still plays.
           * @default false
          */
         "quick": boolean;
@@ -11906,7 +11906,7 @@ declare namespace LocalJSX {
          */
         "placement"?: 'up' | 'down' | 'auto';
         /**
-          * Skip open/close animation.
+          * Close without the exit delay: `close()` commits `open=false` at once (mdClose, whenClosed). Entry motion still plays.
           * @default false
          */
         "quick"?: boolean;

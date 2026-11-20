@@ -63,10 +63,12 @@ internal fun buttonGroupCorners(size:String,square:Boolean,icon:Boolean,previous
     SideEffect { state?.bind(scope) { scope.indices.map { scope.states[it]==true } };scope.seedPreviousValues() }
     DisposableEffect(state,scope) { onDispose { state?.unbind(scope) } }
     val coroutine=rememberCoroutineScope()
+    val motionReduced=LocalAWCButtonReducedMotion.current ?: !ValueAnimator.areAnimatorsEnabled()
+    val reducedNow by rememberUpdatedState(motionReduced)
     DisposableEffect(scope) {
         scope.startMotion={ id ->
             if(scope.motionEnabled && scope.props.str("variant","standard")=="standard" &&
-                !(scope.props.bool("required") && scope.states[id]==true) && ValueAnimator.areAnimatorsEnabled()) {
+                !(scope.props.bool("required") && scope.states[id]==true) && !reducedNow) {
                 scope.motionJob?.cancel()
                 scope.motionJob=coroutine.launch(start=CoroutineStart.UNDISPATCHED) {
                     val index=scope.indices.indexOf(id)

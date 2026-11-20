@@ -1,7 +1,10 @@
 import { nativeToolbarMethod } from './toolbar-appearance.js';
+import { appBarPartFields, appBarPartVariant, APP_BAR_PART_FIELDS } from './appbar-appearance.js';
+import { nativeRailMethod, railPartFields, RAIL_PART_FIELDS, RAIL_TAB_PART_FIELDS } from './rail-appearance.js';
 import { nativeStepperMethod } from './stepper-appearance.js';
 import { nativeSrMethod } from './sr-appearance.js';
 import { nativeTableMethod } from './table-appearance.js';
+import { nativeSelectMethod } from './select-appearance.js';
 import { nativeChartMethod } from './chart-appearance.js';
 import { nativeSelectionMethod } from './native-methods.js';
 import { PICKER_ITEM_METHODS, PICKER_VALIDITY_METHODS } from './picker-appearance.js';
@@ -458,18 +461,21 @@ function accordionPartExample(tag, name, platform) {
   const separator = platform === 'swift' ? ': ' : ' = ';
   const number = value => platform === 'android' ? (Number.isInteger(value) ? `${value}.0` : String(value)) : String(value);
   if (tag === 'md-accordion' || ['chassis-handle', 'chassis-handle-bar'].includes(name)) {
-    // Parts without a typed part surface are styled through their appearance hooks.
+    // The drop placeholder and the floating grip take typed part declarations (gate-7 r3-18); their appearance hooks apply beneath them.
     const placeholder = tag === 'md-accordion';
-    const fields = placeholder ? `dropPlaceholderColor${separator}"#FFE08280", dropPlaceholderOutlineColor${separator}"#C62828", dropPlaceholderOutlineWidth${separator}${number(3)}`
-      : `chassisHandleColor${separator}"#D81B60", chassisHandleBackgroundHover${separator}"#FFCDD2"`;
-    const type = placeholder ? 'AWCAccordionAppearance' : 'AWCAccordionItemAppearance';
+    const fields = placeholder ? `backgroundColor${separator}"#FFE08280", borderColor${separator}"#C62828", borderWidth${separator}${number(3)}`
+      : name === 'chassis-handle' ? `backgroundColor${separator}"#FFCDD2"` : `backgroundColor${separator}"#D81B60", width${separator}${number(40)}, height${separator}${number(4)}`;
+    const swiftPart = placeholder ? 'dropPlaceholder' : name === 'chassis-handle' ? 'chassisHandle' : 'chassisHandleBar';
+    const kotlinPart = swiftPart[0].toUpperCase() + swiftPart.slice(1);
     let body = componentCode('md-accordion', placeholder ? { reorderable: true } : { floating: true, initialX: 24, initialY: 24 }, platform, { children: accordionItems() });
-    body = platform === 'swift' ? `${body}\n.${placeholder ? 'awcAccordionAppearance' : 'awcAccordionItemAppearance'}(.init(${fields}))` : `${type}Scope(${type}(${fields})) {\n${indent(body)}\n}`;
+    body = platform === 'swift' ? `${body}\n.${placeholder ? 'awcAccordionPartAppearance' : 'awcAccordionItemPartAppearance'}(.init(${fields}), part: .${swiftPart})`
+      : `${placeholder ? 'AWCAccordionPartAppearanceScope(AWCAccordionPart' : 'AWCAccordionItemPartAppearanceScope(AWCAccordionItemPart'}.${kotlinPart}, AWCAccordionPartAppearance(${fields})) {\n${indent(body)}\n}`;
     if (!placeholder) body = accordionViewport(body, platform);
     return {
-      status: 'native-equivalent', description: `The ${name} part is rendered natively and styled through its typed appearance hooks.`,
+      status: 'native-equivalent', description: `Style the actual ${name} part through its public typed native part appearance.`,
       code: platform === 'swift' ? swiftExample(body) : androidExample(body, '', placeholder ? [] : accordionViewportImports),
-      notes: [placeholder ? 'The placeholder appears while an item is dragged; outline width and opacity hooks also apply. Native views accept no ::part() declarations for it.' : 'The grip appears on the first item of a floating accordion. Native views accept no ::part() declarations for it.'],
+      notes: [placeholder ? 'The placeholder appears while an item is dragged. The declarations (fill, dashed outline colour and width, corner shape, opacity) win over the drop-placeholder appearance fields.'
+        : 'The grip appears on the first item of a floating accordion. The declarations (background, corner shape, width, height, opacity) win over chassisHandleColor and chassisHandleBackgroundHover in every state.'],
     };
   }
   const values = accordionPartValues[name];
@@ -529,6 +535,22 @@ function listEventExample(tag, name, platform) {
     notes: [listPayloads[name], 'The callback exposes native JSON-shaped data; DOM item references become stable native node ids.'],
   };
 }
+const transferListMethodLabels = { moveSelectedRight: 'Move checked to target', moveSelectedLeft: 'Move checked to source' };
+function transferListMethodExample(name, platform) {
+  const items = [{ value: 'a', label: 'Analytics' }, { value: 'b', label: 'Billing' }, { value: 'c', label: 'Calendar' }];
+  const body = componentCode('md-transfer-list', listId('md-transfer-list', platform, { items, value: ['c'] }), platform);
+  const call = `controller.${name}()`, label = transferListMethodLabels[name];
+  return {
+    description: `Call ${name}() on the mounted native transfer list through its controller.`,
+    code: platform === 'swift'
+      ? swiftExample(`VStack {\n    Button(${literal(label, platform)}) { ${call} }\n${indent(body)}\n    .awcTransferListController(controller, for: "md-transfer-list")\n}`, 'private let controller = AWCTransferListController()')
+      : androidExample(`Column {\n    Button(onClick = { ${call} }) { Text(${literal(label, platform)}) }\n    AWCTransferListControllerScope(controller, "md-transfer-list") {\n${indent(body, 8)}\n    }\n}`,
+        'val controller = remember { AWCTransferListController() }', ['androidx.compose.material3.Button']),
+    notes: [{ moveSelectedRight: 'Moves the checked, visible and enabled source rows to the target and emits mdChange then mdMove, as the source method does (nothing when disabled or when nothing qualifies).',
+      moveSelectedLeft: 'Moves the checked, visible and enabled target rows back to the source and emits mdChange then mdMove, as the source method does (nothing when disabled or when nothing qualifies).' }[name],
+      platform === 'swift' ? 'The controller addresses the node whose id matches; AWCNativeView(tag:) uses the tag as its id.' : 'The controller attaches to the component whose id property matches.'],
+  };
+}
 const listMethodLabels = { activateNext: 'Next row', activatePrevious: 'Previous row', selectItem: 'Select the second row', getSelectedIndices: 'Read the selection',
   setFocus: 'Focus with a ring', focusItem: 'Focus', toggle: 'Toggle', expand: 'Expand', collapse: 'Collapse' };
 function listMethodExample(tag, name, platform) {
@@ -584,6 +606,62 @@ function listPartExample(tag, name, platform) {
     status: 'native-equivalent', description: `Style the actual ${name} part through its public typed native part appearance.`,
     code: platform === 'swift' ? swiftExample(body) : androidExample(body),
     notes: ['Native views do not interpret CSS ::part() selectors; the typed fields follow the source part box.', tag === 'md-list' ? 'The placeholder appears while a row is dragged in a reorderable list.' : 'Part appearances cascade to every row in this subtree.'],
+  };
+}
+
+// ---- gate-7 r5 typed parts (R5-06 / R5-07): the charts, md-organization-chart and the md-table family through their typed
+// part appearances (the shared AWCPartStyle vocabulary, built from a ::part() rule body with .init(css:) / AWCTablePartStyle.css()).
+const r5PartCSS = { header: 'color: #6750A4; font-size: 16px', canvas: 'background-color: #F7F2FA; border-radius: 12px', empty: 'color: #6750A4; background-color: #F3EDF7; padding: 16px',
+  loading: 'background-color: #F3EDF7CC', footer: 'color: #625B71', center: 'color: #4A148C; background-color: #F3E5F5; padding: 4px 8px; border-radius: 8px',
+  zoom: 'background-color: #ECEFF1; padding-block: 4px', 'zoom-slider': 'opacity: 0.8', 'zoom-pan': 'background-color: #E8DEF8', 'zoom-band': 'background-color: #FFE0B2',
+  'zoom-track': 'background-color: #C8E6C9', 'zoom-window': 'background-color: #81C784', 'zoom-handle': 'background-color: #1B5E20',
+  viewport: 'background-color: #ECEFF1; border-radius: 16px; padding: 16px 24px', tree: 'background-color: #E3F2FD; border-radius: 8px', group: 'background-color: #FFF3E0; border-radius: 8px',
+  branch: 'background-color: #1B5E2014; border-radius: 12px', 'branch-on-path': 'background-color: #F8BBD0', node: 'background-color: #FFF8E1; border-radius: 4px; padding: 14px 20px',
+  'node-selected': 'background-color: #E8F5E9; border-radius: 20px', 'state-layer': 'background-color: #D81B60; opacity: 0.12', avatar: 'opacity: 0.8', 'avatar-image': 'opacity: 0.8',
+  name: 'color: #B71C1C; font-size: 16px', title: 'color: #1565C0; font-weight: 500', toggle: 'background-color: #FFE082; border-radius: 6px',
+  caption: 'color: #E65100; background-color: #FFF3E0; font-size: 18px; font-weight: 500', grid: 'background-color: #F1F8E9', 'header-grid': 'background-color: #E8DEF8',
+  hscrollbar: 'background-color: #ECEFF1', 'hscrollbar-thumb': 'background-color: #6750A4; border-radius: 2px', vscrollbar: 'background-color: #ECEFF1', 'vscrollbar-thumb': 'background-color: #6750A4',
+  'skeleton-row': 'background-color: #F3EDF7', progress: 'opacity: 0.6', content: 'color: #6750A4; background-color: #F3EDF7; border-radius: 4px', pin: 'color: #B3261E',
+  top: 'background-color: #F3EDF7; padding: 8px 16px', scroll: 'background-color: #FFFBFE', bottom: 'background-color: #F3EDF7', expanded: 'background-color: #F3EDF7; color: #4F378B',
+  icon: 'color: #B3261E', label: 'color: #6750A4; font-weight: 700', main: 'background-color: #F3EDF7; border-radius: 8px', leading: 'padding: 0 8px', headline: 'color: #6750A4; font-size: 24px',
+  'supporting-text': 'color: #625B71; letter-spacing: 0.5px', 'selection-caption': 'color: #4F378B; font-weight: 700', actions: 'background-color: #F3EDF7; border-radius: 20px',
+  display: 'color: #6750A4; font-weight: 500', rpp: 'background-color: #F3EDF7; border-radius: 8px', 'rpp-select': 'opacity: 0.9', nav: 'background-color: #F3EDF7; border-radius: 20px',
+  'first-button': 'background-color: #E8DEF8; border-radius: 20px', 'prev-button': 'background-color: #E8DEF8; border-radius: 20px', 'next-button': 'background-color: #E8DEF8; border-radius: 20px',
+  'last-button': 'background-color: #E8DEF8; border-radius: 20px' };
+const r5TablePrefix = { 'md-table': '', 'md-table-cell': 'cell', 'md-table-container': 'container', 'md-table-row': 'row', 'md-table-sort-label': 'sortLabel', 'md-table-toolbar': 'toolbar', 'md-table-pagination': 'pagination' };
+const r5Camel = name => name.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+const r5Pascal = name => { const c = r5Camel(name); return c[0].toUpperCase() + c.slice(1); };
+function r5PartBody(tag, name, platform) {
+  if (tag === 'md-organization-chart') return componentCode(tag, { selectionMode: 'single', selectedIds: ['design'], nodes: [{ id: 'lead', name: 'Alex Morgan', title: 'Product lead', children: [{ id: 'design', name: 'Sam Lee', title: 'Design' }, { id: 'engineering', name: 'Robin Chen', title: 'Engineering' }] }],
+    ...(name === 'empty' ? { nodes: [] } : {}) }, platform);
+  if (Object.hasOwn(chartExampleProperties, tag)) {
+    const props = { ...chartExampleProperties[tag], ...(name.startsWith('zoom') && tag !== 'md-pie-chart' && tag !== 'md-sparkline' ? { zoom: 'slider' } : {}), ...(name === 'empty' ? { series: [], data: [] } : {}), ...(name === 'loading' ? { loading: true } : {}),
+      ...(name === 'center' ? { innerRadius: '60%' } : {}) };
+    const slot = { header: [{ text: 'Revenue by month', slot: 'header' }], footer: [{ text: 'Source: finance', slot: 'footer' }], center: [{ text: '86', slot: 'center' }] }[name] ?? [];
+    return componentCode(tag, props, platform, { children: slot });
+  }
+  if (tag === 'md-table-pagination') return componentCode(tag, { count: 87, page: 0, rowsPerPage: 10, showFirstLast: true }, platform);
+  if (tag === 'md-table-toolbar') return componentCode(tag, { headline: 'Projects', supportingText: '12 active', numSelected: name === 'selection-caption' ? 2 : 0 }, platform,
+    { children: [{ tag: 'md-icon-button', slot: name === 'selection-caption' ? 'selection-actions' : 'actions', properties: { icon: 'filter_list', ariaLabelProp: 'Filter' } }, ...(name === 'leading' ? [{ symbol: 'table', slot: 'leading' }] : [])] });
+  if (tag === 'md-table-container') return componentCode(tag, { variant: 'outlined' }, platform, { children: [{ text: 'Projects', slot: 'top' }, { tag: 'md-table', properties: { label: 'Projects' }, children: tableExampleNodes() }, { text: '3 projects', slot: 'bottom' }] });
+  const props = { label: 'Projects', ...(tag === 'md-table' ? { caption: 'Projects', ...(name === 'loading' || name === 'progress' ? { loading: true } : {}), ...(name === 'skeleton-row' ? { loading: true, loadingMode: 'skeleton' } : {}),
+    ...(name === 'empty' ? { empty: true } : {}), ...(/scrollbar|header-grid/.test(name) ? { frozenHeader: true, scrollbar: 'overlay' } : {}) } : {}) };
+  return componentCode('md-table', props, platform, { children: tableExampleNodes() });
+}
+function r5PartExample(tag, name, platform) {
+  const swift = platform === 'swift', css = literal(r5PartCSS[name] ?? 'opacity: 0.9', platform), body = r5PartBody(tag, name, platform);
+  let code;
+  if (tag === 'md-organization-chart') code = swift ? `${body}\n.awcOrgChartPartAppearance(.${r5Camel(name)}, .init(css: ${css}))`
+    : `AWCOrgChartPartAppearanceScope(AWCOrgChartPart.${name.replace(/-/g, '_').toUpperCase()}, AWCTablePartStyle.css(${css})) {\n${indent(body)}\n}`;
+  else if (Object.hasOwn(chartExampleProperties, tag)) code = swift ? `${body}\n.awcChartPartAppearance(.${r5Camel(name)}, .init(css: ${css}))`
+    : `AWCChartPartAppearanceScope(mapOf(AWCChartPart.${name.replace(/-/g, '_').toUpperCase()} to AWCTablePartStyle.css(${css}))) {\n${indent(body)}\n}`;
+  else { const prefix = r5TablePrefix[tag], swiftCase = prefix ? prefix + r5Pascal(name) : r5Camel(name), kotlinCase = (prefix ? r5Pascal(prefix) : '') + r5Pascal(name);
+    code = swift ? `${body}\n.awcTablePartAppearance(.${swiftCase}, .init(css: ${css}))` : `AWCTablePartAppearanceScope(AWCTablePart.${kotlinCase}, AWCTablePartStyle.css(${css})) {\n${indent(body)}\n}`; }
+  return {
+    status: 'native-equivalent', description: `Style the ${name} part through its public typed native part appearance.`,
+    code: swift ? swiftExample(code) : androidExample(code),
+    notes: ['Native views do not interpret CSS ::part() selectors; the typed part appearance takes the same declarations (a ::part() rule body) and wins over the hooks, as an outer ::part() rule does.',
+      'Without an ID the appearance applies to every element of the tag in the subtree; pass the node ID (Swift for:, Compose id =) for one element.'],
   };
 }
 
@@ -748,6 +826,8 @@ function selectionMethodExample(tag, name, platform) {
     notes: [selectionMethodNotes[name], swift ? 'The controller addresses the node whose id matches; AWCNativeView(tag:) uses the tag as its id. Without an id it attaches to every descendant selection control.' : 'The controller attaches to the component whose id property matches; with an empty id it attaches to every descendant selection control.'],
   };
 }
+// gate-7 R6-17: a wrapper part takes a box (AWCPartBox: background, border, radius, padding with the layout shift).
+const selectionPartBox = { background: '#FFE0B2', borderWidth: 2, borderColor: '#E65100', cornerRadius: 8, padding: [2, 10, 4, 6] };
 const selectionPartValues = {
   'md-switch': { track: { trackColor: '#FFF59D', trackOutlineColor: '#F57F17', trackShape: '6px' }, handle: { handleColor: '#33691E', handleShape: '3px', handleOpacity: 0.8 }, icon: { iconColor: '#FFEB3B' }, 'state-layer': { stateLayerColor: '#C2185B' } },
   'md-checkbox': { target: { targetColor: '#FFF8E1' }, 'state-layer': { stateLayerColor: '#C2185B', stateLayerOpacity: 0.2 }, container: { containerColor: '#FFF59D', containerOutlineColor: '#F57F17', containerShape: '5px' },
@@ -757,33 +837,59 @@ const selectionPartValues = {
     'trailing-icon': { trailingIconColor: '#B71C1C' }, checkmark: { checkmarkColor: '#1B5E20' }, remove: { removeColor: '#B71C1C' },
     primary: { primaryBackground: '#00897B3D', primaryOutlineStyle: 'solid', primaryOutlineColor: '#E53935', primaryOutlineWidth: 2, primaryOutlineOffset: -4 } },
   // gate-7 R6-03: the tab and navigation-bar families' typed part targets.
-  'md-tab': { 'state-layer': { stateLayerColor: '#C2185B', stateLayerOpacity: 0.16 }, icon: { iconColor: '#8E24AA' }, label: { labelColor: '#3949AB' }, indicator: { indicatorColor: '#00897B' }, divider: { dividerColor: '#E53935' } },
+  'md-tab': { 'state-layer': { stateLayerColor: '#C2185B', stateLayerOpacity: 0.16 }, icon: { iconColor: '#8E24AA' }, label: { labelColor: '#3949AB' }, indicator: { indicatorColor: '#00897B' }, divider: { dividerColor: '#E53935' }, content: { content: selectionPartBox } },
   'md-tabs': { container: { containerColor: '#FFF8E1' } },
-  'md-navigation-tab': { 'state-layer': { stateLayerColor: '#C2185B', stateLayerOpacity: 0.16 }, icon: { iconColor: '#8E24AA' }, label: { labelColor: '#3949AB' }, indicator: { indicatorColor: '#B2DFDB' }, badge: { badgeColor: '#1E88E5', badgeLabelColor: '#FFFDE7' } },
+  'md-navigation-tab': { 'state-layer': { stateLayerColor: '#C2185B', stateLayerOpacity: 0.16 }, icon: { iconColor: '#8E24AA' }, label: { labelColor: '#3949AB' }, indicator: { indicatorColor: '#B2DFDB' }, badge: { badgeColor: '#1E88E5', badgeLabelColor: '#FFFDE7' },
+    container: { container: { background: '#B3E5FC', borderWidth: 1, borderColor: '#01579B', cornerRadius: 12, padding: [4] } }, 'icon-container': { iconContainer: selectionPartBox } },
   'md-navigation-bar': { container: { containerColor: '#FFF8E1' } },
+  // gate-7 R6-03 (batch 2): the breadcrumb and toolbar typed part targets.
+  'md-breadcrumb-item': { separator: { separatorColor: '#1E88E5', separatorFontSize: 20 }, icon: { iconColor: '#F4511E' }, label: { labelColor: '#8E24AA' },
+    link: { linkColor: '#00695C', linkUnderline: true }, static: { staticColor: '#BF360C', staticBackground: '#FFF3E0', staticBorderWidth: 2, staticBorderColor: '#43A047' },
+    'state-layer': { stateLayerColor: '#000000', stateLayerOpacity: 0.16 } },
+  'md-breadcrumbs': { list: { listBackground: '#FFF8E1', listPadding: [4] }, separator: { separatorColor: '#E53935', separatorFontSize: 20 },
+    'overflow-button': { overflowButtonBackground: '#B2DFDB', overflowButtonColor: '#004D40' }, overflow: { overflow: selectionPartBox } },
+  'md-toolbar': { container: { containerColor: '#FFF8E1' }, 'fab-container': { fabContainer: selectionPartBox } },
 };
 const selectionPartOrder = { 'md-switch': ['trackColor', 'trackOutlineColor', 'trackShape', 'handleColor', 'handleShape', 'handleOpacity', 'iconColor', 'stateLayerColor'],
   'md-checkbox': ['targetColor', 'stateLayerColor', 'stateLayerOpacity', 'containerColor', 'containerOutlineColor', 'containerShape', 'iconColor', 'supportingTextColor'],
   'md-radio': ['stateLayerColor', 'stateLayerOpacity', 'outerColor', 'outerFill', 'innerColor'],
   'md-chip': ['stateLayerColor', 'stateLayerOpacity', 'outlineColor', 'outlineWidth', 'labelColor', 'iconColor', 'trailingIconColor', 'checkmarkColor', 'removeColor',
     'primaryBackground', 'primaryOutlineStyle', 'primaryOutlineColor', 'primaryOutlineWidth', 'primaryOutlineOffset'],
-  'md-tab': ['stateLayerColor', 'stateLayerOpacity', 'iconColor', 'labelColor', 'indicatorColor', 'dividerColor'], 'md-tabs': ['containerColor'],
-  'md-navigation-tab': ['stateLayerColor', 'stateLayerOpacity', 'iconColor', 'labelColor', 'indicatorColor', 'badgeColor', 'badgeLabelColor'], 'md-navigation-bar': ['containerColor'] };
+  'md-tab': ['stateLayerColor', 'stateLayerOpacity', 'iconColor', 'labelColor', 'indicatorColor', 'dividerColor', 'content'], 'md-tabs': ['containerColor'],
+  'md-navigation-tab': ['stateLayerColor', 'stateLayerOpacity', 'iconColor', 'labelColor', 'indicatorColor', 'badgeColor', 'badgeLabelColor', 'container', 'iconContainer'], 'md-navigation-bar': ['containerColor'],
+  'md-breadcrumb-item': ['separatorColor', 'separatorFontSize', 'iconColor', 'labelColor', 'linkColor', 'linkUnderline', 'staticColor', 'staticBackground', 'staticBorderWidth', 'staticBorderColor', 'stateLayerColor', 'stateLayerOpacity'],
+  'md-breadcrumbs': ['listBackground', 'listPadding', 'separatorColor', 'separatorFontSize', 'overflowButtonBackground', 'overflowButtonColor', 'overflow'], 'md-toolbar': ['containerColor', 'fabContainer'] };
 const selectionPartSamples = { 'md-switch': { selected: true, icons: true, ariaLabel: 'Notifications' }, 'md-checkbox': { checked: true, supportingText: 'Weekly digest', ariaLabel: 'Digest' },
   'md-radio': { checked: true, name: 'plan', value: 'pro', ariaLabel: 'Pro plan' }, 'md-chip': { label: 'Filter', variant: 'filter', selected: true, removable: true, icon: 'palette', trailingIcon: 'expand_more' },
-  'md-tab': { label: 'Flights', icon: 'flight', active: true }, 'md-tabs': { ariaLabelProp: 'Sections' }, 'md-navigation-tab': { label: 'Mail', icon: 'mail', active: true, badge: true, badgeValue: '3' }, 'md-navigation-bar': {} };
+  'md-tab': { label: 'Flights', icon: 'flight', active: true }, 'md-tabs': { ariaLabelProp: 'Sections' }, 'md-navigation-tab': { label: 'Mail', icon: 'mail', active: true, badge: true, badgeValue: '3' }, 'md-navigation-bar': {},
+  'md-breadcrumb-item': { href: '#docs', icon: 'folder' }, 'md-breadcrumbs': { maxItems: 4 }, 'md-toolbar': { variant: 'floating' } };
 const possessive = noun => noun.endsWith('s') ? `${noun}'` : `${noun}'s`;
+// Container-like tags render with children (a breadcrumb part shows on the crumbs of a collapsed trail).
+const selectionPartTrail = { tag: 'md-breadcrumbs', properties: { maxItems: 4 }, children: [['Home', '#home', 'home'], ['Workspace', '#workspace'], ['Projects', '#projects'], ['Roadmap', '#roadmap'], ['Q3 plan']]
+  .map(([title, href, icon]) => ({ tag: 'md-breadcrumb-item', properties: { ...(href ? { href } : {}), ...(icon ? { icon } : {}) }, children: [{ text: title }] })) };
+const selectionPartHosts = { 'md-breadcrumb-item': selectionPartTrail, 'md-breadcrumbs': selectionPartTrail,
+  'md-tabs': { tag: 'md-tabs', properties: { ariaLabelProp: 'Sections' }, children: ['Overview', 'Details'].map(label => ({ tag: 'md-tab', properties: { label } })) },
+  'md-navigation-bar': { tag: 'md-navigation-bar', properties: {}, children: ['Home', 'Projects'].map((label, index) => ({ tag: 'md-navigation-tab', properties: { label, icon: index ? 'folder' : 'home' } })) },
+  'md-toolbar': { tag: 'md-toolbar', properties: { variant: 'floating', ariaLabelProp: 'Formatting' }, children: [...['format_bold', 'format_italic', 'format_underlined'].map(icon => ({ tag: 'md-icon-button', properties: { icon } })),
+    { tag: 'md-fab', slot: 'fab', properties: { icon: 'add' } }] } };
 function selectionPartExample(tag, name, platform) {
   const values = selectionPartValues[tag]?.[name];
   if (!values) return null;
   const swift = platform === 'swift', separator = swift ? ': ' : ' = ';
-  const type = { 'md-switch': 'Switch', 'md-checkbox': 'Checkbox', 'md-radio': 'Radio', 'md-chip': 'Chip', 'md-tab': 'Tab', 'md-tabs': 'Tabs', 'md-navigation-tab': 'NavigationTab', 'md-navigation-bar': 'NavigationBar' }[tag];
+  const type = { 'md-switch': 'Switch', 'md-checkbox': 'Checkbox', 'md-radio': 'Radio', 'md-chip': 'Chip', 'md-tab': 'Tab', 'md-tabs': 'Tabs', 'md-navigation-tab': 'NavigationTab', 'md-navigation-bar': 'NavigationBar',
+    'md-breadcrumb-item': 'BreadcrumbItem', 'md-breadcrumbs': 'Breadcrumbs', 'md-toolbar': 'Toolbar' }[tag];
   const number = value => Number.isInteger(value) ? `${value}.0` : String(value);
+  const list = value => swift ? `[${value.map(number).join(', ')}]` : `listOf(${value.map(number).join(', ')})`;
+  // A wrapper part's box (gate-7 R6-17): AWCPartBox(background, borderWidth, borderColor, cornerRadius, padding).
+  const box = value => `AWCPartBox(${['background', 'borderWidth', 'borderColor', 'cornerRadius', 'padding'].filter(key => Object.hasOwn(value, key))
+    .map(key => `${key}${separator}${typeof value[key] === 'string' ? literal(value[key], platform) : Array.isArray(value[key]) ? list(value[key]) : number(value[key])}`).join(', ')})`;
   const fields = selectionPartOrder[tag].filter(key => Object.hasOwn(values, key)).map(key => {
     const value = values[key];
-    return `${key}${separator}${/Shape$/.test(key) ? cornerShapeNativeValue(parseCornerShape(value), platform) : typeof value === 'string' ? literal(value, platform) : number(value)}`;
+    return `${key}${separator}${/Shape$/.test(key) ? cornerShapeNativeValue(parseCornerShape(value), platform) : typeof value === 'string' ? literal(value, platform)
+      : Array.isArray(value) ? list(value) : typeof value === 'object' ? box(value) : number(value)}`;
   }).join(', ');
-  let body = componentCode(tag, selectionPartSamples[tag], platform);
+  const host = selectionPartHosts[tag];
+  let body = host ? componentCode(host.tag, host.properties, platform, { children: host.children }) : componentCode(tag, selectionPartSamples[tag], platform);
   body = swift ? `${body}\n.awc${type}PartAppearance(.init(${fields}))` : `AWC${type}PartAppearanceScope(AWC${type}PartAppearance(${fields})) {\n${indent(body)}\n}`;
   return {
     status: 'native-equivalent', description: `Style the ${possessive(tag.slice(3).replace(/-/g, ' '))} ${name} part through its public typed native part appearance.`,
@@ -866,7 +972,8 @@ function menuSwiftNode(node) {
   return `AWCNode(id: ${literal(node.id, 'swift')}, tag: ${literal(node.tag, 'swift')}, properties: ${propertiesCode(node.properties, 'swift')}${children.length ? `, children: [\n${indent(children.join(',\n'))}\n]` : ''}${node.slot ? `, slot: ${literal(node.slot, 'swift')}` : ''})`;
 }
 const menuChild = node => ({ tag: node.tag, ...(node.slot ? { slot: node.slot } : {}), properties: { id: node.id, ...node.properties }, children: (node.children ?? []).map(menuChild) });
-const MENU_METHOD_LABELS = { show: 'show()', close: 'close()', whenClosed: 'whenClosed()', reposition: 'reposition()', getScrollViewport: 'getScrollViewport()', collapse: 'collapse()' };
+const MENU_METHOD_LABELS = { show: 'show()', close: 'close()', whenClosed: 'whenClosed()', reposition: 'reposition()', getScrollViewport: 'getScrollViewport()', collapse: 'collapse()',
+  setComboboxElement: 'setComboboxElement()', setVirtualProvider: 'setVirtualProvider()' };
 function menuMethodCall(name, platform) {
   const swift = platform === 'swift', handle = swift ? 'menus.menu("demo-menu")' : 'menus.menu("demo-menu")';
   switch (name) {
@@ -875,11 +982,13 @@ function menuMethodCall(name, platform) {
       ? `if let viewport = ${handle}.getScrollViewport() {\n    status = "scrollTop \\(viewport.scrollTop), scrollHeight \\(viewport.scrollHeight), clientHeight \\(viewport.clientHeight)"\n} else {\n    status = "The menu is closed"\n}`
       : `status = ${handle}.getScrollViewport()?.let { "scrollTop \${it["scrollTop"]}, scrollHeight \${it["scrollHeight"]}, clientHeight \${it["clientHeight"]}" } ?: "The menu is closed"`;
     case 'collapse': return swift ? `${handle}.collapse(row: "demo-menu-export")` : `${handle}.collapse("demo-menu-export")`;
+    case 'setComboboxElement': return swift ? `${handle}.setComboboxElement("demo-menu-search")` : `${handle}.setComboboxElement("demo-menu-search")`;
+    case 'setVirtualProvider': return swift ? `${handle}.setVirtualProvider(nil)` : `${handle}.setVirtualProvider(null)`;
     case 'show': return swift ? `${handle}.show(autoFocus: true)` : `${handle}.show(autoFocus = true)`;
     default: return `${handle}.${name}()`;
   }
 }
-function menuExample(platform, { method, event } = {}) {
+function menuExample(platform, { method, event, part } = {}) {
   const swift = platform === 'swift';
   const handler = event ? swift ? `if event.name == ${literal(event, platform)} { status = "${event} from \\(event.nodeID)" }` : `if (name == ${literal(event, platform)}) status = name` : null;
   const toggle = swift
@@ -894,10 +1003,11 @@ function menuExample(platform, { method, event } = {}) {
   const scope = swift
     ? `AWCMenuScope(state: menus) {\n    VStack(spacing: 12) {\n${indent(trigger + '\n' + menu, 8)}\n    }\n    .padding(.top, 12)\n}\n.frame(width: 360, height: 480)`
     : `AWCMenuScope(menus, Modifier.requiredSize(360.dp, 480.dp)) {\n    Column(Modifier.fillMaxWidth().padding(top = 12.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {\n${indent(trigger + '\n' + menu, 8)}\n    }\n}`;
+  const styled = part ? menuPartWrap(part.tag, part.name, platform, scope) : scope;
   const controls = method ? swift ? `Button(${literal(MENU_METHOD_LABELS[method], platform)}) {\n${indent(menuMethodCall(method, platform))}\n}`
     : `Button(onClick = {\n${indent(menuMethodCall(method, platform))}\n}) { Text(${literal(MENU_METHOD_LABELS[method], platform)}) }` : '';
   const hasStatus = Boolean(event || method && !['show', 'close', 'reposition', 'collapse'].includes(method));
-  const body = method || hasStatus ? `${swift ? 'VStack' : 'Column'} {\n${indent([scope, controls, hasStatus ? 'Text(status)' : ''].filter(Boolean).join('\n'))}\n}` : scope;
+  const body = method || hasStatus ? `${swift ? 'VStack' : 'Column'} {\n${indent([styled, controls, hasStatus ? 'Text(status)' : ''].filter(Boolean).join('\n'))}\n}` : styled;
   const state = swift ? ['@State private var menus = AWCMenuScopeState()', hasStatus && '@State private var status = "Ready"'].filter(Boolean).join('\n')
     : ['val menus = rememberAWCMenuScopeState()', method === 'whenClosed' && 'val coroutineScope = rememberCoroutineScope()', hasStatus && 'var status by remember { mutableStateOf("Ready") }'].filter(Boolean).join('\n');
   const imports = ['androidx.compose.foundation.layout.Arrangement', 'androidx.compose.foundation.layout.fillMaxWidth', 'androidx.compose.foundation.layout.padding', 'androidx.compose.foundation.layout.requiredSize',
@@ -909,6 +1019,8 @@ function menuExample(platform, { method, event } = {}) {
     reposition: 'The surface is placed against the anchor’s live frame on every layout pass; reposition() requests one more pass, for an anchor moved without a layout change.',
     getScrollViewport: 'The Web method returns the scroll element; the native handle returns its geometry instead: scrollTop, scrollHeight and clientHeight (points / dp), or nil / null while the menu is closed.',
     collapse: 'md-sub-menu-item collapse() closes the row’s flyout at once, without the exit motion; the handle names the submenu row by its node ID.',
+    setComboboxElement: 'The element (its native ID, e.g. a search field in the menu’s header slot) keeps focus while a virtual provider’s rows are navigated: activeDescendant names the active windowed row (aria-activedescendant), which shows the focus ring without taking focus. nil / null returns to roving focus.',
+    setVirtualProvider: 'Pass an AWCMenuVirtualProvider (count, label, disabled, ensureVisible, row ID of a windowed index, findPrefix): keyboard navigation, typeahead and Enter run against its indices and the surface becomes a listbox; nil / null restores the rendered rows.',
   };
   return {
     status: 'supported',
@@ -919,6 +1031,26 @@ function menuExample(platform, { method, event } = {}) {
       'The trigger toggles the menu as the recipe does (open = !open). Outside clicks close a non-persistent menu, Escape and Tab close the tree and return focus to the anchor, and activating a row closes the tree unless keep-open.',
       ...(method ? [methodNotes[method]] : []), ...(event ? ['mdOpen and mdClose have no detail; rows emit mdClick when activated (checkbox and radio rows after toggling).'] : [])],
   };
+}
+
+// md-menu family typed parts (gate-7 r4 R4-12): the recipe menu with one part appearance.
+const menuPartValues = { surface: { background: '#F7F2FA', cornerRadius: 12 }, 'menu-viewport': { background: '#FFFBFE' }, 'empty-text': { color: '#6750A4' },
+  'state-layer': { background: '#6750A4', opacity: 0.12 }, 'leading-icon': { color: '#6750A4' }, content: { color: '#4F378B' }, headline: { color: '#4F378B', letterSpacing: 0.5 },
+  'supporting-text': { color: '#625B71' }, badge: { background: '#6750A4', color: '#FFFFFF' }, trailing: { color: '#6750A4' } };
+const menuPartOrder = ['background', 'color', 'outlineColor', 'outlineWidth', 'cornerRadius', 'opacity', 'letterSpacing'];
+function menuPartWrap(tag, name, platform, body) {
+  const swift = platform === 'swift', values = menuPartValues[name] ?? { color: '#6750A4' };
+  const value = item => typeof item === 'string' ? literal(item, platform) : swift ? String(item) : (Number.isInteger(item) ? `${item}.0` : String(item));
+  const fields = menuPartOrder.filter(key => Object.hasOwn(values, key)).map(key => `${key}${swift ? ': ' : ' = '}${value(values[key])}`).join(', ');
+  const kind = { 'md-menu': 'Menu', 'md-menu-item': 'MenuItem', 'md-sub-menu-item': 'SubMenuItem' }[tag];
+  const swiftCase = name.replace(/-([a-z])/g, (_, c) => c.toUpperCase()), kotlinCase = swiftCase[0].toUpperCase() + swiftCase.slice(1);
+  return swift ? `${body}\n.awc${kind}PartAppearance(.init(${fields}), part: .${swiftCase})`
+    : `AWC${kind}PartAppearanceScope(AWC${kind}Part.${kotlinCase}, AWCMenuPartAppearance(${fields})) {\n${indent(body)}\n}`;
+}
+function menuPartExample(tag, name, platform) {
+  const example = menuExample(platform, { part: { tag, name } });
+  return { ...example, status: 'native-equivalent', description: `Style the actual ${name} part through its public typed native part appearance.`,
+    notes: ['Native views do not interpret CSS ::part() selectors; the typed fields follow the source part box. Without `for:` / an ID the appearance reaches every element of the tag in the subtree (flyouts included), as a tag ::part rule; an element ID targets one element, as an #id rule.', ...example.notes.slice(0, 1)] };
 }
 
 // ---- md-ripple: the surface decorator with its method controller.
@@ -937,6 +1069,42 @@ function rippleMethodExample(name, platform) {
       : 'Starts a centred, self-releasing wave unless the ripple is disabled or suppressed (the --md-sys-ripple-enabled theme token, or awcRippleEnabled / LocalAWCRippleEnabled).',
       swift ? 'On your own surfaces use .awcRipple(cornerRadius:contentColor:controller:appearance:); AWCRippleExampleSurface is the Laboratory recipe.'
         : 'On your own surfaces use Modifier.awcRipple(cornerRadius, contentColor, controller, appearance); AWCRippleExampleSurface is the Laboratory recipe.'],
+  };
+}
+// ---- md-date-picker: the method controller (AWCDatePickerController).
+const datePickerMethodNotes = {
+  show: 'Opens the calendar (mdOpen): the modal dialog, or the docked panel under the field; focus moves to the roving day.',
+  close: 'Closes the calendar without committing the staged day (mdClose).',
+  clear: 'Clears the committed value (mdChange with an empty value) and the field text.',
+  focusInput: 'Focuses the trigger field\'s input (a modal picker without a field has none).',
+  checkValidity: 'Returns the committed value\'s validity (required, a custom message); a disabled picker reports true.',
+  reportValidity: 'Like checkValidity(); an invalid picker shows its message as the field\'s error text and focuses the field.',
+  getValidity: 'Returns AWCDatePickerValidity: valid, validationMessage, valueMissing and customError.',
+  setCustomValidity: 'A non-empty message makes the picker invalid (customError, mdValidityChange) until it is cleared with an empty string.',
+};
+function datePickerMethodExample(name, platform) {
+  const swift = platform === 'swift', type = 'AWCDatePickerController';
+  const body = componentCode('md-date-picker', { label: 'Start date', value: name === 'clear' ? '2026-10-07' : '', required: true }, platform);
+  const result = ['checkValidity', 'reportValidity', 'getValidity'].includes(name);
+  const args = name === 'setCustomValidity' ? literal('Choose a weekday.', platform) : '';
+  const call = !result ? `controller.${name}(${args})`
+    : swift ? `status = ${name === 'getValidity' ? '"\\(controller.getValidity().validationMessage)"' : `"\\(controller.${name}())"`}`
+    : `status = ${name === 'getValidity' ? 'controller.getValidity().validationMessage' : `controller.${name}().toString()`}`;
+  const label = literal(`${name}()`, platform);
+  if (swift) {
+    const content = `VStack(alignment: .leading) {\n    Button(${label}) { ${call} }${result ? '\n    Text(status)' : ''}\n${indent(body)}\n    .awcDatePickerController(controller)\n}`;
+    return {
+      description: `Call ${name}() on the mounted native picker through its ${type}.`,
+      // The modal variants' dialog presents in an AWCModalScope placed at the content root.
+      code: swiftExample(`AWCModalScope {\n${indent(content)}\n}`, `private let controller = ${type}()${result ? '\n@State private var status = ""' : ''}`),
+      notes: [datePickerMethodNotes[name], 'The controller addresses every picker below it, or the picker whose node id matches with .awcDatePickerController(controller, for: id); isDateDisabled on the controller disables days by predicate.'],
+    };
+  }
+  return {
+    description: `Call ${name}() on the mounted native picker through its ${type}.`,
+    code: androidExample(`Column {\n    Button(onClick = { ${call} }) { Text(${label}) }${result ? '\n    Text(status)' : ''}\n    ${type}Scope(controller) {\n${indent(body, 8)}\n    }\n}`,
+      `val controller = remember { ${type}() }${result ? '\nvar status by remember { mutableStateOf("") }' : ''}`, ['androidx.compose.material3.Button']),
+    notes: [datePickerMethodNotes[name], 'The controller attaches to the md-date-picker composed inside the scope; isDateDisabled on the controller disables days by predicate.'],
   };
 }
 // ---- md-color-picker / md-time-picker: the method controllers (AWCColorPickerController, AWCTimePickerController).
@@ -1011,21 +1179,46 @@ function textFieldMethodExample(name, platform) {
       : 'The controller attaches to the text fields inside its scope.'],
   };
 }
+const transferListPartValues = { column: { backgroundColor: '#FFF8E1', borderColor: '#6D4C41', shape: 20 }, 'column-source': { backgroundColor: '#E0F7FA', borderColor: '#006064', shape: 4 },
+  'column-target': { backgroundColor: '#FBE9E7', borderColor: '#BF360C', shape: 28 }, header: { backgroundColor: '#C8E6C9', borderColor: '#1B5E20' },
+  'header-title': { backgroundColor: '#B3E5FC' }, count: { backgroundColor: '#4A148C', color: '#FFFFFF', shape: 4 }, search: { backgroundColor: '#FCE4EC' },
+  list: { backgroundColor: '#E8EAF6' }, item: { backgroundColor: '#FFF59D', shape: 2 }, empty: { backgroundColor: '#ECEFF1', color: '#B71C1C' },
+  'empty-icon': { color: '#0D47A1', size: 48, opacity: 0.5 }, controls: { backgroundColor: '#F3E5F5' } };
+const transferListPartOrder = ['backgroundColor', 'color', 'borderColor', 'shape', 'size', 'opacity'];
+function transferListPartExample(name, platform) {
+  const swift = platform === 'swift', values = transferListPartValues[name];
+  if (!values) return null;
+  const separator = swift ? ': ' : ' = ';
+  // shape, size and opacity are Double parameters: number literals (Kotlin needs a decimal point).
+  const value = v => typeof v === 'number' ? (swift || !Number.isInteger(v) ? String(v) : `${v}.0`) : literal(v, platform);
+  const fields = transferListPartOrder.filter(key => Object.hasOwn(values, key)).map(key => `${key}${separator}${value(values[key])}`).join(', ');
+  const part = name.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+  const items = [{ value: 'a', label: 'Analytics' }, { value: 'b', label: 'Billing' }, { value: 'c', label: 'Calendar' }];
+  let body = componentCode('md-transfer-list', name.startsWith('empty') ? { items, value: [], emptyIcon: 'inbox' } : { items, value: ['c'] }, platform);
+  body = swift ? `${body}\n.awcTransferListPartAppearance(.init(${part}: .init(${fields})))`
+    : `AWCTransferListPartAppearanceScope(AWCTransferListPartAppearance(${part} = AWCTransferListPartStyle(${fields}))) {\n${indent(body)}\n}`;
+  return {
+    status: 'native-equivalent', description: `Style the transfer list's ${name} part through its public typed native part appearance.`,
+    code: swift ? swiftExample(body) : androidExample(body),
+    notes: ['Native views do not interpret CSS ::part() selectors. Part values come from the outer tree, so they win over the hooks and every hover, checked, focus and disabled rule, as ::part() rules do.'],
+  };
+}
 const textFieldPartValues = { container: { containerColor: '#FFF59D' }, label: { labelColor: '#1A237E' }, input: { inputColor: '#33691E', caretColor: '#C2185B' },
-  'supporting-text': { supportingTextColor: '#4A148C' }, counter: { counterColor: '#B71C1C' } };
-const textFieldPartOrder = ['containerColor', 'labelColor', 'inputColor', 'caretColor', 'supportingTextColor', 'counterColor'];
+  'supporting-text': { supportingTextColor: '#4A148C' }, counter: { counterColor: '#B71C1C' }, chips: { chipsBackgroundColor: '#E1F5FE', chipsGap: 12 } };
+const textFieldPartOrder = ['containerColor', 'labelColor', 'inputColor', 'caretColor', 'supportingTextColor', 'counterColor', 'chipsBackgroundColor', 'chipsGap'];
 function textFieldPartExample(name, platform) {
   const swift = platform === 'swift';
-  if (name === 'chips') return { status: 'native-equivalent', description: 'The chips part has no paint of its own: style the md-chip children with their chip appearance.', code: null,
-    notes: ['Native views do not interpret CSS ::part() selectors. The chips row lays out the chips slot (gap 4, wrapping under chipsWrap).'] };
   const values = textFieldPartValues[name];
   if (!values) return null;
   const separator = swift ? ': ' : ' = ';
-  const fields = textFieldPartOrder.filter(key => Object.hasOwn(values, key)).map(key => `${key}${separator}${literal(values[key], platform)}`).join(', ');
+  // chipsGap is a Double parameter: a number literal (Kotlin needs a decimal point).
+  const value = v => typeof v === 'number' ? (swift || !Number.isInteger(v) ? String(v) : `${v}.0`) : literal(v, platform);
+  const fields = textFieldPartOrder.filter(key => Object.hasOwn(values, key)).map(key => `${key}${separator}${value(values[key])}`).join(', ');
   let body = componentCode('md-text-field', { label: 'Label', value: 'Input text', supportingText: 'Supporting text', maxLength: 20 }, platform);
   body = swift ? `${body}\n.awcTextFieldPartAppearance(.init(${fields}))` : `AWCTextFieldPartAppearanceScope(AWCTextFieldPartAppearance(${fields})) {\n${indent(body)}\n}`;
   return {
-    status: 'native-equivalent', description: `Style the text field's ${name} part through its public typed native part appearance.`,
+    status: 'native-equivalent', description: name === 'chips' ? "Style the chips box (background, gap between chips and between chipsWrap rows) through the typed native part appearance; the chips themselves take their chip appearance."
+      : `Style the text field's ${name} part through its public typed native part appearance.`,
     code: swift ? swiftExample(body) : androidExample(body),
     notes: ['Native views do not interpret CSS ::part() selectors. Part values come from the outer tree, so they win over the hooks and every hover, focus, error and disabled rule, as ::part() rules do.'],
   };
@@ -1051,6 +1244,64 @@ const chartExampleProperties = {
 const navMethodNotes = {
   'md-toolbar.setFocus': 'Focuses the toolbar\'s roving Tab stop — the remembered member, else the first enabled one — with the keyboard focus ring; no-op on a generic toolbar or an empty roving group.',
 };
+// ---- md-navigation-rail / md-navigation-rail-tab (n5): methods through AWCNavigationRailController, typed part appearances.
+const railRecipe = () => ['Home', 'Saved', 'Settings'].map((label, index) => ({ tag: 'md-navigation-rail-tab', properties: { label, icon: ['home', 'favorite', 'settings'][index], ...(index ? {} : { active: true }) } }));
+const railMethodNotes = {
+  expand: 'Expands the rail (variant expanded) with the width transition; mdExpand fires when the variant changes.',
+  collapse: 'Collapses the rail (variant standard); mdCollapse fires when the variant changes.',
+  toggle: 'Toggles between the standard and expanded variants (mdExpand / mdCollapse).',
+  focusTab: 'Moves keyboard focus and the roving tab stop to the destination at the index (no selection).',
+  clearSubmenuSelection: 'Clears the selection made in a destination\'s dropdown (its child-selected indicator); called by destination index.',
+};
+function railMethodExample(tag, name, platform) {
+  const swift = platform === 'swift';
+  const call = name === 'focusTab' ? (swift ? 'controller.focusTab(1)' : 'controller.focusTab(1)')
+    : name === 'clearSubmenuSelection' ? (swift ? 'controller.clearSubmenuSelection(tabIndex: 1)' : 'controller.clearSubmenuSelection(1)') : `controller.${name}()`;
+  const body = componentCode('md-navigation-rail', { expandable: true }, platform, { children: railRecipe() });
+  const label = { expand: 'Expand', collapse: 'Collapse', toggle: 'Toggle', focusTab: 'Focus Saved', clearSubmenuSelection: 'Clear dropdown selection' }[name];
+  return {
+    description: `Call ${name}() on the mounted native navigation rail through its AWCNavigationRailController.`,
+    code: swift
+      ? swiftExample(`VStack {\n    Button(${literal(label, platform)}) { ${call} }\n${indent(body)}\n    .awcNavigationRailController(controller)\n}`, '@State private var controller = AWCNavigationRailController()')
+      : androidExample(`Column {\n    Button(onClick = { ${call} }) { Text(${literal(label, platform)}) }\n    AWCNavigationRailControllerScope(controller) {\n${indent(body, 8)}\n    }\n}`,
+        'val controller = remember { AWCNavigationRailController() }', ['androidx.compose.material3.Button']),
+    notes: [railMethodNotes[name], swift ? 'The controller binds to the nearest rail below the modifier.' : 'The controller binds to the rail inside its scope.'],
+  };
+}
+function railPartExample(tag, name, platform) {
+  const swift = platform === 'swift', railPart = tag === 'md-navigation-rail';
+  const fields = railPartFields(tag, name, platform, literal);
+  const swiftCase = name.replace(/-([a-z])/g, (_, c) => c.toUpperCase()), kotlinCase = swiftCase[0].toUpperCase() + swiftCase.slice(1);
+  const props = { expandable: true, ...(name === 'scrim' ? { modal: true, variant: 'expanded' } : {}), ...(name.startsWith('overflow') ? { maxVisible: 2 } : {}) };
+  let body = componentCode('md-navigation-rail', props, platform, { children: railRecipe() });
+  body = railPart
+    ? (swift ? `${body}\n.awcNavigationRailPartAppearance(.init(${fields}), part: .${swiftCase})` : `AWCNavigationRailPartAppearanceScope(AWCNavigationRailPart.${kotlinCase}, AWCAccordionPartAppearance(${fields})) {\n${indent(body)}\n}`)
+    : (swift ? `${body}\n.awcNavigationRailTabPartAppearance(.init(${fields}), part: .${swiftCase})` : `AWCNavigationRailTabPartAppearanceScope(AWCNavigationRailTabPart.${kotlinCase}, AWCAccordionPartAppearance(${fields})) {\n${indent(body)}\n}`);
+  const honoured = (railPart ? RAIL_PART_FIELDS : RAIL_TAB_PART_FIELDS)[name];
+  return {
+    status: 'native-equivalent', description: `Style the actual ${name} part through its public typed native part appearance.`,
+    code: swift ? swiftExample(body) : androidExample(body),
+    notes: ['Native views do not interpret CSS ::part() selectors; the typed fields follow the source part box and win over the hooks and every state rule.',
+      `This part honours ${honoured.join(', ')}.`, railPart ? 'Part appearances apply to every rail in this subtree.' : 'Part appearances apply to every destination in this subtree; pass for: to style one destination by its id.'],
+  };
+}
+// ---- md-app-bar (n5): typed part appearances.
+const appBarRecipe = () => [{ tag: 'md-icon-button', slot: 'trailing', properties: { icon: 'search', 'aria-label': 'Search' } }];
+function appBarPartExample(tag, name, platform) {
+  const swift = platform === 'swift';
+  const fields = appBarPartFields(name, platform, literal);
+  const swiftCase = name.replace(/-([a-z])/g, (_, c) => c.toUpperCase()), kotlinCase = swiftCase[0].toUpperCase() + swiftCase.slice(1);
+  const props = { headline: 'Your workspace', leadingIcon: 'menu', leadingIconLabel: 'Open navigation', ...appBarPartVariant(name) };
+  let body = componentCode('md-app-bar', props, platform, { children: appBarRecipe() });
+  body = swift ? `${body}\n.awcAppBarPartAppearance(.init(${fields}), part: .${swiftCase})`
+    : `AWCAppBarPartAppearanceScope(AWCAppBarPart.${kotlinCase}, AWCAccordionPartAppearance(${fields})) {\n${indent(body)}\n}`;
+  return {
+    status: 'native-equivalent', description: `Style the actual ${name} part through its public typed native part appearance.`,
+    code: swift ? swiftExample(body) : androidExample(body),
+    notes: ['Native views do not interpret CSS ::part() selectors; the typed fields follow the source part box and win over the hooks and every state rule.',
+      `This part honours ${APP_BAR_PART_FIELDS[name].join(', ')}.`, 'Part appearances apply to every app bar in this subtree.'],
+  };
+}
 function navMethodExample(tag, name, platform) {
   const swift = platform === 'swift';
   const spec = { 'md-toolbar': { type: 'AWCToolbarController', modifier: 'awcToolbarController', label: 'Focus the toolbar', props: { variant: 'floating', ariaLabelProp: 'Formatting' } } }[tag];
@@ -1178,7 +1429,7 @@ function stepperMethodExample(tag, name, platform) {
     notes: [notes[name], swift ? 'The controller binds to the nearest stepper below the modifier.' : 'The controller binds to the stepper inside its scope.'],
   };
 }
-// ---- md-number-field: the method controller (focus, selection, stepping, constraint validation) and the field part.
+// ---- md-number-field: the method controller (focus, selection, stepping, constraint validation) and the typed field part.
 const numberFieldMethodLabels = { setFocus: 'Focus', select: 'Select all', stepUp: 'Step up', stepDown: 'Step down', getValidity: 'Read validity',
   checkValidity: 'Check', reportValidity: 'Report', setCustomValidity: 'Set a custom error' };
 const numberFieldMethodNotes = {
@@ -1214,15 +1465,16 @@ function numberFieldPartExample(name, platform) {
   if (name !== 'field') return null;
   const swift = platform === 'swift';
   let body = componentCode('md-number-field', { label: 'Quantity', value: 3, min: 0, max: 10 }, platform);
-  body = swift ? `${body}\n.awcTextFieldAppearance(.init(containerColor: ${literal('#FFF59D', platform)}, labelColor: ${literal('#1A237E', platform)}), for: "md-number-field")`
-    : `AWCTextFieldAppearanceScope(AWCTextFieldAppearance(containerColor = ${literal('#FFF59D', platform)}, labelColor = ${literal('#1A237E', platform)})) {\n${indent(body)}\n}`;
+  const c = v => literal(v, platform);
+  body = swift ? `${body}\n.awcNumberFieldPartAppearance(.init(field: .init(containerColor: ${c('#FFF59D')}, inputColor: ${c('#1A237E')}), fieldBackgroundColor: ${c('#E1F5FE')}, fieldOpacity: 0.85), for: "md-number-field")`
+    : `AWCNumberFieldPartAppearanceScope(AWCNumberFieldPartAppearance(field = AWCTextFieldAppearance(containerColor = ${c('#FFF59D')}, inputColor = ${c('#1A237E')}), fieldBackgroundColor = ${c('#E1F5FE')}, fieldOpacity = 0.85)) {\n${indent(body)}\n}`;
   return {
-    status: 'native-equivalent', description: 'The field part is the inner md-text-field: style it with the text field hooks, which reach the composed field as the --md-text-field-* custom properties do.',
+    status: 'native-equivalent', description: "Style the number field's field part (the inner md-text-field host) through its public typed native part appearance.",
     code: swift ? swiftExample(body) : androidExample(body),
-    notes: ['Native views do not interpret CSS ::part() selectors. The number field passes the text field appearance in scope (and the one targeted at its own id) to its inner field; the inline steppers keep the number field hooks (stepper color and icon size).'],
+    notes: ['Native views do not interpret CSS ::part() selectors. The part\'s text field hooks win over the number field\'s own and over hooks inherited from outside; its background and opacity cover the whole inner field.'],
   };
 }
-// ---- md-otp-field: the method controller (focus, clear, constraint validation) and the parts through the hooks / slot.
+// ---- md-otp-field: the method controller (focus, clear, constraint validation) and the typed parts.
 const otpFieldMethodLabels = { setFocus: 'Focus', clear: 'Clear', getValidity: 'Read validity', setCustomValidity: 'Set a custom error', checkValidity: 'Check', reportValidity: 'Report' };
 const otpFieldMethodNotes = {
   setFocus: 'Focuses the first empty cell (the last cell when the code is complete).',
@@ -1250,24 +1502,209 @@ function otpFieldMethodExample(name, platform) {
       : 'The controller attaches to the OTP fields inside its scope.'],
   };
 }
-const otpFieldPartValues = { cells: { cellGap: 14 }, cell: { cellWidth: 52, cellHeight: 64, cellShape: 16, outlineColor: '#1565C0', focusColor: '#C62828', fontSize: 30 } };
-const otpFieldPartOrder = ['cellGap', 'cellHeight', 'cellShape', 'cellWidth', 'focusColor', 'fontSize', 'outlineColor'];
+const otpFieldPartValues = { cells: { cellsGap: 12 }, cell: { cellBorderColor: '#2E7D32', cellBorderWidth: 2, cellBackgroundColor: '#FFF59D', cellTextColor: '#1A237E', caretColor: '#C2185B' },
+  separator: { separatorColor: '#B71C1C', separatorOpacity: 0.5 }, 'supporting-text': { supportingTextColor: '#4A148C' } };
+const otpFieldPartOrder = ['cellBorderColor', 'cellBorderWidth', 'cellBackgroundColor', 'cellTextColor', 'caretColor', 'cellsGap', 'separatorColor', 'separatorOpacity', 'supportingTextColor'];
 function otpFieldPartExample(name, platform) {
   const swift = platform === 'swift';
-  if (name === 'separator') return { status: 'native-equivalent', description: 'The separator is the separator slot (first gap) or the built-in dot, which takes the outline colour hook.', code: null,
-    notes: ['Native views do not interpret CSS ::part() selectors. Author the separator content in the separator slot; the dots of later gaps follow --md-otp-field-outline-color (outlineColor).'] };
-  if (name === 'supporting-text') return { status: 'native-equivalent', description: 'The supporting text follows the theme roles (on-surface-variant, error); it has no hook of its own.', code: null,
-    notes: ['Native views do not interpret CSS ::part() selectors. The supporting text uses the theme\'s on-surface-variant and error colours, as the source does.'] };
   const values = otpFieldPartValues[name];
   if (!values) return null;
   const separator = swift ? ': ' : ' = ';
-  const fields = otpFieldPartOrder.filter(key => Object.hasOwn(values, key)).map(key => `${key}${separator}${literal(values[key], platform)}`).join(', ');
-  let body = componentCode('md-otp-field', { label: 'Code', value: '123' }, platform);
-  body = swift ? `${body}\n.awcOTPFieldAppearance(.init(${fields}))` : `AWCOTPFieldAppearanceScope(AWCOTPFieldAppearance(${fields})) {\n${indent(body)}\n}`;
+  // Lengths and opacities are Double parameters: number literals (Kotlin needs a decimal point).
+  const value = v => typeof v === 'number' ? (swift || !Number.isInteger(v) ? String(v) : `${v}.0`) : literal(v, platform);
+  const fields = otpFieldPartOrder.filter(key => Object.hasOwn(values, key)).map(key => `${key}${separator}${value(values[key])}`).join(', ');
+  const props = { label: 'Code', value: '1234', ...(name === 'separator' ? { groupSize: 3 } : {}), ...(name === 'supporting-text' ? { supportingText: 'Sent to your phone' } : {}) };
+  let body = componentCode('md-otp-field', props, platform);
+  body = swift ? `${body}\n.awcOTPFieldPartAppearance(.init(${fields}))` : `AWCOTPFieldPartAppearanceScope(AWCOTPFieldPartAppearance(${fields})) {\n${indent(body)}\n}`;
   return {
-    status: 'native-equivalent', description: `Style the OTP field's ${name} part through its typed native appearance.`,
+    status: 'native-equivalent', description: `Style the OTP field's ${name} part through its public typed native part appearance.`,
     code: swift ? swiftExample(body) : androidExample(body),
-    notes: ['Native views do not interpret CSS ::part() selectors. The hooks are the source\'s own per-instance custom properties.'],
+    notes: ['Native views do not interpret CSS ::part() selectors. Part values win over the hooks and every internal state rule, as ::part() declarations do.'],
+  };
+}
+// ---- md-select / md-multi-select: the method controllers (open / close, focus, reset, options, filtering, labels, validity).
+const selectMethodLabels = { show: 'Open', close: 'Close', focusTrigger: 'Focus', reset: 'Reset', loadOptions: 'Load options', setQuery: 'Filter',
+  getLabels: 'Read labels', getValidity: 'Read validity', checkValidity: 'Check', reportValidity: 'Report', setCustomValidity: 'Set a custom error' };
+const selectMethodNotes = {
+  show: 'Opens the menu below the field (the source focuses the selected option, or the search field when filterable).',
+  close: 'Closes the menu with its exit motion; focus returns to the field.',
+  focusTrigger: 'Focuses the read-only field (the trigger) without opening the menu.',
+  reset: 'Clears the selection as the source\'s reset() does (mdChange when the value changes).',
+  loadOptions: 'Replaces the programmatic options with an array of SelectOptionInit values (value, label, disabled, icon, iconColor, supportingText, selected, hidden). Native lists are not virtualized; the source\'s OptionRowSource is a browser object.',
+  setQuery: 'Filters the menu as typing into its search field does (substring match, case-insensitive), and mirrors the text into the field.',
+  getLabels: 'Returns the labels of the given values ([String: String] / Map<String, String>); values without an option are left out.',
+  getValidity: 'Returns { valid, validationMessage, flags } with the ten ValidityState flags (valueMissing for an empty required select, customError).',
+  checkValidity: 'Returns the validity without presenting it; a disabled select is barred from validation and returns true.',
+  reportValidity: 'Like checkValidity(), but an invalid select shows its message in the field\'s error state and takes focus.',
+  setCustomValidity: 'A non-empty message marks the select invalid (customError) until it is cleared with an empty string; validity changes emit mdValidityChange.' };
+const selectExampleOptions = [{ label: 'London', value: 'london' }, { label: 'Paris', value: 'paris' }, { label: 'Tokyo', value: 'tokyo' }];
+function selectMethodExample(tag, name, platform) {
+  const swift = platform === 'swift', label = selectMethodLabels[name], multi = tag === 'md-multi-select';
+  const type = multi ? 'AWCMultiSelectController' : 'AWCSelectController';
+  const read = ['getValidity', 'checkValidity', 'reportValidity', 'getLabels'].includes(name);
+  const call = name === 'setCustomValidity' ? 'controller.setCustomValidity("Choose a city.")'
+    : name === 'setQuery' ? 'controller.setQuery("to")'
+    : name === 'loadOptions' ? (swift ? 'controller.loadOptions([["value": "lisbon", "label": "Lisbon"], ["value": "oslo", "label": "Oslo"]])'
+      : 'controller.loadOptions(listOf(mapOf("value" to "lisbon", "label" to "Lisbon"), mapOf("value" to "oslo", "label" to "Oslo")))')
+    : name === 'getLabels' ? (swift ? 'status = controller.getLabels(["london", "tokyo"]).values.sorted().joined(separator: ", ")'
+      : 'status = controller.getLabels(listOf("london", "tokyo")).values.sorted().joinToString(", ")')
+    : name === 'getValidity' ? 'status = controller.getValidity().validationMessage'
+    : read ? (swift ? `status = controller.${name}() ? "Valid" : "Invalid"` : `status = if (controller.${name}()) "Valid" else "Invalid"`)
+    : `controller.${name}()`;
+  const body = componentCode(tag, { label: 'City', required: true, filterable: name === 'setQuery', options: selectExampleOptions, value: multi ? [] : '' }, platform);
+  return {
+    description: `Call ${name}() on the mounted native ${multi ? 'multi-select' : 'select'} through its ${type}.`,
+    code: swift
+      ? swiftExample(`VStack {\n    Button(${literal(label, platform)}) { ${call} }\n${indent(body)}\n    .${multi ? 'awcMultiSelectController' : 'awcSelectController'}(controller, for: ${literal(tag, platform)})${read ? '\n    Text(status)' : ''}\n}`,
+        `private let controller = ${type}()${read ? '\n@State private var status = ""' : ''}`)
+      : androidExample(`Column {\n    Button(onClick = { ${call} }) { Text(${literal(label, platform)}) }\n    ${type}Scope(controller) {\n${indent(body, 8)}\n    }${read ? '\n    Text(status)' : ''}\n}`,
+        `val controller = remember { ${type}() }${read ? '\nvar status by remember { mutableStateOf("") }' : ''}`, ['androidx.compose.material3.Button']),
+    notes: [selectMethodNotes[name], swift ? 'The controller addresses the select whose node id matches; AWCNativeView(tag:) uses the tag as its id. Without an id it attaches to every descendant select.'
+      : 'The controller attaches to the selects inside its scope.'],
+  };
+}
+// fa (gate 7, R6-03): copyable typed part examples for md-slider, md-rating, md-stepper and md-step — the part's own typed
+// fields (AWCAccordionPartAppearance) through the component's part modifier / scope, values from the Mac Chrome ::part cases.
+const faPartTypes = { 'md-slider': ['awcSliderPartAppearance', 'AWCSliderPartAppearanceScope', 'AWCSliderPart'],
+  'md-rating': ['awcRatingPartAppearance', 'AWCRatingPartAppearanceScope', 'AWCRatingPart'],
+  'md-stepper': ['awcStepperPartAppearance', 'AWCStepperPartAppearanceScope', 'AWCStepperPart'],
+  'md-step': ['awcStepPartAppearance', 'AWCStepPartAppearanceScope', 'AWCStepPart'] };
+const faPartValues = {
+  'md-slider': { surface: { opacity: 0.6 }, track: { cornerShape: parseCornerShape('4px') }, 'track-active': { backgroundColor: '#C62828' },
+    'track-inactive': { backgroundColor: '#FFCDD2' }, 'thumb-knob': { backgroundColor: '#4A148C', width: 8 },
+    'value-indicator': { backgroundColor: '#1B5E20', color: '#FFFFFF', fontSize: 14 }, inset: { color: '#E65100' } },
+  'md-rating': { items: { gap: 12 }, item: { width: 40, height: 40 }, 'icon-filled': { color: '#E65100' }, 'icon-empty': { color: '#90A4AE' },
+    'state-layer': { backgroundColor: '#6750A4' }, 'value-label': { color: '#1B5E20', fontSize: 18, fontWeight: 700, letterSpacing: 1 } },
+  'md-stepper': { list: { backgroundColor: '#F3E5F5' }, content: { backgroundColor: '#FFF3E0', padding: { top: 16, right: 16, bottom: 16, left: 16 } },
+    nav: { backgroundColor: '#ECEFF1', padding: { top: 8, right: 8, bottom: 8, left: 8 } }, 'mobile-nav': { backgroundColor: '#ECEFF1' } },
+  'md-step': { bubble: { backgroundColor: '#4A148C', color: '#FFF59D', cornerShape: parseCornerShape('8px') }, dot: { backgroundColor: '#C62828' },
+    label: { color: '#1B5E20', fontSize: 16, fontWeight: 700, letterSpacing: 0.5 }, optional: { color: '#AD1457' }, description: { color: '#6D4C41', fontSize: 13 },
+    connector: { backgroundColor: '#FF6F00' }, 'connector-trailing': { backgroundColor: '#FF6F00' }, 'state-layer': { backgroundColor: '#6750A4' },
+    content: { backgroundColor: '#E3F2FD', padding: { top: 12, right: 12, bottom: 12, left: 12 } }, actions: { gap: 24 } } };
+const faPartHosts = {
+  'md-slider': () => ({ tag: 'md-slider', properties: { value: 60, size: 'lg', insetIcon: true, valueIndicator: true } }),
+  'md-rating': () => ({ tag: 'md-rating', properties: { value: 3, showValueLabel: true } }),
+  'md-stepper': name => ({ tag: 'md-stepper', properties: { active: 1, ...(name === 'mobile-nav' ? { variant: 'mobile' } : {}),
+    ...(name === 'content' ? {} : {}) }, children: [['Account', 'Sign in'], ['Plan', 'Choose a tier'], ['Review', '']]
+      .map(([label, description]) => ({ tag: 'md-step', properties: { label, ...(description ? { description } : {}) } })) }),
+};
+faPartHosts['md-step'] = name => {
+  const host = faPartHosts['md-stepper']('');
+  if (name === 'dot') host.properties.indicator = 'dot';
+  if (name === 'optional') host.children[2].properties.optional = true;
+  if (['content', 'actions'].includes(name)) { host.properties.orientation = 'vertical'; host.children.forEach(step => { step.children = [{ text: `${step.properties.label} fields` }]; }); }
+  return host;
+};
+function faPartExample(tag, name, platform) {
+  const [modifier, scope, type] = faPartTypes[tag], values = faPartValues[tag]?.[name];
+  if (!values) return null;
+  const separator = platform === 'swift' ? ': ' : ' = ';
+  const number = value => platform === 'android' ? (Number.isInteger(value) ? `${value}.0` : String(value)) : String(value);
+  const insets = v => platform === 'swift' ? `AWCAccordionInsets(top: ${v.top}, right: ${v.right}, bottom: ${v.bottom}, left: ${v.left})`
+    : `AWCAccordionInsets(${[v.top, v.right, v.bottom, v.left].map(number).join(', ')})`;
+  const value = (key, item) => key === 'cornerShape' ? cornerShapeNativeValue(item, platform) : key === 'padding' ? insets(item) : typeof item === 'string' ? literal(item, platform) : number(item);
+  const fields = listPartOrder.filter(key => Object.hasOwn(values, key)).map(key => `${key}${separator}${value(key, values[key])}`).join(', ');
+  const host = faPartHosts[tag](name);
+  let body = componentCode(host.tag, host.properties, platform, { children: host.children ?? [] });
+  const swiftCase = name.replace(/-([a-z])/g, (_, c) => c.toUpperCase()), kotlinCase = swiftCase[0].toUpperCase() + swiftCase.slice(1);
+  body = platform === 'swift' ? `${body}\n.${modifier}(.init(${fields}), part: .${swiftCase})` : `${scope}(${type}.${kotlinCase}, AWCAccordionPartAppearance(${fields})) {\n${indent(body)}\n}`;
+  return {
+    status: 'native-equivalent', description: `Style the actual ${name} part through its public typed native part appearance.`,
+    code: platform === 'swift' ? swiftExample(body) : androidExample(body),
+    notes: ['Native views do not interpret CSS ::part() selectors; the typed fields follow the source part box with its CSS semantics.',
+      tag === 'md-step' ? 'Declared on the stepper (or a container of steps), the step part appearance applies to every step it contains.' : 'Part appearances cascade to every component in this subtree; nearer values win.'],
+  };
+}
+// ---- md-autocomplete: the method controller (focus, popup, options, labels, constraint validation).
+const autocompleteMethodLabels = { focusInput: 'Focus', showMenu: 'Show suggestions', closeMenu: 'Close suggestions', loadOptions: 'Load options',
+  getLabels: 'Read labels', getValidity: 'Read validity', checkValidity: 'Check', reportValidity: 'Report', setCustomValidity: 'Set a custom error' };
+const autocompleteMethodNotes = {
+  focusInput: 'Focuses the native input; the suggestions stay as they are.',
+  showMenu: 'Opens the suggestions popup without moving focus (no-op while disabled); mdOpen follows.',
+  closeMenu: 'Closes the popup with its exit motion; mdClose follows. A single, non-free-solo autocomplete puts the committed label back in the input.',
+  loadOptions: 'Replaces the options with the given list (strings or { value, label, disabled, supportingText, icon, iconColor }). Native lists are not virtualized, so every option renders.',
+  getLabels: 'Returns the label of each value: the option label, the remembered label of a value picked earlier, else the value itself.',
+  getValidity: 'Returns { valid, validationMessage, flags }: customError from setCustomValidity(), else valueMissing for a required autocomplete without a value (errorText, else valueMissingLabel).',
+  checkValidity: 'Returns the validity without presenting it.',
+  reportValidity: 'Like checkValidity(), but an invalid autocomplete shows its message in its error state and focuses the input.',
+  setCustomValidity: 'A non-empty message marks the autocomplete invalid (customError) until it is cleared with an empty string; validity changes emit mdValidityChange.' };
+function autocompleteMethodExample(name, platform) {
+  const swift = platform === 'swift', label = autocompleteMethodLabels[name];
+  const read = ['getValidity', 'checkValidity', 'reportValidity', 'getLabels'].includes(name);
+  const options = [{ value: 'kiwi', label: 'Kiwi' }, { value: 'lime', label: 'Lime' }];
+  const call = name === 'setCustomValidity' ? 'controller.setCustomValidity("Pick a fruit we stock.")'
+    : name === 'getValidity' ? 'status = controller.getValidity().validationMessage'
+    : name === 'getLabels' ? (swift ? 'status = controller.getLabels(["a", "kiwi"]).description' : 'status = controller.getLabels(listOf("a", "kiwi")).toString()')
+    : name === 'loadOptions' ? (swift ? `controller.loadOptions([${options.map(o => valueCode(o, platform)).join(', ')}])` : `controller.loadOptions(listOf<AWCValue>(${options.map(o => valueCode(o, platform)).join(', ')}))`)
+    : read ? (swift ? `status = controller.${name}() ? "Valid" : "Invalid"` : `status = if (controller.${name}()) "Valid" else "Invalid"`)
+    : `controller.${name}()`;
+  const body = componentCode('md-autocomplete', { label: 'Fruit', required: true, options: [{ value: 'a', label: 'Apple' }, { value: 'b', label: 'Banana' }] }, platform);
+  return {
+    description: `Call ${name}() on the mounted native autocomplete through its AWCAutocompleteController.`,
+    code: swift
+      ? swiftExample(`VStack {\n    Button(${literal(label, platform)}) { ${call} }\n${indent(body)}\n    .awcAutocompleteController(controller, for: "md-autocomplete")${read ? '\n    Text(status)' : ''}\n}`,
+        `private let controller = AWCAutocompleteController()${read ? '\n@State private var status = ""' : ''}`)
+      : androidExample(`Column {\n    Button(onClick = { ${call} }) { Text(${literal(label, platform)}) }\n    AWCAutocompleteControllerScope(controller) {\n${indent(body, 8)}\n    }${read ? '\n    Text(status)' : ''}\n}`,
+        `val controller = remember { AWCAutocompleteController() }${read ? '\nvar status by remember { mutableStateOf("") }' : ''}`, ['androidx.compose.material3.Button']),
+    notes: [autocompleteMethodNotes[name], swift ? 'The controller addresses the autocomplete whose node id matches; AWCNativeView(tag:) uses the tag as its id. Without an id it attaches to every descendant autocomplete. The suggestions present in the nearest AWCMenuScope (outside one they render in flow).'
+      : 'The controller attaches to the autocompletes inside its scope. The suggestions present in the nearest AWCMenuScope (outside one they render in flow).'],
+  };
+}
+// ---- md-search: the method controller (open / close / toggle / whenClosed / focus / voice) and the typed parts.
+const searchMethodLabels = { show: 'Open', close: 'Close', toggle: 'Toggle', whenClosed: 'Close and wait', focusInput: 'Focus the input',
+  startVoice: 'Start voice search', stopVoice: 'Stop voice search' };
+const searchMethodNotes = {
+  show: 'Opens the search view: the docked panel, or the full-screen view in the nearest AWCModalScope. mdOpen follows once the change applies.',
+  close: 'Closes the view: the panel fades first, then the bar contracts; mdClose is emitted at once and focus returns where the source returns it.',
+  toggle: 'Opens a closed view and closes an open one, with the same events as show() and close().',
+  whenClosed: 'Completes once the current close (both motion stages and focus restoration) has finished, or at once when the view is closed. The Laboratory preview does not run it.',
+  focusInput: 'Focuses the search input without opening the view.',
+  startVoice: 'Starts the platform speech recognizer (voiceSearch must be on; the app needs the microphone and speech-recognition permissions). Results arrive as mdVoice and update the value. The Laboratory preview does not run it.',
+  stopVoice: 'Stops a running voice session. The Laboratory preview does not run it.' };
+function searchMethodExample(name, platform) {
+  const swift = platform === 'swift', label = searchMethodLabels[name];
+  const waits = name === 'whenClosed';
+  const call = waits ? (swift ? 'controller.close(); controller.whenClosed { status = "Closed" }' : 'controller.close(); controller.whenClosed { status = "Closed" }') : `controller.${name}()`;
+  const body = componentCode('md-search', { layout: 'docked', placeholder: 'Search projects', value: '', ...(name.endsWith('Voice') ? { voiceSearch: true } : {}) }, platform);
+  return {
+    description: `Call ${name}() on the mounted native search through its AWCSearchController.`,
+    code: swift
+      ? swiftExample(`VStack {\n    Button(${literal(label, platform)}) { ${call} }\n${indent(body)}\n    .awcSearchController(controller, for: "md-search")${waits ? '\n    Text(status)' : ''}\n}`,
+        `private let controller = AWCSearchController()${waits ? '\n@State private var status = ""' : ''}`)
+      : androidExample(`Column {\n    Button(onClick = { ${call} }) { Text(${literal(label, platform)}) }\n    AWCSearchControllerScope(controller) {\n${indent(body, 8)}\n    }${waits ? '\n    Text(status)' : ''}\n}`,
+        `val controller = remember { AWCSearchController() }${waits ? '\nvar status by remember { mutableStateOf("") }' : ''}`, ['androidx.compose.material3.Button']),
+    notes: [searchMethodNotes[name], swift ? 'The controller addresses the search whose node id matches; AWCNativeView(tag:) uses the tag as its id. Without an id it attaches to every descendant search. A full-screen search needs an AWCModalScope at the content root.'
+      : 'The controller attaches to the searches inside its scope. A full-screen search needs an AWCModalScope at the content root.'],
+  };
+}
+const searchPartValues = { bar: { barBackgroundColor: '#FFF59D' }, 'state-layer': { stateLayerColor: '#E91E63', stateLayerOpacity: 0.2 }, leading: { leadingBackgroundColor: '#E1F5FE' },
+  'leading-state-layer': { leadingStateLayerColor: '#2E7D32', leadingStateLayerOpacity: 0.3 }, input: { inputColor: '#1A237E', caretColor: '#D50000' },
+  trailing: { trailingBackgroundColor: '#F3E5F5' }, 'clear-button': { clearButtonBackgroundColor: '#FFCCBC' }, 'voice-button': { voiceButtonBackgroundColor: '#C8E6C9' },
+  'trigger-button': { triggerButtonBackgroundColor: '#B3E5FC' }, divider: { dividerColor: '#FF6F00' }, panel: { panelBackgroundColor: '#FFFDE7' }, empty: { emptyColor: '#B71C1C' },
+  'results-viewport': { resultsViewportBackgroundColor: '#E8EAF6' },
+  trigger: { triggerBackgroundColor: '#D1C4E9' }, 'panel-body': { panelBodyBackgroundColor: '#FFE0B2' }, 'results-host': { resultsHostBackgroundColor: '#DCEDC8' },
+  loading: { loadingBackgroundColor: '#F8BBD0' }, 'loading-shape': { loadingShapeBackgroundColor: '#6A1B9A' }, status: { statusBackgroundColor: '#FF0000' } };
+const searchPartOrder = ['barBackgroundColor', 'stateLayerColor', 'stateLayerOpacity', 'leadingBackgroundColor', 'leadingStateLayerColor', 'leadingStateLayerOpacity', 'inputColor',
+  'caretColor', 'trailingBackgroundColor', 'clearButtonBackgroundColor', 'voiceButtonBackgroundColor', 'triggerButtonBackgroundColor', 'dividerColor', 'panelBackgroundColor', 'emptyColor',
+  'resultsViewportBackgroundColor', 'triggerBackgroundColor', 'panelBodyBackgroundColor', 'resultsHostBackgroundColor', 'loadingBackgroundColor', 'loadingShapeBackgroundColor', 'statusBackgroundColor'];
+const searchPartProperties = { 'voice-button': { layout: 'docked', voiceSearch: true }, 'trigger-button': { layout: 'full-screen', trigger: 'icon' }, divider: { layout: 'docked', variant: 'divided', value: 'pro', open: true },
+  panel: { layout: 'docked', value: 'pro', open: true }, empty: { layout: 'docked', value: 'zzz', open: true }, 'results-viewport': { layout: 'docked', value: 'pro', open: true },
+  'leading-state-layer': { layout: 'docked', value: 'pro', open: true }, trigger: { layout: 'full-screen', trigger: 'icon' }, 'panel-body': { layout: 'docked', value: 'pro', open: true },
+  'results-host': { layout: 'docked', value: 'pro', open: true }, loading: { layout: 'docked', value: 'pro', loading: true }, 'loading-shape': { layout: 'docked', value: 'pro', loading: true },
+  status: { layout: 'docked', value: 'pro', open: true } };
+function searchPartExample(name, platform) {
+  const swift = platform === 'swift';
+  const values = searchPartValues[name];
+  if (!values) return null;
+  const separator = swift ? ': ' : ' = ';
+  const fields = searchPartOrder.filter(key => Object.hasOwn(values, key)).map(key => `${key}${separator}${literal(values[key], platform)}`).join(', ');
+  let body = componentCode('md-search', { placeholder: 'Search projects', ...(searchPartProperties[name] ?? { layout: 'docked', value: 'pro' }) }, platform);
+  body = swift ? `${body}\n.awcSearchPartAppearance(.init(${fields}))` : `AWCSearchPartAppearanceScope(AWCSearchPartAppearance(${fields})) {\n${indent(body)}\n}`;
+  return {
+    status: 'native-equivalent', description: `Style the search's ${name} part through its public typed native part appearance.`,
+    code: swift ? swiftExample(body) : androidExample(body),
+    notes: ['Native views do not interpret CSS ::part() selectors. Part values come from the outer tree, so they win over the hooks and every hover, focus, open and disabled rule, as ::part() rules do (a state-layer opacity shows at rest).',
+      'The typed values are the declarations that paint in Chrome: backgrounds for the bar, the leading and trailing boxes, the round buttons, the panel and the results viewport; colour and opacity for the two state layers; colour and caret colour for the input; colour for the divider and the empty state.'],
   };
 }
 function eventExample(component, name, platform, policy) {
@@ -1833,41 +2270,54 @@ export function nativeApiExample(component = {}, kind, member, platform) {
   if (kind === 'method') {
     if (nativeTooltipLifecycleSupported(component, platform) && ['show', 'hide'].includes(normalizedName)) return { ...result, ...tooltipExample(platform, { method: normalizedName }) };
     if (tag === 'md-snackbar' && ['show', 'hide'].includes(normalizedName) && ['show', 'hide'].every(name => has(policy.methods, name) && !has(policy.unsupportedMethods, name))) return { ...result, ...snackbarExample(platform, { method: normalizedName }) };
-    if ((tag === 'md-menu' && ['show', 'close', 'whenClosed', 'reposition', 'getScrollViewport'].includes(normalizedName) || tag === 'md-sub-menu-item' && normalizedName === 'collapse') && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName)) return { ...result, ...menuExample(platform, { method: normalizedName }) };
+    if ((tag === 'md-menu' && ['show', 'close', 'whenClosed', 'reposition', 'getScrollViewport', 'setComboboxElement', 'setVirtualProvider'].includes(normalizedName) || tag === 'md-sub-menu-item' && normalizedName === 'collapse') && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName)) return { ...result, ...menuExample(platform, { method: normalizedName }) };
     if (tag === 'md-fab-menu' && ['show', 'close', 'whenClosed'].includes(normalizedName) && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName)) return { ...result, ...fabMenuExample(platform, { method: normalizedName }) };
     if (tag === 'md-fab' && normalizedName === 'setMenuIcon' && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName)) return { ...result, ...fabMethodExample(platform) };
     if (tag === 'md-list' && ['activateNext', 'activatePrevious', 'selectItem', 'getSelectedIndices'].includes(normalizedName) || tag === 'md-list-item' && ['setFocus', 'focusItem', 'toggle', 'expand', 'collapse'].includes(normalizedName)) {
       if (has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName)) return { ...result, status: 'supported', ...listMethodExample(tag, normalizedName, platform) };
     }
+    if (tag === 'md-transfer-list' && ['moveSelectedRight', 'moveSelectedLeft'].includes(normalizedName) && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName)) return { ...result, status: 'supported', ...transferListMethodExample(normalizedName, platform) };
     if (Object.hasOwn(modalTypes, tag) && ['show', 'close', 'whenClosed'].includes(normalizedName) && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName)) return { ...result, status: 'supported', ...modalMethodExample(tag, normalizedName, platform, policy) };
     if (tag === 'md-accordion-item' && ['toggle', 'focusHeader'].includes(normalizedName) && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName)) return { ...result, status: 'supported', ...accordionMethodExample(normalizedName, platform) };
     if (tag === 'md-navigation-bar' && ['select', 'focusTab'].includes(normalizedName) && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName)) return { ...result, status: 'supported', ...navigationBarMethodExample(normalizedName, platform) };
     if (tag === 'md-navigation-tab' && normalizedName === 'focusEl' && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName)) return { ...result, status: 'supported', ...navigationTabMethodExample(platform) };
     if (tag === 'md-tabs' && normalizedName === 'selectTab' && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName)) return { ...result, status: 'supported', ...tabsMethodExample(platform) };
     if (tag === 'md-breadcrumbs' && ['expand', 'collapse'].includes(normalizedName) && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName)) return { ...result, status: 'supported', ...breadcrumbsMethodExample(normalizedName, platform) };
+    if (tag === 'md-date-picker' && (PICKER_ITEM_METHODS[tag].includes(normalizedName) || PICKER_VALIDITY_METHODS[tag].includes(normalizedName)) && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName)) return { ...result, status: 'supported', ...datePickerMethodExample(normalizedName, platform) };
     if ((PICKER_ITEM_METHODS[tag]?.includes(normalizedName) || PICKER_VALIDITY_METHODS[tag]?.includes(normalizedName)) && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName)) return { ...result, status: 'supported', ...pickerMethodExample(tag, normalizedName, platform) };
     if (tag === 'md-ripple' && ['trigger', 'whenSettled'].includes(normalizedName) && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName)) return { ...result, status: 'supported', ...rippleMethodExample(normalizedName, platform) };
+    if (nativeRailMethod(tag, normalizedName) && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName)) return { ...result, status: 'supported', ...railMethodExample(tag, normalizedName, platform) };
     if (nativeToolbarMethod(tag, normalizedName) && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName)) return { ...result, status: 'supported', ...navMethodExample(tag, normalizedName, platform) };
     if (nativeChartMethod(tag, normalizedName) && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName)) return { ...result, status: 'supported', ...chartMethodExample(tag, normalizedName, platform) };
     if (nativeTableMethod(tag, normalizedName) && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName)) return { ...result, status: 'supported', ...tableMethodExample(tag, normalizedName, platform) };
     if (nativeSrMethod(tag, normalizedName) && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName)) return { ...result, status: 'supported', ...srMethodExample(tag, normalizedName, platform) };
     if (nativeStepperMethod(tag, normalizedName) && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName)) return { ...result, status: 'supported', ...stepperMethodExample(tag, normalizedName, platform) };
     if (tag === 'md-otp-field' && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName) && Object.hasOwn(otpFieldMethodLabels, normalizedName)) return { ...result, status: 'supported', ...otpFieldMethodExample(normalizedName, platform) };
+    if (tag === 'md-autocomplete' && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName) && Object.hasOwn(autocompleteMethodLabels, normalizedName)) return { ...result, status: 'supported', ...autocompleteMethodExample(normalizedName, platform) };
     if (tag === 'md-number-field' && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName) && Object.hasOwn(numberFieldMethodLabels, normalizedName)) return { ...result, status: 'supported', ...numberFieldMethodExample(normalizedName, platform) };
+    if (nativeSelectMethod(tag, normalizedName) && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName)) return { ...result, status: 'supported', ...selectMethodExample(tag, normalizedName, platform) };
     if (tag === 'md-text-field' && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName) && Object.hasOwn(textFieldMethodLabels, normalizedName)) return { ...result, status: 'supported', ...textFieldMethodExample(normalizedName, platform) };
+    if (tag === 'md-search' && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName) && Object.hasOwn(searchMethodLabels, normalizedName)) return { ...result, status: 'supported', ...searchMethodExample(normalizedName, platform) };
     if (nativeSelectionMethod(tag, normalizedName) && has(policy.methods, normalizedName) && !has(policy.unsupportedMethods, normalizedName)) return { ...result, status: 'supported', ...selectionMethodExample(tag, normalizedName, platform) };
     const alternative = methodAlternative(tag, normalizedName, policy);
     if (alternative) return { ...result, ...declarativeExample(component, normalizedName, platform, policy, alternative) };
     return { ...result, status: 'unsupported', description: `${normalizedName}() has no public ${target} method bridge.`, notes: ['The source JavaScript method and return type are Web-only. No callable native equivalent is documented for this operation.', 'Use supported native properties and host application APIs; do not call HTMLElement methods on the native component.'] };
   }
   if (kind === 'cssPart') {
+    if (tag === 'md-search' && policy.appearance && has(policy.visualParts, normalizedName)) { const example = searchPartExample(normalizedName, platform); if (example) return { ...result, ...example }; }
     if (tag === 'md-otp-field' && policy.appearance && has(policy.visualParts, normalizedName)) { const example = otpFieldPartExample(normalizedName, platform); if (example) return { ...result, ...example }; }
     if (tag === 'md-number-field' && policy.appearance && has(policy.visualParts, normalizedName)) { const example = numberFieldPartExample(normalizedName, platform); if (example) return { ...result, ...example }; }
+    if (tag === 'md-transfer-list' && policy.appearance && has(policy.visualParts, normalizedName)) { const example = transferListPartExample(normalizedName, platform); if (example) return { ...result, ...example }; }
     if (tag === 'md-text-field' && policy.appearance && has(policy.visualParts, normalizedName)) { const example = textFieldPartExample(normalizedName, platform); if (example) return { ...result, ...example }; }
     if (Object.hasOwn(selectionPartValues, tag) && policy.appearance && has(policy.visualParts, normalizedName)) { const example = selectionPartExample(tag, normalizedName, platform); if (example) return { ...result, ...example }; }
     if (tag === 'md-avatar' && policy.appearance && has(policy.visualParts, normalizedName)) { const example = avatarPartExample(normalizedName, platform); if (example) return { ...result, ...example }; }
+    if (['md-navigation-rail', 'md-navigation-rail-tab'].includes(tag) && policy.appearance && has(policy.visualParts, normalizedName)) return { ...result, ...railPartExample(tag, normalizedName, platform) };
+    if (tag === 'md-app-bar' && policy.appearance && has(policy.visualParts, normalizedName)) return { ...result, ...appBarPartExample(tag, normalizedName, platform) };
     if (['md-list', 'md-list-item'].includes(tag) && policy.appearance && has(policy.visualParts, normalizedName)) return { ...result, ...listPartExample(tag, normalizedName, platform) };
+    if (['md-menu', 'md-menu-item', 'md-sub-menu-item'].includes(tag) && has(policy.visualParts, normalizedName)) return { ...result, ...menuPartExample(tag, normalizedName, platform) };
     if (Object.hasOwn(modalTypes, tag) && policy.appearance && has(policy.visualParts, normalizedName)) return { ...result, ...modalPartExample(tag, normalizedName, platform, policy) };
+    if ((Object.hasOwn(chartExampleProperties, tag) || tag === 'md-organization-chart' || Object.hasOwn(r5TablePrefix, tag)) && has(policy.visualParts, normalizedName)) return { ...result, ...r5PartExample(tag, normalizedName, platform) };
+    if (Object.hasOwn(faPartTypes, tag) && has(policy.visualParts, normalizedName)) { const example = faPartExample(tag, normalizedName, platform); if (example) return { ...result, ...example }; }
     const accordionPart = ['md-accordion', 'md-accordion-item'].includes(tag) && policy.appearance ? accordionPartExample(tag, normalizedName, platform) : null;
     if (accordionPart && (has(policy.visualParts, normalizedName) || tag === 'md-accordion' || ['chassis-handle', 'chassis-handle-bar'].includes(normalizedName))) return { ...result, ...accordionPart };
     const example = ['md-button', 'md-icon-button', 'md-fab', 'md-fab-menu-item', 'md-divider', 'md-segmented-button', 'md-badge', 'md-split-button', 'md-loading-indicator', 'md-meter', 'md-progress-indicator', 'md-skeleton', 'md-snackbar', 'md-tooltip', 'md-card'].includes(tag) && doc.support.status === 'native-equivalent' ? appearanceExample(tag, normalizedName, platform, policy) : null;

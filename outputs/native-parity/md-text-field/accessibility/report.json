@@ -1,6 +1,6 @@
 {
  "tag": "md-text-field",
- "at": "2026-10-29T11:11:43.095Z",
+ "at": "2026-11-05T01:32:20.611Z",
  "rows": [
   {
    "case": "default",
@@ -15,7 +15,7 @@
      "textbox:Project name"
     ],
     "contrast": {
-     "measured": 3,
+     "measured": 0,
      "findings": []
     }
    },
@@ -37,7 +37,7 @@
       "textbox:Project name"
      ],
      "findings": [],
-     "contrastMeasured": 2
+     "contrastMeasured": 0
     },
     "ios": {
      "status": "findings",
@@ -64,7 +64,87 @@
      "contrastMeasured": 0
     },
     "android": {
-     "status": "not-run"
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "textbox:Project name"
+     ],
+     "texts": [
+      "A name your team will recognize"
+     ],
+     "announcements": [],
+     "focus": [
+      "textbox:Project name",
+      "textbox:Project name"
+     ],
+     "findings": [
+      {
+       "kind": "description",
+       "web": {
+        "role": "textbox",
+        "name": "Project name"
+       },
+       "native": {
+        "role": "textbox",
+        "name": "Project name"
+       },
+       "detail": "textbox \"Project name\" description \"A name your team will recognize\" → \"\"",
+       "status": "expected",
+       "reason": "Web aria-describedby names the supporting text as the field's description. Android has no described-by relation for a view (stateDescription is a state): the supporting text is the field's next TalkBack stop, read right after it, and an error is the field's own AccessibilityNodeInfo error (reported as invalid with its message)."
+      }
+     ],
+     "contrastMeasured": 3,
+     "atf": {
+      "elements": 20,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
     }
    }
   },
@@ -80,7 +160,7 @@
     ],
     "focus": [],
     "contrast": {
-     "measured": 6,
+     "measured": 0,
      "findings": []
     }
    },
@@ -100,7 +180,7 @@
      "announcements": [],
      "focus": [],
      "findings": [],
-     "contrastMeasured": 4
+     "contrastMeasured": 0
     },
     "ios": {
      "status": "pass",
@@ -130,7 +210,71 @@
      "contrastMeasured": 0
     },
     "android": {
-     "status": "not-run"
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "textbox:Project name",
+      "button:Clear"
+     ],
+     "texts": [
+      "Visible to your team"
+     ],
+     "announcements": [],
+     "focus": [],
+     "findings": [
+      {
+       "kind": "description",
+       "web": {
+        "role": "textbox",
+        "name": "Project name",
+        "value": "AWC Native"
+       },
+       "native": {
+        "role": "textbox",
+        "name": "Project name",
+        "value": "AWC Native"
+       },
+       "detail": "textbox \"Project name\" description \"Visible to your team\" → \"\"",
+       "status": "expected",
+       "reason": "Web aria-describedby names the supporting text as the field's description. Android has no described-by relation for a view (stateDescription is a state): the supporting text is the field's next TalkBack stop, read right after it, and an error is the field's own AccessibilityNodeInfo error (reported as invalid with its message)."
+      }
+     ],
+     "contrastMeasured": 5,
+     "atf": {
+      "elements": 18,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      }
+     ]
     }
    }
   },
@@ -147,7 +291,7 @@
     ],
     "focus": [],
     "contrast": {
-     "measured": 6,
+     "measured": 0,
      "findings": []
     }
    },
@@ -186,7 +330,7 @@
        "status": "open"
       }
      ],
-     "contrastMeasured": 4
+     "contrastMeasured": 0
     },
     "ios": {
      "status": "pass",
@@ -216,7 +360,54 @@
      "contrastMeasured": 0
     },
     "android": {
-     "status": "not-run"
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "textbox:Email {\"invalid\":\"true\"}",
+      "button:Clear"
+     ],
+     "texts": [
+      "Enter a valid email address"
+     ],
+     "announcements": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 5,
+     "atf": {
+      "elements": 19,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      }
+     ]
     }
    }
   },
@@ -231,7 +422,7 @@
     ],
     "focus": [],
     "contrast": {
-     "measured": 3,
+     "measured": 0,
      "findings": []
     }
    },
@@ -250,7 +441,7 @@
      "announcements": [],
      "focus": [],
      "findings": [],
-     "contrastMeasured": 2
+     "contrastMeasured": 0
     },
     "ios": {
      "status": "pass",
@@ -268,7 +459,71 @@
      "contrastMeasured": 0
     },
     "android": {
-     "status": "not-run"
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "textbox:Project name"
+     ],
+     "texts": [
+      "A name your team will recognize"
+     ],
+     "announcements": [],
+     "focus": [],
+     "findings": [
+      {
+       "kind": "description",
+       "web": {
+        "role": "textbox",
+        "name": "Project name",
+        "states": {
+         "required": "true"
+        }
+       },
+       "native": {
+        "role": "textbox",
+        "name": "Project name"
+       },
+       "detail": "textbox \"Project name\" description \"A name your team will recognize\" → \"\"",
+       "status": "expected",
+       "reason": "Web aria-describedby names the supporting text as the field's description. Android has no described-by relation for a view (stateDescription is a state): the supporting text is the field's next TalkBack stop, read right after it, and an error is the field's own AccessibilityNodeInfo error (reported as invalid with its message)."
+      }
+     ],
+     "contrastMeasured": 3,
+     "atf": {
+      "elements": 20,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      }
+     ]
     }
    }
   },
@@ -348,7 +603,88 @@
      "contrastMeasured": 0
     },
     "android": {
-     "status": "not-run"
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "textbox:Project name {\"disabled\":\"true\"}",
+      "button:Clear {\"disabled\":\"true\"}"
+     ],
+     "texts": [
+      "A name your team will recognize"
+     ],
+     "announcements": [],
+     "focus": [
+      "∅",
+      "∅"
+     ],
+     "findings": [
+      {
+       "kind": "description",
+       "web": {
+        "role": "textbox",
+        "name": "Project name",
+        "states": {
+         "disabled": "true"
+        },
+        "value": "AWC Native"
+       },
+       "native": {
+        "role": "textbox",
+        "name": "Project name",
+        "states": {
+         "disabled": "true"
+        },
+        "value": "AWC Native"
+       },
+       "detail": "textbox \"Project name\" description \"A name your team will recognize\" → \"\"",
+       "status": "expected",
+       "reason": "Web aria-describedby names the supporting text as the field's description. Android has no described-by relation for a view (stateDescription is a state): the supporting text is the field's next TalkBack stop, read right after it, and an error is the field's own AccessibilityNodeInfo error (reported as invalid with its message)."
+      }
+     ],
+     "contrastMeasured": 0,
+     "atf": {
+      "elements": 19,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
     }
    }
   }

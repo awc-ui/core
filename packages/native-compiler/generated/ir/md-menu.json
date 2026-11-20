@@ -1599,7 +1599,9 @@
         "show",
         "reposition",
         "whenClosed",
-        "close"
+        "close",
+        "setComboboxElement",
+        "setVirtualProvider"
       ],
       "slots": [
         "",
@@ -1607,19 +1609,22 @@
       ],
       "unsupportedProperties": [],
       "unsupportedEvents": [],
-      "unsupportedMethods": [
-        "setComboboxElement",
-        "setVirtualProvider"
-      ],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
         "Dedicated native renderer (SwiftUI / Compose): the baseline, standard and vibrant surfaces, the standard and grouped (gap) layouts, the header slot, empty text, density, a capped scrolling viewport (max-height, --md-menu-max-block-size) and the 150 ms scale-and-fade entrance and exit (quick and Reduce Motion snap), verified against the Mac Chrome 153 oracles (paint, interaction states and motion).",
         "Anchored menus present in the nearest AWCMenuScope (the menus' top layer): bottom/top-start/end placement against the anchor's live frame (physical, as the source), flipped and kept inside the viewport margin, match-anchor-width and the responsive full-width surface. Outside a scope a menu renders in flow.",
         "Source behaviour: auto-focus of the first row, roving focus with typeahead, Escape and Tab close the tree and restore focus to the anchor, outside clicks close non-persistent menus, opening a menu closes its open peers; mdOpen / mdClose as the source. listbox exposes the surface as a listbox of options.",
-        "show({ autoFocus }), close(), whenClosed() and reposition() through AWCMenuScopeState.menu(id); getScrollViewport() returns the viewport geometry (scrollTop, scrollHeight, clientHeight) rather than an element. setComboboxElement() and setVirtualProvider() are the DOM combobox and virtualization plumbing of md-select / md-autocomplete and have no native counterpart.",
-        "The six menu hooks and the five row hooks (inherited by every row) through .awcMenuAppearance(…) / AWCMenuAppearanceScope."
+        "The six menu hooks and the five row hooks (inherited by every row) through .awcMenuAppearance(…) / AWCMenuAppearanceScope.",
+        "setComboboxElement(id) and setVirtualProvider(provider) through AWCMenuHandle (AWCMenuVirtualProvider: count, label, disabled, ensureVisible, row id, findPrefix): the provider's indices drive ArrowUp/Down (wrapping past disabled rows), Home/End, typeahead and Enter; the combobox keeps focus while activeDescendant names the active windowed row; the surface is a listbox.",
+        "Typed part appearances for the 16 CSS parts (AWCMenuPartAppearance: background, color, outline, corner radius, opacity, letter spacing) per part for every element of the tag or for one element ID, carried into flyouts."
       ],
       "verification": "not-device-verified",
+      "visualParts": [
+        "empty-text",
+        "surface",
+        "menu-viewport"
+      ],
       "appearance": {
         "api": ".awcMenuAppearance(AWCMenuAppearance)",
         "fields": [
@@ -1666,7 +1671,9 @@
         "show",
         "reposition",
         "whenClosed",
-        "close"
+        "close",
+        "setComboboxElement",
+        "setVirtualProvider"
       ],
       "slots": [
         "",
@@ -1674,19 +1681,22 @@
       ],
       "unsupportedProperties": [],
       "unsupportedEvents": [],
-      "unsupportedMethods": [
-        "setComboboxElement",
-        "setVirtualProvider"
-      ],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
         "Dedicated native renderer (SwiftUI / Compose): the baseline, standard and vibrant surfaces, the standard and grouped (gap) layouts, the header slot, empty text, density, a capped scrolling viewport (max-height, --md-menu-max-block-size) and the 150 ms scale-and-fade entrance and exit (quick and Reduce Motion snap), verified against the Mac Chrome 153 oracles (paint, interaction states and motion).",
         "Anchored menus present in the nearest AWCMenuScope (the menus' top layer): bottom/top-start/end placement against the anchor's live frame (physical, as the source), flipped and kept inside the viewport margin, match-anchor-width and the responsive full-width surface. Outside a scope a menu renders in flow.",
         "Source behaviour: auto-focus of the first row, roving focus with typeahead, Escape and Tab close the tree and restore focus to the anchor, outside clicks close non-persistent menus, opening a menu closes its open peers; mdOpen / mdClose as the source. listbox exposes the surface as a listbox of options.",
-        "show({ autoFocus }), close(), whenClosed() and reposition() through AWCMenuScopeState.menu(id); getScrollViewport() returns the viewport geometry (scrollTop, scrollHeight, clientHeight) rather than an element. setComboboxElement() and setVirtualProvider() are the DOM combobox and virtualization plumbing of md-select / md-autocomplete and have no native counterpart.",
-        "The six menu hooks and the five row hooks (inherited by every row) through .awcMenuAppearance(…) / AWCMenuAppearanceScope."
+        "The six menu hooks and the five row hooks (inherited by every row) through .awcMenuAppearance(…) / AWCMenuAppearanceScope.",
+        "setComboboxElement(id) and setVirtualProvider(provider) through AWCMenuHandle (AWCMenuVirtualProvider: count, label, disabled, ensureVisible, row id, findPrefix): the provider's indices drive ArrowUp/Down (wrapping past disabled rows), Home/End, typeahead and Enter; the combobox keeps focus while activeDescendant names the active windowed row; the surface is a listbox.",
+        "Typed part appearances for the 16 CSS parts (AWCMenuPartAppearance: background, color, outline, corner radius, opacity, letter spacing) per part for every element of the tag or for one element ID, carried into flyouts."
       ],
       "verification": "not-device-verified",
+      "visualParts": [
+        "empty-text",
+        "surface",
+        "menu-viewport"
+      ],
       "appearance": {
         "api": "AWCMenuAppearanceScope(AWCMenuAppearance)",
         "fields": [

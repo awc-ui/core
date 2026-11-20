@@ -50,7 +50,14 @@ expand/collapse durations and panel padding/background). Without an id they are 
 every row (CSS inheritance: the list's per-position `::slotted` corner rules win over them);
 with the row's id they are inline (they win). The 29 parts are `AWCListItemPart` with the shared
 sparse part vocabulary (`AWCListPartAppearance` = the accordion part appearance); part rules win
-over hooks and state rules.
+over hooks and state rules. Every visual part takes the paint declarations: `backgroundColor` (in the part's box and corner
+shape), `opacity` (replacing the part's own opacity on the state layers and the drag handle), `cornerShape` (clipping the
+avatar and the image-wrap, as the source's overflow does) and `color` on the text and glyph parts; the headline also takes
+`letterSpacing` and the row its border. Layout declarations (padding, margin, sizes, other borders, font metrics) are the
+hooks' job and are not applied. Each of the 27 parts is compared with Chrome's `::part()` rule (`NativeListPartsIntegration`,
+`NativeListPartsTest`, `d3-lab/web2/list-parts-web.json`; gate-7 r3-14). The two tooltip popup parts are md-tooltip's popup
+part (`awcTooltipPartAppearance(_:part: .popup)`; `NativeListTooltipIntegration` checks that it reaches the row's popup).
+The avatar follows md-avatar's modes: the image, else (none or a failed one) the initials, else the person icon.
 
 **Cascade (md-list-item.css, rule by rule).** Per logical corner: inline hook > the list's
 `::slotted` position rule (first/last 16, segmented 4, panel rows square except the last row of
@@ -80,7 +87,13 @@ fade, which ignores the preference as md-ripple does).
 **Interaction.** One roving tab stop (the first selected focusable row, else the first);
 ArrowUp/Down wrap, Home/End; typeahead over headline/default-slot text with a 500 ms buffer
 (one character searches from the next row, more from the current one); hidden, disabled and
-text-in-`none` rows are skipped, soft-disabled rows stay reachable. Enter/Space give a centred
+text-in-`none` rows are skipped, soft-disabled rows stay reachable. In a selection list an expandable row is a roving stop too
+(md-list `isItemFocusable`), and its caret is a further tab stop. Focus entering a row or its caret from outside sends
+`mdRequestActivation` (entering through the caret first makes the row the active row, `mdActivate`, as md-list does on
+the fixed source, gate-7 r3-25); a move between them does not. The rows of a collapsed panel are not tab stops (r3-26). The caret takes the host's keys: ArrowRight/Left expand/collapse,
+ArrowUp/Down/Home/End rove (from a row that is not a stop: the first/last stop; with no stop, focus stays), Enter/Space
+activate the caret and then click the host (mdExpand, mdExpand, mdClick: the panel ends where it started), as Chrome does
+(gate-7 r3-24: `NativeListRovingIntegration` / `NativeListRovingTest` replay `d3-lab/web2/roving-web.json`). Enter/Space give a centred
 ripple and a click. Expandable rows toggle on a row click, the caret (its own tab stop), and
 ArrowRight/ArrowLeft (not mirrored in RTL). Authored trailing controls keep their own pointer
 and key handling; pressing them makes the row `:active` only. Pointer reorder from the drag
@@ -127,10 +140,9 @@ tooltip), as authored nodes have no single text to repeat.
 - **Compose.** `AWCComponent` content is opaque, so rows register with the list and are ordered
   by their laid-out position; a reorder keeps the authored composition and translates rows to
   their displayed slots (accessibility order follows the authored order until the host applies
-  `mdReorder`). Only the md-list/md-list-item dispatch lines of `AWCComponent.kt` changed, so
-  the hybrid density case cannot be reproduced: `AWCDensityScope` does not carry a separate
-  spacing rung beneath a local −1 (32 checks of paint case 120 are recorded as a known gap, not
-  hidden). Chrome resolves the generic `serif` family to Times; Android only has Noto Serif, so
+  `mdReorder`). The hybrid density case (local −1 inside an inherited −4) takes its spacing tokens from the
+  nearest rung that defines them (`LocalAWCDensityRungs`), as SwiftUI does: paint case 120 is compared like every other
+  case (gate-7 r3-15). Chrome resolves the generic `serif` family to Times; Android only has Noto Serif, so
   the `trailing-supporting-text-font` cases compare the trailing text advance (and the flexible
   content beside it) within 3 px.
 
@@ -220,9 +232,8 @@ split-button state opacity), deterministically. The display had been left in key
 apps, so new activities took initial focus. One real tap restores touch mode; with it the same
 classes pass 22/22 (A256), and the full run A257 starts with that tap. No source changed.
 
-**Hybrid density (Compose, 32 checks).** Paint case 120 (local −1 inside global −4):
-`AWCDensityScope` has no separate spacing rung beneath a local −1, and only the md-list dispatch
-lines of `AWCComponent.kt` may change.
+**Hybrid density (Compose) — fixed (gate-7 r3-15).** Paint case 120 (local −1 inside global −4) takes the inherited
+rung's insets and gaps from `LocalAWCDensityRungs`; its 32 checks are compared like every other case.
 
 **Fixed in this pass (found by the oracles).**
 - A host-pointer press reaches the style one frame after it starts (Chrome applies `:active` at
@@ -317,7 +328,6 @@ Follows the md-card Laboratory pattern; evidence and `checkpoint.json` are in
 - *Compose accessibility after a reorder.* The accessibility order follows the authored order until
   the host applies `mdReorder`; Compose has no menu-item or link role (menu rows and link rows are
   buttons).
-- *Hybrid density on Compose.* See the known gaps above.
 - *Slotted headline/supporting content* has no truncation tooltip (authored nodes, no single text).
 
 **Next steps.** An iOS simulator run.

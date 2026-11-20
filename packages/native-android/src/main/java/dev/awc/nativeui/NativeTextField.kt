@@ -99,20 +99,23 @@ internal val LocalAWCTextFieldAppearance=staticCompositionLocalOf { AWCTextField
 /**
  * Typed counterparts of md-text-field's `::part()` rules (container, label, input, supporting-text, counter). Part values come
  * from the outer tree, so they win over the hooks and every internal hover, focus, error and disabled rule, as `::part()`
- * declarations do. Colours are `#RRGGBB[AA]`. The chips part styles nothing of its own (chips are md-chip children).
+ * declarations do. Colours are `#RRGGBB[AA]`. The chips part takes the chips box's background and gap (the chips themselves are
+ * md-chip children: use their chip appearance); `chipsGap` (dp, default 4) spaces chips and, with `chips-wrap`, their rows.
  */
 @Immutable data class AWCTextFieldPartAppearance(
     val containerColor:String?=null,val labelColor:String?=null,val inputColor:String?=null,val caretColor:String?=null,
-    val supportingTextColor:String?=null,val counterColor:String?=null,
+    val supportingTextColor:String?=null,val counterColor:String?=null,val chipsBackgroundColor:String?=null,val chipsGap:Double?=null,
 ) {
     internal fun normalized()=AWCTextFieldPartAppearance(switchColorHex(containerColor),switchColorHex(labelColor),switchColorHex(inputColor),
-        switchColorHex(caretColor),switchColorHex(supportingTextColor),switchColorHex(counterColor))
+        switchColorHex(caretColor),switchColorHex(supportingTextColor),switchColorHex(counterColor),switchColorHex(chipsBackgroundColor),
+        chipsGap?.takeIf { it.isFinite() && it>=0 })
     fun merge(o:AWCTextFieldPartAppearance)=AWCTextFieldPartAppearance(o.containerColor ?: containerColor,o.labelColor ?: labelColor,o.inputColor ?: inputColor,
-        o.caretColor ?: caretColor,o.supportingTextColor ?: supportingTextColor,o.counterColor ?: counterColor)
+        o.caretColor ?: caretColor,o.supportingTextColor ?: supportingTextColor,o.counterColor ?: counterColor,o.chipsBackgroundColor ?: chipsBackgroundColor,o.chipsGap ?: chipsGap)
     companion object {
         fun fromValues(v:Map<String,AWCValue>):AWCTextFieldPartAppearance {
             fun t(k:String)=(v[k] as? String)?.takeIf { it.isNotEmpty() }
-            return AWCTextFieldPartAppearance(t("containerColor"),t("labelColor"),t("inputColor"),t("caretColor"),t("supportingTextColor"),t("counterColor")).normalized()
+            return AWCTextFieldPartAppearance(t("containerColor"),t("labelColor"),t("inputColor"),t("caretColor"),t("supportingTextColor"),t("counterColor"),
+                t("chipsBackgroundColor"),(v["chipsGap"] as? Number)?.toDouble()).normalized()
         }
     }
 }
@@ -419,6 +422,8 @@ internal class TextFieldRuntime {
     var passwordVisible by mutableStateOf(false)
     var listening by mutableStateOf(false)
     var multilineHeight by mutableStateOf(0.0)
+    /** `chips-wrap`: the input row's measured height (the chips box, and the input on its own line once it no longer fits beside them). */
+    var chipsRowHeight by mutableStateOf(0.0)
     var baseline=""
     var lastValue:String?=null
     var lastValidityKey:String?=null
@@ -463,6 +468,8 @@ internal class AWCFieldHooks(
     /** Space and printable characters typed into a read-only input reach [key] (the character, " " for Space): Chrome still
      *  dispatches keydown in a readonly input (md-select / md-multi-select open on Space). */
     val readOnlyKeys:Boolean=false,
+    /** role="combobox": the expand / collapse accessibility actions (aria-expanded toggled by the composite; md-autocomplete). */
+    val expand:((Boolean)->Unit)?=null,
 )
 
 @Composable
@@ -566,7 +573,7 @@ internal fun NativeTextField(p:Props,onEvent:EventSink,controlEvent:EventSink,sl
         rt.speech=rec;rt.listening=true
         rec.startListening(android.content.Intent(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
             .putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE_MODEL,android.speech.RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            .putExtra(android.speech.RecognizerIntent.EXTRA_PARTIAL_RESULTS,true).apply { if(m.speechLang.isNotEmpty()) putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE,m.speechLang) })
+            .putExtra(android.speech.RecognizerIntent.EXTRA_PARTIAL_RESULTS,true).apply { if(speechLanguage(m).isNotEmpty()) putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE,speechLanguage(m)) })
     }
     fun edited(next:TextFieldValue) {
         val prev=rt.field.value
@@ -646,7 +653,9 @@ internal fun NativeTextField(p:Props,onEvent:EventSink,controlEvent:EventSink,sl
         color=awcColor(st.input(states),Color.Black),lineHeightStyle=LineHeightStyle(LineHeightStyle.Alignment.Center,LineHeightStyle.Trim.None),
         platformStyle=PlatformTextStyle(includeFontPadding=false))
     val multi=m.isMultiline;val fixedMulti=m.multiline=="fixed"
-    val chipsH=if(hasChips) 32.0 else 0.0
+    // The chips' share of the input row: one 32 dp chip line, or with chips-wrap the row's measured height (the field grows).
+    val wrapRow=m.chipsWrap && !multi
+    val chipsH=if(!hasChips) 0.0 else if(wrapRow) max(32.0,rt.chipsRowHeight) else 32.0
     val affixOn=floating && (m.prefixText.isNotEmpty() || m.suffixText.isNotEmpty())
     val rowH=max(st.inputLine,max(chipsH,if(affixOn) st.affixLine else 0.0))
     val chipPad=if(st.filled && floating && hasChips && m.label.isNotEmpty()) max(12.0,16+scale) else 0.0
@@ -679,19 +688,23 @@ internal fun NativeTextField(p:Props,onEvent:EventSink,controlEvent:EventSink,sl
                         CompositionLocalProvider(androidx.compose.material3.LocalContentColor provides awcColor(st.leadingIcon(states),Color.Black),LocalAWCButtonSlotSize provides st.iconSize.dp) { content() } } }
                 // The input wrap: input row at its flex position plus the absolutely positioned label (mirrored under RTL).
                 Layout(content={
-                    Row(verticalAlignment=if(multi) Alignment.Top else Alignment.CenterVertically) {
-                        SlotPresence({ slot?.invoke("chips") },32.0,{ hasChips=it },measureWidth=true) { content-> FieldChipsFlow(m.chipsWrap,Modifier.inspectAWCNode(inspection,"chips","chips")) { content() } }
-                        if(hasChips) Spacer(Modifier.width(4.dp))
+                    val chipsGap=st.parts.chipsGap ?: 4.0;val chipsBg=st.parts.chipsBackgroundColor
+                    FieldInputRow(m.chipsWrap,hasChips,multi,{
+                        SlotPresence({ slot?.invoke("chips") },32.0,{ hasChips=it },measureWidth=true) { content->
+                            FieldChipsFlow(m.chipsWrap,chipsGap,Modifier.then(if(chipsBg!=null) Modifier.background(awcColor(chipsBg,Color.Transparent)) else Modifier)
+                                .fieldPart(inspection,"chips",values,mapOf("background" to (chipsBg ?: ""),"gap" to chipsGap))) { content() } }
+                    },Modifier.then(if(wrapRow) Modifier.onSizeChanged { val h=it.height/density.density.toDouble();if(abs(h-rt.chipsRowHeight)>.5) rt.chipsRowHeight=h } else Modifier)) {
+                    Row(verticalAlignment=if(multi) Alignment.Top else Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(if(hasChips) 4.dp else 0.dp)) {
                         if(m.prefixText.isNotEmpty() && floating) androidx.compose.material3.Text(m.prefixText,Modifier.padding(end=2.dp).inspectAWCNode(inspection,"prefix","prefix"),
                             style=inputStyle.copy(letterSpacing=0.sp,lineHeight=st.affixLine.sp,color=awcColor(st.affix(states),Color.Black)),maxLines=1)
                         val textColor=awcColor(st.input(states),Color.Black)
                         BasicTextField(value=rt.field.value,onValueChange={ edited(it) },enabled=!disabled,readOnly=m.readOnly,textStyle=inputStyle.copy(color=textColor),
                             singleLine=!multi,minLines=if(multi) m.effectiveRows else 1,maxLines=if(fixedMulti) m.effectiveRows else if(multi) Int.MAX_VALUE else 1,
                             visualTransformation=if(secure) PasswordVisualTransformation('•') else VisualTransformation.None,
-                            keyboardOptions=KeyboardOptions(capitalization=KeyboardCapitalization.None,
+                            keyboardOptions=KeyboardOptions(capitalization=tfCapitalization(m.autoCapitalize),autoCorrectEnabled=m.spellcheck,
                                 keyboardType=when(m.inputMode.ifEmpty { m.type }) { "numeric","number" -> KeyboardType.Number; "decimal" -> KeyboardType.Decimal; "tel" -> KeyboardType.Phone
                                     "email" -> KeyboardType.Email; "url" -> KeyboardType.Uri; "password" -> if(secure) KeyboardType.Password else KeyboardType.Text; else -> KeyboardType.Text },
-                                imeAction=if(multi) ImeAction.Default else when(m.enterKeyHint) { "done" -> ImeAction.Done; "go" -> ImeAction.Go; "next" -> ImeAction.Next; "search" -> ImeAction.Search; "send" -> ImeAction.Send; else -> ImeAction.Done }),
+                                imeAction=tfImeAction(m.enterKeyHint,multi)),
                             keyboardActions=KeyboardActions(onAny={ command("Enter") }),
                             cursorBrush=SolidColor(awcColor(st.caret(states),Color.Black)),
                             onTextLayout={ if(multi && m.multiline=="auto-grow") { val h=with(density) { it.size.height.toDp().value.toDouble() };if(abs(h-rt.multilineHeight)>.5) rt.multilineHeight=h } },
@@ -709,14 +722,18 @@ internal fun NativeTextField(p:Props,onEvent:EventSink,controlEvent:EventSink,sl
                                         command(e.utf16CodePoint.toChar().toString()) else false } }
                                 .semantics { contentDescription=m.label.ifEmpty { m.ariaLabel }; if(hasError) error(supportMessage.ifEmpty { validationMessage });
                                     // role="combobox" (select family): TalkBack hears the popup state with the text field's own role.
-                                    stateDescription=listOf(if(m.inputRole=="combobox") (if(m.inputExpanded) "expanded" else "collapsed") else "",supportMessage,counter).filter { it.isNotEmpty() }.joinToString(" ") }
+                                    stateDescription=listOf(if(m.inputRole=="combobox") (if(m.inputExpanded) "expanded" else "collapsed") else "",supportMessage,counter).filter { it.isNotEmpty() }.joinToString(" ")
+                                    if(m.inputRole=="combobox") hooks?.expand?.let { x-> if(m.inputExpanded) collapse { x(false);true } else expand { x(true);true } } }
                                 .fieldPart(inspection,"input",values,mapOf("value" to rt.field.value.text,"secure" to secure,"fontSize" to st.inputFont,"lineHeight" to st.inputLine,
-                                    "color" to st.input(states),"caret" to st.caret(states))),
+                                    "color" to st.input(states),"caret" to st.caret(states),"imeAction" to tfImeAction(m.enterKeyHint,multi).toString(),
+                                    "capitalization" to tfCapitalization(m.autoCapitalize).toString(),"autoCorrect" to m.spellcheck,
+                                    "role" to (if(m.inputRole=="combobox") "combobox" else "textbox"),"expanded" to (if(m.inputRole=="combobox") m.inputExpanded.toString() else "none"),"ariaAutocomplete" to m.inputAriaAutocomplete),allowZeroSize=true),
                             decorationBox={ inner-> Box(contentAlignment=if(multi) Alignment.TopStart else Alignment.CenterStart) {
                                 if(rt.field.value.text.isEmpty() && floating && m.placeholder.isNotEmpty()) androidx.compose.material3.Text(m.placeholder,style=inputStyle.copy(color=awcColor(st.placeholder,Color.Black)),maxLines=1)
                                 inner() } })
                         if(m.suffixText.isNotEmpty() && floating) androidx.compose.material3.Text(m.suffixText,Modifier.padding(start=2.dp).inspectAWCNode(inspection,"suffix","suffix"),
                             style=inputStyle.copy(letterSpacing=0.sp,lineHeight=st.affixLine.sp,color=awcColor(st.affix(states),Color.Black)),maxLines=1)
+                    }
                     }
                     if(m.label.isNotEmpty()) androidx.compose.material3.Text(m.label,Modifier.fieldPart(inspection,"label",values,mapOf("fontSize" to font,"lineHeight" to line,"progress" to prog,"color" to labelC.target)).clearAndSetSemantics { },
                         style=TextStyle(fontFamily=FieldRoboto,fontSize=font.sp,lineHeight=line.sp,letterSpacing=0.sp,color=labelColor,textMotion=androidx.compose.ui.text.style.TextMotion.Animated,
@@ -735,7 +752,7 @@ internal fun NativeTextField(p:Props,onEvent:EventSink,controlEvent:EventSink,sl
                     if(!disabled) { if(m.passwordToggle==FieldMode.Internal) { rt.passwordVisible=!rt.passwordVisible;emit("mdPasswordToggle",mapOf("visible" to rt.passwordVisible)) }
                         else emit("mdPasswordToggle",mapOf("visible" to (m.type=="password")));rt.focus() } }
                 if(m.speechToText!=FieldMode.Off) FieldActionButton(if(rt.listening) "hearing" else "mic",if(rt.listening) "Stop listening" else "Start voice input",rt.listening,disabled || m.readOnly,false,st,states,
-                    { _,h-> st.action(states,disabled || m.readOnly,h,rt.listening) },"speech",inspection,values,{ slot?.invoke("speech-icon") }) {
+                    { _,h-> st.action(states,disabled || m.readOnly,h,rt.listening) },"speech",inspection,values,{ slot?.invoke("speech-icon") },extra=mapOf("lang" to speechLanguage(m))) {
                     if(!disabled && !m.readOnly) { if(m.speechToText==FieldMode.External) { rt.listening=!rt.listening;emit("mdSpeechResult",mapOf("transcript" to "","listening" to rt.listening)) }
                         else toggleSpeech() } }
                 if(hasError) Box(Modifier.padding(start=st.gapLG.dp,top=if(fixedMulti) 16.dp else 0.dp).size(st.iconSize.dp).inspectAWCNode(inspection,"error-icon","error-icon").clearAndSetSemantics { },contentAlignment=Alignment.Center) {
@@ -782,7 +799,10 @@ internal fun NativeTextField(p:Props,onEvent:EventSink,controlEvent:EventSink,sl
                 platformStyle=PlatformTextStyle(includeFontPadding=false))
             // CSS: display:flex; justify-content:space-between; gap:16px; padding:4px 16px 0 — the text shrinks, the counter does not.
             Layout(content={
+                // A whitespace-only message keeps the row (its 4 dp top padding) with no line: CSS collapses the lone space (n4).
+                val blank=supportMessage.isNotEmpty() && supportMessage.isBlank()
                 androidx.compose.material3.Text(supportMessage.ifEmpty { if(m.reserveSupportingSpace) "\u200B" else "" },Modifier
+                    .then(if(blank) Modifier.height(0.dp) else Modifier)
                     .fieldPart(inspection,"supporting-text",values,mapOf("role" to (if(hasError) "alert" else "")),allowZeroSize=true)
                     .semantics { if(hasError) liveRegion=LiveRegionMode.Assertive },style=sStyle.copy(color=awcColor(st.support(states),Color.Black)))
                 if(count.isNotEmpty()) androidx.compose.material3.Text(count,Modifier.inspectAWCNode(inspection,"counter","counter"),style=sStyle.copy(color=awcColor(st.counter(states),Color.Black)),maxLines=1)
@@ -807,16 +827,44 @@ internal val LocalAWCTextFieldInspector=staticCompositionLocalOf<((Map<String,Ma
     return inspectAWCNode(inspection,part,if(part.isEmpty()) "md-text-field" else part,allowZeroSize=allowZeroSize)
 }
 
-/** `.md-text-field__chips`: inline-flex, gap 4; `chips-wrap` wraps rows 6 apart, otherwise one clipped row. The input keeps 40 + 4. */
-@Composable private fun FieldChipsFlow(wrap:Boolean,modifier:Modifier,content:@Composable ()->Unit)=Layout(content,if(wrap) modifier else modifier.clipToBounds()) { ms,cons->
-    val gap=4.dp.roundToPx();val rowGap=6.dp.roundToPx()
-    val maxW=if(cons.hasBoundedWidth) (cons.maxWidth-44.dp.roundToPx()).coerceAtLeast(0) else Int.MAX_VALUE
-    val ps=ms.map { it.measure(Constraints()) }
+/** `.md-text-field__chips`: inline-flex, `gap` (4, or `::part(chips)`): one clipped line filling the row, or with `chips-wrap` rows `gap` apart. */
+@Composable private fun FieldChipsFlow(wrap:Boolean,gap:Double,modifier:Modifier,content:@Composable ()->Unit)=Layout(content,if(wrap) modifier else modifier.clipToBounds()) { ms,cons->
+    val g=gap.dp.roundToPx()
+    // One clipped line filling the row (flex 1 1 auto), or chips-wrap rows at the row's width (the row puts the input beside or below).
+    val maxW=if(!cons.hasBoundedWidth) Int.MAX_VALUE else cons.maxWidth
+    // A child wider than the box (a composite's own wrapping chip container, md-multi-select) lays out at the box's width.
+    val ps=ms.map { if(wrap && maxW<Int.MAX_VALUE && it.maxIntrinsicWidth(Constraints.Infinity)>maxW) it.measure(Constraints(maxWidth=maxW)) else it.measure(Constraints()) }
     var x=0;var y=0;var rowH=0;var w=0;val pos=ArrayList<IntArray>()
-    for(p in ps) { if(wrap && x>0 && x+p.width>maxW) { y+=rowH+rowGap;x=0;rowH=0 }
-        val px=if(x>0) x+gap else 0;pos.add(intArrayOf(px,y));x=px+p.width;rowH=max(rowH,p.height);w=max(w,x) }
-    layout(min(w,maxW),y+rowH) { ps.forEachIndexed { i,p-> p.placeRelative(pos[i][0],pos[i][1]) } }
+    for(p in ps) { if(wrap && x>0 && x+g+p.width>maxW) { y+=rowH+g;x=0;rowH=0 }
+        val px=if(x>0) x+g else 0;pos.add(intArrayOf(px,y));x=px+p.width;rowH=max(rowH,p.height);w=max(w,x) }
+    // One line fills the row; a wrapping box is flex-shrunk to its line: it fills the row once its chips no longer fit on one line.
+    layout(if(!wrap && maxW<Int.MAX_VALUE || wrap && (y>0 || w>maxW)) maxW else min(w,maxW),y+rowH) { ps.forEachIndexed { i,p-> p.placeRelative(pos[i][0],pos[i][1]) } }
 }
+
+/**
+ * `.md-text-field__input-row`, centred (top for multiline). Without chips the input group (prefix, input, suffix) takes the row. With
+ * chips on one line the chips box fills the row (flex 1 1 auto) and the input takes none of it (flex 0 1 0), as the source's single-line
+ * chips own the row. With `chips-wrap` it is a wrapping flex row (gap 4, row-gap 6): the chips box at its max-content width (the whole
+ * line once wider, its chips wrapping inside) and the input (flex 1 0 40px) beside it when 40 dp fit, otherwise on the next line at
+ * the full width; the field grows with its chips (md-multi-select's inline wrap). One layout throughout, so chips arriving or leaving
+ * never recreate the input.
+ */
+@Composable private fun FieldInputRow(wrap:Boolean,hasChips:Boolean,top:Boolean,chips:@Composable ()->Unit,modifier:Modifier,input:@Composable ()->Unit)=
+    Layout(contents=listOf(chips,input),modifier=modifier) { (cm,im),c->
+        val w=c.maxWidth;val gap=if(hasChips) 4.dp.roundToPx() else 0;val rowGap=6.dp.roundToPx();val inputMin=if(hasChips) 40.dp.roundToPx() else 0
+        val line=hasChips && !wrap
+        val cp=cm.map { it.measure(if(line) Constraints.fixedWidth((w-gap).coerceAtLeast(0)) else Constraints(maxWidth=w)) }
+        val cw=if(hasChips) cp.maxOfOrNull { it.width } ?: 0 else 0;val ch=cp.maxOfOrNull { it.height } ?: 0
+        val wrapped=wrap && hasChips && cw+gap+inputMin>w
+        val iw=if(wrapped) w else if(line) 0 else (w-cw-gap).coerceAtLeast(0)
+        val ip=im.map { it.measure(Constraints(minWidth=iw,maxWidth=iw)) }
+        val ih=ip.maxOfOrNull { it.height } ?: 0
+        val h=if(wrapped) ch+rowGap+ih else max(ch,ih)
+        layout(w,h) {
+            if(wrapped) { cp.forEach { it.placeRelative(0,0) };ip.forEach { it.placeRelative(0,ch+rowGap) } }
+            else { cp.forEach { it.placeRelative(0,if(top) 0 else (h-it.height)/2) };ip.forEach { it.placeRelative(cw+gap,if(top) 0 else (h-it.height)/2) } }
+        }
+    }
 
 /** Measures authored slot content: present when it has an intrinsic width (the source's slotchange state). */
 @Composable private fun SlotPresence(slotContent:@Composable ()->Unit,size:Double,onPresence:(Boolean)->Unit,measureWidth:Boolean=false,wrapper:@Composable (@Composable ()->Unit)->Unit) {
@@ -839,13 +887,13 @@ internal val LocalAWCTextFieldInspector=staticCompositionLocalOf<((Map<String,Ma
 
 /** Clear / password toggle / speech: a 40×40 (min) target, margins −6/−8, focus ring 6 dp inside. */
 @Composable private fun FieldActionButton(glyph:String,label:String,pressed:Boolean?,disabled:Boolean,hidden:Boolean,st:TextFieldStyle,s:TextFieldStates,
-                                          ink:(String,Boolean)->Pair<String,Double>,part:String,inspection:AWCInspectionContext?,values:MutableMap<String,Map<String,Any?>>,icon:@Composable ()->Unit,action:()->Unit) {
+                                          ink:(String,Boolean)->Pair<String,Double>,part:String,inspection:AWCInspectionContext?,values:MutableMap<String,Map<String,Any?>>,icon:@Composable ()->Unit,extra:Map<String,Any?> = emptyMap(),action:()->Unit) {
     val box=max(40.0,st.iconSize);val src=remember { MutableInteractionSource() };val hovered by src.collectIsHoveredAsState()
     var focused by remember { mutableStateOf(false) }
     val (hex,op)=ink(glyph,hovered)
     Box(Modifier.layout { m,c-> val pl=m.measure(Constraints.fixed((box*density).roundToInt(),(box*density).roundToInt()))
             layout(((box-12)*density).roundToInt(),((box-16)*density).roundToInt()) { pl.placeRelative((-6*density).roundToInt(),(-8*density).roundToInt()) } }
-        .fieldPart(inspection,part,values,mapOf("disabled" to disabled,"label" to label,"pressed" to pressed))
+        .fieldPart(inspection,part,values,mapOf("disabled" to disabled,"label" to label,"pressed" to pressed)+extra)
         .alpha(if(hidden) 0f else 1f)
         .hoverable(src,enabled=!disabled)
         .onFocusChanged { focused=it.isFocused }.focusable(!disabled)
@@ -861,3 +909,10 @@ internal val LocalAWCTextFieldInspector=staticCompositionLocalOf<((Map<String,Ma
         }
     }
 }
+
+/** `autoCapitalize` (Web `autocapitalize`): none / off and the unset default type exactly the keys pressed. */
+internal fun tfCapitalization(v:String)=when(v) { "words" -> KeyboardCapitalization.Words; "characters" -> KeyboardCapitalization.Characters; "sentences","on" -> KeyboardCapitalization.Sentences; else -> KeyboardCapitalization.None }
+/** `enterKeyHint` -> the IME action of a single-line field (a multiline field keeps the default action: Enter inserts a line break). */
+internal fun tfImeAction(hint:String,multi:Boolean)=if(multi) ImeAction.Default else when(hint) { "done" -> ImeAction.Done; "go" -> ImeAction.Go; "next" -> ImeAction.Next; "search" -> ImeAction.Search; "send" -> ImeAction.Send; else -> ImeAction.Done }
+/** `speechLang`: the recognition language; empty selects the system default. */
+internal fun speechLanguage(m:TextFieldModel)=m.speechLang

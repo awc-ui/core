@@ -122,31 +122,39 @@ class NativeMenuPaintTest {
             Box(Modifier.fillMaxSize().background(surface)) {
                 Box(Modifier.wrapContentSize(Alignment.TopStart,unbounded=true).requiredSize(vw.dp,vh.dp).graphicsLayer { translationX=-shift*2 }) {
                     AWCMenuScope(scope,Modifier.fillMaxSize().background(surface)) {
-                        AWCMenuAppearanceScope(AWCMenuAppearance.fromCss(MenuWeb.hooks(c))) { AWCDensityScope(c.optDouble("density",0.0)) { AWCMenuReducedMotionScope(false) { AWCMenuInspectionScope(inspection) {
+                        AWCMenuAppearanceScope(AWCMenuAppearance.fromCss(MenuWeb.hooks(c))) { AWCDensityScope(c.optDouble("density",0.0)) { AWCMenuReducedMotionScope(false) { AWCMenuInspectionScope(inspection) { MenuPartsNest(c.optJSONArray("parts"),0) {
                             for(n in nodes) {
                                 if(n.tag=="#anchor") { if(anchor!=null) MenuWeb.Anchor(n,anchor,tokens) }
                                 else Box(Modifier.absoluteOffset(box[0].dp,box[1].dp).width(box[2].dp)) {
                                     CompositionLocalProvider(LocalLayoutDirection provides if(rtl) LayoutDirection.Rtl else LayoutDirection.Ltr) {
                                         Box(Modifier.align(if(rtl) Alignment.TopEnd else Alignment.TopStart)) {
-                                            AWCInspectionScope(collector,n.id) { MenuWeb.Render(n,tokens) { x-> if(x.id=="m" && !closed) mapOf("open" to true) else emptyMap() } }
+                                            MenuInlineFillFixture(c.optJSONObject("inlineFill")) { AWCInspectionScope(collector,n.id) { MenuWeb.Render(n,tokens) { x-> if(x.id=="m" && !closed) mapOf("open" to true) else emptyMap() } } }
                                         }
                                     }
                                 }
                             }
-                        } } } }
+                        } } } } }
                     }
                 }
             }
         } }
     } } }
-    @Test fun menuMatchesChromePaintAndGeometry() {
+    /** The fixtures: menu-web-paint and menu-r4-paint (gate-7 r4 parts and hooks) both run by default (R4-23); the
+     *  `menuFixture` argument runs one of them. */
+    private val selectedFixture=androidx.test.platform.app.InstrumentationRegistry.getArguments().getString("menuFixture")
+    private var fixture="menu-web-paint"
+    @Test fun menuMatchesChromePaintAndGeometry() { paint(selectedFixture ?: "menu-web-paint") }
+    @Test fun menuR4PartsAndHooksMatchChromePaint() { if(selectedFixture==null) paint("menu-r4-paint") }
+    private fun paint(f:String) {
+        fixture=f
         content()
-        val oracle=CardWeb.document("menu-web-paint.json")
+        val oracle=CardWeb.document("$fixture.json")
         val only=androidx.test.platform.app.InstrumentationRegistry.getArguments().getString("menuPaintOnly")
         for(c in oracle.getJSONArray("cases").objects()) if(only==null || only.split(',').any { c.getString("name").contains(it) }) run(c)
         val out=JSONObject().put("checks",checks).put("failures",failures.size).put("failureList",JSONArray(failures.take(3000))).put("report",report)
-        MenuEvidence.log("menu-paint",out)
-        android.util.Log.i("AWCMenu","menu-paint ${checks-failures.size}/$checks")
+        val evidence=if(fixture=="menu-web-paint") "menu-paint" else fixture
+        MenuEvidence.log(evidence,out)
+        android.util.Log.i("AWCMenu","$evidence ${checks-failures.size}/$checks")
         assertTrue("${failures.size} of $checks failed:\n"+failures.take(80).joinToString("\n"),failures.isEmpty())
     }
     /** [h] widens only the horizontal checks (x, width): the fallback-font slack never moves anything vertically. */
@@ -210,7 +218,7 @@ class NativeMenuPaintTest {
         val clip=c.getJSONObject("clip")
         val nat=MenuEvidence.capture(compose,clip) { shift=it;compose.waitForIdle() }
         shift=0f
-        val web=CardWeb.webGrid("menu-web-paint/$name.png",clip)
+        val web=CardWeb.webGrid("$fixture/$name.png",clip)
         // With a fallback-font slack the surfaces' edges (and their shadows) may sit up to `slack` px apart: those bands are masked.
         val masks=mutableListOf<androidx.compose.ui.geometry.Rect>()
         if(slack>0) for(m in MenuWeb.all(MenuWeb.nodes(c.optJSONArray("nodes") ?: JSONArray())).filter { it.tag=="md-menu" }) {
@@ -246,5 +254,26 @@ internal object MenuEvidence {
             seg=end
         }
         return CardWeb.Grid(x,y,w,h,v)
+    }
+}
+
+/** Inline-fill cases (fixture `inlineFill`: the flex container's size): the menu fills it inside AWCMenuInlineFillScope. */
+@androidx.compose.runtime.Composable private fun MenuInlineFillFixture(size:JSONObject?,content:@androidx.compose.runtime.Composable ()->Unit) {
+    if(size==null) { content();return }
+    androidx.compose.foundation.layout.Box(Modifier.size(size.getDouble("width").dp,size.getDouble("height").dp)) { dev.awc.nativeui.AWCMenuInlineFillScope { content() } }
+}
+/** A case's `::part` rules (fixture `parts`: {tag, id?, part, values}) as nested typed part-appearance scopes. */
+@androidx.compose.runtime.Composable private fun MenuPartsNest(parts:JSONArray?,i:Int,content:@androidx.compose.runtime.Composable ()->Unit) {
+    if(parts==null || i>=parts.length()) { content();return }
+    val p=parts.getJSONObject(i);val v=p.optJSONObject("values") ?: JSONObject()
+    fun s(k:String)=v.optString(k).ifEmpty { null }
+    fun n(k:String)=v.optDouble(k).takeIf { !it.isNaN() }
+    val a=dev.awc.nativeui.AWCMenuPartAppearance(s("background"),s("color"),s("outlineColor"),n("outlineWidth"),n("cornerRadius"),n("opacity"),n("letterSpacing"))
+    val id=p.optString("id").ifEmpty { null };val name=p.getString("part")
+    when(p.getString("tag")) {
+        "md-menu"->dev.awc.nativeui.AWCMenuPartAppearanceScope(dev.awc.nativeui.AWCMenuPart.entries.first { it.source==name },a,id) { MenuPartsNest(parts,i+1,content) }
+        "md-menu-item"->dev.awc.nativeui.AWCMenuItemPartAppearanceScope(dev.awc.nativeui.AWCMenuItemPart.entries.first { it.source==name },a,id) { MenuPartsNest(parts,i+1,content) }
+        "md-sub-menu-item"->dev.awc.nativeui.AWCSubMenuItemPartAppearanceScope(dev.awc.nativeui.AWCSubMenuItemPart.entries.first { it.source==name },a,id) { MenuPartsNest(parts,i+1,content) }
+        else->MenuPartsNest(parts,i+1,content)
     }
 }

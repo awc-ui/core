@@ -90,6 +90,9 @@ struct CardLifecycleFixture: View {
         make(field: true)
         if let field = all(host).compactMap({ $0 as? NSTextField }).first { _ = window.makeFirstResponder(field); pump(0.05) }
         key(" ", 49); key("a", 0)
+        // The typed text reaches the SwiftUI binding asynchronously on iOS (3-1-013: " a" is present about 0.3 s after the second key,
+        // 0.05 s is too early); wait for it, up to 1 s. The expected text is unchanged.
+        for _ in 0..<20 where state.text.count < 2 { pump(0.05) }
         check(names().isEmpty && by["authored-keyboard"]!["events"].array.isEmpty, "authored-keyboard: no card events (\(names()))")
         check(state.text == " a", "authored-keyboard: the authored field receives the keys unprevented (\(state.text.debugDescription))")
         record("authored-keyboard", ["text": state.text])

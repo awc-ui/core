@@ -67,9 +67,13 @@ struct MultiStatesGrid {
 }
 // A key-capable offscreen window: keys reach the first responder through NSApp (as n3's field harnesses do).
 #if canImport(AppKit)
-final class MultiKeyWindow: NSWindow { override var canBecomeKey: Bool { true }; override var canBecomeMain: Bool { true } }
+// Shared harness (story 6-5): reports presses AppKit swallows while the window is not key; the host accepts first mouse.
+final class MultiKeyWindow: AWCHarnessWindow {}
+typealias MultiKeyWindowHost = AWCHarnessHost<MultiStatesFixture>
 #else
 typealias MultiKeyWindow = NSWindow
+typealias MultiKeyWindowHost = NSHostingView<MultiStatesFixture>
+@MainActor enum AWCHarnessInput { static var step = ""; static func watch(_ w: NSWindow) {}; static func takeLostInputs() -> [String] { [] }; static func summary() -> String { "" } }
 #endif
 /// A focusable 1 pt view after the fixture in the key-view loop.
 #if canImport(AppKit)
@@ -84,7 +88,7 @@ struct AWCTabSentinel: View { var body: some View { Color.clear } }
 #endif
 @main @MainActor enum NativeMultiSelectStatesIntegration {
     static let state = MultiStatesState()
-    static var host: NSHostingView<MultiStatesFixture>!, window: MultiKeyWindow!
+    static var host: MultiKeyWindowHost!, window: MultiKeyWindow!
     static var checks = 0, failures: [String] = [], report: [[String: Any]] = []
     static var events: [(name: String, t: Double, detail: AWCValue)] = []
     static var t0 = 0.0
@@ -169,7 +173,11 @@ struct AWCTabSentinel: View { var body: some View { Color.clear } }
         if (r as? NSView)?.accessibilityIdentifier() == "tab-sentinel" { return "body" }
         if r is NSText { return "field" }
         #else
-        if r is UITextField || r is UITextView { return "field" }
+        if r is UITextField || r is UITextView {
+            // iOS: the open select keeps the first responder on its field; the focused option row is logical.
+            if let c = state.registry.controllers["m::menu"], c.isOpen, !c.closing, c.logicalRowFocus, c.comboboxID == nil, let id = c.focusedID { if let o = options.first(where: { $0.id == id }) { return "option:" + o.label }; return id == "m::selectAll" ? "selectall" : id }
+            return "field"
+        }
         #endif
         if let v = r as? NSView {
             let id = v.accessibilityIdentifier()
@@ -225,7 +233,9 @@ struct AWCTabSentinel: View { var body: some View { Color.clear } }
             if ProcessInfo.processInfo.environment["AWC_MULTI_EVENTS"] != nil { print("  phase \(p["label"].string) t=\(Int(now()))"); fflush(stdout) }
             let actual = now(); var samples: [MultiSample] = []
             var first = sample(); first.t -= actual; samples.append(first)
+            AWCHarnessInput.step = "\(name) \(p["label"].string)"
             act(p["act"])
+            for lost in AWCHarnessInput.takeLostInputs() { check(false, lost) }
             var shotTimes: [Double] = []; var at = lastWeb - start + 17
             while at < duration - 8 { shotTimes.append(at); at += 16 }; shotTimes.append(duration)
             var shotsTaken: [NSBitmapImageRep] = []
@@ -334,7 +344,7 @@ struct AWCTabSentinel: View { var body: some View { Color.clear } }
     }
     static func main() {
         _ = NSApplication.shared; NSApp.setActivationPolicy(.accessory)
-        host = NSHostingView(rootView: MultiStatesFixture(state: state, onEvent: { e in if e.name.hasPrefix("md") && e.nodeID == "m" { events.append((e.name, now(), e.detail)); if ProcessInfo.processInfo.environment["AWC_MULTI_EVENTS"] != nil { print("  event \(e.name) t=\(Int(now()))"); fflush(stdout) } } }))
+        host = MultiKeyWindowHost(rootView: MultiStatesFixture(state: state, onEvent: { e in if e.name.hasPrefix("md") && e.nodeID == "m" { events.append((e.name, now(), e.detail)); if ProcessInfo.processInfo.environment["AWC_MULTI_EVENTS"] != nil { print("  event \(e.name) t=\(Int(now()))"); fflush(stdout) } } }))
         window = MultiKeyWindow(contentRect: .init(x: -20000, y: -20000, width: 1200, height: 900), styleMask: [.borderless], backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false; window.colorSpace = .sRGB; window.acceptsMouseMovedEvents = true; window.contentView = host
         #if canImport(AppKit)
@@ -343,6 +353,7 @@ struct AWCTabSentinel: View { var body: some View { Color.clear } }
         window.appearance = NSAppearance(named: .aqua)
         #endif
         window.makeKeyAndOrderFront(nil); NSApp.activate(ignoringOtherApps: true); pump(0.8)
+        AWCHarnessInput.watch(window)
         let fixtures = URL(fileURLWithPath: #filePath).deletingLastPathComponent().appendingPathComponent("Fixtures")
         let only = ProcessInfo.processInfo.environment["AWC_MULTI_ONLY"]
         for (file, dir, reduced) in [("multi-web-states.json", "multi-web-states", false), ("multi-web-states-reduced.json", "multi-web-states-reduced", true)] {
@@ -351,6 +362,8 @@ struct AWCTabSentinel: View { var body: some View { Color.clear } }
             for r in oracle["runs"].array where only.map({ o in o.split(separator: ",").contains { r["name"].string.contains($0) } }) ?? true { run(r, shots: fixtures.appendingPathComponent(dir), reduced: reduced) }
         }
         if let out = ProcessInfo.processInfo.environment["AWC_MULTI_OUTPUT"] { try! JSONSerialization.data(withJSONObject: ["checks": checks, "failures": failures, "report": report], options: [.prettyPrinted, .sortedKeys]).write(to: URL(fileURLWithPath: out)) }
+        for lost in AWCHarnessInput.takeLostInputs() { check(false, lost) }
+        print(AWCHarnessInput.summary())
         print("Multi-select native states: \(checks - failures.count)/\(checks) checks passed")
         window.close(); if !failures.isEmpty { exit(1) }
     }

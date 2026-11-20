@@ -1,0 +1,1687 @@
+{
+ "oracle": {
+  "browser": "Chrome/153.0.8010.36",
+  "createdAt": "2026-11-04T15:28:25.467Z"
+ },
+ "cases": [
+  {
+   "name": "host-cursors",
+   "nodes": [
+    {
+     "id": "b1",
+     "tag": "md-button",
+     "properties": {
+      "label": "Save",
+      "variant": "filled"
+     }
+    },
+    {
+     "id": "b2",
+     "tag": "md-button",
+     "properties": {
+      "label": "Save",
+      "disabled": true
+     }
+    },
+    {
+     "id": "b3",
+     "tag": "md-button",
+     "properties": {
+      "label": "Save",
+      "softDisabled": true
+     }
+    },
+    {
+     "id": "ib",
+     "tag": "md-icon-button",
+     "properties": {
+      "icon": "favorite",
+      "aria-label": "Like"
+     }
+    },
+    {
+     "id": "fab",
+     "tag": "md-fab",
+     "properties": {
+      "icon": "add",
+      "aria-label": "Add"
+     }
+    },
+    {
+     "id": "cb1",
+     "tag": "md-checkbox",
+     "properties": {}
+    },
+    {
+     "id": "cb2",
+     "tag": "md-checkbox",
+     "properties": {
+      "disabled": true
+     }
+    },
+    {
+     "id": "sw1",
+     "tag": "md-switch",
+     "properties": {}
+    },
+    {
+     "id": "sw2",
+     "tag": "md-switch",
+     "properties": {
+      "softDisabled": true
+     }
+    },
+    {
+     "id": "rd1",
+     "tag": "md-radio",
+     "properties": {
+      "name": "g",
+      "value": "a"
+     }
+    },
+    {
+     "id": "ch1",
+     "tag": "md-chip",
+     "properties": {
+      "label": "Assist"
+     }
+    },
+    {
+     "id": "ch2",
+     "tag": "md-chip",
+     "properties": {
+      "label": "Assist",
+      "disabled": true
+     }
+    },
+    {
+     "id": "sl1",
+     "tag": "md-slider",
+     "properties": {
+      "value": 40
+     }
+    },
+    {
+     "id": "sl2",
+     "tag": "md-slider",
+     "properties": {
+      "value": 40,
+      "disabled": true
+     }
+    }
+   ],
+   "probes": [
+    {
+     "target": "b1",
+     "part": ""
+    },
+    {
+     "target": "b2",
+     "part": ""
+    },
+    {
+     "target": "b3",
+     "part": ""
+    },
+    {
+     "target": "ib",
+     "part": ""
+    },
+    {
+     "target": "fab",
+     "part": ""
+    },
+    {
+     "target": "cb1",
+     "part": ""
+    },
+    {
+     "target": "cb2",
+     "part": ""
+    },
+    {
+     "target": "sw1",
+     "part": ""
+    },
+    {
+     "target": "sw2",
+     "part": ""
+    },
+    {
+     "target": "rd1",
+     "part": ""
+    },
+    {
+     "target": "ch1",
+     "part": ""
+    },
+    {
+     "target": "ch2",
+     "part": ""
+    },
+    {
+     "target": "sl1",
+     "part": ""
+    },
+    {
+     "target": "sl2",
+     "part": ""
+    }
+   ]
+  },
+  {
+   "name": "card-cursors",
+   "nodes": [
+    {
+     "id": "c1",
+     "tag": "md-card",
+     "properties": {
+      "interactive": true
+     },
+     "children": [
+      {
+       "id": "c1-t",
+       "tag": "#text",
+       "properties": {
+        "text": "Card c1"
+       }
+      }
+     ]
+    },
+    {
+     "id": "c2",
+     "tag": "md-card",
+     "properties": {
+      "dragEnabled": true
+     },
+     "children": [
+      {
+       "id": "c2-t",
+       "tag": "#text",
+       "properties": {
+        "text": "Card c2"
+       }
+      }
+     ]
+    },
+    {
+     "id": "c3",
+     "tag": "md-card",
+     "properties": {
+      "interactive": true,
+      "dragEnabled": true
+     },
+     "children": [
+      {
+       "id": "c3-t",
+       "tag": "#text",
+       "properties": {
+        "text": "Card c3"
+       }
+      }
+     ]
+    },
+    {
+     "id": "c4",
+     "tag": "md-card",
+     "properties": {
+      "interactive": true,
+      "disabled": true
+     },
+     "children": [
+      {
+       "id": "c4-t",
+       "tag": "#text",
+       "properties": {
+        "text": "Card c4"
+       }
+      }
+     ]
+    },
+    {
+     "id": "c5",
+     "tag": "md-card",
+     "properties": {
+      "interactive": true,
+      "softDisabled": true
+     },
+     "children": [
+      {
+       "id": "c5-t",
+       "tag": "#text",
+       "properties": {
+        "text": "Card c5"
+       }
+      }
+     ]
+    },
+    {
+     "id": "c6",
+     "tag": "md-card",
+     "properties": {},
+     "children": [
+      {
+       "id": "c6-t",
+       "tag": "#text",
+       "properties": {
+        "text": "Card c6"
+       }
+      }
+     ]
+    },
+    {
+     "id": "c7",
+     "tag": "md-card",
+     "properties": {
+      "interactive": true,
+      "dragEnabled": true,
+      "disabled": true
+     },
+     "children": [
+      {
+       "id": "c7-t",
+       "tag": "#text",
+       "properties": {
+        "text": "Card c7"
+       }
+      }
+     ]
+    }
+   ],
+   "probes": [
+    {
+     "target": "c1",
+     "part": ""
+    },
+    {
+     "target": "c2",
+     "part": ""
+    },
+    {
+     "target": "c3",
+     "part": ""
+    },
+    {
+     "target": "c4",
+     "part": ""
+    },
+    {
+     "target": "c5",
+     "part": ""
+    },
+    {
+     "target": "c6",
+     "part": ""
+    },
+    {
+     "target": "c7",
+     "part": ""
+    }
+   ]
+  },
+  {
+   "name": "list-cursors",
+   "nodes": [
+    {
+     "id": "l1",
+     "tag": "md-list",
+     "properties": {},
+     "children": [
+      {
+       "id": "li1",
+       "tag": "md-list-item",
+       "properties": {
+        "headline": "Inbox",
+        "type": "button"
+       }
+      },
+      {
+       "id": "li2",
+       "tag": "md-list-item",
+       "properties": {
+        "headline": "Plain"
+       }
+      },
+      {
+       "id": "li3",
+       "tag": "md-list-item",
+       "properties": {
+        "headline": "Disabled",
+        "type": "button",
+        "disabled": true
+       }
+      },
+      {
+       "id": "li4",
+       "tag": "md-list-item",
+       "properties": {
+        "headline": "Soft",
+        "type": "button",
+        "softDisabled": true
+       }
+      },
+      {
+       "id": "li5",
+       "tag": "md-list-item",
+       "properties": {
+        "headline": "Expand",
+        "expandable": true
+       }
+      }
+     ]
+    },
+    {
+     "id": "l2",
+     "tag": "md-list",
+     "properties": {
+      "selectionMode": "single-select"
+     },
+     "children": [
+      {
+       "id": "ls1",
+       "tag": "md-list-item",
+       "properties": {
+        "headline": "Option"
+       }
+      }
+     ]
+    },
+    {
+     "id": "l3",
+     "tag": "md-list",
+     "properties": {
+      "reorderable": true
+     },
+     "children": [
+      {
+       "id": "lr1",
+       "tag": "md-list-item",
+       "properties": {
+        "headline": "Drag me",
+        "type": "button"
+       }
+      },
+      {
+       "id": "lr2",
+       "tag": "md-list-item",
+       "properties": {
+        "headline": "Drag me too",
+        "type": "button"
+       }
+      }
+     ]
+    }
+   ],
+   "probes": [
+    {
+     "target": "li1",
+     "part": "row"
+    },
+    {
+     "target": "li2",
+     "part": "row"
+    },
+    {
+     "target": "li3",
+     "part": "row"
+    },
+    {
+     "target": "li4",
+     "part": "row"
+    },
+    {
+     "target": "li5",
+     "part": "row"
+    },
+    {
+     "target": "ls1",
+     "part": "row"
+    },
+    {
+     "target": "lr1",
+     "part": "row"
+    },
+    {
+     "target": "lr1",
+     "part": "drag-handle"
+    },
+    {
+     "target": "lr1",
+     "part": "drag-handle",
+     "press": true
+    }
+   ]
+  },
+  {
+   "name": "accordion-cursors",
+   "nodes": [
+    {
+     "id": "a1",
+     "tag": "md-accordion",
+     "properties": {
+      "reorderable": true
+     },
+     "children": [
+      {
+       "id": "ai1",
+       "tag": "md-accordion-item",
+       "properties": {
+        "headline": "First"
+       },
+       "children": [
+        {
+         "id": "ai1-t",
+         "tag": "#text",
+         "properties": {
+          "text": "Panel text for First"
+         }
+        }
+       ]
+      },
+      {
+       "id": "ai2",
+       "tag": "md-accordion-item",
+       "properties": {
+        "headline": "Second",
+        "disabled": true
+       },
+       "children": [
+        {
+         "id": "ai2-t",
+         "tag": "#text",
+         "properties": {
+          "text": "Panel text for Second"
+         }
+        }
+       ]
+      },
+      {
+       "id": "ai3",
+       "tag": "md-accordion-item",
+       "properties": {
+        "headline": "Third"
+       },
+       "children": [
+        {
+         "id": "ai3-t",
+         "tag": "#text",
+         "properties": {
+          "text": "Panel text for Third"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "probes": [
+    {
+     "target": "ai1",
+     "part": "header"
+    },
+    {
+     "target": "ai2",
+     "part": "header"
+    },
+    {
+     "target": "ai3",
+     "part": "drag-handle"
+    },
+    {
+     "target": "ai3",
+     "part": "drag-handle",
+     "press": true
+    }
+   ]
+  },
+  {
+   "name": "hidden-roots",
+   "nodes": [
+    {
+     "id": "h1",
+     "tag": "md-avatar",
+     "properties": {
+      "name": "Ada Lovelace",
+      "hidden": true
+     }
+    },
+    {
+     "id": "h2",
+     "tag": "md-button",
+     "properties": {
+      "label": "Hidden",
+      "hidden": true
+     }
+    },
+    {
+     "id": "h3",
+     "tag": "md-card",
+     "properties": {
+      "interactive": true,
+      "hidden": true
+     },
+     "children": [
+      {
+       "id": "h3-t",
+       "tag": "#text",
+       "properties": {
+        "text": "Card h3"
+       }
+      }
+     ]
+    },
+    {
+     "id": "h4",
+     "tag": "md-divider",
+     "properties": {
+      "hidden": true
+     }
+    },
+    {
+     "id": "h5",
+     "tag": "md-chip",
+     "properties": {
+      "label": "Hidden",
+      "hidden": true
+     }
+    },
+    {
+     "id": "v1",
+     "tag": "md-button",
+     "properties": {
+      "label": "Visible"
+     }
+    }
+   ],
+   "layout": [
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "v1"
+   ]
+  },
+  {
+   "name": "hidden-children",
+   "nodes": [
+    {
+     "id": "ha",
+     "tag": "md-accordion",
+     "properties": {},
+     "children": [
+      {
+       "id": "hai1",
+       "tag": "md-accordion-item",
+       "properties": {
+        "headline": "One"
+       },
+       "children": [
+        {
+         "id": "hai1-t",
+         "tag": "#text",
+         "properties": {
+          "text": "Panel text for One"
+         }
+        }
+       ]
+      },
+      {
+       "id": "hai2",
+       "tag": "md-accordion-item",
+       "properties": {
+        "headline": "Two",
+        "hidden": true
+       },
+       "children": [
+        {
+         "id": "hai2-t",
+         "tag": "#text",
+         "properties": {
+          "text": "Panel text for Two"
+         }
+        }
+       ]
+      },
+      {
+       "id": "hai3",
+       "tag": "md-accordion-item",
+       "properties": {
+        "headline": "Three"
+       },
+       "children": [
+        {
+         "id": "hai3-t",
+         "tag": "#text",
+         "properties": {
+          "text": "Panel text for Three"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "hl",
+     "tag": "md-list",
+     "properties": {},
+     "children": [
+      {
+       "id": "hli1",
+       "tag": "md-list-item",
+       "properties": {
+        "headline": "One",
+        "type": "button"
+       }
+      },
+      {
+       "id": "hli2",
+       "tag": "md-list-item",
+       "properties": {
+        "headline": "Two",
+        "type": "button",
+        "hidden": true
+       }
+      },
+      {
+       "id": "hli3",
+       "tag": "md-list-item",
+       "properties": {
+        "headline": "Three",
+        "type": "button"
+       }
+      }
+     ]
+    }
+   ],
+   "layout": [
+    "ha",
+    "hai1",
+    "hai2",
+    "hai3",
+    "hl",
+    "hli1",
+    "hli2",
+    "hli3"
+   ],
+   "keys": [
+    {
+     "focus": "hai1",
+     "key": "ArrowDown"
+    }
+   ]
+  },
+  {
+   "name": "list-names",
+   "nodes": [
+    {
+     "id": "lbl",
+     "tag": "h2",
+     "properties": {
+      "id": "lbl"
+     },
+     "children": [
+      {
+       "id": "lbl-t",
+       "tag": "#text",
+       "properties": {
+        "text": "Mail folders"
+       }
+      }
+     ]
+    },
+    {
+     "id": "lbl2",
+     "tag": "span",
+     "properties": {
+      "id": "lbl2"
+     },
+     "children": [
+      {
+       "id": "lbl2-t",
+       "tag": "#text",
+       "properties": {
+        "text": "Archive"
+       }
+      }
+     ]
+    },
+    {
+     "id": "ln1",
+     "tag": "md-list",
+     "properties": {
+      "label": "Settings",
+      "labelledby": "lbl"
+     },
+     "children": [
+      {
+       "id": "ln1i",
+       "tag": "md-list-item",
+       "properties": {
+        "headline": "Inbox"
+       }
+      }
+     ]
+    },
+    {
+     "id": "ln2",
+     "tag": "md-list",
+     "properties": {
+      "label": "Settings",
+      "labelledby": "missing"
+     },
+     "children": [
+      {
+       "id": "ln2i",
+       "tag": "md-list-item",
+       "properties": {
+        "headline": "Inbox"
+       }
+      }
+     ]
+    },
+    {
+     "id": "ln3",
+     "tag": "md-list",
+     "properties": {
+      "label": "Settings",
+      "labelledby": "lbl lbl2"
+     },
+     "children": [
+      {
+       "id": "ln3i",
+       "tag": "md-list-item",
+       "properties": {
+        "headline": "Inbox"
+       }
+      }
+     ]
+    },
+    {
+     "id": "ln4",
+     "tag": "md-list",
+     "properties": {
+      "label": "Settings"
+     },
+     "children": [
+      {
+       "id": "ln4i",
+       "tag": "md-list-item",
+       "properties": {
+        "headline": "Inbox"
+       }
+      }
+     ]
+    }
+   ],
+   "names": [
+    "ln1",
+    "ln2",
+    "ln3",
+    "ln4"
+   ]
+  },
+  {
+   "name": "list-events",
+   "nodes": [
+    {
+     "id": "le1",
+     "tag": "md-list",
+     "properties": {
+      "selectionMode": "single-select"
+     },
+     "children": [
+      {
+       "id": "lei1",
+       "tag": "md-list-item",
+       "properties": {
+        "headline": "Alpha"
+       }
+      },
+      {
+       "id": "lei2",
+       "tag": "md-list-item",
+       "properties": {
+        "headline": "Beta"
+       }
+      }
+     ]
+    },
+    {
+     "id": "le2",
+     "tag": "md-list",
+     "properties": {
+      "reorderable": true
+     },
+     "children": [
+      {
+       "id": "ler1",
+       "tag": "md-list-item",
+       "properties": {
+        "headline": "Row one",
+        "type": "button"
+       }
+      },
+      {
+       "id": "ler2",
+       "tag": "md-list-item",
+       "properties": {
+        "headline": "Row two",
+        "type": "button"
+       }
+      }
+     ]
+    },
+    {
+     "id": "le3",
+     "tag": "md-list",
+     "properties": {
+      "selectionMode": "single-select"
+     },
+     "children": [
+      {
+       "id": "lex",
+       "tag": "md-list-item",
+       "properties": {
+        "headline": "Parent",
+        "expandable": true
+       },
+       "children": [
+        {
+         "id": "lexc1",
+         "tag": "md-list-item",
+         "properties": {
+          "headline": "Child one",
+          "slot": "expanded-content"
+         }
+        },
+        {
+         "id": "lexc2",
+         "tag": "md-list-item",
+         "properties": {
+          "headline": "Child two",
+          "slot": "expanded-content"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "actions": [
+    {
+     "type": "click",
+     "target": "lei2",
+     "part": "row"
+    },
+    {
+     "type": "key",
+     "focus": "ler1",
+     "key": "ArrowDown",
+     "alt": true,
+     "focusEvents": 1
+    },
+    {
+     "type": "click",
+     "target": "lex",
+     "part": "row"
+    },
+    {
+     "type": "click",
+     "target": "lexc2",
+     "part": "row"
+    }
+   ],
+   "events": [
+    "mdClick",
+    "mdItemClick",
+    "mdItemSelect",
+    "mdRequestActivation",
+    "mdItemRequestReorder",
+    "mdSelect",
+    "mdReorder",
+    "mdExpand"
+   ]
+  }
+ ],
+ "results": [
+  {
+   "name": "host-cursors",
+   "probes": [
+    {
+     "target": "b1",
+     "part": "",
+     "cursor": "pointer",
+     "partRect": [
+      0,
+      0,
+      58,
+      40
+     ]
+    },
+    {
+     "target": "b2",
+     "part": "",
+     "cursor": "auto",
+     "partRect": [
+      0,
+      0,
+      58,
+      40
+     ]
+    },
+    {
+     "target": "b3",
+     "part": "",
+     "cursor": "default",
+     "partRect": [
+      0,
+      0,
+      58,
+      40
+     ]
+    },
+    {
+     "target": "ib",
+     "part": "",
+     "cursor": "pointer",
+     "partRect": [
+      0,
+      0,
+      40,
+      40
+     ]
+    },
+    {
+     "target": "fab",
+     "part": "",
+     "cursor": "pointer",
+     "partRect": [
+      0,
+      0,
+      56,
+      56
+     ]
+    },
+    {
+     "target": "cb1",
+     "part": "",
+     "cursor": "pointer",
+     "partRect": [
+      0,
+      0,
+      48,
+      48
+     ]
+    },
+    {
+     "target": "cb2",
+     "part": "",
+     "cursor": "auto",
+     "partRect": [
+      0,
+      0,
+      48,
+      48
+     ]
+    },
+    {
+     "target": "sw1",
+     "part": "",
+     "cursor": "pointer",
+     "partRect": [
+      0,
+      0,
+      52,
+      48
+     ]
+    },
+    {
+     "target": "sw2",
+     "part": "",
+     "cursor": "default",
+     "partRect": [
+      0,
+      0,
+      52,
+      48
+     ]
+    },
+    {
+     "target": "rd1",
+     "part": "",
+     "cursor": "pointer",
+     "partRect": [
+      0,
+      0,
+      48,
+      48
+     ]
+    },
+    {
+     "target": "ch1",
+     "part": "",
+     "cursor": "pointer",
+     "partRect": [
+      0,
+      0,
+      71.734375,
+      32
+     ]
+    },
+    {
+     "target": "ch2",
+     "part": "",
+     "cursor": "auto",
+     "partRect": [
+      0,
+      0,
+      71.734375,
+      32
+     ]
+    },
+    {
+     "target": "sl1",
+     "part": "",
+     "cursor": "pointer",
+     "partRect": [
+      0,
+      0,
+      360,
+      44
+     ]
+    },
+    {
+     "target": "sl2",
+     "part": "",
+     "cursor": "pointer",
+     "partRect": [
+      0,
+      0,
+      360,
+      44
+     ]
+    }
+   ],
+   "layout": {},
+   "names": {},
+   "keys": []
+  },
+  {
+   "name": "card-cursors",
+   "probes": [
+    {
+     "target": "c1",
+     "part": "",
+     "cursor": "pointer",
+     "partRect": [
+      0,
+      0,
+      360,
+      52
+     ]
+    },
+    {
+     "target": "c2",
+     "part": "",
+     "cursor": "grab",
+     "partRect": [
+      0,
+      0,
+      360,
+      52
+     ]
+    },
+    {
+     "target": "c3",
+     "part": "",
+     "cursor": "grab",
+     "partRect": [
+      0,
+      0,
+      360,
+      52
+     ]
+    },
+    {
+     "target": "c4",
+     "part": "",
+     "cursor": "auto",
+     "partRect": [
+      0,
+      0,
+      360,
+      52
+     ]
+    },
+    {
+     "target": "c5",
+     "part": "",
+     "cursor": "default",
+     "partRect": [
+      0,
+      0,
+      360,
+      52
+     ]
+    },
+    {
+     "target": "c6",
+     "part": "",
+     "cursor": "auto",
+     "partRect": [
+      0,
+      0,
+      360,
+      52
+     ]
+    },
+    {
+     "target": "c7",
+     "part": "",
+     "cursor": "auto",
+     "partRect": [
+      0,
+      0,
+      360,
+      52
+     ]
+    }
+   ],
+   "layout": {},
+   "names": {},
+   "keys": []
+  },
+  {
+   "name": "list-cursors",
+   "probes": [
+    {
+     "target": "li1",
+     "part": "row",
+     "cursor": "pointer",
+     "partRect": [
+      0,
+      0,
+      360,
+      56
+     ]
+    },
+    {
+     "target": "li2",
+     "part": "row",
+     "cursor": "default",
+     "partRect": [
+      0,
+      0,
+      360,
+      56
+     ]
+    },
+    {
+     "target": "li3",
+     "part": "row",
+     "cursor": "auto",
+     "partRect": [
+      0,
+      0,
+      360,
+      56
+     ]
+    },
+    {
+     "target": "li4",
+     "part": "row",
+     "cursor": "default",
+     "partRect": [
+      0,
+      0,
+      360,
+      56
+     ]
+    },
+    {
+     "target": "li5",
+     "part": "row",
+     "cursor": "pointer",
+     "partRect": [
+      0,
+      0,
+      360,
+      56
+     ]
+    },
+    {
+     "target": "ls1",
+     "part": "row",
+     "cursor": "pointer",
+     "partRect": [
+      0,
+      0,
+      360,
+      56
+     ]
+    },
+    {
+     "target": "lr1",
+     "part": "row",
+     "cursor": "pointer",
+     "partRect": [
+      0,
+      0,
+      360,
+      56
+     ]
+    },
+    {
+     "target": "lr1",
+     "part": "drag-handle",
+     "cursor": "grab",
+     "partRect": [
+      320,
+      16,
+      24,
+      24
+     ]
+    },
+    {
+     "target": "lr1",
+     "part": "drag-handle",
+     "press": true,
+     "cursor": "grabbing",
+     "partRect": [
+      319.0442199707031,
+      15.044219970703125,
+      25.91156005859375,
+      25.91156005859375
+     ]
+    }
+   ],
+   "layout": {},
+   "names": {},
+   "keys": []
+  },
+  {
+   "name": "accordion-cursors",
+   "probes": [
+    {
+     "target": "ai1",
+     "part": "header",
+     "cursor": "pointer",
+     "partRect": [
+      0,
+      0,
+      360,
+      64
+     ]
+    },
+    {
+     "target": "ai2",
+     "part": "header",
+     "cursor": "not-allowed",
+     "partRect": [
+      0,
+      0,
+      360,
+      64
+     ]
+    },
+    {
+     "target": "ai3",
+     "part": "drag-handle",
+     "cursor": "grab",
+     "partRect": [
+      24,
+      20,
+      24,
+      24
+     ]
+    },
+    {
+     "target": "ai3",
+     "part": "drag-handle",
+     "press": true,
+     "cursor": "grabbing",
+     "partRect": [
+      23.208168029785156,
+      19.208160400390625,
+      25.583663940429688,
+      25.58367919921875
+     ]
+    }
+   ],
+   "layout": {},
+   "names": {},
+   "keys": []
+  },
+  {
+   "name": "hidden-roots",
+   "probes": [],
+   "layout": {
+    "h1": {
+     "display": "none",
+     "rect": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "parent": null
+    },
+    "h2": {
+     "display": "none",
+     "rect": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "parent": null
+    },
+    "h3": {
+     "display": "none",
+     "rect": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "parent": null
+    },
+    "h4": {
+     "display": "none",
+     "rect": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "parent": null
+    },
+    "h5": {
+     "display": "none",
+     "rect": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "parent": null
+    },
+    "v1": {
+     "display": "flex",
+     "rect": [
+      0,
+      0,
+      58,
+      40
+     ],
+     "parent": null
+    }
+   },
+   "names": {},
+   "keys": []
+  },
+  {
+   "name": "hidden-children",
+   "probes": [],
+   "layout": {
+    "ha": {
+     "display": "flex",
+     "rect": [
+      0,
+      0,
+      360,
+      136
+     ],
+     "parent": null
+    },
+    "hai1": {
+     "display": "block",
+     "rect": [
+      0,
+      0,
+      360,
+      64
+     ],
+     "parent": "ha"
+    },
+    "hai2": {
+     "display": "none",
+     "rect": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "parent": "ha"
+    },
+    "hai3": {
+     "display": "block",
+     "rect": [
+      0,
+      72,
+      360,
+      64
+     ],
+     "parent": "ha"
+    },
+    "hl": {
+     "display": "flex",
+     "rect": [
+      0,
+      144,
+      360,
+      128
+     ],
+     "parent": null
+    },
+    "hli1": {
+     "display": "block",
+     "rect": [
+      0,
+      8,
+      360,
+      56
+     ],
+     "parent": "hl"
+    },
+    "hli2": {
+     "display": "none",
+     "rect": [
+      0,
+      -144,
+      0,
+      0
+     ],
+     "parent": "hl"
+    },
+    "hli3": {
+     "display": "block",
+     "rect": [
+      0,
+      64,
+      360,
+      56
+     ],
+     "parent": "hl"
+    }
+   },
+   "names": {},
+   "keys": [
+    {
+     "focus": "hai1",
+     "key": "ArrowDown",
+     "focusAfter": "hai1"
+    }
+   ]
+  },
+  {
+   "name": "list-names",
+   "probes": [],
+   "layout": {},
+   "names": {
+    "ln1": {
+     "role": "list",
+     "name": "Mail folders"
+    },
+    "ln2": {
+     "role": "list",
+     "name": "Settings"
+    },
+    "ln3": {
+     "role": "list",
+     "name": "Mail folders Archive"
+    },
+    "ln4": {
+     "role": "list",
+     "name": "Settings"
+    }
+   },
+   "keys": []
+  },
+  {
+   "name": "list-events",
+   "probes": [],
+   "layout": {},
+   "names": {},
+   "keys": [
+    {
+     "action": {
+      "type": "click",
+      "target": "lei2",
+      "part": "row"
+     },
+     "events": [
+      {
+       "type": "mdRequestActivation",
+       "target": "lei2",
+       "detail": null
+      },
+      {
+       "type": "mdClick",
+       "target": "lei2",
+       "detail": {
+        "item": "lei2"
+       }
+      },
+      {
+       "type": "mdSelect",
+       "target": "le1",
+       "detail": {
+        "index": 1,
+        "value": "Beta",
+        "selected": true,
+        "item": "lei2"
+       }
+      },
+      {
+       "type": "mdItemClick",
+       "target": "lei2",
+       "detail": {
+        "index": 1,
+        "selected": false
+       }
+      }
+     ]
+    },
+    {
+     "action": {
+      "type": "key",
+      "focus": "ler1",
+      "key": "ArrowDown",
+      "alt": true,
+      "focusEvents": 1
+     },
+     "events": [
+      {
+       "type": "mdRequestActivation",
+       "target": "ler1",
+       "detail": null
+      },
+      {
+       "type": "mdReorder",
+       "target": "le2",
+       "detail": {
+        "from": 0,
+        "to": 1,
+        "order": [
+         1,
+         0
+        ]
+       }
+      },
+      {
+       "type": "mdRequestActivation",
+       "target": "ler1",
+       "detail": null
+      }
+     ]
+    },
+    {
+     "action": {
+      "type": "click",
+      "target": "lex",
+      "part": "row"
+     },
+     "events": [
+      {
+       "type": "mdExpand",
+       "target": "lex",
+       "detail": {
+        "expanded": true,
+        "index": 0,
+        "value": "Parent",
+        "item": "lex"
+       }
+      },
+      {
+       "type": "mdClick",
+       "target": "lex",
+       "detail": {
+        "item": "lex"
+       }
+      }
+     ]
+    },
+    {
+     "action": {
+      "type": "click",
+      "target": "lexc2",
+      "part": "row"
+     },
+     "events": [
+      {
+       "type": "mdClick",
+       "target": "lexc2",
+       "detail": {
+        "item": "lexc2"
+       }
+      },
+      {
+       "type": "mdSelect",
+       "target": "le3",
+       "detail": {
+        "index": 0,
+        "childIndex": 1,
+        "expanded": true,
+        "value": "Child two",
+        "selected": true,
+        "item": "lexc2"
+       }
+      },
+      {
+       "type": "mdItemSelect",
+       "target": "lex",
+       "detail": {
+        "index": 1,
+        "value": "Child two",
+        "selected": true,
+        "item": "lexc2"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

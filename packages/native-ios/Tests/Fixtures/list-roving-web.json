@@ -1,0 +1,531 @@
+{
+ "browser": "Chrome/153.0.8010.36",
+ "results": {
+  "single-select": [
+   {
+    "label": "Tab from before",
+    "focus": "a",
+    "expanded": false,
+    "events": [
+     "mdRequestActivation@a"
+    ]
+   },
+   {
+    "label": "ArrowDown",
+    "focus": "d",
+    "expanded": false,
+    "events": [
+     "mdActivate@list:1",
+     "mdRequestActivation@d"
+    ]
+   },
+   {
+    "label": "ArrowDown",
+    "focus": "c",
+    "expanded": false,
+    "events": [
+     "mdActivate@list:2",
+     "mdRequestActivation@c"
+    ]
+   },
+   {
+    "label": "ArrowDown",
+    "focus": "a",
+    "expanded": false,
+    "events": [
+     "mdActivate@list:0",
+     "mdRequestActivation@a"
+    ]
+   },
+   {
+    "label": "ArrowUp",
+    "focus": "c",
+    "expanded": false,
+    "events": [
+     "mdActivate@list:2",
+     "mdRequestActivation@c"
+    ]
+   },
+   {
+    "label": "Enter",
+    "focus": "c",
+    "expanded": false,
+    "events": [
+     "mdClick@c",
+     "mdSelect@list:2",
+     "mdItemClick@c:2"
+    ]
+   },
+   {
+    "label": "Tab",
+    "focus": "after",
+    "expanded": false,
+    "events": []
+   },
+   {
+    "label": "Shift+Tab",
+    "focus": "c",
+    "expanded": false,
+    "events": [
+     "mdRequestActivation@c"
+    ]
+   },
+   {
+    "label": "activateNext",
+    "focus": "a",
+    "expanded": false,
+    "events": [
+     "mdActivate@list:0",
+     "mdRequestActivation@a"
+    ]
+   },
+   {
+    "label": "activateNext",
+    "focus": "d",
+    "expanded": false,
+    "events": [
+     "mdActivate@list:1",
+     "mdRequestActivation@d"
+    ]
+   },
+   {
+    "label": "Home",
+    "focus": "a",
+    "expanded": false,
+    "events": [
+     "mdActivate@list:0",
+     "mdRequestActivation@a"
+    ]
+   },
+   {
+    "label": "End",
+    "focus": "c",
+    "expanded": false,
+    "events": [
+     "mdActivate@list:2",
+     "mdRequestActivation@c"
+    ]
+   },
+   {
+    "label": "ArrowUp (to d)",
+    "focus": "d",
+    "expanded": false,
+    "events": [
+     "mdActivate@list:1",
+     "mdRequestActivation@d"
+    ]
+   },
+   {
+    "label": "Enter on d",
+    "focus": "d",
+    "expanded": true,
+    "events": [
+     "mdExpand@d:1",
+     "mdClick@d"
+    ]
+   },
+   {
+    "label": "Space on d",
+    "focus": "d",
+    "expanded": false,
+    "events": [
+     "mdExpand@d:1",
+     "mdClick@d"
+    ]
+   },
+   {
+    "label": "ArrowRight on d",
+    "focus": "d",
+    "expanded": true,
+    "events": [
+     "mdExpand@d:1"
+    ]
+   },
+   {
+    "label": "ArrowLeft on d",
+    "focus": "d",
+    "expanded": false,
+    "events": [
+     "mdExpand@d:1"
+    ]
+   },
+   {
+    "label": "Tab from d",
+    "focus": "d>expand-button",
+    "expanded": false,
+    "events": []
+   },
+   {
+    "label": "Shift+Tab back",
+    "focus": "d",
+    "expanded": false,
+    "events": []
+   },
+   {
+    "label": "Home (after d)",
+    "focus": "a",
+    "expanded": false,
+    "events": [
+     "mdActivate@list:0",
+     "mdRequestActivation@a"
+    ]
+   },
+   {
+    "label": "Tab from a",
+    "focus": "d>expand-button",
+    "expanded": false,
+    "events": [
+     "mdActivate@list:1",
+     "mdRequestActivation@d"
+    ]
+   },
+   {
+    "label": "Tab again",
+    "focus": "after",
+    "expanded": false,
+    "events": []
+   }
+  ],
+  "multi-select": [
+   {
+    "label": "Tab from before",
+    "focus": "a",
+    "expanded": false,
+    "events": [
+     "mdRequestActivation@a"
+    ]
+   },
+   {
+    "label": "ArrowDown",
+    "focus": "d",
+    "expanded": false,
+    "events": [
+     "mdActivate@list:1",
+     "mdRequestActivation@d"
+    ]
+   },
+   {
+    "label": "ArrowDown",
+    "focus": "c",
+    "expanded": false,
+    "events": [
+     "mdActivate@list:2",
+     "mdRequestActivation@c"
+    ]
+   },
+   {
+    "label": "ArrowDown",
+    "focus": "a",
+    "expanded": false,
+    "events": [
+     "mdActivate@list:0",
+     "mdRequestActivation@a"
+    ]
+   },
+   {
+    "label": "ArrowUp",
+    "focus": "c",
+    "expanded": false,
+    "events": [
+     "mdActivate@list:2",
+     "mdRequestActivation@c"
+    ]
+   },
+   {
+    "label": "Enter",
+    "focus": "c",
+    "expanded": false,
+    "events": [
+     "mdClick@c",
+     "mdSelect@list:2",
+     "mdItemClick@c:2"
+    ]
+   },
+   {
+    "label": "Tab",
+    "focus": "after",
+    "expanded": false,
+    "events": []
+   },
+   {
+    "label": "Shift+Tab",
+    "focus": "c",
+    "expanded": false,
+    "events": [
+     "mdRequestActivation@c"
+    ]
+   },
+   {
+    "label": "activateNext",
+    "focus": "a",
+    "expanded": false,
+    "events": [
+     "mdActivate@list:0",
+     "mdRequestActivation@a"
+    ]
+   },
+   {
+    "label": "activateNext",
+    "focus": "d",
+    "expanded": false,
+    "events": [
+     "mdActivate@list:1",
+     "mdRequestActivation@d"
+    ]
+   },
+   {
+    "label": "Home",
+    "focus": "a",
+    "expanded": false,
+    "events": [
+     "mdActivate@list:0",
+     "mdRequestActivation@a"
+    ]
+   },
+   {
+    "label": "End",
+    "focus": "c",
+    "expanded": false,
+    "events": [
+     "mdActivate@list:2",
+     "mdRequestActivation@c"
+    ]
+   },
+   {
+    "label": "ArrowUp (to d)",
+    "focus": "d",
+    "expanded": false,
+    "events": [
+     "mdActivate@list:1",
+     "mdRequestActivation@d"
+    ]
+   },
+   {
+    "label": "Enter on d",
+    "focus": "d",
+    "expanded": true,
+    "events": [
+     "mdExpand@d:1",
+     "mdClick@d"
+    ]
+   },
+   {
+    "label": "Space on d",
+    "focus": "d",
+    "expanded": false,
+    "events": [
+     "mdExpand@d:1",
+     "mdClick@d"
+    ]
+   },
+   {
+    "label": "ArrowRight on d",
+    "focus": "d",
+    "expanded": true,
+    "events": [
+     "mdExpand@d:1"
+    ]
+   },
+   {
+    "label": "ArrowLeft on d",
+    "focus": "d",
+    "expanded": false,
+    "events": [
+     "mdExpand@d:1"
+    ]
+   },
+   {
+    "label": "Tab from d",
+    "focus": "d>expand-button",
+    "expanded": false,
+    "events": []
+   },
+   {
+    "label": "Shift+Tab back",
+    "focus": "d",
+    "expanded": false,
+    "events": []
+   },
+   {
+    "label": "Home (after d)",
+    "focus": "a",
+    "expanded": false,
+    "events": [
+     "mdActivate@list:0",
+     "mdRequestActivation@a"
+    ]
+   },
+   {
+    "label": "Tab from a",
+    "focus": "d>expand-button",
+    "expanded": false,
+    "events": [
+     "mdActivate@list:1",
+     "mdRequestActivation@d"
+    ]
+   },
+   {
+    "label": "Tab again",
+    "focus": "after",
+    "expanded": false,
+    "events": []
+   }
+  ],
+  "none": [
+   {
+    "label": "Tab from before",
+    "focus": "d>expand-button",
+    "expanded": false,
+    "events": [
+     "mdRequestActivation@d"
+    ]
+   },
+   {
+    "label": "ArrowDown",
+    "focus": "d>expand-button",
+    "expanded": false,
+    "events": []
+   },
+   {
+    "label": "ArrowDown",
+    "focus": "d>expand-button",
+    "expanded": false,
+    "events": []
+   },
+   {
+    "label": "ArrowDown",
+    "focus": "d>expand-button",
+    "expanded": false,
+    "events": []
+   },
+   {
+    "label": "ArrowUp",
+    "focus": "d>expand-button",
+    "expanded": false,
+    "events": []
+   },
+   {
+    "label": "Enter",
+    "focus": "d>expand-button",
+    "expanded": false,
+    "events": [
+     "mdExpand@d:1",
+     "mdExpand@d:1",
+     "mdClick@d"
+    ]
+   },
+   {
+    "label": "Tab",
+    "focus": "after",
+    "expanded": false,
+    "events": []
+   },
+   {
+    "label": "Shift+Tab",
+    "focus": "d>expand-button",
+    "expanded": false,
+    "events": [
+     "mdRequestActivation@d"
+    ]
+   },
+   {
+    "label": "activateNext",
+    "focus": "d>expand-button",
+    "expanded": false,
+    "events": []
+   },
+   {
+    "label": "activateNext",
+    "focus": "d>expand-button",
+    "expanded": false,
+    "events": []
+   },
+   {
+    "label": "Home",
+    "focus": "d>expand-button",
+    "expanded": false,
+    "events": []
+   },
+   {
+    "label": "End",
+    "focus": "d>expand-button",
+    "expanded": false,
+    "events": []
+   },
+   {
+    "label": "ArrowUp (to d)",
+    "focus": "d>expand-button",
+    "expanded": false,
+    "events": []
+   },
+   {
+    "label": "Enter on d",
+    "focus": "d>expand-button",
+    "expanded": false,
+    "events": [
+     "mdExpand@d:1",
+     "mdExpand@d:1",
+     "mdClick@d"
+    ]
+   },
+   {
+    "label": "Space on d",
+    "focus": "d>expand-button",
+    "expanded": false,
+    "events": [
+     "mdExpand@d:1",
+     "mdExpand@d:1",
+     "mdClick@d"
+    ]
+   },
+   {
+    "label": "ArrowRight on d",
+    "focus": "d>expand-button",
+    "expanded": true,
+    "events": [
+     "mdExpand@d:1"
+    ]
+   },
+   {
+    "label": "ArrowLeft on d",
+    "focus": "d>expand-button",
+    "expanded": false,
+    "events": [
+     "mdExpand@d:1"
+    ]
+   },
+   {
+    "label": "Tab from d",
+    "focus": "after",
+    "expanded": false,
+    "events": []
+   },
+   {
+    "label": "Shift+Tab back",
+    "focus": "d>expand-button",
+    "expanded": false,
+    "events": [
+     "mdRequestActivation@d"
+    ]
+   },
+   {
+    "label": "Home (after d)",
+    "focus": "d>expand-button",
+    "expanded": false,
+    "events": []
+   },
+   {
+    "label": "Tab from a",
+    "focus": "after",
+    "expanded": false,
+    "events": []
+   },
+   {
+    "label": "Tab again",
+    "focus": "body",
+    "expanded": false,
+    "events": []
+   }
+  ]
+ }
+}

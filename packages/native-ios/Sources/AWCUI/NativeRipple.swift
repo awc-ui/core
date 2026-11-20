@@ -205,6 +205,12 @@ public extension View {
     public func whenSettled() async { await engine?.whenSettled() }
 }
 
+/// Parity tests' clock for md-ripple waves (ms): a replay of a Web timeline stamps and renders waves on it; unset = the display's time.
+@MainActor @Observable final class AWCRippleTestClock {
+    var now: Double
+    init(now: Double) { self.now = now }
+}
+
 @MainActor @Observable final class AWCRippleEngine {
     struct Cycle: Equatable { let id: Int; let origin: CGPoint; let radius: Double; let opacity: Double; let grow: Double; let easing: AWCRippleEasing
         let start: Double; var release: Double?; static func == (a: Cycle, b: Cycle) -> Bool { a.id == b.id && a.release == b.release } }
@@ -219,7 +225,9 @@ public extension View {
     @ObservationIgnored var connected = false
     /// Paint fixtures freeze the render time; the wave then stays until replaced or removed.
     @ObservationIgnored var frozen = false
-    static func now() -> Double { CACurrentMediaTime() * 1000 }
+    /// Parity tests only (AWCRippleTestClock); nil in apps.
+    static var testClock: AWCRippleTestClock?
+    static func now() -> Double { testClock?.now ?? CACurrentMediaTime() * 1000 }
     /// Wave geometry of the source: farthest corner of the host rectangle expanded by the two extents.
     func radius(at p: CGPoint) -> Double {
         let ei: Double = appearance.resolvedExtendInline, eb: Double = appearance.resolvedExtendBlock
@@ -242,8 +250,8 @@ public extension View {
         let end = max(c.start + c.grow, c.release!) + AWCRippleAppearance.fade, id = c.id
         ending?.cancel()
         ending = Task { @MainActor [weak self] in
-            let wait = end - Self.now()
-            if wait > 0 { try? await Task.sleep(nanoseconds: UInt64(wait * 1_000_000)) }
+            // Re-checked after the sleep: a test clock can run behind the display's.
+            while !Task.isCancelled, case let wait = end - Self.now(), wait > 0 { try? await Task.sleep(nanoseconds: UInt64(wait * 1_000_000)) }
             guard !Task.isCancelled, let self, self.cycle?.id == id else { return }
             self.finish()
         }
@@ -314,6 +322,7 @@ struct AWCRippleWaveLayer: View {
     }
     var body: some View {
         let cycle = engine.cycle
+        let _ = AWCRippleEngine.testClock?.now   // a test clock's tick re-renders the wave (no display-link frames offscreen)
         TimelineView(.animation(minimumInterval: nil, paused: cycle == nil || testTime != nil)) { _ in
             let t = cycle.map(time) ?? AWCRippleEngine.now()
             let s = cycle.flatMap { AWCRippleEngine.sample($0, at: t) }

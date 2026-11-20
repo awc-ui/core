@@ -2125,7 +2125,16 @@
         "Rendered by its md-menu: one- and two-line rows with the leading-icon and trailing-icon slots, trailing text, badge, divider and gap, checkbox and radio rows (check position, indeterminate, keep-open), option presentation and role override, density; hover, press and keyboard focus show the state layer, the md-ripple wave and the inset 3-point focus ring.",
         "Activation emits mdClick and closes the menu tree after 150 ms unless keep-open; Space toggles checkbox and radio rows without closing; disabled rows stay focusable in the roving order (APG) but inert."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "state-layer",
+        "leading-icon",
+        "content",
+        "headline",
+        "supporting-text",
+        "badge",
+        "trailing"
+      ]
     },
     "android": {
       "status": "adapter-implemented",
@@ -2162,7 +2171,16 @@
         "Rendered by its md-menu: one- and two-line rows with the leading-icon and trailing-icon slots, trailing text, badge, divider and gap, checkbox and radio rows (check position, indeterminate, keep-open), option presentation and role override, density; hover, press and keyboard focus show the state layer, the md-ripple wave and the inset 3-point focus ring.",
         "Activation emits mdClick and closes the menu tree after 150 ms unless keep-open; Space toggles checkbox and radio rows without closing; disabled rows stay focusable in the roving order (APG) but inert."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "state-layer",
+        "leading-icon",
+        "content",
+        "headline",
+        "supporting-text",
+        "badge",
+        "trailing"
+      ]
     }
   }
 }

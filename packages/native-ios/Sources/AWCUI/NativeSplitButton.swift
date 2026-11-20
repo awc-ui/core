@@ -29,6 +29,8 @@ struct AWCNativeSplitMetrics {
 struct AWCSplitButtonShape:InsettableShape {
     var topStart:CGFloat,bottomStart:CGFloat,topEnd:CGFloat,bottomEnd:CGFloat
     var rtl:Bool=false,insetAmount:CGFloat=0
+    // start/end are mapped to physical corners below; SwiftUI must not mirror the path again in RTL.
+    var layoutDirectionBehavior:LayoutDirectionBehavior {.fixed}
     var animatableData:AnimatablePair<AnimatablePair<CGFloat,CGFloat>,AnimatablePair<CGFloat,CGFloat>> {
         get{.init(.init(topStart,bottomStart),.init(topEnd,bottomEnd))}
         set{topStart=newValue.first.first;bottomStart=newValue.first.second;topEnd=newValue.second.first;bottomEnd=newValue.second.second}
@@ -105,7 +107,9 @@ private struct AWCSplitSurface:View {
     @Environment(\.layoutDirection) private var direction
     @Environment(\.awcNativePointerState) private var pointer
     @Environment(\.awcTouchPress) private var touchPress
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
+    @Environment(\.awcReducedMotion) private var reducedOverride
+    private var reduceMotion: Bool { reducedOverride ?? systemReduceMotion }
     @State private var frame=CGRect.zero
     @State private var hovered=false
     @State private var localDown=false
@@ -208,7 +212,8 @@ extension AWCNativeView {
                 AWCSplitContentLayout(gap:m.gap,truncate:b("fullWidth")){
                     if !s("icon").isEmpty{AWCMaterialSymbol(s("icon"),size:m.icon).modifier(AWCSplitIconColor(color:splitButtonAppearance.iconColor,disabled:disabled)).awcInspect(nodeID:node.id,part:"icon",parentPart:"leading",name:"md-split-button ::part(icon)")}
                     if !s("label").isEmpty{Text(awcCollapsedInlineText(s("label"))).lineLimit(1).truncationMode(.tail).frame(height:m.line).layoutValue(key:AWCSplitLabelKey.self,value:true).awcInspect(nodeID:node.id,part:"label",parentPart:"leading",name:"md-split-button ::part(label)")}
-                    ForEach(node.children(inSlot:nil)){item in
+                    // Web flex layout makes no item of an empty or whitespace-only text node (R1-11): no phantom gap.
+                    ForEach(node.children(inSlot:nil).filter{ !["#text","#slot-text"].contains($0.tag) || !awcCollapsedInlineText($0.authoredTextContent).trimmingCharacters(in:.whitespacesAndNewlines).isEmpty }){item in
                         Group{if ["#text","#slot-text"].contains(item.tag){Text(awcCollapsedInlineText(item.authoredTextContent)).lineLimit(1).fixedSize().frame(height:m.line)}else{child(item)}}
                     }
                 }.font(AWCNativeFonts.label(size:m.font,weight:m.weight)).tracking(m.tracking)
@@ -218,6 +223,8 @@ extension AWCNativeView {
 }
 private struct AWCSplitRotationAnimation:ViewModifier {
     let checked:Bool
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
+    @Environment(\.awcReducedMotion) private var reducedOverride
+    private var reduceMotion: Bool { reducedOverride ?? systemReduceMotion }
     func body(content:Content)->some View{content.animation(reduceMotion ? nil:.timingCurve(0.2,0,0,1,duration:0.2),value:checked)}
 }

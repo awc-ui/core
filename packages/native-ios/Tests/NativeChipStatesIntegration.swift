@@ -78,6 +78,51 @@ struct ChipGrid {
     static var checks = 0, failures: [String] = []
     static var report: [[String: Any]] = []
     static let captureDir = ProcessInfo.processInfo.environment["AWC_CHIP_STATES_CAPTURE_DIRECTORY"].map { URL(fileURLWithPath: $0) }
+    /// Diagnostic only: AWC_CHIP_STATES_SHOT_ANCHOR=t0 restores the run-start shot clock; AWC_CHIP_STATES_TIMING=1 logs input lateness.
+    static let shotsAnchoredToRunStart = ProcessInfo.processInfo.environment["AWC_CHIP_STATES_SHOT_ANCHOR"] == "t0"
+    static let timingLog = ProcessInfo.processInfo.environment["AWC_CHIP_STATES_TIMING"] == "1"
+    #if os(iOS)
+    /// iOS (gate-7 R1-01 class): Chrome photographs a phase on demand, at any moment of its animation clock, while the
+    /// simulator draws only on its display frames; across click2's 150 ms wave fade Chrome's photo can fall between two native
+    /// frames. When two consecutive distinct frames in Chrome's capture window straddle Chrome's image (one darker, one
+    /// lighter over the compared pixels), the frame at Chrome's moment is their blend (1 - w)·A + w·B (a wave's opacity is
+    /// linear in the composited pixel), which must match under the same thresholds. AWC_CHIP_STATES_BRACKET=0: off.
+    static let bracketFallback = ProcessInfo.processInfo.environment["AWC_CHIP_STATES_BRACKET"] != "0"
+    static func bracket(_ web: ChipGrid, _ frames: [(at: Double, grid: ChipGrid)], minCompared: Int)
+        -> (ok: Bool, a: Double, b: Double, sa: Double, sb: Double, w: Double, mean: Double, bad: Int, n: Int)? {
+        var distinct: [(at: Double, grid: ChipGrid)] = []
+        for f in frames { if let last = distinct.last, zip(last.grid.values, f.grid.values).allSatisfy({ abs($0 - $1) < 0.5 }) { continue }; distinct.append(f) }
+        var best: (ok: Bool, a: Double, b: Double, sa: Double, sb: Double, w: Double, mean: Double, bad: Int, n: Int)? = nil
+        for (fa, fb) in zip(distinct, distinct.dropFirst()) {
+            var pixels: [(Int, Int)] = [], sa = 0.0, sb = 0.0
+            for py in (web.y + 1)..<(web.y + web.h - 1) { for px in (web.x + 1)..<(web.x + web.w - 1) where web.flat(px, py, 6) && fa.grid.flat(px, py, 6) && fb.grid.flat(px, py, 6) {
+                pixels.append((px, py)); let c0 = web.at(px, py), a = fa.grid.at(px, py), b = fb.grid.at(px, py)
+                for c in 0..<3 { sa += a[c] - c0[c]; sb += b[c] - c0[c] }
+            } }
+            guard pixels.count > minCompared else { continue }
+            sa /= Double(pixels.count * 3); sb /= Double(pixels.count * 3)
+            guard sa * sb < 0 else { continue }
+            for k in 1...19 {
+                let w = Double(k) / 20; var bad = 0, sum = 0.0
+                for (px, py) in pixels {
+                    let c0 = web.at(px, py), a = fa.grid.at(px, py), b = fb.grid.at(px, py); var d = 0.0
+                    for c in 0..<3 { d = max(d, abs((1 - w) * a[c] + w * b[c] - c0[c])) }
+                    sum += d; if d > 6 { bad += 1 }
+                }
+                let mean = sum / Double(pixels.count), ok = Double(bad) / Double(pixels.count) <= 0.005 && mean <= 1.0
+                if best == nil || (ok && !best!.ok) || (ok == best!.ok && mean < best!.mean) { best = (ok, fa.at, fb.at, sa, sb, w, mean, bad, pixels.count) }
+            }
+        }
+        return best
+    }
+    #endif
+    /// iOS: per-frame value windows read a slipped step's samples on the previous step's clock too (gate-7 R4-11);
+    /// AWC_CHIP_STATES_SLIP=0: each step's clock only.
+    static let slipWindow = ProcessInfo.processInfo.environment["AWC_CHIP_STATES_SLIP"] != "0"
+    /// Probe: AWC_CHIP_STATES_LATE=<phase>:<ms>[,...] dispatches that phase's input <ms> late, as a capture overrun in the
+    /// window before it does.
+    static let probeLate: [String: Double] = Dictionary((ProcessInfo.processInfo.environment["AWC_CHIP_STATES_LATE"] ?? "").split(separator: ",").compactMap { item -> (String, Double)? in
+        let kv = item.split(separator: ":"); guard kv.count == 2, let ms = Double(kv[1]) else { return nil }; return (String(kv[0]), ms) }, uniquingKeysWith: { $1 })
     static func check(_ value: Bool, _ name: String) { checks += 1; if !value { failures.append(name); print("FAIL: " + name); fflush(stdout) } }
     static func pump(_ duration: Double = 0.1) { let end = Date().addingTimeInterval(duration); repeat { while let e = NSApp.nextEvent(matching: .any, until: .distantPast, inMode: .default, dequeue: true) { NSApp.sendEvent(e) }; host.layoutSubtreeIfNeeded(); host.displayIfNeeded(); _ = RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.002)) } while Date() < end }
     static func now() -> Double { CACurrentMediaTime() * 1000 }
@@ -170,8 +215,16 @@ struct ChipGrid {
         let hostIsButton = sample().chip["role"]?.string == "button"
         let phases = r["phases"].array, webT0 = phases.first?["t"].number ?? 0
         func hoverTo(_ q: CGPoint) { state.pointer.update(phase: .move, location: q) }
+        #if os(iOS)
+        // iOS harness: the host pointer goes down / up when UIKit delivers the touch (a frame or two after it is queued), the
+        // order AppKit's synchronous sendEvent gives on macOS. Updated at queue time it was down for frames on either side of
+        // the touch, so a click painted :active where Chrome's does not (gate-7 r3-22, R4-11).
+        func down(_ q: CGPoint) { AWCShimTouch.pointerDown({ state.pointer.update(phase: .down, location: q) }) { mouse(.leftMouseDown, q) } }
+        func up(_ q: CGPoint) { AWCShimTouch.pointerUp({ state.pointer.update(phase: .up, location: q) }) { mouse(.leftMouseDragged, q); mouse(.leftMouseUp, q) } }
+        #else
         func down(_ q: CGPoint) { state.pointer.update(phase: .down, location: q); mouse(.leftMouseDown, q) }
         func up(_ q: CGPoint) { mouse(.leftMouseDragged, q); mouse(.leftMouseUp, q); state.pointer.update(phase: .up, location: q) }
+        #endif
         func leave() { hoverTo(away); state.pointer.update(phase: .leave) }
         typealias Step = (Double, () -> Void)
         let tab: [Step] = [(0, { key(48, "\t") })], enter: [Step] = [(0, { key(36, "\r") })], space: [Step] = [(0, { key(49, " ") })]
@@ -195,6 +248,7 @@ struct ChipGrid {
             // The source focuses #before ahead of every first Tab.
             if lbl == "tab" { leave(); _ = focusView("before")?.requestNativeFocus(); pump(0.03) }
             while now() - t0 < start { pump(0.004); samples.append(sample()) }
+            if let late = Self.probeLate[lbl] { let w = now(); while now() - w < late { pump(0.004); samples.append(sample()) } }
             let nativeStart = now(); stepTimes.append((phase["t"].number!, nativeStart))
             if lbl == "click2" || lbl == "clickBody" { clickStarts.append(nativeStart) }
             var queue = actions[lbl] ?? []
@@ -209,16 +263,22 @@ struct ChipGrid {
             let lastWeb = (phase["samples"].array.last?["t"].number).map { $0 - webT0 } ?? end
             var shotTimes = Array(stride(from: max(start, min(lastWeb, end)), through: windowEnd, by: 6.0)), candidates: [(Double, NativeChipPaintShot)] = []
             var snapped = false
-            while now() - t0 < windowEnd {
+            // Shot times run on the native input's clock (Chrome photographs a fixed time after its own phase start): a phase
+            // whose input starts late because the previous window's captures overran (an iOS hierarchy capture takes several
+            // ms) keeps its shots at the same distance from its input (gate-7 R4-11). AWC_CHIP_STATES_SHOT_ANCHOR=t0: the old timing.
+            let late = Self.shotsAnchoredToRunStart ? 0 : nativeStart - t0 - start
+            func clock() -> Double { now() - t0 - late }
+            while clock() < windowEnd {
                 while let first = queue.first, now() - nativeStart >= first.0 { first.1(); queue.removeFirst() }
-                if !snapped && now() - t0 >= end {
+                if !snapped && clock() >= end {
                     let s = sample(); snaps.append((i, capture(clipRect), s.chip, s.frame, focusedID(), state.selected)); snapped = true
                 }
-                if let due = shotTimes.first, now() - t0 >= due {
-                    let at = now() - t0; candidates.append((at - start + phase["t"].number!, capture(clipRect))); shotTimes.removeAll { $0 <= at }
+                if let due = shotTimes.first, clock() >= due {
+                    let at = clock(); candidates.append((at - start + phase["t"].number!, capture(clipRect))); shotTimes.removeAll { $0 <= at }
                 }
                 pump(0.004); samples.append(sample())
             }
+            if Self.timingLog { print(String(format: "CHIPTIMING %@/%@ input late %.1f ms", label, lbl, nativeStart - t0 - start)) }
             if !snapped { let s = sample(); snaps.append((i, capture(clipRect), s.chip, s.frame, focusedID(), state.selected)) }
             windowShots[i] = candidates
         }
@@ -269,6 +329,33 @@ struct ChipGrid {
         }
         guard !webSamples.isEmpty else { return }
         func webTime(_ native: Double) -> Double { guard let step = stepTimes.last(where: { $0.1 <= native }) else { return webT0 + native - t0 }; return step.0 + native - step.1 }
+        // iOS (gate-7 R4-11 ripple-fade samples): a phase input the harness dispatched late (the window before it ran over
+        // with captures) re-anchors the web clock by that slip for every sample after it, though the md-ripple wave is timed
+        // from the press that started it (450 ms grow, then the 150 ms fade) and runs across the next phases; the end of a
+        // window just before a slipped step is folded back the same way. For the wave's values, within 600 ms after a step
+        // that slipped against the step before it, the window also reads Chrome's values on the previous step's clock (SLIP
+        // lines: samples that matched only there). Other properties follow their own step's input: one clock. AWC_CHIP_STATES_SLIP=0: one
+        // clock. macOS: one clock.
+        var slipRescued = 0
+        func webTimes(_ native: Double) -> [Double] {
+            guard let k = stepTimes.lastIndex(where: { $0.1 <= native }) else { return [webT0 + native - t0] }
+            var times = [stepTimes[k].0 + native - stepTimes[k].1]
+            #if os(iOS)
+            if Self.slipWindow, k > 0, native - stepTimes[k].1 < 600 {
+                let p = stepTimes[k - 1], slip = (stepTimes[k].1 - p.1) - (stepTimes[k].0 - p.0)
+                if abs(slip) > 2 { times.append(p.0 + native - p.1) }
+            }
+            #endif
+            return times
+        }
+        #if os(iOS)
+        func noteSlip(_ prop: String, _ v: [Double], _ at: Double, _ lo: [Double], _ hi: [Double], _ lo1: [Double]?, _ hi1: [Double]?, _ tol: Double) {
+            guard (0..<v.count).allSatisfy({ v[$0] >= lo[$0] - tol && v[$0] <= hi[$0] + tol }) else { return }
+            if let lo1, let hi1, (0..<v.count).allSatisfy({ v[$0] >= lo1[$0] - tol && v[$0] <= hi1[$0] + tol }) { return }
+            slipRescued += 1
+            if slipRescued <= 6 { print("SLIP \(label) \(prop) rendered \(v) at web \(webTime(at)): within Chrome [\(lo), \(hi)] on the previous step's clock (step clock only: [\(lo1.map { "\($0)" } ?? "none"), \(hi1.map { "\($0)" } ?? "none")])"); fflush(stdout) }
+        }
+        #endif
         func envelope(_ read: (AWCValue) -> [Double]?, _ t: Double) -> ([Double], [Double])? {
             // Past Chrome's last sample there is no source value (a ripple still growing when the chip is removed).
             guard let after = webSamples.firstIndex(where: { $0["t"].number! >= t }) else { return t <= webSamples.last!["t"].number! + 17 ? read(webSamples.last!).map { ($0, $0) } : nil }
@@ -303,8 +390,23 @@ struct ChipGrid {
                 // value for that frame. It must be back within Chrome's envelope 80 ms after the click.
                 if prop == "state layer" && clickStarts.contains(where: { at >= $0 && at < $0 + 80 }) { transient += 1; continue }
                 var lo: [Double]? = nil, hi: [Double]? = nil, x = at - 34
-                while x <= at + 40 { if let e = envelope(readWeb, webTime(x)), e.0.count == v.count { lo = zip(lo ?? e.0, e.0).map { min($0, $1) }; hi = zip(hi ?? e.1, e.1).map { max($0, $1) } }; x += 2 }
+                #if os(iOS)
+                var lo1: [Double]? = nil, hi1: [Double]? = nil
+                #endif
+                while x <= at + 40 {
+                    let times = prop.hasPrefix("ripple") ? webTimes(x) : [webTime(x)]
+                    for j in times.indices { if let e = envelope(readWeb, times[j]), e.0.count == v.count {
+                        lo = zip(lo ?? e.0, e.0).map { min($0, $1) }; hi = zip(hi ?? e.1, e.1).map { max($0, $1) }
+                        #if os(iOS)
+                        if j == 0 { lo1 = zip(lo1 ?? e.0, e.0).map { min($0, $1) }; hi1 = zip(hi1 ?? e.1, e.1).map { max($0, $1) } }
+                        #endif
+                    } }
+                    x += 2
+                }
                 guard let lo, let hi else { continue }
+                #if os(iOS)
+                noteSlip(prop, v, at, lo, hi, lo1, hi1, tol)
+                #endif
                 var ok = (0..<v.count).allSatisfy { v[$0] >= lo[$0] - tol && v[$0] <= hi[$0] + tol }
                 // Chrome's computed transform of a compositor-driven wave can lag its own animation clock by frames
                 // (a plateau before the phase screenshot): the wave's md-ripple curve from its first sampled frame
@@ -316,6 +418,9 @@ struct ChipGrid {
                 compared[prop, default: 0] += 1
             }
         }
+        #if os(iOS)
+        if slipRescued > 0 { print("SLIP \(label): \(slipRescued) samples matched on the previous step's clock; step slips (ms) \(zip(stepTimes, stepTimes.dropFirst()).map { String(format: "%.1f", ($1.1 - $0.1) - ($1.0 - $0.0)) }.joined(separator: " "))"); fflush(stdout) }
+        #endif
         check((compared["container"] ?? 0) > 30, "\(label) per-frame samples compared \(compared)")
         // Ripple geometry: physical origin and diameter of the first wave.
         // A keyboard activation that widens a filter chip keeps the wave at the pre-toggle box, as Chrome does (gate-7 R4-10).
@@ -351,7 +456,16 @@ struct ChipGrid {
                 if ok && at == nil { break }
             }
             let b = best!
-            check(b.ok, "\(lbl) flat pixels match (mean \(b.mean), >6: \(b.bad)/\(b.n), worst \(b.worst) at \(b.worstAt); best of \(options.count) frames in Chrome's capture window)")
+            var matched = b.ok, between = ""
+            #if os(iOS)
+            let frames = (windowShots[index] ?? []).sorted { $0.0 < $1.0 }
+            if !b.ok, Self.bracketFallback, frames.count > 1,
+               let m = Self.bracket(web, frames.map { (at: $0.0, grid: grid($0.1, x: cx, y: cy, w: cw, h: ch)) }, minCompared: 1000) {
+                print(String(format: "BRACKET %@ %@: Chrome's frame between native frames at web %.1f and %.1f (signed %.2f / %.2f), blend w %.2f: mean %.3f, >6: %ld/%ld (best single frame mean %.3f)", lbl, m.ok ? "match" : "no match", m.a, m.b, m.sa, m.sb, m.w, m.mean, m.bad, m.n, b.mean)); fflush(stdout)
+                if m.ok { matched = true; between = String(format: "; Chrome's frame between native frames at web %.1f and %.1f (blend w %.2f: mean %.3f, >6: %ld/%ld)", m.a, m.b, m.w, m.mean, m.bad, m.n) }
+            }
+            #endif
+            check(matched, "\(lbl) flat pixels match (mean \(b.mean), >6: \(b.bad)/\(b.n), worst \(b.worst) at \(b.worstAt); best of \(options.count) frames in Chrome's capture window\(between))")
             if let dir = captureDir { try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true); try? NSBitmapImageRep(cgImage: b.shot.cg).representation(using: .png, properties: [:])?.write(to: dir.appendingPathComponent(lbl.replacingOccurrences(of: "/", with: "-") + ".png")) }
             report.append(["case": lbl, "compared": b.n, "mean": b.mean, "over6": b.bad, "worst": b.worst, "worstAt": b.worstAt,
                            "frame": b.at.map { $0 as Any } ?? "phase end", "windowFrames": options.count - 1])

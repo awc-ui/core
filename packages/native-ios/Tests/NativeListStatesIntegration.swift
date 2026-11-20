@@ -91,6 +91,36 @@ struct ListGrid {
 }
 struct ShotBox { let shot: ListShot; let rect: CGRect }
 struct ListStatesProp { let name: String; let tol: Double; let web: (AWCValue) -> [Double]?; let native: ([String: AWCValue]) -> [Double]? }
+/// Diagnostic only (story 9-25): AWC_LIST_STATES_STARVE=1 prints every main-thread gap >= 25 ms (a 4 ms main timer and the
+/// pump loop beat; a background thread watches) with wall time, case, phase, code tag and ms since the last input, plus the
+/// duration of every case. It changes no check, tolerance or wait.
+final class StarveRecord: @unchecked Sendable {
+    static let shared = StarveRecord(), on = ProcessInfo.processInfo.environment["AWC_LIST_STATES_STARVE"] == "1"
+    private let lock = NSLock()
+    private var beatAt = CACurrentMediaTime() * 1000, tagV = "start", caseV = "", phaseV = "", inputAt = 0.0, gaps = 0, gapMs = 0.0
+    func beat() { lock.lock(); beatAt = CACurrentMediaTime() * 1000; lock.unlock() }
+    func tag(_ t: String) { guard StarveRecord.on else { return }; lock.lock(); tagV = t; beatAt = CACurrentMediaTime() * 1000; lock.unlock() }
+    func set(case c: String) { guard StarveRecord.on else { return }; lock.lock(); caseV = c; phaseV = ""; lock.unlock() }
+    func set(phase p: String, inputAt t: Double? = nil) { guard StarveRecord.on else { return }; lock.lock(); phaseV = p; if let t { inputAt = t }; lock.unlock() }
+    func summary() -> String { lock.lock(); defer { lock.unlock() }; return "STARVE summary: \(gaps) gaps >= 25 ms, total \(Int(gapMs)) ms" }
+    func start() {
+        guard StarveRecord.on else { return }
+        let t = Timer(timeInterval: 0.004, repeats: true) { _ in StarveRecord.shared.beat() }; RunLoop.main.add(t, forMode: .common)
+        Thread.detachNewThread {
+            var open = false, from = 0.0, tag = "", cs = "", ph = "", since = 0.0, wall = ""
+            while true {
+                usleep(3000)
+                let n = CACurrentMediaTime() * 1000
+                self.lock.lock(); let b = self.beatAt, tg = self.tagV, c = self.caseV, p = self.phaseV, ia = self.inputAt; self.lock.unlock()
+                if !open && n - b >= 25 { open = true; from = b; tag = tg; cs = c; ph = p; since = b - ia; let f = DateFormatter(); f.dateFormat = "HH:mm:ss.SSS"; wall = f.string(from: Date()) }
+                else if open && b > from { open = false; let len = b - from
+                    self.lock.lock(); self.gaps += 1; self.gapMs += len; self.lock.unlock()
+                    print("STARVE gap ms=\(Int(len)) wall=\(wall) case=\(cs) phase=\(ph) tag=\(tag) sinceInput=\(Int(since))"); fflush(stdout) }
+            }
+        }
+    }
+}
+
 @main @MainActor enum NativeListStatesIntegration {
     static let state = ListStatesState()
     static var host: NSHostingView<ListStatesFixture>!, window: NSWindow!
@@ -100,14 +130,18 @@ struct ListStatesProp { let name: String; let tol: Double; let web: (AWCValue) -
     /// the native input time) to reproduce the load-dependent shot drift; default is the input-anchored shot.
     static let shotsAnchoredToRunStart = ProcessInfo.processInfo.environment["AWC_LIST_STATES_SHOT_ANCHOR"] == "t0"
     static var shotTiming: [[String: Any]] = []
+    /// Diagnostic only: AWC_LIST_STATES_STALL="<run/phase substring>:<ms>" blocks the main thread (Thread.sleep) right after that phase's input.
+    static let stall: (String, Double)? = ProcessInfo.processInfo.environment["AWC_LIST_STATES_STALL"].flatMap { v in
+        let p = v.split(separator: ":"); return p.count == 2 ? Double(p[1]).map { (String(p[0]), $0) } : nil }
     /// Diagnostic only: AWC_LIST_STATES_INPUT_DELAY="<run/phase substring>:<ms>" injects that phase's input late,
     /// the way a loaded Mac does, to show how each shot anchoring reacts.
     static let injectedDelay: (String, Double)? = ProcessInfo.processInfo.environment["AWC_LIST_STATES_INPUT_DELAY"].flatMap { v in
         let p = v.split(separator: ":"); return p.count == 2 ? Double(p[1]).map { (String(p[0]), $0) } : nil }
     static func check(_ value: Bool, _ name: String) { checks += 1; if !value { failures.append(name); print("FAIL: " + name); fflush(stdout) } }
-    static func pump(_ duration: Double = 0.1) { let end = Date().addingTimeInterval(duration); repeat { while let e = NSApp.nextEvent(matching: .any, until: .distantPast, inMode: .default, dequeue: true) { NSApp.sendEvent(e) }; host.layoutSubtreeIfNeeded(); host.displayIfNeeded(); _ = RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.002)) } while Date() < end }
+    static func pump(_ duration: Double = 0.1) { StarveRecord.shared.tag("pump"); let end = Date().addingTimeInterval(duration); repeat { while let e = NSApp.nextEvent(matching: .any, until: .distantPast, inMode: .default, dequeue: true) { NSApp.sendEvent(e) }; StarveRecord.shared.beat(); host.layoutSubtreeIfNeeded(); host.displayIfNeeded(); _ = RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.002)) } while Date() < end }
     static func now() -> Double { CACurrentMediaTime() * 1000 }
-    static func mouse(_ kind: NSEvent.EventType, _ p: CGPoint) { let point = host.convert(.init(x: p.x, y: host.isFlipped ? p.y : host.bounds.height - p.y), to: nil); let e = NSEvent.mouseEvent(with: kind, location: point, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber, context: nil, eventNumber: 1, clickCount: 1, pressure: kind == .leftMouseUp ? 0 : 1)!; window.sendEvent(e) }
+    static let crossingLevel = 0.04, crossingLimit = ProcessInfo.processInfo.environment["AWC_LIST_STATES_CROSSING_LIMIT"].flatMap(Double.init) ?? 17.0, crossingEarly = 34.0
+    static func mouse(_ kind: NSEvent.EventType, _ p: CGPoint) { StarveRecord.shared.tag("input"); let point = host.convert(.init(x: p.x, y: host.isFlipped ? p.y : host.bounds.height - p.y), to: nil); let e = NSEvent.mouseEvent(with: kind, location: point, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber, context: nil, eventNumber: 1, clickCount: 1, pressure: kind == .leftMouseUp ? 0 : 1)!; window.sendEvent(e) }
     /// AppKit controls (the md-switch adapter's NSSwitch) track a press in a nested event loop: queue the
     /// release before delivering the press so that loop can finish.
     static func postedClick(_ p: CGPoint) {
@@ -115,7 +149,7 @@ struct ListStatesProp { let name: String; let tol: Double; let web: (AWCValue) -
         func ev(_ k: NSEvent.EventType) -> NSEvent { NSEvent.mouseEvent(with: k, location: point, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber, context: nil, eventNumber: 1, clickCount: 1, pressure: k == .leftMouseUp ? 0 : 1)! }
         NSApp.postEvent(ev(.leftMouseUp), atStart: false); window.sendEvent(ev(.leftMouseDown))
     }
-    static func key(_ code: UInt16, _ text: String, _ flags: NSEvent.ModifierFlags = []) { let e = NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: flags, timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber, context: nil, characters: text, charactersIgnoringModifiers: text, isARepeat: false, keyCode: code)!; window.sendEvent(e) }
+    static func key(_ code: UInt16, _ text: String, _ flags: NSEvent.ModifierFlags = []) { StarveRecord.shared.tag("input"); let e = NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: flags, timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber, context: nil, characters: text, charactersIgnoringModifiers: text, isARepeat: false, keyCode: code)!; window.sendEvent(e) }
     static func all(_ v: NSView) -> [NSView] { [v] + v.subviews.flatMap(all) }
     static func focusView(_ id: String) -> AWCNativeButtonFocusView? { all(host).compactMap { $0 as? AWCNativeButtonFocusView }.first { $0.accessibilityIdentifier() == id } }
     static func focusedID() -> String { (window.firstResponder as? AWCNativeButtonFocusView)?.accessibilityIdentifier() ?? "body" }
@@ -149,6 +183,7 @@ struct ListStatesProp { let name: String; let tol: Double; let web: (AWCValue) -
     static let listKinds: [(String, String)] = [("container-color","color"),("container-shape","shape"),("padding-block","length"),("padding-inline","length"),("segmented-gap","length"),("drop-placeholder-color","color"),("drop-placeholder-outline-color","color"),("drop-placeholder-outline-width","length"),("drop-placeholder-shape","shape"),("drop-placeholder-opacity","number")]
     static var itemKinds: [(String, String)] = []
     static func capture(_ r: CGRect) -> ListShot {
+        StarveRecord.shared.tag("capture")
         let rr = host.isFlipped ? r : CGRect(x: r.minX, y: host.bounds.height - r.maxY, width: r.width, height: r.height)
         let b = host.bitmapImageRepForCachingDisplay(in: rr)!; host.cacheDisplay(in: rr, to: b)
         return .init(cg: b.cgImage!, scale: Double(b.pixelsWide) / r.width, origin: r.origin)
@@ -205,19 +240,25 @@ struct ListStatesProp { let name: String; let tol: Double; let web: (AWCValue) -
     }
     static func pre(_ c: [Double]) -> [Double] { c.count < 4 ? c : [c[0] * c[3], c[1] * c[3], c[2] * c[3], c[3]] }
     static func angle(_ m: String) -> Double { if m == "none" || m.isEmpty { return 0 }; let n = numbers(m); guard n.count >= 2 else { return 0 }; return abs(atan2(n[1], n[0]) * 180 / .pi) }
-    struct Sample { let t: Double; let rows: [String: (Double?, [String: AWCValue], CGRect)]; var placeholder: Double? = nil }
+    struct Sample { let t: Double; let rows: [String: (Double?, [String: AWCValue], CGRect)]; var placeholder: Double? = nil; var placeholderTime: Double? = nil }
     static func sample() -> Sample {
+        StarveRecord.shared.tag("sample")
         var rows: [String: (Double?, [String: AWCValue], CGRect)] = [:]
         for m in state.measurements where m.name == "md-list-item" { let id = String(m.id.split(separator: ":").first ?? ""); rows[id] = (m.metrics["renderTime"]?.number, m.metrics, m.bounds) }
-        var ph: Double? = nil
-        if let p = state.measurements.first(where: { $0.name == "drop-placeholder" }), let list = state.measurements.first(where: { $0.id == "list:component" }) { ph = Double(list.bounds.minY) + (p.metrics["top"]?.number ?? 0) }
-        return .init(t: now(), rows: rows, placeholder: ph)
+        var ph: Double? = nil, pht: Double? = nil
+        if let p = state.measurements.first(where: { $0.name == "drop-placeholder" }), let list = state.measurements.first(where: { $0.id == "list:component" }) {
+            ph = Double(list.bounds.minY) + (p.metrics["top"]?.number ?? 0)
+            #if os(iOS)
+            pht = p.metrics["renderTime"]?.number
+            #endif
+        }
+        return .init(t: now(), rows: rows, placeholder: ph, placeholderTime: pht)
     }
     static func node(_ id: String, _ name: String) -> AWCNativeInspectionNode? { state.measurements.first { $0.id.hasPrefix(id + ":") && $0.name == name } }
     // MARK: Run
     static func run(_ r: AWCValue, shots: URL, set: String, fixture: AWCValue) {
         let name = r["name"].string, scenario = r["scenario"].string, label = (set == "full" ? "" : set + "/") + name
-        state.reduced = set == "reduced"; state.run = r
+        state.reduced = set == "reduced"; state.run = r; StarveRecord.shared.set(case: label)
         if scenario == "custom" || r["hooks"] == .bool(true) {
             state.listHooks = AWCListAppearance(values: hookValues(fixture["listHooks"].object, kinds: listKinds))
             state.itemHooks = AWCListItemAppearance(values: hookValues(fixture["itemHooks"].object, kinds: itemKinds))
@@ -232,10 +273,32 @@ struct ListStatesProp { let name: String; let tol: Double; let web: (AWCValue) -
         func slotCenter(_ id: String, _ i: Int) -> CGPoint { let rc = webItem(id, before: i)?["slots"]["trailing"].array.first?["rect"] ?? .null; return CGPoint(x: rc["x"].number! + rc["width"].number! / 2, y: rc["y"].number! + rc["height"].number! / 2) }
         let away = CGPoint(x: 1190, y: 600)
         func hoverTo(_ q: CGPoint) { state.pointer.update(phase: .move, location: q); mouse(.mouseMoved, q) }
+        #if os(iOS)
+        // iOS harness: the host pointer goes down / up when UIKit delivers the touch (a frame or two after it is queued), the
+        // order AppKit's synchronous sendEvent gives on macOS. Updated at queue time it was down for frames on either side of
+        // the touch, so a click painted :active where Chrome's does not (gate-7 r3-22, R4-11). A press elsewhere moves the
+        // pointer (hover) at once, as Chrome's mouse moves before it presses.
+        func down(_ q: CGPoint) {
+            if state.pointer.location != q { state.pointer.update(phase: .move, location: q) }
+            AWCShimTouch.pointerDown({ state.pointer.update(phase: .down, location: q) }) { mouse(.leftMouseDown, q) }
+        }
+        func up(_ q: CGPoint) { AWCShimTouch.pointerUp({ state.pointer.update(phase: .up, location: q) }) { mouse(.leftMouseDragged, q); mouse(.leftMouseUp, q) } }
+        #else
         func down(_ q: CGPoint) { state.pointer.update(phase: .down, location: q); mouse(.leftMouseDown, q) }
         func up(_ q: CGPoint) { mouse(.leftMouseDragged, q); mouse(.leftMouseUp, q); state.pointer.update(phase: .up, location: q) }
+        #endif
         // Chrome receives the trusted down and up in separate frames.
+        #if os(iOS)
+        // A click within one Chrome frame never paints :active: on iOS the host pointer goes down and up together after the
+        // touch-up was handled (AWCShimTouch.pointerClick; gate-7 r3-22).
+        func click(_ q: CGPoint) {
+            hoverTo(q)
+            AWCShimTouch.pointerClick(down: { state.pointer.update(phase: .down, location: q) }, up: { state.pointer.update(phase: .up, location: q) },
+                                      sendDown: { mouse(.leftMouseDown, q) }, sendUp: { mouse(.leftMouseDragged, q); mouse(.leftMouseUp, q) })
+        }
+        #else
         func click(_ q: CGPoint) { hoverTo(q); down(q); up(q) }  // Chrome never paints :active for a click within one frame
+        #endif
         let keys: [String: (UInt16, String)] = ["Tab": (48, "\t"), "ArrowDown": (125, "\u{F701}"), "ArrowUp": (126, "\u{F700}"), "ArrowRight": (124, "\u{F703}"), "ArrowLeft": (123, "\u{F702}"),
                                                "Home": (115, "\u{F729}"), "End": (119, "\u{F72B}"), "Enter": (36, "\r"), "Space": (49, " "), "b": (11, "b"), "l": (37, "l"), "c": (8, "c")]
         func press(_ k: String) { let v = keys[k]!; key(v.0, v.1) }
@@ -342,8 +405,9 @@ struct ListStatesProp { let name: String; let tol: Double; let web: (AWCValue) -
             if focusBefore.contains(lbl) && (scenario == "keyboard" || scenario == "custom") { state.pointer.update(phase: .leave); _ = focusView("before")?.requestNativeFocus(); pump(0.03) }
             while now() - t0 < start { pump(0.004); samples.append(sample()) }
             if case let (match, ms)? = injectedDelay, (label + "/" + lbl).contains(match) { let d = now(); while now() - d < ms { pump(0.004); samples.append(sample()) } }
-            let nativeStart = now(); stepTimes.append((phase["t"].number!, nativeStart))
+            let nativeStart = now(); stepTimes.append((phase["t"].number!, nativeStart)); StarveRecord.shared.set(phase: lbl, inputAt: nativeStart)
             actions[lbl]?()
+            if case let (match, ms)? = stall, (label + "/" + lbl).contains(match) { StarveRecord.shared.tag("stall"); Thread.sleep(forTimeInterval: ms / 1000) }
             let end = (n + 1 < phaseList.count ? phaseList[n + 1].1["t"].number! - webT0 : start + 500) - 25
             // The phase shot is anchored to the native input time, like the per-frame values (webTime): Chrome
             // shoots a fixed time after its own input. Under load the native input can be injected late, and a
@@ -359,10 +423,11 @@ struct ListStatesProp { let name: String; let tol: Double; let web: (AWCValue) -
             snaps.append((i, .init(shot: capture(c), rect: c), sample(), focusedID()))
         }
         let tail = now(); while now() - tail < 150 { pump(0.004); samples.append(sample()) }
+        StarveRecord.shared.tag("analysis")  // the checks that follow are the suite's own work, not a starvation
         // Events (DOM click/change entries excluded): order, targets and payloads.
         let lastT = phaseList.last.map { $0.1["t"].number! + 1000 } ?? .infinity
         let web = r["events"].array.filter { !["click", "change"].contains($0["name"].string) && ($0["t"].number ?? 0) < lastT }
-        let nat = state.events.filter { !["click", "change", "mdFocus", "mdBlur", "mdInput"].contains($0.0) }
+        let nat = state.events.filter { !["click", "change", "mdFocus", "mdBlur", "mdInput", "mdItemClick", "mdItemSelect", "mdRequestActivation", "mdItemRequestReorder"].contains($0.0) }
         check(nat.map { "\($0.0)@\($0.3)" } == web.map { "\($0["name"].string)@\($0["target"].string)" }, "\(label) events \(nat.map { "\($0.0)@\($0.3)" }) vs \(web.map { "\($0["name"].string)@\($0["target"].string)" })")
         for (e, w) in zip(nat, web) where e.0 == w["name"].string {
             for (k, v) in w["detail"].object { if let n = v.number { check(abs((e.1[k].number ?? .nan) - n) < 0.01, "\(label) \(e.0).\(k) \(e.1[k]) vs \(n)") } else { check(e.1[k] == v, "\(label) \(e.0).\(k) \(e.1[k]) vs \(v)") } }
@@ -393,6 +458,18 @@ struct ListStatesProp { let name: String; let tol: Double; let web: (AWCValue) -
         }
         // Per-frame values at render time within Chrome's samples (±2 frames; envelope across gaps).
         let webSamples = phaseList.flatMap { $0.1["samples"].array }
+        // Story 9-31: Chrome's expand input reaches the page 24-52 ms after the phase time (CDP round trip; the oracle's mdExpand
+        // times). The web clock of an expand phase is anchored to the delivered input: Chrome's mdExpand time against the time of
+        // the native mdExpand (the write of the state), instead of a second, wider tier on the frames.
+        if scenario == "expand" {
+            for n in stepTimes.indices {
+                let w0 = stepTimes[n].0, w1 = n + 1 < stepTimes.count ? stepTimes[n + 1].0 : Double.infinity
+                let n0 = stepTimes[n].1, n1 = n + 1 < stepTimes.count ? stepTimes[n + 1].1 : Double.infinity
+                guard let we = r["events"].array.first(where: { $0["name"].string == "mdExpand" && ($0["t"].number ?? -1) >= w0 && ($0["t"].number ?? -1) < w1 }),
+                      let ne = state.events.first(where: { $0.0 == "mdExpand" && $0.2 >= n0 && $0.2 < n1 }) else { continue }
+                stepTimes[n] = (we["t"].number!, ne.2)
+            }
+        }
         func webTime(_ native: Double) -> Double { guard let step = stepTimes.last(where: { $0.1 <= native }) else { return webT0 + native - t0 }; return step.0 + native - step.1 }
         func envelope(_ read: (AWCValue) -> [Double]?, _ t: Double) -> ([Double], [Double])? {
             guard !webSamples.isEmpty else { return nil }
@@ -486,28 +563,85 @@ struct ListStatesProp { let name: String; let tol: Double; let web: (AWCValue) -
                     }
                     guard let w0 = window(at - 34, at + 40) else { continue }; let lo = w0.0, hi = w0.1
                     let ok = (0..<v.count).allSatisfy { v[$0] >= lo[$0] - pr.tol && v[$0] <= hi[$0] + pr.tol }
-                    // Chrome's inputs reach the page 1-52 ms after the phase time (CDP round trips, measured from the
-                    // oracle's events): a value within one more frame of Chrome's envelope is an input-latency gap
-                    // (recorded, not hidden); anything further is a failure.
-                    let near = !ok && (window(at - 50, at + 56).map { w in (0..<v.count).allSatisfy { v[$0] >= w.0[$0] - pr.tol && v[$0] <= w.1[$0] + pr.tol } } ?? false)
-                    if near { knownGaps.append("input-latency: \(label) \(id) \(pr.name) rendered \(v.map { ($0 * 1000).rounded() / 1000 }) at web \(Int(webTime(at)))"); continue }
+                    #if os(iOS)
+                    // Chrome recorded no frame around this input (a gap of more than two frames that holds one of the run's
+                    // steps): its values inside the gap are unknown, so a native frame there is recorded, not judged.
+                    let wt = webTime(at)
+                    if !ok, let after = firstIndex(atLeast: wt), after > 0, webTimes[after] - webTimes[after - 1] > 34,
+                       stepTimes.contains(where: { $0.0 > webTimes[after - 1] && $0.0 < webTimes[after] }) {
+                        knownGaps.append("chrome-unsampled: \(label) \(id) \(pr.name) rendered \(v.map { ($0 * 1000).rounded() / 1000 }) at web \(Int(wt)) (no Chrome frame \(Int(webTimes[after - 1]))-\(Int(webTimes[after])))")
+                        print("KNOWN-GAP " + knownGaps.last!)
+                        continue
+                    }
+                    #endif
                     if !ok { fails += 1; if fails <= 3 { check(false, "\(label) \(id) \(pr.name) rendered \(v.map { ($0 * 1000).rounded() / 1000 }) at web \(Int(webTime(at))) within Chrome [\(lo.map { ($0 * 1000).rounded() / 1000 }), \(hi.map { ($0 * 1000).rounded() / 1000 })]") } } else { check(true, "") }
                     compared[pr.name, default: 0] += 1
                 }
                 if fails > 3 { check(false, "\(label) \(id) \(pr.name): \(fails) frames outside Chrome's envelope") }
+                // Story 9-31 (s7-20-02): the crossing-offset check. The state layer's half-crossings (0.04, half of the hover layer)
+                // are located by linear interpolation between frames on both sides; every Chrome crossing needs a native crossing of
+                // the same direction within `crossingLimit` ms (about one frame), so a state layer that starts two frames late fails
+                // however wide the envelope window is.
+                if pr.name == "state layer", let firstWeb = webTimes.first {
+                    func crossings(_ p: [(Double, Double)]) -> [(Double, Bool, Double)] {
+                        var out: [(Double, Bool, Double)] = []
+                        for k in 1..<max(p.count, 1) { let (t0, v0) = p[k - 1], (t1, v1) = p[k]
+                            if (v0 < Self.crossingLevel && v1 >= Self.crossingLevel) || (v0 >= Self.crossingLevel && v1 < Self.crossingLevel), v1 != v0 {
+                                out.append((t0 + (Self.crossingLevel - v0) * (t1 - t0) / (v1 - v0), v1 > v0, t1 - t0)) } }
+                        return out
+                    }
+                    var natSeries: [(Double, Double)] = [], seenAt = Set<Double>()
+                    for s in samples { guard let row = s.rows[id], let v = pr.native(row.1) else { continue }; let at = row.0 ?? s.t
+                        if !seenAt.insert(at).inserted { continue }; natSeries.append((webTime(at), v[0])) }
+                    natSeries.sort { $0.0 < $1.0 }
+                    let webSeries: [(Double, Double)] = zip(webTimes, series).compactMap { t, v in v.map { (t, $0[0]) } }
+                    let nc = crossings(natSeries.filter { $0.0 - 34 >= firstWeb }), wc = crossings(webSeries)
+                    for w in wc where natSeries.first.map({ w.0 > $0.0 + 34 }) ?? false && natSeries.last.map({ w.0 < $0.0 - 34 }) ?? false {
+                        // A Chrome crossing inside a frame interval wider than the shared window (34 ms) has no Chrome frame to locate it: unmeasurable, not a miss.
+                        if w.2 > 34 { print(String(format: "CROSS-UNMEASURABLE %@ %@ web %.1f gapweb %.0f", label, id, w.0 - webT0, w.2)); continue }
+                        let bestC = nc.filter { $0.1 == w.1 }.min { abs($0.0 - w.0) < abs($1.0 - w.0) }; let best = bestC.map { $0.0 - w.0 }; let bestW = bestC?.2
+                        if let best { print(String(format: "CROSS %@ %@ %@ web %.1f gapweb %.0f gapnat %.0f offset %.1f", label, id, w.1 ? "up" : "down", w.0 - webT0, w.2, bestW ?? -1, best)) }
+                        check(best.map { $0 <= Self.crossingLimit && $0 >= -Self.crossingEarly } ?? false, "\(label) \(id) state layer half-crossing \(w.1 ? "up" : "down") at web \(Int(w.0 - webT0)): native offset \(best.map { String(format: "%.1f", $0) } ?? "none") ms outside -\(Self.crossingEarly)/+\(Self.crossingLimit) ms")
+                    }
+                }
+                // Diagnostic only: AWC_LIST_STATES_TRACE="<case substring>:<row>:<prop>" prints every native frame of that row's
+                // property with Chrome's value at the same web time; AWC_LIST_STATES_TRACE_WINDOW="<from>-<to>" (web ms, default 250-600).
+                if let tr = ProcessInfo.processInfo.environment["AWC_LIST_STATES_TRACE"]?.split(separator: ":").map(String.init), tr.count == 3,
+                   label.contains(tr[0]), id == tr[1], pr.name == tr[2] {
+                    let steps = stepTimes.map { "\(Int($0.0 - webT0))" }.joined(separator: ",")
+                    print("TRACE \(label) \(id) \(pr.name) steps(web)=\(steps)"); print("TRACE t0=\(t0) stepsNativeAbs=\(stepTimes.map { "\(Int($0.1))" }.joined(separator: ","))")
+                    let win = (ProcessInfo.processInfo.environment["AWC_LIST_STATES_TRACE_WINDOW"] ?? "250-600").split(separator: "-").compactMap { Double($0) }
+                    let (wf, wt) = win.count == 2 ? (win[0], win[1]) : (250, 600)
+                    for s in samples { guard let row = s.rows[id], let v = pr.native(row.1) else { continue }; let at = row.0 ?? s.t
+                        guard webTime(at) - webT0 > wf && webTime(at) - webT0 < wt else { continue }
+                        let e = env(webTime(at)); print(String(format: "TRACE  web %7.1f native %@ chrome %@", webTime(at) - webT0, v.map { String(format: "%.3f", $0) }.joined(separator: "/"), e.map { "\($0.0.map { String(format: "%.3f", $0) })" } ?? "-")) }
+                    for (k, t) in webTimes.enumerated() where t - webT0 > wf && t - webT0 < wt { print(String(format: "TRACE  chrome %7.1f %@", t - webT0, series[k].map { "\($0.map { String(format: "%.3f", $0) })" } ?? "-")) }
+                }
             }
         }
         check((compared["corners"] ?? 0) > 50, "\(label) per-frame samples compared \(compared)")
         // Drop placeholder: presence and glide (rect top incl. transform) per frame.
+        // Diagnostic only: AWC_LIST_STATES_PH_TRACE="<case substring>" prints the native placeholder's changes on the web clock.
+        if let tr = ProcessInfo.processInfo.environment["AWC_LIST_STATES_PH_TRACE"], label.contains(tr) {
+            print("PHTRACE \(label) steps(web@native)=\(stepTimes.map { "\(Int($0.0 - webT0))@\(Int($0.1 - t0))" }.joined(separator: ","))")
+            #if os(iOS)
+            print("PHTRACE delivered(native)=\(AWCShimTouch.deliveredAt.filter { $0 >= t0 }.map { "\(Int($0 - t0))" }.joined(separator: ","))")
+            #endif
+            var prev: Double? = nil
+            for s in samples { let v = s.placeholder
+                if (v == nil) != (prev == nil) || (v != nil && abs(v! - prev!) > 0.5) { print("PHTRACE  web \(Int(webTime(s.t) - webT0)) native@\(Int(s.t - t0)) \(v.map { String(format: "%.1f", $0) } ?? "-")") }
+                prev = v }
+        }
         var phFails = 0
         for s in samples {
             guard let ph = s.placeholder else { continue }
-            var lo = Double.infinity, hi = -Double.infinity, present = false, x = s.t - 34
-            while x <= s.t + 40 { let wt = webTime(x); if let w = webSamples.last(where: { $0["t"].number! <= wt }) ?? webSamples.first, w["placeholder"] != .null { present = true; lo = min(lo, w["placeholder"]["rect"]["y"].number!); hi = max(hi, w["placeholder"]["rect"]["y"].number!) }; x += 2 }
+            let st = s.placeholderTime ?? s.t
+            var lo = Double.infinity, hi = -Double.infinity, present = false, x = st - 34
+            while x <= st + 40 { let wt = webTime(x); if let w = webSamples.last(where: { $0["t"].number! <= wt }) ?? webSamples.first, w["placeholder"] != .null { present = true; lo = min(lo, w["placeholder"]["rect"]["y"].number!); hi = max(hi, w["placeholder"]["rect"]["y"].number!) }; x += 2 }
             if !present { continue }
-            if let a = webSamples.first(where: { $0["t"].number! >= webTime(s.t) }), a["placeholder"] != .null { lo = min(lo, a["placeholder"]["rect"]["y"].number!); hi = max(hi, a["placeholder"]["rect"]["y"].number!) }
+            if let a = webSamples.first(where: { $0["t"].number! >= webTime(st) }), a["placeholder"] != .null { lo = min(lo, a["placeholder"]["rect"]["y"].number!); hi = max(hi, a["placeholder"]["rect"]["y"].number!) }
             let ok = ph >= lo - 0.6 && ph <= hi + 0.6
-            if !ok { phFails += 1; if phFails <= 3 { check(false, "\(label) placeholder top \(ph) at web \(Int(webTime(s.t))) within Chrome [\(lo), \(hi)]") } } else { check(true, "") }
+            if !ok { phFails += 1; if phFails <= 3 { check(false, "\(label) placeholder top \(ph) at web \(Int(webTime(st))) within Chrome [\(lo), \(hi)]") } } else { check(true, "") }
             compared["placeholder", default: 0] += 1
         }
         // Phase paint (authored trailing controls masked).
@@ -533,18 +667,21 @@ struct ListStatesProp { let name: String; let tol: Double; let web: (AWCValue) -
         let fixture = try! JSONDecoder().decode(AWCValue.self, from: Data(contentsOf: fixtures.appendingPathComponent("list-web-fixtures.json")))
         state.image = fixture["image"].string
         itemKinds = AWCListItemAppearance.cssProperties.map { (String($0.value.dropFirst("--md-list-item-".count)), kind(String($0.value.dropFirst("--md-list-item-".count)))) }
-        let only = ProcessInfo.processInfo.environment["AWC_LIST_STATES_ONLY"]
+        let only = ProcessInfo.processInfo.environment["AWC_LIST_STATES_ONLY"]; StarveRecord.shared.start()
         for (file, set) in [("list-web-states", "full"), ("list-web-states-reduced", "reduced"), ("list-web-states-extra", "extra")] {
             let loadStart = Date()
             // JSONSerialization + a direct conversion (the 26 MB record decodes in seconds this way).
             let oracle = value(try! JSONSerialization.jsonObject(with: Data(contentsOf: fixtures.appendingPathComponent(file + ".json"))))
             print("LOADED \(file) in \(Date().timeIntervalSince(loadStart))s"); fflush(stdout)
-            for r in oracle["runs"].array where only.map({ (set + "/" + r["name"].string).contains($0) }) ?? true { run(r, shots: fixtures.appendingPathComponent(file), set: set, fixture: fixture) }
+            for r in oracle["runs"].array where only.map({ (set + "/" + r["name"].string).contains($0) }) ?? true {
+                let c0 = now(); run(r, shots: fixtures.appendingPathComponent(file), set: set, fixture: fixture)
+                if StarveRecord.on { print("STARVE case=\(set)/\(r["name"].string) dur=\(Int(now() - c0)) ms"); fflush(stdout) } }
         }
         if let output = ProcessInfo.processInfo.environment["AWC_LIST_STATES_OUTPUT"] { try! JSONSerialization.data(withJSONObject: ["checks": checks, "failures": failures, "report": report, "pending": skipped, "knownGaps": knownGaps, "shotTiming": shotTiming], options: [.prettyPrinted, .sortedKeys]).write(to: URL(fileURLWithPath: output)) }
         let late = shotTiming.compactMap { $0["inputLateMs"] as? Double }, drift = shotTiming.compactMap { t in (t["shotAfterInputMs"] as? Double).flatMap { a in (t["intendedShotAfterInputMs"] as? Double).map { a - $0 } } }
         print("SHOT TIMING \(shotsAnchoredToRunStart ? "run-start" : "input")-anchored: \(late.count) shots; input late max \(Int(late.max() ?? 0)) ms; shot after input minus intended: min \(Int(drift.min() ?? 0)) ms, max \(Int(drift.max() ?? 0)) ms")
         print("List native interaction states: \(checks - failures.count)/\(checks) checks passed; known gaps: \(knownGaps.count); pending (reorder): \(skipped)")
+        if StarveRecord.on { print(StarveRecord.shared.summary()) }
         window.close(); if !failures.isEmpty { exit(1) }
     }
 }

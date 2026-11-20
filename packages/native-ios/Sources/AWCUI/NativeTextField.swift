@@ -13,6 +13,8 @@ import Speech
     public var isConnected: Bool { runtime != nil }
     /// `setFocus()`: focuses the native input (caret at the end).
     @discardableResult public func setFocus() -> Bool { runtime?.input.focus() ?? false }
+    /// Shows the focus state (focus events, focused styling) before the platform responder follows (md-select's iOS press).
+    public func markFocused() { runtime?.earlyFocus?() }
     /// `select()`: focuses and selects the whole value.
     public func select() { guard let r = runtime else { return }; _ = r.input.focus(); r.input.selectAll() }
     /// `getInputElement()`: the native input's live state (value, selection, focus, composition).
@@ -58,6 +60,7 @@ public extension View {
 
 @MainActor @Observable final class AWCTextFieldRuntime {
     var focused = false
+    @ObservationIgnored var earlyFocus: (() -> Void)?
     /// When the platform announced a focus move (UIKit: before its input-system work blocks the main thread); the
     /// focus / blur motion starts there, as Chrome's transition starts on the frame after the event.
     @ObservationIgnored var changeAt: Double?
@@ -72,6 +75,8 @@ public extension View {
     var passwordHover = false
     var speechHover = false
     var multilineHeight: Double = 0
+    /// `chips-wrap`: the input row's measured height (the chips box, and the input on its own line once it no longer fits beside them).
+    var chipsRowHeight: Double = 0
     @ObservationIgnored var baseline = ""          // value as of the last change event / programmatic write
     @ObservationIgnored var lastValidityKey: String?
     @ObservationIgnored var lastValue: String?
@@ -182,6 +187,10 @@ struct AWCNativeTextField: View {
               clearHover: rt.clearHover, passwordHover: rt.passwordHover, speechHover: rt.speechHover)
     }
     private var displayValue: String { displayed(value) }
+    /// What the input shows. Unfocused it is the displayed value, derived in the same update as the value itself: `rt.editing`
+    /// follows the value one update later (onChange), and an input inspection taken in that later update is not delivered on
+    /// macOS when nothing else changes (a composite's value arriving after the field appeared: n3-062).
+    private var shownText: String { rt.focused ? rt.editing : displayValue }
     /// What the input shows for `v` (the formatter's text unless focused in `formatOn="blur"`).
     private func displayed(_ v: String) -> String {
         guard let f = formatting.formatter else { return v }
@@ -313,6 +322,7 @@ struct AWCNativeTextField: View {
             if before > 0 { for i in 0..<formatted.utf16.count where contentLen(String((formatted as NSString).substring(to: i + 1))) == before { newPos = i + 1; break } }
             shaped = (formatted, newPos); rt.editing = formatted
         } else { rt.editing = text }
+        rt.search.flushDue()
         rt.userEdited = true
         rt.lastValue = newValue
         setValue(newValue)
@@ -383,6 +393,8 @@ struct AWCNativeTextField: View {
         (rt.recognizer as? AWCFieldSpeechSession)?.stop()
         #endif
     }
+    /// The recognition language (`speechLang`); empty: the system default.
+    private var speechLocale: String { model.speechLang }
     private func startSpeech() {
         #if canImport(Speech)
         // Speech needs the host's usage descriptions; without them it is unsupported, as without Web Speech.
@@ -391,7 +403,7 @@ struct AWCNativeTextField: View {
             print("md-text-field: speech recognition is not supported by this host."); return
         }
         let base = value, separator = !base.isEmpty && !base.hasSuffix(" ") ? " " : ""
-        let session = AWCFieldSpeechSession(locale: model.speechLang)
+        let session = AWCFieldSpeechSession(locale: speechLocale)
         rt.recognizer = session; rt.listening = true
         session.start(result: { text, final in
             let full = base + separator + text
@@ -419,20 +431,23 @@ struct AWCNativeTextField: View {
         return VStack(alignment: .leading, spacing: 0) {
             container(t, st, s)
             if showSupport {
-                HStack(alignment: .top, spacing: 16) {
+                // CSS: flex, space-between, gap 16 between the text and the counter only (the text has the whole row without one).
+                HStack(alignment: .top, spacing: 0) {
                     // CSS line boxes: line-height minus the font's ascent+descent is split above and below every line.
                     let gap = max(0, st.supportLine - (AWCFieldMetrics.ascent + AWCFieldMetrics.descent) * st.supportFont)
-                    Text(support.isEmpty ? (m.reserveSupportingSpace ? "\u{200B}" : "") : support)
-                        .font(AWCNativeFonts.label(size: st.supportFont, regular: true)).lineSpacing(gap)
-                        .padding(.vertical, gap / 2)
-                        .frame(minHeight: st.supportLine, alignment: .center)
+                    // A whitespace-only message keeps the row (its 4 px top padding) with no line: CSS collapses the lone space (n4).
+                    let blank = !support.isEmpty && support.allSatisfy(\.isWhitespace)
+                    AWCFieldLineBox(lineHeight: st.supportLine, lead: gap / 2, empty: blank) {
+                        Text(support.isEmpty ? (m.reserveSupportingSpace ? "\u{200B}" : "") : support)
+                            .font(AWCNativeFonts.label(size: st.supportFont, regular: true)).lineSpacing(gap)
+                        Text("Ag").font(AWCNativeFonts.label(size: st.supportFont, regular: true)).lineLimit(1).hidden()
+                    }
                         .foregroundStyle(Color(awcHex: st.supportColor(s)))
-                        .fixedSize(horizontal: false, vertical: true)
                         .awcInspect(nodeID: node.id, part: "supporting-text", name: "supporting-text") { _ in ["role": .string(hasError ? "alert" : "")] }
                         // Always plain static text: inside a composite (md-number-field) the combined support row otherwise picked up the
                         // host's actions on macOS and read as a selectable option.
                         .accessibilityAddTraits(.isStaticText)
-                    Spacer(minLength: 0)
+                    Spacer(minLength: count.isEmpty ? 0 : 16)
                     if !count.isEmpty {
                         Text(count).font(AWCNativeFonts.label(size: st.supportFont, regular: true))
                             .frame(minHeight: st.supportLine).foregroundStyle(Color(awcHex: st.counterColor(s))).fixedSize()
@@ -446,7 +461,7 @@ struct AWCNativeTextField: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         // Runtime values are captured by value: the inspection re-evaluates when they change (a composite's value can arrive after
         // the field appeared without any geometry change, macOS).
-        .awcInspect(nodeID: node.id, part: hooks == nil ? nil : "text-field", name: "md-text-field") { [focused = rt.focused, editing = rt.editing, composing = rt.composing,
+        .awcInspect(nodeID: node.id, part: hooks == nil ? nil : "text-field", name: "md-text-field") { [focused = rt.focused, editing = shownText, composing = rt.composing,
                                                                                                          passwordVisible = rt.passwordVisible, listening = rt.listening] _ in   // composed: a part of the host
             ["focused": .bool(focused), "floating": .bool(floating), "hover": .bool(hover), "error": .bool(hasError), "value": .string(value),
              "displayValue": .string(editing), "composing": .bool(composing), "passwordVisible": .bool(passwordVisible), "listening": .bool(listening),
@@ -457,6 +472,8 @@ struct AWCNativeTextField: View {
     private var hasTrailingCluster: Bool { m_clear || model.showPasswordToggle || model.speechToText.on || hasError || !trailing.isEmpty || hooks?.trailing != nil }
     private var m_clear: Bool { model.clearable.on }
 
+    /// The chips' share of the input row: one 32 pt chip line, or with `chips-wrap` the row's measured height (the field grows).
+    private var chipsRowHeight: Double { chips.isEmpty ? 0 : model.chipsWrap && !model.isMultiline ? max(32, rt.chipsRowHeight) : 32 }
     private func containerHeight(_ st: AWCTextFieldStyle) -> Double {
         let m = model
         if m.isMultiline {
@@ -466,7 +483,7 @@ struct AWCNativeTextField: View {
             let wrap = (st.filled ? 20 : 0) + content
             return st.padBlock * 2 + wrap
         }
-        let chipsH: Double = chips.isEmpty ? 0 : 32
+        let chipsH = chipsRowHeight
         let affix = (!m.prefixText.isEmpty || !m.suffixText.isEmpty) && floating ? st.affixLine : 0
         let row = max(st.inputLine, chipsH, affix)
         let chipPad: Double = st.filled && floating && !chips.isEmpty && !m.label.isEmpty ? max(12, 16 + st.scale) : 0
@@ -527,7 +544,7 @@ struct AWCNativeTextField: View {
                     // `.md-text-field__error-icon + .md-text-field__trailing-icon-button { margin-inline-start: 4px }`
                     .padding(.leading, hasError && trailingIsButton ? 4 : 0)
                     .padding(.top, iconTop).frame(maxHeight: multi && !fixedMulti ? .infinity : nil)
-                    .accessibilityHidden(!trailingIsButton)
+                    .modifier(AWCFieldAccessibilityHidden(hidden: !trailingIsButton))
                     .awcInspect(nodeID: node.id, part: "trailing-icon", name: "trailing-icon")
             }
         }
@@ -552,7 +569,7 @@ struct AWCNativeTextField: View {
         let m = model, multi = m.isMultiline
         let wrapH = multi ? (st.filled ? 20 : 0) + (m.multiline == "fixed" ? Double(m.effectiveRows) * st.inputLine : max(Double(m.effectiveRows) * st.inputLine, rt.multilineHeight)) : height - st.padBlock * 2
         let chipPad: Double = st.filled && floating && !chips.isEmpty && !m.label.isEmpty ? max(12, 16 + st.scale) : 0
-        let chipsH: Double = chips.isEmpty ? 0 : 32
+        let chipsH = chipsRowHeight
         let affixOn = floating
         let rowH = max(st.inputLine, chipsH, affixOn && (!m.prefixText.isEmpty || !m.suffixText.isEmpty) ? st.affixLine : 0)
         // justify-content: filled single-line → flex-end (centre without a label), outlined → centre, multiline → start.
@@ -600,28 +617,53 @@ struct AWCNativeTextField: View {
         let m = model
         let nudge = st.filled ? 0 : (appearance.opticalNudge ?? 0)
         let inputH = m.isMultiline ? (m.multiline == "fixed" ? Double(m.effectiveRows) * st.inputLine : max(Double(m.effectiveRows) * st.inputLine, rt.multilineHeight)) : st.inputLine
-        return HStack(alignment: m.isMultiline ? .top : .center, spacing: chips.isEmpty ? 0 : 4) {
-            if !chips.isEmpty {
-                AWCFieldChipsLayout(wrap: m.chipsWrap, gap: 4) { ForEach(chips) { child($0) } }
-                    .awcInspect(nodeID: node.id, part: "chips", name: "chips")
-                    .layoutPriority(1)
+        let parts = st.parts, chipsGap = parts.chipsGap ?? 4, line = !chips.isEmpty && !m.chipsWrap
+        // The chips box: one clipped line filling the row (flex 1 1 auto; overflow hidden), or with chips-wrap its max-content
+        // width, wrapping (overflow visible). Its ::part(chips) background and gap.
+        let chipsBox = AWCFieldChipsLayout(wrap: m.chipsWrap, gap: chipsGap) { ForEach(chips) { child($0) } }
+            .frame(maxWidth: line ? .infinity : nil, alignment: .leading)
+            .clipShape(Rectangle().inset(by: line ? 0 : -10_000))
+            .background { if let bg = parts.chipsBackgroundColor { Color(awcHex: bg) } }
+            .awcInspect(nodeID: node.id, part: "chips", name: "chips") { _ in ["background": .string(parts.chipsBackgroundColor ?? ""), "gap": .number(chipsGap)] }
+        // Single line: one layout whatever the chips (chips arriving or leaving never recreates the input and its focus).
+        if !m.isMultiline {
+            return AnyView(AWCFieldChipsRowLayout(wrap: m.chipsWrap, hasChips: !chips.isEmpty, gap: 4, rowGap: 6, inputMin: 40) {
+                chipsBox
+                inputGroup(st, s, inputH: inputH, nudge: nudge)
             }
+            .onGeometryChange(for: Double.self) { Double($0.size.height) } action: { h in if abs(rt.chipsRowHeight - h) > 0.25 { rt.chipsRowHeight = h } }
+            .frame(minHeight: rowH, alignment: .center))
+        }
+        return AnyView(HStack(alignment: .top, spacing: chips.isEmpty ? 0 : 4) {
+            if !chips.isEmpty { chipsBox.layoutPriority(1) }
+            inputGroup(st, s, inputH: inputH, nudge: nudge)
+        }
+        .frame(minHeight: rowH, alignment: .center))
+    }
+
+    /// The prefix, the input and the suffix (the input takes the rest of its line, at least 40 pt beside chips).
+    @ViewBuilder private func inputGroup(_ st: AWCTextFieldStyle, _ s: AWCTextFieldStates, inputH: Double, nudge: Double) -> some View {
+        let m = model
+        HStack(alignment: m.isMultiline ? .top : .center, spacing: chips.isEmpty ? 0 : 4) {
             if !m.prefixText.isEmpty && floating {
                 Text(m.prefixText).font(AWCNativeFonts.label(size: st.inputFont, regular: true)).frame(height: st.affixLine)
                     .foregroundStyle(Color(awcHex: st.affixColor(s))).fixedSize()
                     .awcInspect(nodeID: node.id, part: "prefix", name: "prefix").padding(.trailing, 2)
             }
             AWCFieldTextInput(config: inputConfig(st, s), events: inputEvents, handle: rt.input)
-                .frame(minWidth: chips.isEmpty ? 0 : 40, maxWidth: .infinity)
+                .frame(minWidth: chips.isEmpty || !m.isMultiline ? 0 : 40, maxWidth: .infinity)
                 .frame(height: inputH)
                 // Measured on an overlay identified by the shown text: a text change without any geometry change (a composite's
                 // value arriving after the field appeared, macOS) still re-measures the input.
                 .overlay {
                     Color.clear.allowsHitTesting(false).accessibilityHidden(true)
-                        .awcInspect(nodeID: node.id, part: "input", name: "input") { [editing = rt.editing] _ in
-                            ["value": .string(editing), "secure": .bool(secure), "fontSize": .number(st.inputFont), "lineHeight": .number(st.inputLine), "color": .string(st.inputColor(s)), "caret": .string(st.caretColor(s))]
+                        .awcInspect(nodeID: node.id, part: "input", name: "input") { [editing = shownText] _ in
+                            let cfg = inputConfig(st, s)
+                            return ["value": .string(editing), "secure": .bool(secure), "fontSize": .number(st.inputFont), "lineHeight": .number(st.inputLine), "color": .string(st.inputColor(s)), "caret": .string(st.caretColor(s)),
+                                    "enterKeyHint": .string(cfg.enterKeyHint), "autocapitalize": .string(cfg.autocapitalize), "spellcheck": .bool(cfg.spellcheck),
+                                    "role": .string(cfg.role), "expanded": .string(cfg.expanded.map { $0 ? "true" : "false" } ?? "none"), "ariaAutocomplete": .string(model.inputAriaAutocomplete)]
                         }
-                        .id(rt.editing)
+                        .id(shownText)
                 }
                 .padding(.top, nudge).padding(.bottom, -nudge)
             if !m.suffixText.isEmpty && floating {
@@ -630,13 +672,12 @@ struct AWCNativeTextField: View {
                     .awcInspect(nodeID: node.id, part: "suffix", name: "suffix").padding(.leading, 2)
             }
         }
-        .frame(minHeight: rowH, alignment: .center)
     }
 
     private func inputConfig(_ st: AWCTextFieldStyle, _ s: AWCTextFieldStates) -> AWCFieldInputConfig {
         let m = model
         var c = AWCFieldInputConfig()
-        c.text = rt.editing; c.secure = secure; c.multiline = m.isMultiline; c.autoGrow = m.multiline == "auto-grow"
+        c.text = shownText; c.secure = secure; c.multiline = m.isMultiline; c.autoGrow = m.multiline == "auto-grow"
         c.fontSize = st.inputFont; c.lineHeight = st.inputLine; c.tracking = st.tracking
         c.color = st.inputColor(s); c.caret = st.caretColor(s); c.placeholder = floating ? m.placeholder : ""; c.placeholderColor = st.placeholderColor
         c.rtl = direction == .rightToLeft; c.editable = !m.readOnly; c.enabled = !disabled
@@ -654,6 +695,7 @@ struct AWCNativeTextField: View {
         var e = AWCFieldInputEvents()
         e.edited = { text, caret, composing in edited(text, caret, composing) }
         e.focusChanged = { focusChanged($0) }
+        rt.earlyFocus = { focusChanged(true) }
         e.focusMark = { [rt] in rt.changeAt = CACurrentMediaTime() * 1000 }
         e.command = { key, composing in command(key, composing) }
         e.activate = activation
@@ -673,7 +715,11 @@ struct AWCNativeTextField: View {
         }
         .opacity(hidden ? 0 : 1)
         .padding(.horizontal, -6).padding(.vertical, -8)
-        .awcInspect(nodeID: node.id, part: part, name: part) { _ in ["disabled": .bool(d), "label": .string(label), "pressed": pressed.map(AWCValue.bool) ?? .null] }
+        .awcInspect(nodeID: node.id, part: part, name: part) { _ in
+            var v: [String: AWCValue] = ["disabled": .bool(d), "label": .string(label), "pressed": pressed.map(AWCValue.bool) ?? .null, "icon": .string(icon.isEmpty ? "default" : "slot")]
+            if part == "speech" { v["lang"] = .string(speechLocale) }
+            return v
+        }
     }
     private func clearButton(_ st: AWCTextFieldStyle, _ s: AWCTextFieldStates) -> some View {
         actionButton("cancel", label: "Clear", pressed: nil, disabled: clearDisabled, hidden: value.isEmpty, color: st.actionColor(s, disabled: clearDisabled, hovered: rt.clearHover),
@@ -747,6 +793,8 @@ struct AWCFieldWrapLayout: Layout {
 /// The outlined border with the legend notch cut out of its top edge (fieldset + legend).
 struct AWCFieldOutlineShape: Shape {
     let radius: Double, width: Double, gapStart: Double, gapLength: Double, rtl: Bool
+    /// The path mirrors the gap itself (`rtl`); SwiftUI's default shape mirroring under RTL would mirror it a second time (C66-01).
+    var layoutDirectionBehavior: LayoutDirectionBehavior { .fixed }
     func path(in rect: CGRect) -> Path {
         var p = Path()
         let r = min(radius, rect.width / 2, rect.height / 2)
@@ -763,6 +811,13 @@ struct AWCFieldOutlineShape: Shape {
 }
 
 /// A Material Symbols glyph (FILL axis for the error icon).
+/// `.accessibilityHidden(true)` only when `hidden`: `.accessibilityHidden(false)` re-exposes, on iOS, the descendants an accessory
+/// hid itself (the select's caret glyph was read as "arrow_drop_down").
+struct AWCFieldAccessibilityHidden: ViewModifier {
+    let hidden: Bool
+    @ViewBuilder func body(content: Content) -> some View { if hidden { content.accessibilityHidden(true) } else { content } }
+}
+
 struct AWCFieldGlyph: View {
     let name: String, size: Double, fill: Double
     var body: some View {
@@ -800,26 +855,91 @@ struct AWCFieldActionButton<Content: View>: View {
 struct AWCFieldBareButtonStyle: ButtonStyle { func makeBody(configuration: Configuration) -> some View { configuration.label } }
 
 /// The chips slot: one line (clipped) by default, wrapping rows with `chips-wrap`.
-struct AWCFieldChipsLayout: Layout {
-    let wrap: Bool, gap: Double
+/// Sizes text to whole CSS line boxes: n laid-out lines × lineHeight, the first line's content area `lead` below the top (half
+/// the leading). The platform rounds a text frame up to whole pixels (Roboto 10.5: 12.305 → 13), which made the supporting line
+/// 15.2 instead of 14.5 at density −3 (n4); `empty` is a line box with no line (whitespace-only text). Subviews: the text, then a
+/// hidden one-line probe in the same font.
+struct AWCFieldLineBox: Layout {
+    let lineHeight: Double, lead: Double, empty: Bool
+    private func metrics(_ width: CGFloat?, _ subviews: Subviews) -> CGSize {
+        let text = subviews[0].sizeThatFits(.init(width: width, height: nil))
+        let probe = Double(subviews[1].sizeThatFits(.unspecified).height), spacing = max(0, lineHeight - probe)
+        let lines = empty ? 0 : max(1, ((Double(text.height) + spacing) / (probe + spacing)).rounded())
+        // A flex item at its max-content width: the text's own width on one line, the whole row once it wraps.
+        let full = width.flatMap { $0.isFinite ? Double($0) : nil }
+        return CGSize(width: lines > 1 ? full ?? Double(text.width) : Double(text.width), height: lines * lineHeight)
+    }
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let maxW = proposal.width ?? .infinity
-        var x = 0.0, y = 0.0, rowH = 0.0, w = 0.0
-        for s in subviews {
-            let size = s.sizeThatFits(.unspecified)
-            if wrap && x > 0 && x + size.width > maxW { y += rowH + 6; x = 0; rowH = 0 }
-            x += (x > 0 ? gap : 0) + size.width; rowH = max(rowH, size.height); w = max(w, x)
-        }
-        return CGSize(width: wrap ? min(w, maxW) : min(w, maxW), height: y + rowH)
+        guard subviews.count == 2 else { return .zero }
+        return metrics(proposal.width, subviews)
     }
     func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        var x = 0.0, y = 0.0, rowH = 0.0
+        guard subviews.count == 2 else { return }
+        subviews[0].place(at: CGPoint(x: bounds.minX, y: bounds.minY + lead), anchor: .topLeading, proposal: .init(width: bounds.width, height: nil))
+        subviews[1].place(at: bounds.origin, anchor: .topLeading, proposal: .unspecified)
+    }
+}
+
+struct AWCFieldChipsLayout: Layout {
+    let wrap: Bool, gap: Double
+    /// The chips box (`.md-text-field__chips`, inline-flex, `gap`): one line, or with `chips-wrap` rows `gap` apart. A child wider
+    /// than the box (a composite's own wrapping chip container, md-multi-select) lays out at the box's width.
+    private func arrange(_ maxW: Double, _ subviews: Subviews) -> (frames: [CGRect], size: CGSize) {
+        var x = 0.0, y = 0.0, rowH = 0.0, w = 0.0, frames: [CGRect] = []
         for s in subviews {
-            let size = s.sizeThatFits(.unspecified)
-            if wrap && x > 0 && x + size.width > bounds.width { y += rowH + 6; x = 0; rowH = 0 }
+            var size = s.sizeThatFits(.unspecified)
+            if wrap, size.width > maxW { size = s.sizeThatFits(ProposedViewSize(width: maxW, height: nil)) }
+            if wrap && x > 0 && x + gap + size.width > maxW { y += rowH + gap; x = 0; rowH = 0 }
             let px = x + (x > 0 ? gap : 0)
-            s.place(at: CGPoint(x: bounds.minX + px, y: bounds.minY + y), proposal: ProposedViewSize(size))
-            x = px + size.width; rowH = max(rowH, size.height)
+            frames.append(CGRect(x: px, y: y, width: size.width, height: size.height))
+            x = px + size.width; rowH = max(rowH, size.height); w = max(w, x)
+        }
+        // A wrapping box is flex-shrunk to its line: it fills the row once its chips no longer fit on one line.
+        return (frames, CGSize(width: wrap && (y > 0 || w > maxW) ? maxW : min(w, maxW), height: y + rowH))
+    }
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize { arrange(proposal.width ?? .infinity, subviews).size }
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let a = arrange(bounds.width, subviews)
+        for (s, f) in zip(subviews, a.frames) { s.place(at: CGPoint(x: bounds.minX + f.minX, y: bounds.minY + f.minY), proposal: ProposedViewSize(f.size)) }
+    }
+}
+
+/// The single-line input row (`.md-text-field__input-row`). Without chips the input group takes the row. With chips on one line the
+/// chips box fills the row (flex 1 1 auto) and the input takes none of it (flex 0 1 0), as the source's single-line chips own the row.
+/// With `chips-wrap` it is a wrapping flex row (`gap` 4, `row-gap` 6): the chips box at its max-content width (the whole row once
+/// wider, its chips wrapping inside) and the input group (flex 1 0 40px) beside it when 40 pt fit, otherwise on the next line at the
+/// full width: the field grows with its chips (md-multi-select's inline wrap). Lines centre.
+struct AWCFieldChipsRowLayout: Layout {
+    let wrap: Bool, hasChips: Bool, gap: Double, rowGap: Double, inputMin: Double
+    private func lines(_ width: Double, _ subviews: Subviews) -> (chips: CGSize, input: CGSize, wrapped: Bool) {
+        func input(_ w: Double) -> CGSize { CGSize(width: w, height: subviews[1].sizeThatFits(ProposedViewSize(width: w, height: nil)).height) }
+        guard hasChips else { return (.zero, input(width), false) }
+        guard wrap else {
+            let cw = max(0, width - gap)
+            return (CGSize(width: cw, height: subviews[0].sizeThatFits(ProposedViewSize(width: cw, height: nil)).height), input(0), false)
+        }
+        let ideal = subviews[0].sizeThatFits(.unspecified)
+        let wrapped = ideal.width + gap + inputMin > width + 0.01
+        let chips = ideal.width > width ? subviews[0].sizeThatFits(ProposedViewSize(width: width, height: nil)) : ideal
+        return (chips, input(wrapped ? width : max(inputMin, width - chips.width - gap)), wrapped)
+    }
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        guard subviews.count == 2 else { return .zero }
+        let ideal = hasChips ? Double(subviews[0].sizeThatFits(.unspecified).width) + gap + inputMin : Double(subviews[1].sizeThatFits(.unspecified).width)
+        let width: Double = proposal.width.map { Double($0) } ?? ideal
+        let l = lines(width, subviews)
+        return CGSize(width: width, height: l.wrapped ? l.chips.height + rowGap + l.input.height : max(l.chips.height, l.input.height))
+    }
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        guard subviews.count == 2 else { return }
+        let l = lines(bounds.width, subviews), g = hasChips ? gap : 0
+        if l.wrapped {
+            subviews[0].place(at: CGPoint(x: bounds.minX, y: bounds.minY), proposal: ProposedViewSize(l.chips))
+            subviews[1].place(at: CGPoint(x: bounds.minX, y: bounds.minY + l.chips.height + rowGap), proposal: ProposedViewSize(l.input))
+        } else {
+            let h = max(l.chips.height, l.input.height)
+            subviews[0].place(at: CGPoint(x: bounds.minX, y: bounds.minY + (h - l.chips.height) / 2), proposal: ProposedViewSize(l.chips))
+            subviews[1].place(at: CGPoint(x: bounds.minX + l.chips.width + g, y: bounds.minY + (h - l.input.height) / 2), proposal: ProposedViewSize(l.input))
         }
     }
 }

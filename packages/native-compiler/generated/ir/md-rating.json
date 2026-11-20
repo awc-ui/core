@@ -1401,12 +1401,20 @@
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Dedicated native rating: precision 1 / 0.5, hover preview, keyboard, pop / state layer / ripple motion, readonly, disabled and soft-disabled, the value label; getLabel goes through the native label closure; hooks through AWCRatingAppearance; focusRating() through AWCRatingController.",
+        "Dedicated native rating: precision 1 / 0.5, hover preview, keyboard, pop / state layer / ripple motion, readonly, disabled and soft-disabled, the value label; hooks through AWCRatingAppearance; focusRating() and getLabel (the value label and accessible value text) through AWCRatingController.",
         "Host value changes are validated and clamped like @Watch('value'); a smaller max re-clamps the value.",
+        "Parts: typed part appearances (.awcRatingPartAppearance(_:part:) / AWCRatingPartAppearanceScope) — items gap, item size, icon-filled / icon-empty colour (the filled glyph only), state-layer colour, value-label colour / font / letter spacing (Mac Chrome ::part cases, paint-extra2).",
         "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint, pointer / keyboard / touch replays with events, motion per frame (plain and reduced motion), lifecycle (runtime property changes through the Stencil watchers, form reset), RTL."
       ],
       "verification": "not-device-verified",
-      "visualParts": [],
+      "visualParts": [
+        "items",
+        "item",
+        "icon-filled",
+        "icon-empty",
+        "state-layer",
+        "value-label"
+      ],
       "appearance": {
         "api": ".awcRatingAppearance(AWCRatingAppearance)",
         "fields": [
@@ -1460,12 +1468,20 @@
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Dedicated native rating: precision 1 / 0.5, hover preview, keyboard, pop / state layer / ripple motion, readonly, disabled and soft-disabled, the value label; getLabel goes through the native label closure; hooks through AWCRatingAppearance; focusRating() through AWCRatingController.",
+        "Dedicated native rating: precision 1 / 0.5, hover preview, keyboard, pop / state layer / ripple motion, readonly, disabled and soft-disabled, the value label; hooks through AWCRatingAppearance; focusRating() and getLabel (the value label and accessible value text) through AWCRatingController.",
         "Host value changes are validated and clamped like @Watch('value'); a smaller max re-clamps the value.",
+        "Parts: typed part appearances (.awcRatingPartAppearance(_:part:) / AWCRatingPartAppearanceScope) — items gap, item size, icon-filled / icon-empty colour (the filled glyph only), state-layer colour, value-label colour / font / letter spacing (Mac Chrome ::part cases, paint-extra2).",
         "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint, pointer / keyboard / touch replays with events, motion per frame (plain and reduced motion), lifecycle (runtime property changes through the Stencil watchers, form reset), RTL."
       ],
       "verification": "not-device-verified",
-      "visualParts": [],
+      "visualParts": [
+        "items",
+        "item",
+        "icon-filled",
+        "icon-empty",
+        "state-layer",
+        "value-label"
+      ],
       "appearance": {
         "api": "AWCRatingAppearanceScope(AWCRatingAppearance)",
         "fields": [

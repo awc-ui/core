@@ -41,10 +41,19 @@ class LivePreviewCommunicationHostTest {
             .put("properties",JSONObject().put("value",72).put("showLabel",false).put("showValue",false)))
         Thread.sleep(500)
         assertEquals(216.0,bounds(command(JSONObject().put("command","frame")),"component.indicator").getDouble("width"),.5)
-        val ack=command(JSONObject().put("command","update").put("properties",JSONObject().put("value",20)))
-        assertTrue(ack.getBoolean("ack"));assertEquals(0,ack.getJSONArray("events").length())
-        val start=System.currentTimeMillis();val widths=mutableListOf<Pair<Long,Double>>()
-        while(System.currentTimeMillis()-start<900) { widths+=(System.currentTimeMillis()-start) to bounds(command(JSONObject().put("command","frame")),"component.indicator").getDouble("width");Thread.sleep(15) }
+        // The host answers an update once its draws have settled (gate-7 R1-15); under heavy load that can take most of the
+        // 300 ms glide, so the frames are sampled while the update is being answered. An attempt that still saw no
+        // intermediate width (slow captures) is inconclusive and is repeated, at most twice.
+        var widths=mutableListOf<Pair<Long,Double>>()
+        for(attempt in 1..3) {
+            val start=System.currentTimeMillis();widths=mutableListOf()
+            val update=java.util.concurrent.CompletableFuture.supplyAsync { command(JSONObject().put("command","update").put("properties",JSONObject().put("value",20))) }
+            while(System.currentTimeMillis()-start<900) { widths+=(System.currentTimeMillis()-start) to bounds(command(JSONObject().put("command","frame")),"component.indicator").getDouble("width");Thread.sleep(15) }
+            val ack=update.get(5,java.util.concurrent.TimeUnit.SECONDS)
+            assertTrue(ack.getBoolean("ack"));assertEquals(0,ack.getJSONArray("events").length())
+            if(widths.any { it.second>61 && it.second<215 } || attempt==3) break
+            command(JSONObject().put("command","update").put("properties",JSONObject().put("value",72)));Thread.sleep(800)
+        }
         val trace=widths.joinToString(" ") { "${it.first}:${"%.1f".format(it.second)}" }
         assertTrue("Intermediate glide widths: $trace",widths.any { it.second>61 && it.second<215 })
         assertTrue("Monotonic glide: $trace",widths.zipWithNext().all { (a,b)->b.second<=a.second+.5 })
@@ -81,10 +90,18 @@ class LivePreviewCommunicationHostTest {
         val frame=command(JSONObject().put("command","frame"));val box=bounds(frame)
         val cx=box.getDouble("x")+box.getDouble("width")/2;val cy=box.getDouble("y")+box.getDouble("height")/2
         val online=colour(frame,cx,cy)
-        assertTrue(command(JSONObject().put("command","update").put("properties",JSONObject().put("state","busy"))).getBoolean("ack"))
-        val start=System.currentTimeMillis();val samples=mutableListOf<Pair<Long,IntArray>>()
-        while(System.currentTimeMillis()-start<700) { samples+=(System.currentTimeMillis()-start) to colour(command(JSONObject().put("command","frame")),cx,cy);Thread.sleep(10) }
-        Thread.sleep(400);val busy=colour(command(JSONObject().put("command","frame")),cx,cy)
+        // As for the meter glide (gate-7 R1-15): the frames are sampled while the update is being answered; an attempt that
+        // still saw no intermediate colour is inconclusive and is repeated, at most twice.
+        var samples=mutableListOf<Pair<Long,IntArray>>();var busy=online
+        for(attempt in 1..3) {
+            val start=System.currentTimeMillis();samples=mutableListOf()
+            val update=java.util.concurrent.CompletableFuture.supplyAsync { command(JSONObject().put("command","update").put("properties",JSONObject().put("state","busy"))) }
+            while(System.currentTimeMillis()-start<700) { samples+=(System.currentTimeMillis()-start) to colour(command(JSONObject().put("command","frame")),cx,cy);Thread.sleep(10) }
+            assertTrue(update.get(5,java.util.concurrent.TimeUnit.SECONDS).getBoolean("ack"))
+            Thread.sleep(400);busy=colour(command(JSONObject().put("command","frame")),cx,cy)
+            if(samples.any { dist(it.second,online)>12 && dist(it.second,busy)>12 } || attempt==3) break
+            command(JSONObject().put("command","update").put("properties",JSONObject().put("state","online")));Thread.sleep(700)
+        }
         val trace=samples.joinToString(" ") { "${it.first}:${it.second.toList()}" }
         assertTrue("online/busy differ: ${online.toList()} ${busy.toList()}",dist(online,busy)>60)
         assertTrue("Intermediate colours: $trace",samples.any { dist(it.second,online)>12 && dist(it.second,busy)>12 })

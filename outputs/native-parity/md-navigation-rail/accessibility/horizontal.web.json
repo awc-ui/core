@@ -1,0 +1,345 @@
+{
+ "tag": "md-navigation-rail",
+ "case": "horizontal",
+ "html": "<md-navigation-rail data-ax-node=\"n0\" id=\"example-md-navigation-rail\"><md-navigation-rail-tab data-ax-node=\"n1\"></md-navigation-rail-tab><md-navigation-rail-tab data-ax-node=\"n2\"></md-navigation-rail-tab><md-navigation-rail-tab data-ax-node=\"n3\"></md-navigation-rail-tab></md-navigation-rail>",
+ "props": {
+  "n0": {
+   "activeIndex": 0,
+   "alignment": "top",
+   "density": 0,
+   "disableFocusManagement": false,
+   "expandable": false,
+   "fullHeight": false,
+   "label": "Navigation",
+   "labelVisibility": "all",
+   "modal": false,
+   "orientation": "horizontal",
+   "overflowIcon": "more_horiz",
+   "overflowLabel": "More",
+   "toggleLabel": "Toggle navigation",
+   "variant": "standard"
+  },
+  "n1": {
+   "active": true,
+   "icon": "home",
+   "label": "Home"
+  },
+  "n2": {
+   "icon": "favorite",
+   "label": "Saved"
+  },
+  "n3": {
+   "icon": "settings",
+   "label": "Settings"
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   272
+  ],
+  "children": [
+   {
+    "role": "navigation",
+    "name": "Navigation",
+    "ignored": false,
+    "frame": [
+     16,
+     16,
+     608,
+     72
+    ],
+    "children": [
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true
+     },
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true,
+      "children": [
+       {
+        "role": "tablist",
+        "name": "Navigation",
+        "ignored": false,
+        "multiselectable": false,
+        "orientation": "horizontal",
+        "frame": [
+         28,
+         16,
+         584,
+         72
+        ],
+        "children": [
+         {
+          "role": "tab",
+          "name": "Home",
+          "ignored": false,
+          "focusable": true,
+          "selected": true,
+          "frame": [
+           192,
+           16,
+           80,
+           72
+          ],
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             }
+            ]
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true,
+              "children": [
+               {
+                "role": "none",
+                "name": "",
+                "ignored": true
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "StaticText",
+              "name": "Home",
+              "ignored": false,
+              "frame": [
+               214.328125,
+               63,
+               35.34375,
+               14
+              ],
+              "children": [
+               {
+                "role": "InlineTextBox",
+                "name": "Home",
+                "ignored": false
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "tab",
+          "name": "Saved",
+          "ignored": false,
+          "focusable": true,
+          "selected": false,
+          "frame": [
+           280,
+           16,
+           80,
+           72
+          ],
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             }
+            ]
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true,
+              "children": [
+               {
+                "role": "none",
+                "name": "",
+                "ignored": true
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "StaticText",
+              "name": "Saved",
+              "ignored": false,
+              "frame": [
+               301.734375,
+               63,
+               36.53125,
+               14
+              ],
+              "children": [
+               {
+                "role": "InlineTextBox",
+                "name": "Saved",
+                "ignored": false
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "tab",
+          "name": "Settings",
+          "ignored": false,
+          "focusable": true,
+          "selected": false,
+          "frame": [
+           368,
+           16,
+           80,
+           72
+          ],
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             }
+            ]
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true,
+              "children": [
+               {
+                "role": "none",
+                "name": "",
+                "ignored": true
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "StaticText",
+              "name": "Settings",
+              "ignored": false,
+              "frame": [
+               384.3125,
+               63,
+               47.359375,
+               14
+              ],
+              "children": [
+               {
+                "role": "InlineTextBox",
+                "name": "Settings",
+                "ignored": false
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [
+  {
+   "dom": "md-navigation-rail-tab",
+   "role": "tab",
+   "name": "Home",
+   "frame": [
+    192,
+    16,
+    80,
+    72
+   ],
+   "props": {
+    "focusable": true,
+    "focused": true,
+    "selected": true
+   }
+  }
+ ],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

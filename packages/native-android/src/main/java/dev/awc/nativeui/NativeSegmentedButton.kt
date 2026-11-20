@@ -29,6 +29,32 @@ import kotlinx.coroutines.Job
 import kotlin.math.*
 import dev.awc.nativeui.generated.AWCGeneratedTokens
 
+/** CSS width of a single-line run in device px: the font's unhinted advances (as Chrome lays text out) plus letter-spacing
+ *  after every character. Compose's measured width uses hinted, pixel-quantized advances (about a pixel wider on a label). */
+@Composable internal fun rememberAWCCssTextWidth(text:String,style:TextStyle):Float {
+    val resolver=LocalFontFamilyResolver.current;val density=LocalDensity.current
+    val face=remember(resolver,style.fontFamily,style.fontWeight) { resolver.resolve(style.fontFamily,style.fontWeight ?: FontWeight.Normal) }.value as? android.graphics.Typeface
+    return remember(text,style,face,density) {
+        if(text.isEmpty()) 0f else with(density) {
+            val size=style.fontSize.toPx()
+            // Measured at 64x: Android quantises advances to whole pixels at text sizes (even unhinted); at 64x the error is
+            // below 1/64 px per glyph, which matches Chrome's fractional layout.
+            val paint=android.graphics.Paint().apply { typeface=face;textSize=size*64f;isSubpixelText=true;hinting=android.graphics.Paint.HINTING_OFF }
+            val tracking=if(style.letterSpacing.isSp) style.letterSpacing.toPx() else if(style.letterSpacing.isEm) style.letterSpacing.value*size else 0f
+            paint.measureText(text)/64f+text.codePointCount(0,text.length)*tracking
+        }
+    }
+}
+/** Reports a single-line text run's CSS width (rounded to the nearest device pixel) instead of Compose's measured width, so
+ *  content-sized containers size like CSS; the Text itself is measured and placed unchanged from the start edge. */
+@Composable internal fun Modifier.awcExactTextWidth(text:String,style:TextStyle):Modifier {
+    val exact=rememberAWCCssTextWidth(text,style)
+    return layout { measurable,constraints ->
+        val p=measurable.measure(constraints.copy(minWidth=0))
+        val w=exact.roundToInt().coerceIn(constraints.minWidth,max(constraints.minWidth,constraints.maxWidth))
+        layout(w,p.height) { p.placeRelative(0,0) }
+    }
+}
 internal data class SegmentedMetrics(val density:Int,val inset:Float) {
     val height=40f+4*density
     val icon=max(14f,18f+density)
@@ -106,7 +132,7 @@ private data class SegmentedShape(val first:Boolean,val last:Boolean,val radius:
     val ink=if(!enabled) colors.onSurface.copy(alpha=.38f) else if(selected) color(appearance.selectedLabelColor,colors.onSecondaryContainer) else color(appearance.labelColor,colors.onSurface)
     val stateInk=if(selected) colors.onSecondaryContainer else colors.onSurface
     val outline=if(enabled) color(appearance.outlineColor,colors.outline) else colors.onSurface.copy(alpha=.12f)
-    val reduced=!ValueAnimator.areAnimatorsEnabled()
+    val reduced=LocalAWCButtonReducedMotion.current ?: !ValueAnimator.areAnimatorsEnabled()
     val container by animateColorAsState(if(!enabled && selected) colors.onSurface.copy(alpha=.12f)
         else if(selected) color(appearance.selectedContainerColor,colors.secondaryContainer) else color(appearance.containerColor,Color.Transparent),
         tween(if(reduced) 0 else 100,easing=SegmentEasing),label="Segment background")
@@ -136,6 +162,8 @@ private data class SegmentedShape(val first:Boolean,val last:Boolean,val radius:
     val style=TextStyle(fontFamily=SegmentFont,fontSize=metrics.font.sp,lineHeight=metrics.line.sp,fontWeight=FontWeight.Medium,
         letterSpacing=.1.sp,textMotion=TextMotion.Animated,platformStyle=PlatformTextStyle(includeFontPadding=false),
         lineHeightStyle=LineHeightStyle(LineHeightStyle.Alignment.Center,LineHeightStyle.Trim.None,LineHeightStyle.Mode.Fixed))
+    val cssLabelPx=rememberAWCCssTextWidth(awcCollapsedWhitespace(label),style)
+    val exactLabelPx=if(awcCollapsedWhitespace(label).isEmpty()) -1f else cssLabelPx
     val hasIcon=p.str("icon").isNotEmpty()
     val reserveGraphic=hasIcon || !p.bool("noCheckmark")
     val showCheckmark=selected && !p.bool("noCheckmark")
@@ -196,7 +224,7 @@ private data class SegmentedShape(val first:Boolean,val last:Boolean,val radius:
         }.map { it.measure(Constraints()) }
         val labels=if(label.isEmpty()) authoredLabels else subcompose("property-label") {
             val visible=awcCollapsedWhitespace(label)
-            if(visible.isNotEmpty()) Text(visible,color=ink,style=style,softWrap=false,maxLines=1,overflow=TextOverflow.Clip,modifier=Modifier.clearAndSetSemantics { })
+            if(visible.isNotEmpty()) Text(visible,color=ink,style=style,softWrap=false,maxLines=1,overflow=TextOverflow.Clip,modifier=Modifier.clearAndSetSemantics { }.awcExactTextWidth(visible,style))
         }.map { it.measure(Constraints()) }
         val labelWidth=labels.sumOf { it.width }
         val labelHeight=labels.maxOfOrNull { it.height } ?: 0
@@ -222,6 +250,8 @@ private data class SegmentedShape(val first:Boolean,val last:Boolean,val radius:
         // A CSS border box cannot make its content box negative. The parent
         // grid uses this measured padding floor to freeze undersized fr tracks.
         childRecord?.minimumWidth=2*insetPx
+        // The set's fr track uses the unbounded natural width with the label's exact advance (see NativeSegmentedSet).
+        if(!constraints.hasBoundedWidth) childRecord?.naturalWidth=if(exactLabelPx>=0f && labels.isNotEmpty()) contentWidth-labelWidth+exactLabelPx+2*insetPx else (contentWidth+2*insetPx).toFloat()
         val width=max(2*insetPx,constraints.constrainWidth(contentWidth+2*insetPx))
         val height=constraints.constrainHeight(max(metrics.height.dp.roundToPx(),contentHeight))
         val markers=subcompose("markers") {

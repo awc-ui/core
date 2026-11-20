@@ -4,7 +4,7 @@ extension AWCNativeView {
     var sheet: some View {
         Button(label.isEmpty ? "Open \(node.tag.replacingOccurrences(of: "md-", with: ""))" : label) { showOverlay(true) }
             .buttonStyle(AWCActionStyle(primary: true, theme: theme))
-            .awcPreviewSheet(isPresented: Binding(get: { b("open") }, set: { value in if !value { emit("mdCancel") }; showOverlay(value) }), placement: node.tag == "md-bottom-sheet" ? .bottom : node.tag == "md-side-sheet" ? .trailing : .center, scrimDismissible: b("scrimDismissible", true)) {
+            .awcPreviewSheet(isPresented: $local[awcBool: "open"], onChange: { value in if !value { emit("mdCancel") }; emit(value ? "mdOpen" : "mdClose") }, placement: node.tag == "md-bottom-sheet" ? .bottom : node.tag == "md-side-sheet" ? .trailing : .center, scrimDismissible: b("scrimDismissible", true)) {
                 VStack(alignment: .leading, spacing: 20) {
                     HStack {
                         if b("showBack") { Button { emit("mdBack") } label: { Image(systemName: "arrow.left") }.accessibilityLabel("Back") }

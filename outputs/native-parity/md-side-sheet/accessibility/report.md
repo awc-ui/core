@@ -1,6 +1,6 @@
 # md-side-sheet — accessibility parity
 
-Generated 2026-10-29T11:11:41.722Z by tools/ax. Web = Chrome AX tree of the same effective node.
+Generated 2026-11-05T01:32:19.732Z by tools/ax. Web = Chrome AX tree of the same effective node.
 
 ## open
 
@@ -10,3 +10,7 @@ Generated 2026-10-29T11:11:41.722Z by tools/ax. Web = Chrome AX tree of the same
   - expected target: ios: button "Open side sheet" target 134×40 below 44pt
   - expected target: ios: button "Close side sheet" target 40×40 below 44pt
 - android (pass): button:Open side sheet · button:Close side sheet · text: Project details / Project details / Every great project starts with a shared workspace. · Tab: button:Open side sheet → button:Close side sheet → button:Open side sheet → button:Close side sheet
+
+## modal
+
+- no web capture

@@ -40,7 +40,10 @@ struct AWCColorPickerMetrics {
     @ObservationIgnored var loaded = false
     @ObservationIgnored var appliedValue: String?
     /// Part held by the primary pointer (`:active`): plate, hue, alpha, preset-N.
-    var active: String?
+    var active: String? { didSet { if active != oldValue { activeAt = CACurrentMediaTime() * 1000 } } }
+    /// When `active` last changed (ms): the press turn's clock for the thumb's press transition (Web: the `:active` style
+    /// applies at the pointerdown, not at the body pass that follows the handler).
+    @ObservationIgnored var activeAt: Double?
     /// Part under the pointer (`:hover`).
     var hovered: String?
     var focused: String?
@@ -81,7 +84,9 @@ struct AWCColorPickerMetrics {
     @MainActor func retarget(_ key: String, _ target: [Double], duration: Double, curve: [Double]) {
         guard let track = transitions[key] else { transitions[key] = .init(target); return }
         guard track.value != target else { return }
-        let now = CACurrentMediaTime() * 1000
+        let real = CACurrentMediaTime() * 1000
+        var now = real
+        if key.hasPrefix("thumb-") || key.hasPrefix("preset-"), let a = activeAt, real - a < 400 { now = a }
         var base = track, start = now + AWCColorPickerMotion.frame * 1000
         if let pending = pendingTransitions[key], now < pending.start { base = pending.base; start = pending.start }
         pendingTransitions[key] = (base, start)
@@ -576,7 +581,7 @@ struct AWCNativeColorPicker: View {
         let ink = appearance.onSurface ?? (tokens["--md-sys-color-on-surface"] ?? "#1C1B1F")
         config.text = text; config.fontSize = 13; config.lineHeight = 15; config.tracking = mono ? 0.65 : 0; config.weight = 400
         config.monospaced = mono; config.color = ink; config.caret = ink; config.rtl = rtl; config.enabled = !disabled; config.centered = centered
-        config.type = mono ? "text" : "number"; config.spellcheck = false; config.autocomplete = "off"; config.invalid = invalid
+        config.type = mono ? "text" : "number"; config.navigationKeys = !mono; config.spellcheck = false; config.autocomplete = "off"; config.invalid = invalid
         // The source's field labels are `text-transform: uppercase`; Chrome names the inputs with the transformed text ("HEX").
         config.accessibilityLabel = label.uppercased(with: Locale(identifier: locale))
         return config

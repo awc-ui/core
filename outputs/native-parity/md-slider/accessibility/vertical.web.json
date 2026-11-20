@@ -1,0 +1,211 @@
+{
+ "tag": "md-slider",
+ "case": "vertical",
+ "html": "<md-slider data-ax-node=\"n0\" id=\"example-md-slider\"></md-slider>",
+ "props": {
+  "n0": {
+   "ariaLabelEnd": "",
+   "ariaLabelStart": "",
+   "controlled": false,
+   "density": 0,
+   "disabled": false,
+   "fullHeight": false,
+   "icon": "",
+   "insetIcon": false,
+   "labeled": true,
+   "max": 100,
+   "min": 0,
+   "name": "",
+   "nameEnd": "",
+   "nameStart": "",
+   "orientation": "vertical",
+   "range": false,
+   "size": "xs",
+   "sliderAriaLabel": "Volume",
+   "step": 1,
+   "stops": false,
+   "value": 40,
+   "valueEnd": 100,
+   "valueEndText": "",
+   "valueIndicator": false,
+   "valueStart": 0,
+   "valueStartText": "",
+   "valueText": "",
+   "variant": "standard"
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   272
+  ],
+  "children": [
+   {
+    "role": "generic",
+    "name": "",
+    "ignored": false,
+    "invalid": "false",
+    "frame": [
+     16,
+     16,
+     608,
+     200
+    ],
+    "children": [
+     {
+      "role": "generic",
+      "name": "",
+      "ignored": false,
+      "frame": [
+       16,
+       16,
+       556,
+       200
+      ],
+      "children": [
+       {
+        "role": "generic",
+        "name": "",
+        "ignored": false,
+        "frame": [
+         272,
+         16,
+         44,
+         200
+        ],
+        "children": [
+         {
+          "role": "generic",
+          "name": "",
+          "ignored": false,
+          "frame": [
+           286,
+           16,
+           16,
+           200
+          ],
+          "children": [
+           {
+            "role": "generic",
+            "name": "",
+            "ignored": false,
+            "frame": [
+             286,
+             16,
+             16,
+             114
+            ]
+           },
+           {
+            "role": "generic",
+            "name": "",
+            "ignored": false,
+            "frame": [
+             286,
+             142,
+             16,
+             74
+            ]
+           }
+          ]
+         },
+         {
+          "role": "generic",
+          "name": "",
+          "ignored": false,
+          "frame": [
+           272,
+           134,
+           44,
+           4
+          ],
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "StaticText",
+              "name": "40",
+              "ignored": false,
+              "frame": [
+               336.8125,
+               129,
+               14.359375,
+               14
+              ],
+              "children": [
+               {
+                "role": "InlineTextBox",
+                "name": "40",
+                "ignored": false
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "generic",
+          "name": "",
+          "ignored": false,
+          "frame": [
+           272,
+           16,
+           44,
+           200
+          ],
+          "children": [
+           {
+            "role": "slider",
+            "name": "Volume",
+            "ignored": false,
+            "value": 40,
+            "invalid": "false",
+            "focusable": true,
+            "settable": true,
+            "orientation": "vertical",
+            "valuemin": 0,
+            "valuemax": 100,
+            "valuetext": "40",
+            "frame": [
+             286,
+             16,
+             16,
+             200
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

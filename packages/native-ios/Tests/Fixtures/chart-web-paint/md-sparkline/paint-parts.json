@@ -1,0 +1,1739 @@
+{
+ "component": "md-sparkline",
+ "provisional": true,
+ "subset": "parts",
+ "cases": [
+  {
+   "name": "spark-parts-canvas",
+   "theme": "light",
+   "dir": "ltr",
+   "width": 280,
+   "html": "<style>md-sparkline::part(canvas){background-color:#FFF3E0;border-radius:6px;opacity:0.85}</style><md-sparkline no-animation height=\"64px\" style=\"inline-size:240px\"></md-sparkline>",
+   "props": {
+    "data": [
+     12,
+     15,
+     11,
+     18,
+     22,
+     19,
+     25,
+     31,
+     27,
+     24,
+     29,
+     35,
+     30,
+     33
+    ]
+   },
+   "clip": {
+    "x": 16,
+    "y": 16,
+    "width": 312,
+    "height": 96
+   },
+   "tree": {
+    "tag": "md-sparkline",
+    "rect": {
+     "x": 32,
+     "y": 32,
+     "width": 240,
+     "height": 64
+    },
+    "attrs": {
+     "role": "img",
+     "aria-label": "Sparkline, latest 33, range 11 to 35.",
+     "variant": "line",
+     "style": "inline-size: 240px; block-size: 64px;"
+    },
+    "style": {
+     "display": "inline-block",
+     "visibility": "visible",
+     "opacity": "1",
+     "color": "rgb(28, 27, 31)",
+     "backgroundColor": "rgba(0, 0, 0, 0)",
+     "transform": "none",
+     "borderTopLeftRadius": "0px",
+     "borderTopRightRadius": "0px",
+     "borderBottomRightRadius": "0px",
+     "borderBottomLeftRadius": "0px",
+     "borderTopWidth": "0px",
+     "borderTopColor": "rgb(28, 27, 31)",
+     "boxShadow": "none",
+     "outlineStyle": "none",
+     "outlineWidth": "3px",
+     "outlineColor": "rgb(28, 27, 31)",
+     "outlineOffset": "0px",
+     "fontFamily": "Roboto",
+     "fontSize": "16px",
+     "fontWeight": "400",
+     "lineHeight": "16px",
+     "letterSpacing": "normal",
+     "textAlign": "start",
+     "textDecorationLine": "none",
+     "paddingTop": "0px",
+     "paddingRight": "0px",
+     "paddingBottom": "0px",
+     "paddingLeft": "0px",
+     "columnGap": "normal",
+     "rowGap": "normal",
+     "gap": "normal",
+     "zIndex": "auto",
+     "transitionProperty": "all",
+     "transitionDuration": "0s",
+     "transitionTimingFunction": "ease",
+     "cursor": "auto",
+     "pointerEvents": "auto",
+     "whiteSpace": "normal",
+     "overflow": "visible",
+     "position": "static",
+     "width": "240px",
+     "height": "64px",
+     "minWidth": "32px",
+     "maxWidth": "none",
+     "minHeight": "0px",
+     "maxHeight": "none",
+     "aspectRatio": "auto",
+     "flexDirection": "row",
+     "justifyContent": "normal",
+     "alignItems": "normal",
+     "animationName": "none",
+     "animationDuration": "0s",
+     "direction": "ltr",
+     "inlineSize": "240px",
+     "blockSize": "64px",
+     "verticalAlign": "middle"
+    },
+    "parts": [
+     {
+      "part": "canvas",
+      "cls": "md-sparkline__canvas",
+      "rect": {
+       "x": 32,
+       "y": 32,
+       "width": 240,
+       "height": 64
+      },
+      "attrs": {
+       "part": "canvas",
+       "style": "position: relative;"
+      },
+      "display": "block",
+      "visibility": "visible",
+      "opacity": "0.85",
+      "color": "rgb(28, 27, 31)",
+      "backgroundColor": "rgb(255, 243, 224)",
+      "transform": "none",
+      "borderTopLeftRadius": "6px",
+      "borderTopRightRadius": "6px",
+      "borderBottomRightRadius": "6px",
+      "borderBottomLeftRadius": "6px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(28, 27, 31)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(28, 27, 31)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "16px",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "textDecorationLine": "none",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "relative",
+      "width": "240px",
+      "height": "64px",
+      "minWidth": "0px",
+      "maxWidth": "none",
+      "minHeight": "0px",
+      "maxHeight": "none",
+      "aspectRatio": "auto",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "animationName": "none",
+      "animationDuration": "0s",
+      "direction": "ltr",
+      "inlineSize": "240px",
+      "blockSize": "64px",
+      "verticalAlign": "baseline"
+     },
+     {
+      "part": "plot-canvas",
+      "cls": null,
+      "rect": {
+       "x": 32,
+       "y": 32,
+       "width": 240,
+       "height": 64
+      },
+      "attrs": {
+       "part": "plot-canvas",
+       "style": "position: absolute; inset: 0px; width: 100%; height: 100%; display: block;"
+      },
+      "display": "block",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(28, 27, 31)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(28, 27, 31)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(28, 27, 31)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "16px",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "textDecorationLine": "none",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "clip",
+      "position": "absolute",
+      "width": "240px",
+      "height": "64px",
+      "minWidth": "0px",
+      "maxWidth": "none",
+      "minHeight": "0px",
+      "maxHeight": "none",
+      "aspectRatio": "auto 240 / 64",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "animationName": "none",
+      "animationDuration": "0s",
+      "direction": "ltr",
+      "inlineSize": "240px",
+      "blockSize": "64px",
+      "verticalAlign": "baseline"
+     }
+    ],
+    "activeInShadow": null
+   },
+   "overlay": [
+    {
+     "depth": 0,
+     "tag": "canvas",
+     "part": "plot-canvas",
+     "rect": {
+      "x": 32,
+      "y": 32,
+      "width": 240,
+      "height": 64
+     },
+     "width": 240,
+     "height": 64,
+     "inlineOpacity": null,
+     "inlineTransform": null
+    },
+    {
+     "depth": 0,
+     "tag": "div",
+     "part": null,
+     "attrs": {
+      "style": "position: absolute; inset: 0px; pointer-events: none; overflow: hidden;"
+     },
+     "rect": {
+      "x": 32,
+      "y": 32,
+      "width": 240,
+      "height": 64
+     },
+     "text": "",
+     "display": "block",
+     "opacity": "1",
+     "color": "rgb(28, 27, 31)",
+     "backgroundColor": "rgba(0, 0, 0, 0)",
+     "fontFamily": "Roboto",
+     "fontSize": "16px",
+     "fontWeight": "400",
+     "lineHeight": "16px",
+     "textDecorationLine": "none",
+     "borderTopLeftRadius": "0px",
+     "boxShadow": "none",
+     "paddingTop": "0px",
+     "paddingLeft": "0px",
+     "gap": "normal",
+     "transform": "none",
+     "outlineStyle": "none",
+     "outlineColor": "rgb(28, 27, 31)",
+     "outlineWidth": "3px",
+     "cursor": "auto",
+     "width": "240px",
+     "height": "64px"
+    },
+    {
+     "depth": 0,
+     "tag": "div",
+     "part": null,
+     "attrs": {
+      "style": "position: absolute; inset: 0px; pointer-events: none; overflow: visible;"
+     },
+     "rect": {
+      "x": 32,
+      "y": 32,
+      "width": 240,
+      "height": 64
+     },
+     "text": "",
+     "display": "block",
+     "opacity": "1",
+     "color": "rgb(28, 27, 31)",
+     "backgroundColor": "rgba(0, 0, 0, 0)",
+     "fontFamily": "Roboto",
+     "fontSize": "16px",
+     "fontWeight": "400",
+     "lineHeight": "16px",
+     "textDecorationLine": "none",
+     "borderTopLeftRadius": "0px",
+     "boxShadow": "none",
+     "paddingTop": "0px",
+     "paddingLeft": "0px",
+     "gap": "normal",
+     "transform": "none",
+     "outlineStyle": "none",
+     "outlineColor": "rgb(28, 27, 31)",
+     "outlineWidth": "3px",
+     "cursor": "auto",
+     "width": "240px",
+     "height": "64px"
+    },
+    {
+     "depth": 0,
+     "tag": "div",
+     "part": null,
+     "attrs": {
+      "style": "position: absolute; inset: 0px; pointer-events: none; overflow: hidden;"
+     },
+     "rect": {
+      "x": 32,
+      "y": 32,
+      "width": 240,
+      "height": 64
+     },
+     "text": "",
+     "display": "block",
+     "opacity": "1",
+     "color": "rgb(28, 27, 31)",
+     "backgroundColor": "rgba(0, 0, 0, 0)",
+     "fontFamily": "Roboto",
+     "fontSize": "16px",
+     "fontWeight": "400",
+     "lineHeight": "16px",
+     "textDecorationLine": "none",
+     "borderTopLeftRadius": "0px",
+     "boxShadow": "none",
+     "paddingTop": "0px",
+     "paddingLeft": "0px",
+     "gap": "normal",
+     "transform": "none",
+     "outlineStyle": "none",
+     "outlineColor": "rgb(28, 27, 31)",
+     "outlineWidth": "3px",
+     "cursor": "auto",
+     "width": "240px",
+     "height": "64px"
+    },
+    {
+     "depth": 0,
+     "tag": "div",
+     "part": null,
+     "attrs": {
+      "style": "position: absolute; inset: 0px; pointer-events: none; overflow: hidden;"
+     },
+     "rect": {
+      "x": 32,
+      "y": 32,
+      "width": 240,
+      "height": 64
+     },
+     "text": "",
+     "display": "block",
+     "opacity": "1",
+     "color": "rgb(28, 27, 31)",
+     "backgroundColor": "rgba(0, 0, 0, 0)",
+     "fontFamily": "Roboto",
+     "fontSize": "16px",
+     "fontWeight": "400",
+     "lineHeight": "16px",
+     "textDecorationLine": "none",
+     "borderTopLeftRadius": "0px",
+     "boxShadow": "none",
+     "paddingTop": "0px",
+     "paddingLeft": "0px",
+     "gap": "normal",
+     "transform": "none",
+     "outlineStyle": "none",
+     "outlineColor": "rgb(28, 27, 31)",
+     "outlineWidth": "3px",
+     "cursor": "auto",
+     "width": "240px",
+     "height": "64px"
+    },
+    {
+     "depth": 0,
+     "tag": "div",
+     "part": null,
+     "attrs": {
+      "style": "position: absolute; inset: 0px; pointer-events: none; overflow: hidden;"
+     },
+     "rect": {
+      "x": 32,
+      "y": 32,
+      "width": 240,
+      "height": 64
+     },
+     "text": "",
+     "display": "block",
+     "opacity": "1",
+     "color": "rgb(28, 27, 31)",
+     "backgroundColor": "rgba(0, 0, 0, 0)",
+     "fontFamily": "Roboto",
+     "fontSize": "16px",
+     "fontWeight": "400",
+     "lineHeight": "16px",
+     "textDecorationLine": "none",
+     "borderTopLeftRadius": "0px",
+     "boxShadow": "none",
+     "paddingTop": "0px",
+     "paddingLeft": "0px",
+     "gap": "normal",
+     "transform": "none",
+     "outlineStyle": "none",
+     "outlineColor": "rgb(28, 27, 31)",
+     "outlineWidth": "3px",
+     "cursor": "auto",
+     "width": "240px",
+     "height": "64px"
+    }
+   ],
+   "engine": {
+    "scene": {
+     "width": 240,
+     "height": 64,
+     "plot": {
+      "x": 5.5,
+      "y": 5.5,
+      "width": 229,
+      "height": 53
+     },
+     "bands": [],
+     "gridlines": [],
+     "axisLines": [],
+     "areas": [],
+     "bars": [],
+     "slices": [],
+     "lines": [
+      {
+       "points": [
+        {
+         "x": 13.679,
+         "y": 40.329
+        },
+        {
+         "x": 14.127,
+         "y": 40.191
+        },
+        {
+         "x": 14.652,
+         "y": 40.011
+        },
+        {
+         "x": 15.246,
+         "y": 39.792
+        },
+        {
+         "x": 15.903,
+         "y": 39.541
+        },
+        {
+         "x": 16.618,
+         "y": 39.264
+        },
+        {
+         "x": 17.383,
+         "y": 38.966
+        },
+        {
+         "x": 18.194,
+         "y": 38.652
+        },
+        {
+         "x": 19.044,
+         "y": 38.33
+        },
+        {
+         "x": 19.926,
+         "y": 38.003
+        },
+        {
+         "x": 20.835,
+         "y": 37.679
+        },
+        {
+         "x": 21.764,
+         "y": 37.362
+        },
+        {
+         "x": 22.708,
+         "y": 37.058
+        },
+        {
+         "x": 23.659,
+         "y": 36.773
+        },
+        {
+         "x": 24.613,
+         "y": 36.513
+        },
+        {
+         "x": 25.563,
+         "y": 36.283
+        },
+        {
+         "x": 26.503,
+         "y": 36.089
+        },
+        {
+         "x": 27.426,
+         "y": 35.936
+        },
+        {
+         "x": 28.326,
+         "y": 35.831
+        },
+        {
+         "x": 29.198,
+         "y": 35.779
+        },
+        {
+         "x": 30.036,
+         "y": 35.786
+        },
+        {
+         "x": 30.854,
+         "y": 35.869
+        },
+        {
+         "x": 31.671,
+         "y": 36.037
+        },
+        {
+         "x": 32.489,
+         "y": 36.279
+        },
+        {
+         "x": 33.307,
+         "y": 36.585
+        },
+        {
+         "x": 34.125,
+         "y": 36.945
+        },
+        {
+         "x": 34.943,
+         "y": 37.348
+        },
+        {
+         "x": 35.761,
+         "y": 37.785
+        },
+        {
+         "x": 36.579,
+         "y": 38.245
+        },
+        {
+         "x": 37.396,
+         "y": 38.718
+        },
+        {
+         "x": 38.214,
+         "y": 39.193
+        },
+        {
+         "x": 39.032,
+         "y": 39.661
+        },
+        {
+         "x": 39.85,
+         "y": 40.111
+        },
+        {
+         "x": 40.668,
+         "y": 40.532
+        },
+        {
+         "x": 41.486,
+         "y": 40.916
+        },
+        {
+         "x": 42.304,
+         "y": 41.251
+        },
+        {
+         "x": 43.121,
+         "y": 41.528
+        },
+        {
+         "x": 43.939,
+         "y": 41.736
+        },
+        {
+         "x": 44.757,
+         "y": 41.864
+        },
+        {
+         "x": 45.575,
+         "y": 41.903
+        },
+        {
+         "x": 46.393,
+         "y": 41.843
+        },
+        {
+         "x": 47.211,
+         "y": 41.683
+        },
+        {
+         "x": 48.029,
+         "y": 41.437
+        },
+        {
+         "x": 48.846,
+         "y": 41.112
+        },
+        {
+         "x": 49.664,
+         "y": 40.716
+        },
+        {
+         "x": 50.482,
+         "y": 40.258
+        },
+        {
+         "x": 51.3,
+         "y": 39.744
+        },
+        {
+         "x": 52.118,
+         "y": 39.184
+        },
+        {
+         "x": 52.936,
+         "y": 38.584
+        },
+        {
+         "x": 53.754,
+         "y": 37.954
+        },
+        {
+         "x": 54.571,
+         "y": 37.3
+        },
+        {
+         "x": 55.389,
+         "y": 36.631
+        },
+        {
+         "x": 56.207,
+         "y": 35.955
+        },
+        {
+         "x": 57.025,
+         "y": 35.28
+        },
+        {
+         "x": 57.843,
+         "y": 34.614
+        },
+        {
+         "x": 58.661,
+         "y": 33.964
+        },
+        {
+         "x": 59.479,
+         "y": 33.339
+        },
+        {
+         "x": 60.296,
+         "y": 32.746
+        },
+        {
+         "x": 61.114,
+         "y": 32.194
+        },
+        {
+         "x": 61.932,
+         "y": 31.69
+        },
+        {
+         "x": 62.75,
+         "y": 31.243
+        },
+        {
+         "x": 63.568,
+         "y": 30.825
+        },
+        {
+         "x": 64.386,
+         "y": 30.405
+        },
+        {
+         "x": 65.204,
+         "y": 29.987
+        },
+        {
+         "x": 66.021,
+         "y": 29.571
+        },
+        {
+         "x": 66.839,
+         "y": 29.161
+        },
+        {
+         "x": 67.657,
+         "y": 28.758
+        },
+        {
+         "x": 68.475,
+         "y": 28.365
+        },
+        {
+         "x": 69.293,
+         "y": 27.984
+        },
+        {
+         "x": 70.111,
+         "y": 27.618
+        },
+        {
+         "x": 70.929,
+         "y": 27.268
+        },
+        {
+         "x": 71.746,
+         "y": 26.937
+        },
+        {
+         "x": 72.564,
+         "y": 26.627
+        },
+        {
+         "x": 73.382,
+         "y": 26.341
+        },
+        {
+         "x": 74.2,
+         "y": 26.081
+        },
+        {
+         "x": 75.018,
+         "y": 25.848
+        },
+        {
+         "x": 75.836,
+         "y": 25.646
+        },
+        {
+         "x": 76.654,
+         "y": 25.476
+        },
+        {
+         "x": 77.471,
+         "y": 25.342
+        },
+        {
+         "x": 78.289,
+         "y": 25.244
+        },
+        {
+         "x": 79.107,
+         "y": 25.186
+        },
+        {
+         "x": 79.925,
+         "y": 25.19
+        },
+        {
+         "x": 80.743,
+         "y": 25.272
+        },
+        {
+         "x": 81.561,
+         "y": 25.423
+        },
+        {
+         "x": 82.379,
+         "y": 25.634
+        },
+        {
+         "x": 83.196,
+         "y": 25.896
+        },
+        {
+         "x": 84.014,
+         "y": 26.199
+        },
+        {
+         "x": 84.832,
+         "y": 26.535
+        },
+        {
+         "x": 85.65,
+         "y": 26.894
+        },
+        {
+         "x": 86.468,
+         "y": 27.267
+        },
+        {
+         "x": 87.286,
+         "y": 27.646
+        },
+        {
+         "x": 88.104,
+         "y": 28.022
+        },
+        {
+         "x": 88.921,
+         "y": 28.384
+        },
+        {
+         "x": 89.739,
+         "y": 28.724
+        },
+        {
+         "x": 90.557,
+         "y": 29.034
+        },
+        {
+         "x": 91.375,
+         "y": 29.303
+        },
+        {
+         "x": 92.193,
+         "y": 29.523
+        },
+        {
+         "x": 93.011,
+         "y": 29.684
+        },
+        {
+         "x": 93.829,
+         "y": 29.779
+        },
+        {
+         "x": 94.646,
+         "y": 29.796
+        },
+        {
+         "x": 95.464,
+         "y": 29.729
+        },
+        {
+         "x": 96.282,
+         "y": 29.582
+        },
+        {
+         "x": 97.1,
+         "y": 29.372
+        },
+        {
+         "x": 97.918,
+         "y": 29.104
+        },
+        {
+         "x": 98.736,
+         "y": 28.784
+        },
+        {
+         "x": 99.554,
+         "y": 28.415
+        },
+        {
+         "x": 100.371,
+         "y": 28.005
+        },
+        {
+         "x": 101.189,
+         "y": 27.556
+        },
+        {
+         "x": 102.007,
+         "y": 27.076
+        },
+        {
+         "x": 102.825,
+         "y": 26.568
+        },
+        {
+         "x": 103.643,
+         "y": 26.037
+        },
+        {
+         "x": 104.461,
+         "y": 25.49
+        },
+        {
+         "x": 105.279,
+         "y": 24.931
+        },
+        {
+         "x": 106.096,
+         "y": 24.365
+        },
+        {
+         "x": 106.914,
+         "y": 23.798
+        },
+        {
+         "x": 107.732,
+         "y": 23.234
+        },
+        {
+         "x": 108.55,
+         "y": 22.678
+        },
+        {
+         "x": 109.368,
+         "y": 22.136
+        },
+        {
+         "x": 110.186,
+         "y": 21.613
+        },
+        {
+         "x": 111.004,
+         "y": 21.113
+        },
+        {
+         "x": 111.821,
+         "y": 20.643
+        },
+        {
+         "x": 112.639,
+         "y": 20.171
+        },
+        {
+         "x": 113.457,
+         "y": 19.666
+        },
+        {
+         "x": 114.275,
+         "y": 19.135
+        },
+        {
+         "x": 115.093,
+         "y": 18.583
+        },
+        {
+         "x": 115.911,
+         "y": 18.017
+        },
+        {
+         "x": 116.729,
+         "y": 17.44
+        },
+        {
+         "x": 117.546,
+         "y": 16.86
+        },
+        {
+         "x": 118.364,
+         "y": 16.282
+        },
+        {
+         "x": 119.182,
+         "y": 15.711
+        },
+        {
+         "x": 120,
+         "y": 15.154
+        },
+        {
+         "x": 120.818,
+         "y": 14.615
+        },
+        {
+         "x": 121.636,
+         "y": 14.101
+        },
+        {
+         "x": 122.454,
+         "y": 13.618
+        },
+        {
+         "x": 123.271,
+         "y": 13.17
+        },
+        {
+         "x": 124.089,
+         "y": 12.764
+        },
+        {
+         "x": 124.907,
+         "y": 12.405
+        },
+        {
+         "x": 125.725,
+         "y": 12.099
+        },
+        {
+         "x": 126.543,
+         "y": 11.852
+        },
+        {
+         "x": 127.361,
+         "y": 11.67
+        },
+        {
+         "x": 128.179,
+         "y": 11.557
+        },
+        {
+         "x": 128.996,
+         "y": 11.52
+        },
+        {
+         "x": 129.814,
+         "y": 11.556
+        },
+        {
+         "x": 130.632,
+         "y": 11.66
+        },
+        {
+         "x": 131.45,
+         "y": 11.824
+        },
+        {
+         "x": 132.268,
+         "y": 12.042
+        },
+        {
+         "x": 133.086,
+         "y": 12.309
+        },
+        {
+         "x": 133.904,
+         "y": 12.618
+        },
+        {
+         "x": 134.721,
+         "y": 12.962
+        },
+        {
+         "x": 135.539,
+         "y": 13.337
+        },
+        {
+         "x": 136.357,
+         "y": 13.734
+        },
+        {
+         "x": 137.175,
+         "y": 14.148
+        },
+        {
+         "x": 137.993,
+         "y": 14.574
+        },
+        {
+         "x": 138.811,
+         "y": 15.003
+        },
+        {
+         "x": 139.629,
+         "y": 15.431
+        },
+        {
+         "x": 140.446,
+         "y": 15.852
+        },
+        {
+         "x": 141.264,
+         "y": 16.257
+        },
+        {
+         "x": 142.082,
+         "y": 16.643
+        },
+        {
+         "x": 142.9,
+         "y": 17.002
+        },
+        {
+         "x": 143.718,
+         "y": 17.328
+        },
+        {
+         "x": 144.536,
+         "y": 17.614
+        },
+        {
+         "x": 145.354,
+         "y": 17.89
+        },
+        {
+         "x": 146.171,
+         "y": 18.184
+        },
+        {
+         "x": 146.989,
+         "y": 18.494
+        },
+        {
+         "x": 147.807,
+         "y": 18.814
+        },
+        {
+         "x": 148.625,
+         "y": 19.14
+        },
+        {
+         "x": 149.443,
+         "y": 19.47
+        },
+        {
+         "x": 150.261,
+         "y": 19.799
+        },
+        {
+         "x": 151.079,
+         "y": 20.122
+        },
+        {
+         "x": 151.896,
+         "y": 20.436
+        },
+        {
+         "x": 152.714,
+         "y": 20.737
+        },
+        {
+         "x": 153.532,
+         "y": 21.022
+        },
+        {
+         "x": 154.35,
+         "y": 21.285
+        },
+        {
+         "x": 155.168,
+         "y": 21.523
+        },
+        {
+         "x": 155.986,
+         "y": 21.732
+        },
+        {
+         "x": 156.804,
+         "y": 21.909
+        },
+        {
+         "x": 157.621,
+         "y": 22.048
+        },
+        {
+         "x": 158.439,
+         "y": 22.147
+        },
+        {
+         "x": 159.257,
+         "y": 22.2
+        },
+        {
+         "x": 160.075,
+         "y": 22.205
+        },
+        {
+         "x": 160.893,
+         "y": 22.157
+        },
+        {
+         "x": 161.711,
+         "y": 22.054
+        },
+        {
+         "x": 162.529,
+         "y": 21.897
+        },
+        {
+         "x": 163.346,
+         "y": 21.692
+        },
+        {
+         "x": 164.164,
+         "y": 21.442
+        },
+        {
+         "x": 164.982,
+         "y": 21.152
+        },
+        {
+         "x": 165.8,
+         "y": 20.824
+        },
+        {
+         "x": 166.618,
+         "y": 20.463
+        },
+        {
+         "x": 167.436,
+         "y": 20.073
+        },
+        {
+         "x": 168.254,
+         "y": 19.659
+        },
+        {
+         "x": 169.071,
+         "y": 19.223
+        },
+        {
+         "x": 169.889,
+         "y": 18.771
+        },
+        {
+         "x": 170.707,
+         "y": 18.305
+        },
+        {
+         "x": 171.525,
+         "y": 17.83
+        },
+        {
+         "x": 172.343,
+         "y": 17.35
+        },
+        {
+         "x": 173.161,
+         "y": 16.869
+        },
+        {
+         "x": 173.979,
+         "y": 16.391
+        },
+        {
+         "x": 174.796,
+         "y": 15.919
+        },
+        {
+         "x": 175.614,
+         "y": 15.459
+        },
+        {
+         "x": 176.432,
+         "y": 15.013
+        },
+        {
+         "x": 177.25,
+         "y": 14.586
+        },
+        {
+         "x": 178.068,
+         "y": 14.146
+        },
+        {
+         "x": 178.886,
+         "y": 13.664
+        },
+        {
+         "x": 179.704,
+         "y": 13.146
+        },
+        {
+         "x": 180.521,
+         "y": 12.599
+        },
+        {
+         "x": 181.339,
+         "y": 12.03
+        },
+        {
+         "x": 182.157,
+         "y": 11.447
+        },
+        {
+         "x": 182.975,
+         "y": 10.855
+        },
+        {
+         "x": 183.793,
+         "y": 10.261
+        },
+        {
+         "x": 184.611,
+         "y": 9.673
+        },
+        {
+         "x": 185.429,
+         "y": 9.096
+        },
+        {
+         "x": 186.246,
+         "y": 8.539
+        },
+        {
+         "x": 187.064,
+         "y": 8.008
+        },
+        {
+         "x": 187.882,
+         "y": 7.509
+        },
+        {
+         "x": 188.7,
+         "y": 7.049
+        },
+        {
+         "x": 189.518,
+         "y": 6.636
+        },
+        {
+         "x": 190.336,
+         "y": 6.275
+        },
+        {
+         "x": 191.154,
+         "y": 5.975
+        },
+        {
+         "x": 191.971,
+         "y": 5.741
+        },
+        {
+         "x": 192.789,
+         "y": 5.58
+        },
+        {
+         "x": 193.607,
+         "y": 5.5
+        },
+        {
+         "x": 194.425,
+         "y": 5.517
+        },
+        {
+         "x": 195.243,
+         "y": 5.637
+        },
+        {
+         "x": 196.061,
+         "y": 5.849
+        },
+        {
+         "x": 196.879,
+         "y": 6.142
+        },
+        {
+         "x": 197.696,
+         "y": 6.506
+        },
+        {
+         "x": 198.514,
+         "y": 6.929
+        },
+        {
+         "x": 199.332,
+         "y": 7.401
+        },
+        {
+         "x": 200.15,
+         "y": 7.911
+        },
+        {
+         "x": 200.968,
+         "y": 8.448
+        },
+        {
+         "x": 201.786,
+         "y": 9.002
+        },
+        {
+         "x": 202.604,
+         "y": 9.561
+        },
+        {
+         "x": 203.421,
+         "y": 10.116
+        },
+        {
+         "x": 204.239,
+         "y": 10.654
+        },
+        {
+         "x": 205.057,
+         "y": 11.166
+        },
+        {
+         "x": 205.875,
+         "y": 11.64
+        },
+        {
+         "x": 206.693,
+         "y": 12.066
+        },
+        {
+         "x": 207.511,
+         "y": 12.433
+        },
+        {
+         "x": 208.329,
+         "y": 12.73
+        },
+        {
+         "x": 209.146,
+         "y": 12.946
+        },
+        {
+         "x": 209.964,
+         "y": 13.071
+        },
+        {
+         "x": 210.802,
+         "y": 13.112
+        },
+        {
+         "x": 211.674,
+         "y": 13.087
+        },
+        {
+         "x": 212.574,
+         "y": 13.003
+        },
+        {
+         "x": 213.497,
+         "y": 12.865
+        },
+        {
+         "x": 214.437,
+         "y": 12.681
+        },
+        {
+         "x": 215.387,
+         "y": 12.456
+        },
+        {
+         "x": 216.341,
+         "y": 12.196
+        },
+        {
+         "x": 217.292,
+         "y": 11.908
+        },
+        {
+         "x": 218.236,
+         "y": 11.599
+        },
+        {
+         "x": 219.165,
+         "y": 11.273
+        },
+        {
+         "x": 220.074,
+         "y": 10.938
+        },
+        {
+         "x": 220.956,
+         "y": 10.6
+        },
+        {
+         "x": 221.806,
+         "y": 10.265
+        },
+        {
+         "x": 222.617,
+         "y": 9.939
+        },
+        {
+         "x": 223.382,
+         "y": 9.629
+        },
+        {
+         "x": 224.097,
+         "y": 9.34
+        },
+        {
+         "x": 224.754,
+         "y": 9.08
+        },
+        {
+         "x": 225.348,
+         "y": 8.853
+        },
+        {
+         "x": 225.873,
+         "y": 8.668
+        },
+        {
+         "x": 226.321,
+         "y": 8.529
+        }
+       ],
+       "color": "#6750A4",
+       "width": 2.5,
+       "seriesIndex": 0
+      }
+     ],
+     "markers": [
+      {
+       "x": 46.393,
+       "y": 41.843,
+       "r": 3.5,
+       "color": "#6750A4",
+       "symbol": "circle",
+       "seriesIndex": 0
+      },
+      {
+       "x": 193.607,
+       "y": 5.5,
+       "r": 3.5,
+       "color": "#6750A4",
+       "symbol": "circle",
+       "seriesIndex": 0
+      }
+     ],
+     "glyphs": [],
+     "endLabels": [],
+     "texts": [],
+     "legend": [],
+     "legendPosition": "none",
+     "xPositions": [
+      13.679,
+      30.036,
+      46.393,
+      62.75,
+      79.107,
+      95.464,
+      111.821,
+      128.179,
+      144.536,
+      160.893,
+      177.25,
+      193.607,
+      209.964,
+      226.321
+     ],
+     "xValues": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13
+     ],
+     "xLabels": [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10",
+      "11",
+      "12",
+      "13"
+     ],
+     "hoverPoints": [
+      {
+       "seriesIndex": 0,
+       "color": "#6750A4",
+       "label": "",
+       "byIndex": {
+        "0": {
+         "x": 13.679,
+         "y": 40.329,
+         "value": 12,
+         "symbol": "circle"
+        },
+        "1": {
+         "x": 30.036,
+         "y": 35.786,
+         "value": 15,
+         "symbol": "circle"
+        },
+        "2": {
+         "x": 46.393,
+         "y": 41.843,
+         "value": 11,
+         "symbol": "circle"
+        },
+        "3": {
+         "x": 62.75,
+         "y": 31.243,
+         "value": 18,
+         "symbol": "circle"
+        },
+        "4": {
+         "x": 79.107,
+         "y": 25.186,
+         "value": 22,
+         "symbol": "circle"
+        },
+        "5": {
+         "x": 95.464,
+         "y": 29.729,
+         "value": 19,
+         "symbol": "circle"
+        },
+        "6": {
+         "x": 111.821,
+         "y": 20.643,
+         "value": 25,
+         "symbol": "circle"
+        },
+        "7": {
+         "x": 128.179,
+         "y": 11.557,
+         "value": 31,
+         "symbol": "circle"
+        },
+        "8": {
+         "x": 144.536,
+         "y": 17.614,
+         "value": 27,
+         "symbol": "circle"
+        },
+        "9": {
+         "x": 160.893,
+         "y": 22.157,
+         "value": 24,
+         "symbol": "circle"
+        },
+        "10": {
+         "x": 177.25,
+         "y": 14.586,
+         "value": 29,
+         "symbol": "circle"
+        },
+        "11": {
+         "x": 193.607,
+         "y": 5.5,
+         "value": 35,
+         "symbol": "circle"
+        },
+        "12": {
+         "x": 209.964,
+         "y": 13.071,
+         "value": 30,
+         "symbol": "circle"
+        },
+        "13": {
+         "x": 226.321,
+         "y": 8.529,
+         "value": 33,
+         "symbol": "circle"
+        }
+       },
+       "values": [
+        12,
+        15,
+        11,
+        18,
+        22,
+        19,
+        25,
+        31,
+        27,
+        24,
+        29,
+        35,
+        30,
+        33
+       ],
+       "unanchored": false
+      }
+     ]
+    }
+   },
+   "a11y": {
+    "host": {
+     "role": "img",
+     "aria-label": "Sparkline, latest 33, range 11 to 35.",
+     "variant": "line",
+     "style": "inline-size: 240px; block-size: 64px;"
+    },
+    "plot": {
+     "part": "canvas",
+     "style": "position: relative;"
+    },
+    "live": null,
+    "tooltip": null,
+    "table": null
+   },
+   "ink": 0.0563,
+   "ax": [
+    {
+     "role": "button",
+     "name": "Run"
+    },
+    {
+     "role": "image",
+     "name": "Sparkline, latest 33, range 11 to 35."
+    }
+   ],
+   "focus": [
+    "body"
+   ]
+  }
+ ],
+ "oracle": {
+  "page": "/sparkline-paint.html?subset=parts",
+  "browser": "Chrome/153.0.8010.36",
+  "createdAt": "2026-10-31T18:42:27.839Z",
+  "deviceScaleFactor": 1,
+  "media": []
+ }
+}

@@ -22,6 +22,19 @@ struct AWCNativeSegmentedMetrics {
         first = index == 0; last = index == (properties["segmentTotal"]?.number ?? 1)-1
     }
 }
+/// Reports a text run's exact (fractional) advance as its width, so containers size like CSS; the Text keeps its pixel-rounded
+/// ideal size from the start edge (overflowing by less than one device pixel). nil keeps the natural width.
+struct AWCExactTextWidth: Layout {
+    let width: CGFloat?
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let natural = subviews.first?.sizeThatFits(.unspecified) ?? .zero
+        return .init(width: width ?? natural.width, height: natural.height)
+    }
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        guard let text = subviews.first else { return }
+        text.place(at: .init(x: bounds.minX, y: bounds.midY), anchor: .leading, proposal: .init(text.sizeThatFits(.unspecified)))
+    }
+}
 struct AWCNativeSegmentedLayout: Layout {
     let metrics: AWCNativeSegmentedMetrics
     let stretch: Bool
@@ -40,6 +53,8 @@ struct AWCNativeSegmentedLayout: Layout {
 struct AWCSegmentedShape: InsettableShape {
     let start: CGFloat, end: CGFloat, rtl: Bool
     var inset: CGFloat = 0
+    // start/end are mapped to physical corners through rtl; SwiftUI must not mirror the path again.
+    var layoutDirectionBehavior: LayoutDirectionBehavior { .fixed }
     func path(in rect: CGRect) -> Path {
         let box=rect.insetBy(dx:inset,dy:inset)
         let desiredLeft=max(0,(rtl ? end:start)-inset),desiredRight=max(0,(rtl ? start:end)-inset)
@@ -69,7 +84,9 @@ private struct AWCSegmentedSurface: View {
     @Environment(\.awcNativePointerState) private var pointer
     @Environment(\.awcTouchPress) private var touchPress
     @Environment(\.layoutDirection) private var direction
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
+    @Environment(\.awcReducedMotion) private var reducedOverride
+    private var reduceMotion: Bool { reducedOverride ?? systemReduceMotion }
     private var tokens:[String:String] { style.theme.tokens.isEmpty ? AWCGeneratedTokens.light:style.theme.tokens }
     private func color(_ role:String)->Color { Color(awcHex:tokens["--md-sys-color-"+role] ?? "#000000") }
     private var m:AWCNativeSegmentedMetrics {style.metrics}
@@ -137,6 +154,11 @@ private struct AWCSegmentedSurface: View {
     }
 }
 extension AWCNativeView {
+    /// The plain label's exact advance (label property or text-only default slot); nil for composed slot content.
+    private func segmentedLabelWidth(_ m:AWCNativeSegmentedMetrics)->CGFloat? {
+        let text:String? = !s("label").isEmpty ? awcCollapsedInlineText(s("label")) : node.children(inSlot:nil).allSatisfy({["#text","#slot-text"].contains($0.tag)}) ? awcCollapsedInlineText(node.children(inSlot:nil).map(\.authoredTextContent).joined()) : nil
+        return text.map {CGFloat(AWCNativeFonts.tabTextWidth($0,size:m.font,weight:m.weight,tracking:Double(m.tracking)))}
+    }
     @ViewBuilder private var segmentedLabelContent:some View {
         if !s("label").isEmpty {Text(awcCollapsedInlineText(s("label")))}
         else if node.children(inSlot:nil).allSatisfy({["#text","#slot-text"].contains($0.tag)}) {
@@ -182,7 +204,7 @@ extension AWCNativeView {
                         }.frame(width:metrics.icon,height:metrics.icon).environment(\.awcMaterialSymbolSize,metrics.icon)
                     }
                     if hasLabel {
-                        segmentedLabelContent.fixedSize().frame(minHeight:metrics.line)
+                        AWCExactTextWidth(width:segmentedLabelWidth(metrics)) {segmentedLabelContent.fixedSize()}.frame(minHeight:metrics.line)
                             .awcInspect(nodeID:node.id,part:"label",parentPart:"content",name:"md-segmented-button ::part(label)")
                     } else {
                         ForEach(node.children(inSlot:nil).filter{$0.tag != "#text" || !$0.authoredTextContent.trimmingCharacters(in:.whitespacesAndNewlines).isEmpty}) { item in

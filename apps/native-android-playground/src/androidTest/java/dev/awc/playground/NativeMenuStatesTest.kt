@@ -238,12 +238,13 @@ class NativeMenuStatesTest {
             var nextShot=lastWeb-start+17
             while(now()<actual+duration) {
                 frame();samples+=sample().let { it.copy(t=it.t-actual) }
-                if(now()>=actual+nextShot && now()<=actual+duration+1) { shots+=(now()-actual) to MenuEvidence.capture(compose,p.getJSONObject("clip")) { s-> shiftScene(s) }.also { shiftScene(base) };nextShot+=16 }
+                if(now()>=actual+nextShot && now()<=actual+duration+17) { shots+=(now()-actual) to MenuEvidence.capture(compose,p.getJSONObject("clip")) { s-> shiftScene(s) }.also { shiftScene(base) };nextShot+=16 }
             }
             if(shots.isEmpty()) shots+=(now()-actual) to MenuEvidence.capture(compose,p.getJSONObject("clip")) { s-> shiftScene(s) }.also { shiftScene(base) }
-            phaseSamples+=samples;phaseStarts+=actual;phaseShots+=shots
+            phaseSamples+=samples;phaseStarts+=actual
+            // Compared now (virtual clock): one phase's candidate shots are alive at a time (i5: OutOfMemoryError in the full suite).
+            compare(name,p,samples,shots,file,r.getString("name"))
         }
-        phases.forEachIndexed { i,p-> compare(name,p,phaseSamples[i],phaseShots[i],file,r.getString("name")) }
         // md* events: order and time within the phase that contains them.
         val lastT=phases.last().getJSONArray("samples").objects().lastOrNull()?.optDouble("t") ?: 0.0
         val webEvents=r.getJSONArray("events").objects().filter { it.optDouble("t",0.0)<=lastT+20 }
@@ -313,7 +314,8 @@ class NativeMenuStatesTest {
         // Phase-end pixels: the matching frame of Chrome's capture window.
         val clip=p.getJSONObject("clip")
         val webG=CardWeb.webGrid("$file/$run-$label.png",clip)
-        val results=shots.map { it.first to CardWeb.compare(webG,it.second) }
+        // Each candidate frame, and the span of consecutive frames (Chrome's capture lies between two native frames).
+        val results=shots.map { it.first to CardWeb.compare(webG,it.second) }+shots.zipWithNext { a,b-> b.first to CardWeb.compare(webG,CardWeb.between(webG,a.second,b.second)) }
         val best=results.minByOrNull { it.second.getInt("over6")*1e6+it.second.getDouble("mean") } ?: return
         val r=best.second
         check(r.getInt("over6").toDouble()/max(r.getInt("compared"),1)<=.005 && r.getDouble("mean")<=1.0,"$tag flat pixels (frame +${best.first.toInt()} of ${results.map { it.first.toInt() }}) $r")

@@ -194,16 +194,22 @@
       "line": 128
     },
     {
+      "code": "DOM_GLOBAL",
+      "severity": "warning",
+      "message": "Window access requires a native adapter.",
+      "line": 162
+    },
+    {
       "code": "CSS_RUNTIME",
       "severity": "warning",
       "message": "Computed CSS must become native theme/layout values.",
-      "line": 196
+      "line": 198
     },
     {
       "code": "DOM_QUERY",
       "severity": "warning",
       "message": "querySelectorAll depends on browser semantics and requires a native adapter.",
-      "line": 395
+      "line": 397
     },
     {
       "code": "CANCELABLE_EVENT",
@@ -217,7 +223,7 @@
     "styleUrl": "md-button-group.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "84a51643ace1a59097ab59a563c20bdb079928b30d7dae4523bc3597e3a7c5c7"
+    "sha256": "38b5d0eb2015a633b2e15c3b723a16791b25d241a334b6c14725f7cf465faf53"
   },
   "styles": [
     {

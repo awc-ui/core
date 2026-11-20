@@ -204,7 +204,7 @@ private class NativeMenuGeometry {
 
 /** The menu's accessible name: a listbox's list label, else its anchor's name (Web ariaLabelledByElements = [anchor]); a flyout's is its submenu row's. */
 private fun menuName(model:NativeMenuModel,registry:NativeMenuRegistry?,controller:NativeMenuController):String =
-    if(model.listbox) model.listLabel else registry?.anchorLabels?.get(controller.parentRowID ?: model.anchor).orEmpty()
+    if(model.listbox || controller.listboxMode) model.listLabel else registry?.anchorLabels?.get(controller.parentRowID ?: model.anchor).orEmpty()
 
 /** `.md-menu__surface`: header slot, the capped scroll viewport and the rows / empty text. */
 @Composable private fun NativeMenuSurface(controller:NativeMenuController,model:NativeMenuModel,id:String,inspect:AWCInspectionContext?,geometry:NativeMenuGeometry,
@@ -218,16 +218,21 @@ private fun menuName(model:NativeMenuModel,registry:NativeMenuRegistry?,controll
     val rung=model.density?.takeIf { it<=-2 } ?: (if(inheritedRung<=-2) inheritedRung else 0.0)
     val sp=NativeMenuSpacing(rung);val palette=NativeMenuPalette(tokens)
     val styled=model.variant!="baseline";val cards=model.groupedGapCards
-    val padV=if(cards) 0.0 else sp.insetXS;val padH=if(cards) 0.0 else if(styled) sp.insetXS else 0.0
+    val fill=LocalAWCMenuInlineFill.current
+    val padV=if(cards || fill) 0.0 else sp.insetXS;val padH=if(cards || fill) 0.0 else if(styled) sp.insetXS else 0.0
     fun px(s:String?)=s?.replace("px","")?.trim()?.toDoubleOrNull()
-    val radius=if(styled) px(tokens["--md-sys-shape-corner-large"]) ?: 16.0 else px(tokens["--md-sys-shape-corner-small"]) ?: 8.0
-    val shape=AWCCornerShape.uniform(radius)
+    val parts=LocalAWCMenuParts.current
+    val surfacePart=parts.menu(AWCMenuPart.Surface,id);val viewportPart=parts.menu(AWCMenuPart.MenuViewport,id);val emptyPart=parts.menu(AWCMenuPart.EmptyText,id)
+    val radius=surfacePart?.cornerRadius ?: (if(styled) px(tokens["--md-sys-shape-corner-large"]) ?: 16.0 else px(tokens["--md-sys-shape-corner-small"]) ?: 8.0)
+    // Inline fill: square, except the end corners (--md-menu-inline-fill-radius-end).
+    val endR=AWCCornerRadius(AWCCornerLength(px(appearance.inlineFillRadiusEnd) ?: 0.0),AWCCornerLength(px(appearance.inlineFillRadiusEnd) ?: 0.0));val zeroR=AWCCornerRadius(AWCCornerLength(0.0),AWCCornerLength(0.0))
+    val shape=if(fill) AWCCornerShape(zeroR,zeroR,endR,endR) else AWCCornerShape.uniform(radius)
     val slots=remember { NativeMenuSlots() }
     val vp=registry?.viewport?.takeIf { it.width>0f } ?: Size(configuration.screenWidthDp.toFloat(),configuration.screenHeightDp.toFloat())
     val context=NativeMenuItemContext(model.variant,true,cards,model.useGap,false,
-        NativeMenuLength.parse(appearance.groupContainerShape)?.resolve(vp) ?: 12.0,id,model.listbox)
+        NativeMenuLength.parse(appearance.groupContainerShape)?.resolve(vp) ?: 12.0,id,model.listbox || controller.listboxMode)
     val sectioned=slots.sectioned && model.variant=="baseline"
-    val sectionGap=NativeMenuLength.parse(appearance.sectionGap)?.resolve(vp) ?: 2.0
+    val sectionGap=NativeMenuPlacement.sectionGap(appearance,vp)
     val groupGap=if(cards) NativeMenuLength.parse(appearance.groupGap)?.resolve(vp) ?: 4.0 else 0.0
     val pointerOver=remember { booleanArrayOf(false) }
     val hoverChanged={ inside:Boolean->
@@ -248,29 +253,36 @@ private fun menuName(model:NativeMenuModel,registry:NativeMenuRegistry?,controll
         .then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"","md-menu") else Modifier)
         .semantics { isTraversalGroup=true;val name=menuName(model,registry,controller);if(name.isNotEmpty()) paneTitle=name }) {
         Box(Modifier
-            .then(if(!cards) Modifier.accordionShadow(shape,NativeMenuPalette.surfaceShadow(model.variant),false) else Modifier)
-            .then(if(!cards) Modifier.background(statusDotColor(palette.surface(model.variant)),shape) else Modifier)
+            .then(if(!cards && !fill) Modifier.accordionShadow(shape,NativeMenuPalette.surfaceShadow(model.variant),false) else Modifier)
+            .then(if(!cards || surfacePart?.background!=null) Modifier.background(statusDotColor(surfacePart?.background ?: if(fill) appearance.inlineSurfaceColor ?: "#00000000" else palette.surface(model.variant)),shape) else Modifier)
+            .menuPartBox(surfacePart,fill=false)
             .then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"surface","surface") else Modifier)
             .padding(horizontal=padH.dp,vertical=padV.dp)) {
             NativeMenuSurfaceLayout(model,geometry,vp,padH,padV,positioned,flyout,controller,appearance,registry) {
-                Box(Modifier.layoutId("header")) { content("header") }
-                Box(Modifier.layoutId("viewport")
+                // Keys typed in the header (the combobox's search field) reach the virtual navigation, as the source's keydown bubbles.
+                Box(Modifier.layoutId("header").onPreviewKeyEvent { e->
+                    if(controller.provider==null || !controller.isOpen || e.type!=androidx.compose.ui.input.key.KeyEventType.KeyDown) false
+                    else { val k=when(e.key) { androidx.compose.ui.input.key.Key.DirectionDown->"ArrowDown";androidx.compose.ui.input.key.Key.DirectionUp->"ArrowUp"
+                        androidx.compose.ui.input.key.Key.MoveHome->"Home";androidx.compose.ui.input.key.Key.MoveEnd->"End"
+                        androidx.compose.ui.input.key.Key.Enter,androidx.compose.ui.input.key.Key.NumPadEnter->"Enter";else->null }
+                        k!=null && controller.comboboxKey(k,e.isShiftPressed,false,true,e.nativeKeyEvent.eventTime.toDouble()) } }) { content("header") }
+                Box(Modifier.layoutId("viewport").menuPartBox(viewportPart)
                     .onGloballyPositioned { c-> registry?.rect(c)?.let { controller.viewportRect=it } }
                     .then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"menu-viewport","menu-viewport") else Modifier))
-                Column(Modifier.layoutId("column")) {
+                Column(Modifier.layoutId("column").then(viewportPart?.opacity?.let { a-> Modifier.graphicsLayer { alpha=a.toFloat() } } ?: Modifier)) {
                     CompositionLocalProvider(LocalNativeMenuItemContext provides context,LocalNativeMenuSlots provides slots) {
                         NativeMenuColumn(groupGap,if(sectioned) sectionGap else 0.0,slots) { content("") }
                     }
                     if(slots.visibleItems==0 && model.emptyText.isNotEmpty()) {
-                        BasicText(model.emptyText,Modifier.fillMaxWidth().then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"empty-text","empty-text") else Modifier)
+                        BasicText(model.emptyText,Modifier.fillMaxWidth().then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"empty-text","empty-text") else Modifier).menuPartBox(emptyPart)
                             .padding(vertical=sp.insetMD.dp,horizontal=sp.insetLG.dp),
-                            style=listTextStyle(14.0,20.0,400,0.0,statusDotColor(palette.emptyInk)).copy(textAlign=androidx.compose.ui.text.style.TextAlign.Center))
+                            style=listTextStyle(14.0,20.0,400,emptyPart?.letterSpacing ?: 0.0,statusDotColor(emptyPart?.color ?: palette.emptyInk)).copy(textAlign=androidx.compose.ui.text.style.TextAlign.Center))
                     }
                 }
             }
         }
     }
-    SideEffect { inspection?.menus?.set(id,(inspection.menus[id] ?: emptyMap())+mapOf("role" to (if(model.listbox) "presentation" else "menu"),"variant" to model.variant,
+    SideEffect { inspection?.menus?.set(id,(inspection.menus[id] ?: emptyMap())+mapOf("role" to (if(model.listbox || controller.listboxMode) "presentation" else "menu"),"activeDescendant" to controller.activeDescendant,"variant" to model.variant,
         "radius" to radius,"scrollTop" to controller.scrollTop,"cap" to (geometry.placement?.cap ?: -1.0))) }
 }
 
@@ -286,6 +298,7 @@ private class NativeMenuBand(val top:Float,val height:Float):Shape {
                                                 flyout:NativeMenuFlyoutHost?,controller:NativeMenuController,appearance:AWCMenuAppearance,registry:NativeMenuRegistry?,content:@Composable ()->Unit) {
     val density=LocalDensity.current.density
     val rtl=LocalLayoutDirection.current==LayoutDirection.Rtl
+    val fill=LocalAWCMenuInlineFill.current
     Layout(content) { measurables,constraints->
         controller.repositions
         val vp=if(positioned && registry!=null && registry.viewport.width>0f) registry.viewport else viewport
@@ -298,6 +311,7 @@ private class NativeMenuBand(val top:Float,val height:Float):Shape {
         val natural=max(head.maxIntrinsicWidth(Constraints.Infinity),body.maxIntrinsicWidth(Constraints.Infinity))/density.toDouble()
         val responsive=positioned && flyout==null && model.responsive && vp.width<=600
         val inner=when {
+            fill && constraints.hasBoundedWidth->constraints.maxWidth/density.toDouble()-2*padH
             responsive->vp.width-2*m-2*padH
             model.matchAnchorWidth && anchor!=null->min(max(natural+2*padH,anchor.width.toDouble()),vp.width-2*m)-2*padH
             else->min(max(natural,minW),maxW)
@@ -313,7 +327,7 @@ private class NativeMenuBand(val top:Float,val height:Float):Shape {
             else->null }
         geometry.placement=pl;geometry.viewport=vp;geometry.rtl=rtl
         val cap=pl?.cap ?: baseCap
-        val vh=min(cp.height,(cap*density).roundToInt())
+        val vh=if(fill && constraints.hasBoundedHeight) max(0,constraints.maxHeight-hp.height-(2*padV*density).roundToInt()) else min(cp.height,(cap*density).roundToInt())
         controller.contentHeight=contentH;controller.viewportHeight=vh/density.toDouble()
         val top=(controller.scrollTop.coerceIn(0.0,max(0.0,contentH-vh/density.toDouble()))*density).roundToInt()
         val mp=marker.measure(Constraints.fixed(w,vh))
@@ -375,7 +389,7 @@ private class NativeMenuSlotData(val slot:NativeMenuSlot):ParentDataModifier {
 
 /**
  * md-ripple as Chrome runs it inside md-menu-item: the wave's Web Animation starts when it is ready, two frames after the
- * press (or the keyboard `trigger()`), grows 450 ms (cubic-bezier(0.2, 0, 0, 1), opacity 0.12), and the release fade
+ * press (or the keyboard `trigger()`; Chrome 153 records the grow's startTime at press + 33 ms and the fade's at + 500 ms), grows 450 ms (cubic-bezier(0.2, 0, 0, 1), opacity 0.12), and the release fade
  * (150 ms, same easing) is created when the grow finishes or at the release, starting one frame later. Times are
  * frame-clock ms; md-ripple ignores reduced motion (Web Animations).
  */
@@ -470,7 +484,7 @@ private data class NativeMenuRowTargets(val layer:Double,val corners:List<Double
     fun noteInput(ms:Double,key:Boolean=false) { input[0]=ms;input[1]=if(key) 1.0 else 0.0;registry?.inputTime=ms }
     val hover=!model.disabled && hovered
     val active=!model.disabled && held
-    val ring=focused && showFocus.value
+    val ring=(focused && showFocus.value) || (controller?.virtualRing!=null && controller.virtualRing==id)
     val c=context
     val corners=NativeMenuRowCorners.resolve(c.variant,slot?.first ?: true,slot?.last ?: true,slot?.afterGap ?: false,model.gap,c.directChild,hover,active,model.selected,model.sub)
     val targets=NativeMenuRowTargets(if(active || ring) .12 else if(hover || (model.sub && subOpen)) .08 else 0.0,corners.values,
@@ -558,7 +572,7 @@ private data class NativeMenuRowTargets(val layer:Double,val corners:List<Double
     SideEffect {
         if(model.sub && registry!=null) model.accessibleName().let { n-> if(registry.anchorLabels[id]!=n) registry.anchorLabels[id]=n }
         row.label=model.headline;row.disabled=model.disabled;row.sub=model.sub;row.radioScope=if(model.type=="radio") c.radioScope else null
-        row.deselect={ setSelected(false) };row.openSubmenu={ openSub(it) };row.collapse={ collapseSub() };row.hoverLeave={ hoverChanged(false) };row.closeSubmenu={ closeSubAnimated() }
+        row.deselect={ setSelected(false) };row.activate={ click() };row.openSubmenu={ openSub(it) };row.collapse={ collapseSub() };row.hoverLeave={ hoverChanged(false) };row.closeSubmenu={ closeSubAnimated() }
     }
     DisposableEffect(controller,id) { controller?.register(id,row);onDispose { controller?.unregister(id,row);if(registry?.focusedRow==id) registry.focusedRow=null;inspection?.rows?.remove(id) } }
     LaunchedEffect(hover) { if(tracks.primed) hoverChanged(hover) }
@@ -575,15 +589,18 @@ private data class NativeMenuRowTargets(val layer:Double,val corners:List<Double
     val t=tracks.frame
     val ink=tracks.ink.presented(t)
     val second=if(model.selected) ink else statusDotColor(palette.secondaryInk(c.variant,false))
-    val ringColor=statusDotColor(palette.focusRing);val layerColor=statusDotColor(palette.stateLayer(c.variant))
-    val layerShape:AWCCornerShape?=if(c.useGap && c.inGroup) AWCCornerShape.uniform(max(0.0,(if(c.gapCard) c.groupShape else 12.0)-4)) else null
+    val menuParts=LocalAWCMenuParts.current
+    fun part(name:String)=menuParts.row(name,id,model.sub)
+    val layerPart=part("state-layer")
+    val ringColor=statusDotColor(palette.focusRing);val layerColor=statusDotColor(layerPart?.background ?: palette.stateLayer(c.variant))
+    val layerShape:AWCCornerShape?=layerPart?.cornerRadius?.let { AWCCornerShape.uniform(it) } ?: (if(c.useGap && c.inGroup) AWCCornerShape.uniform(max(0.0,(if(c.gapCard) c.groupShape else 12.0)-4)) else null)
     val bottomPad=if(model.sub && model.divider) 8.0 else 0.0
     val badgeText=model.badge.trim()
-    val naturalHeadline=max(NativeMenuText.width(ctx,model.headline,m.headlineSize,400),if(model.supportingText.isEmpty()) 0.0 else NativeMenuText.width(ctx,model.supportingText,m.supportingSize,400))
+    val naturalHeadline=max(NativeMenuText.width(ctx,model.headline,m.headlineSize,400,part("headline")?.letterSpacing ?: 0.0),if(model.supportingText.isEmpty()) 0.0 else NativeMenuText.width(ctx,model.supportingText,m.supportingSize,400,part("supporting-text")?.letterSpacing ?: 0.0))
     val semantics=Modifier.semantics(mergeDescendants=true) {
         when(if(model.sub) "menuitem" else model.role) {
-            "menuitemcheckbox"->{ role=Role.Checkbox;toggleableState=when(model.ariaChecked) { "true"->androidx.compose.ui.state.ToggleableState.On;"mixed"->androidx.compose.ui.state.ToggleableState.Indeterminate;else->androidx.compose.ui.state.ToggleableState.Off } }
-            "menuitemradio"->{ role=Role.RadioButton;selected=model.selected }
+            "menuitemcheckbox","checkbox"->{ role=Role.Checkbox;toggleableState=when(model.ariaChecked) { "true"->androidx.compose.ui.state.ToggleableState.On;"mixed"->androidx.compose.ui.state.ToggleableState.Indeterminate;else->androidx.compose.ui.state.ToggleableState.Off } }
+            "menuitemradio","radio"->{ role=Role.RadioButton;selected=model.selected }
             "option"->{ role=Role.RadioButton;selected=model.selected }
             else->role=Role.Button
         }
@@ -601,7 +618,7 @@ private data class NativeMenuRowTargets(val layer:Double,val corners:List<Double
             val time=e.nativeKeyEvent.eventTime.toDouble()
             noteInput(time,true);showFocus.value=true
             val key=when(e.key) { Key.DirectionDown->"ArrowDown";Key.DirectionUp->"ArrowUp";Key.MoveHome->"Home";Key.MoveEnd->"End";Key.DirectionRight->"ArrowRight";Key.DirectionLeft->"ArrowLeft"
-                Key.Enter,Key.NumPadEnter->"Enter";Key.Spacebar->" ";Key.Escape->"Escape";Key.Tab->"Tab"
+                Key.Enter,Key.NumPadEnter->"Enter";Key.Spacebar->" ";Key.Escape->"Escape";Key.Tab->"Tab";Key.Backspace->"Backspace"
                 else->e.utf16CodePoint.takeIf { it>32 }?.let { String(Character.toChars(it)) } ?: "" }
             if(key.isEmpty()) return@onKeyEvent false
             routeKey(key,e.isShiftPressed && key=="Tab",e.isCtrlPressed || e.isAltPressed || e.isMetaPressed,time)
@@ -641,7 +658,7 @@ private data class NativeMenuRowTargets(val layer:Double,val corners:List<Double
         }
         .then(if(model.disabled) Modifier else Modifier.nativeMenuRipple(ripple,ink))
         .drawBehind {
-            val o=tracks.layer.presented(tracks.frame);if(o>0) {
+            val o=layerPart?.opacity ?: tracks.layer.presented(tracks.frame);if(o>0) {
                 val outline=(layerShape ?: shapeAt(tracks.frame)).createOutline(size,layoutDirection,this)
                 drawOutline(outline,layerColor.copy(alpha=layerColor.alpha*o.toFloat())) }
         }
@@ -651,24 +668,24 @@ private data class NativeMenuRowTargets(val layer:Double,val corners:List<Double
         if(inspect!=null) Box(Modifier.matchParentSize().inspectAWCNode(inspect,"state-layer","state-layer"))
         NativeMenuRowLayout(m.paddingInline,m.gap,m.height,bottomPad,rtl) {
             if(!model.sub && model.type!="button" && model.checkPosition=="start") ListSymbol(model.checkGlyph,m.checkSize,ink,modifier=Modifier.layoutId(NativeMenuRowChild(8.0,m.checkSize)))
-            Box(Modifier.layoutId(NativeMenuRowChild(0.0,(p["leadingIconSize"] as? Number)?.toDouble() ?: m.iconSize,optional=true)).then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"leading-icon","leading-icon") else Modifier),contentAlignment=Alignment.Center) {
-                CompositionLocalProvider(androidx.compose.material3.LocalContentColor provides (if(model.selected) ink else second),LocalAWCButtonSlotSize provides m.iconSize.dp) { content?.invoke("leading-icon") } }
-            Column(Modifier.layoutId(NativeMenuRowChild(null,naturalHeadline)).then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"content","content") else Modifier)) {
-                BasicText(model.headline,Modifier.fillMaxWidth().then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"headline","headline",allowZeroSize=true) else Modifier),
-                    style=listTextStyle(m.headlineSize,m.headlineLine,400,0.0,ink).copy(textAlign=androidx.compose.ui.text.style.TextAlign.Start),maxLines=1,softWrap=false,overflow=TextOverflow.Ellipsis)
-                if(model.supportingText.isNotEmpty()) BasicText(model.supportingText,Modifier.fillMaxWidth().then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"supporting-text","supporting-text") else Modifier),
-                    style=listTextStyle(m.supportingSize,m.supportingLine,400,0.0,if(model.selected) ink else second),maxLines=1,softWrap=false,overflow=TextOverflow.Ellipsis)
+            Box(Modifier.layoutId(NativeMenuRowChild(0.0,(p["leadingIconSize"] as? Number)?.toDouble() ?: m.iconSize,optional=true)).menuPartBox(part("leading-icon")).then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"leading-icon","leading-icon") else Modifier),contentAlignment=Alignment.Center) {
+                CompositionLocalProvider(androidx.compose.material3.LocalContentColor provides (part("leading-icon")?.color?.let { statusDotColor(it) } ?: if(model.selected) ink else second),LocalAWCButtonSlotSize provides m.iconSize.dp) { content?.invoke("leading-icon") } }
+            Column(Modifier.layoutId(NativeMenuRowChild(null,naturalHeadline)).menuPartBox(part("content")).then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"content","content") else Modifier)) {
+                BasicText(model.headline,Modifier.fillMaxWidth().menuPartBox(part("headline")).then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"headline","headline",allowZeroSize=true) else Modifier),
+                    style=listTextStyle(m.headlineSize,m.headlineLine,400,part("headline")?.letterSpacing ?: 0.0,(part("headline")?.color ?: part("content")?.color)?.let { statusDotColor(it) } ?: ink).copy(textAlign=androidx.compose.ui.text.style.TextAlign.Start),maxLines=1,softWrap=false,overflow=TextOverflow.Ellipsis)
+                if(model.supportingText.isNotEmpty()) BasicText(model.supportingText,Modifier.fillMaxWidth().menuPartBox(part("supporting-text")).then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"supporting-text","supporting-text") else Modifier),
+                    style=listTextStyle(m.supportingSize,m.supportingLine,400,part("supporting-text")?.letterSpacing ?: 0.0,part("supporting-text")?.color?.let { statusDotColor(it) } ?: if(model.selected) ink else second),maxLines=1,softWrap=false,overflow=TextOverflow.Ellipsis)
             }
-            if(model.badge.isNotEmpty()) { val bw=16+NativeMenuText.width(ctx,badgeText,11.0,500,.5)
-                Box(Modifier.layoutId(NativeMenuRowChild(if(model.sub) 0.0 else 12.0,bw)).size(bw.dp,20.dp).background(statusDotColor(palette.badgeFill),AWCCornerShape.uniform(10.0))
+            if(model.badge.isNotEmpty()) { val bw=16+NativeMenuText.width(ctx,badgeText,11.0,500,part("badge")?.letterSpacing ?: .5)
+                Box(Modifier.layoutId(NativeMenuRowChild(if(model.sub) 0.0 else 12.0,bw)).size(bw.dp,20.dp).background(statusDotColor(part("badge")?.background ?: palette.badgeFill),AWCCornerShape.uniform(part("badge")?.cornerRadius ?: 10.0)).menuPartBox(part("badge"),fill=false)
                     .then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"badge","badge") else Modifier),contentAlignment=Alignment.Center) {
-                    BasicText(badgeText,style=listTextStyle(11.0,16.0,500,.5,statusDotColor(palette.badgeInk)),maxLines=1,softWrap=false) } }
-            if(!model.sub) Box(Modifier.layoutId(NativeMenuRowChild(8.0,m.iconSize,optional=true)).then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"trailing","trailing") else Modifier),contentAlignment=Alignment.Center) {
-                CompositionLocalProvider(androidx.compose.material3.LocalContentColor provides (if(model.selected) ink else second),LocalAWCButtonSlotSize provides m.iconSize.dp) { content?.invoke("trailing-icon") } }
+                    BasicText(badgeText,style=listTextStyle(11.0,16.0,500,part("badge")?.letterSpacing ?: .5,statusDotColor(part("badge")?.color ?: palette.badgeInk)),maxLines=1,softWrap=false) } }
+            if(!model.sub) Box(Modifier.layoutId(NativeMenuRowChild(8.0,m.iconSize,optional=true)).menuPartBox(part("trailing")).then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"trailing","trailing") else Modifier),contentAlignment=Alignment.Center) {
+                CompositionLocalProvider(androidx.compose.material3.LocalContentColor provides (part("trailing")?.color?.let { statusDotColor(it) } ?: if(model.selected) ink else second),LocalAWCButtonSlotSize provides m.iconSize.dp) { content?.invoke("trailing-icon") } }
             // The trailing text is the fallback content of the trailing-icon slot.
-            if(!model.sub && model.trailingText.isNotEmpty()) { val tw=NativeMenuText.width(ctx,model.trailingText,11.0,400)
-                BasicText(model.trailingText,Modifier.layoutId(NativeMenuRowChild(8.0,tw,fallback=true)).then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"trailing","trailing") else Modifier),
-                    style=listTextStyle(11.0,14.0,400,0.0,if(model.selected) ink else second),maxLines=1,softWrap=false) }
+            if(!model.sub && model.trailingText.isNotEmpty()) { val tw=NativeMenuText.width(ctx,model.trailingText,11.0,400,part("trailing")?.letterSpacing ?: 0.0)
+                BasicText(model.trailingText,Modifier.layoutId(NativeMenuRowChild(8.0,tw,fallback=true)).menuPartBox(part("trailing")).then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"trailing","trailing") else Modifier),
+                    style=listTextStyle(11.0,14.0,400,part("trailing")?.letterSpacing ?: 0.0,part("trailing")?.color?.let { statusDotColor(it) } ?: if(model.selected) ink else second),maxLines=1,softWrap=false) }
             if(model.sub) { val rot by androidx.compose.animation.core.animateFloatAsState(if(subOpen) 90f else 0f,if(reduced) androidx.compose.animation.core.snap() else androidx.compose.animation.core.tween(100,easing=androidx.compose.animation.core.CubicBezierEasing(.2f,0f,0f,1f)),label="caret")
                 ListSymbol("arrow_right",m.iconSize,if(model.selected) ink else second,modifier=Modifier.layoutId(NativeMenuRowChild(0.0,m.iconSize)).graphicsLayer { rotationZ=rot;scaleX=if(rtl) -1f else 1f }) }
             if(!model.sub && model.type!="button" && model.checkPosition=="end") ListSymbol(model.checkGlyph,m.checkSize,ink,modifier=Modifier.layoutId(NativeMenuRowChild(8.0,m.checkSize)))

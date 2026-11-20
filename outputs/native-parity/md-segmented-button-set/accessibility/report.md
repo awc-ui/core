@@ -1,6 +1,6 @@
 # md-segmented-button-set — accessibility parity
 
-Generated 2026-10-29T11:11:39.460Z by tools/ax. Web = Chrome AX tree of the same effective node.
+Generated 2026-11-05T01:32:19.710Z by tools/ax. Web = Chrome AX tree of the same effective node.
 
 ## single
 

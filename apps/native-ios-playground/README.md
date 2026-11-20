@@ -70,6 +70,28 @@ producer: unsolicited `kind: "frame"` messages carry lossless sRGB PNGs, while
 inputs receive fast acknowledgments with their request ID and events. Frames and
 inputs no longer wait for each other's browser round trips. The Node server owns
 session lifetime and validates browser requests.
+
+Inspection data and pixels (d2 host robustness, gate-7 follow-up of R4-26): SwiftUI
+delivers the measured inspection (`onPreferenceChange`) with a display update after the
+layout and drawing it describes. Every retained update, method (including accepted
+lifecycle methods) and input therefore settles before it answers: it pumps for its
+path's former minimum (12 ms for updates, 40 ms for inputs and methods, 8 ms for
+pointer moves), then until the inspection has been quiet for two display intervals or,
+while it keeps changing (a glide, a ripple), right after a new inspection, at most
+0.3 s more. Only SwiftUI's own updates run while settling (a layout forced in between
+can lose the render of an `onChange` write). `scripts/test-live-stale-frames.mjs`
+fails if a reply, or a frame polled after it, pairs new pixels with the pre-action
+inspection, or if a reply does not yet show its action. A plain `frame` adds no wait,
+so a frame polled during motion can carry the previous display update's inspection by
+a sub-pixel residue; in stream mode inputs stay acknowledged without waiting. The
+Compose host pairs each copied surface with the inspection snapshot taken at that
+draw's pre-draw, and settles the same commands (gate-7 R1-15): a retained update,
+method or input answers once three display frames have run without a draw or, while
+draws keep coming, after three of them, at most 300 ms; before that, a reply could
+show the state before its command (`LivePreviewStaleFrameHostTest`). It counts frames
+and draws rather than milliseconds, so a slow frame under load is not taken for
+quiet. A host test that samples a transition samples it while the update is being
+answered.
 The host realizes its own window outside the displays, without activating it;
 events stay inside that process. Links are disabled in the remote preview.
 

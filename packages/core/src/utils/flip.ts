@@ -66,6 +66,13 @@ const clearInline = (el: HTMLElement) => {
   el.style.opacity = '';
 };
 
+// The glide each element is running: a cleanup (transitionend /
+// transitioncancel / fallback timer) of an earlier glide never clears a newer
+// one — a sort made within the previous glide's fallback window would
+// otherwise lose its glide when the previous timer fires.
+const glides = new WeakMap<HTMLElement, number>();
+let nextGlide = 0;
+
 // Identity keys: the same DOM node keeps its id across any reorder, so the
 // default keying needs no data attributes on consumer rows.
 const identityIds = new WeakMap<HTMLElement, string>();
@@ -146,6 +153,11 @@ export function captureFlip(container: HTMLElement, opts: FlipOptions = {}): () 
       // the reflow (and with it the whole animation) in the dist build.
       container.getBoundingClientRect();
       const play = (el: HTMLElement, i: number, isEnter: boolean) => {
+        const glide = ++nextGlide;
+        glides.set(el, glide);
+        const clear = () => {
+          if (glides.get(el) === glide) clearInline(el);
+        };
         el.style.transition = `transform ${springVal}` + (isEnter ? `, ${FADE}` : '');
         el.style.transitionDelay = `${Math.min(i, staggerCap) * stagger}ms`;
         el.style.transform = '';
@@ -154,7 +166,7 @@ export function captureFlip(container: HTMLElement, opts: FlipOptions = {}): () 
           if (e.propertyName !== 'transform') return;
           el.removeEventListener('transitionend', done);
           el.removeEventListener('transitioncancel', done);
-          clearInline(el);
+          clear();
         };
         el.addEventListener('transitionend', done);
         // An interrupted transition (row hidden / restyled mid-flight) fires
@@ -163,7 +175,7 @@ export function captureFlip(container: HTMLElement, opts: FlipOptions = {}): () 
         el.addEventListener('transitioncancel', done);
         // Fallback: a zero-delta element never fires transitionend, and a
         // dropped event must not strand a row mid-transform / at opacity 0.
-        setTimeout(() => clearInline(el), 700 + staggerCap * stagger);
+        setTimeout(clear, 700 + staggerCap * stagger);
       };
       movers.forEach((m, i) => play(m.el, i, false));
       enterers.forEach((el, i) => play(el, i, true));

@@ -1820,82 +1820,160 @@
     "ios": {
       "status": "adapter-implemented",
       "properties": [
-        "value",
-        "alpha",
-        "showHex",
-        "presets",
-        "ariaLabelProp",
-        "disabled"
-      ],
-      "events": [
-        "mdInput",
-        "mdChange"
-      ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
         "locale",
         "variant",
+        "value",
         "format",
+        "alpha",
+        "showHex",
         "showInputs",
+        "disabled",
+        "presets",
+        "ariaLabelProp",
         "open",
         "dismissOnOutsideClick",
         "density"
       ],
-      "unsupportedEvents": [
+      "events": [
+        "mdInput",
+        "mdChange",
         "mdOpenChange"
       ],
-      "unsupportedMethods": [
+      "methods": [
         "show",
         "close"
       ],
-      "unsupportedSlots": [
+      "slots": [
         "trigger"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "System ColorPicker. Serializes RGB as hex; alpha can be picked but alpha serialization, alternate formats and programmatic open remain unsupported."
+        "Dedicated native renderers (SwiftUI AWCNativeColorPicker, Compose NativeColorPicker): the saturation / value plate, the hue and alpha tracks, the hex and channel fields, the presets, the inline variant and the popover with the consumer's trigger in the trigger slot.",
+        "The eleven source hooks through AWCColorPickerAppearance (.awcColorPickerAppearance(_:) / AWCColorPickerAppearanceScope): lengths in points / dp, #RRGGBB(AA) colours and the popover elevation as CSS box-shadow text.",
+        "Methods through AWCColorPickerController: show() and close() act on a popover picker (show() not while disabled), emit mdOpenChange, and close() returns focus that was inside the popover to the trigger.",
+        "mdInput only when the formatted value changes and mdChange on commit; keyboard steps with RTL-mirrored arrows; Escape is claimed inside an md-dialog. macOS SwiftUI, the iOS simulator and the Android emulator are verified against the Chrome 153 oracles (paint and interaction)."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "popover",
+        "plate",
+        "thumb",
+        "hue",
+        "alpha",
+        "field-hex",
+        "label",
+        "field-a",
+        "inputs",
+        "field-r",
+        "field-g",
+        "field-b",
+        "field-h",
+        "field-s",
+        "field-l",
+        "presets",
+        "preset",
+        "panel",
+        "sliders",
+        "preview"
+      ],
+      "appearance": {
+        "api": ".awcColorPickerAppearance(AWCColorPickerAppearance)",
+        "fields": [
+          "width",
+          "plateHeight",
+          "radius",
+          "surfaceColor",
+          "onSurface",
+          "outlineColor",
+          "outlineStrong",
+          "thumbSize",
+          "thumbBorder",
+          "presetSize",
+          "popoverElevation"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "alpha",
-        "ariaLabelProp",
-        "disabled",
-        "dismissOnOutsideClick",
-        "open",
-        "presets",
-        "showHex",
-        "value"
-      ],
-      "events": [
-        "mdChange",
-        "mdInput",
-        "mdOpenChange"
-      ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
         "locale",
         "variant",
+        "value",
         "format",
+        "alpha",
+        "showHex",
         "showInputs",
+        "disabled",
+        "presets",
+        "ariaLabelProp",
+        "open",
+        "dismissOnOutsideClick",
         "density"
       ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "events": [
+        "mdInput",
+        "mdChange",
+        "mdOpenChange"
+      ],
+      "methods": [
         "show",
         "close"
       ],
-      "unsupportedSlots": [
+      "slots": [
         "trigger"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Native RGB sliders, alpha and presets; HEX/RGB output implemented. HSL output and complete source color parsing remain unsupported."
+        "Dedicated native renderers (SwiftUI AWCNativeColorPicker, Compose NativeColorPicker): the saturation / value plate, the hue and alpha tracks, the hex and channel fields, the presets, the inline variant and the popover with the consumer's trigger in the trigger slot.",
+        "The eleven source hooks through AWCColorPickerAppearance (.awcColorPickerAppearance(_:) / AWCColorPickerAppearanceScope): lengths in points / dp, #RRGGBB(AA) colours and the popover elevation as CSS box-shadow text.",
+        "Methods through AWCColorPickerController: show() and close() act on a popover picker (show() not while disabled), emit mdOpenChange, and close() returns focus that was inside the popover to the trigger.",
+        "mdInput only when the formatted value changes and mdChange on commit; keyboard steps with RTL-mirrored arrows; Escape is claimed inside an md-dialog. macOS SwiftUI, the iOS simulator and the Android emulator are verified against the Chrome 153 oracles (paint and interaction)."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "popover",
+        "plate",
+        "thumb",
+        "hue",
+        "alpha",
+        "field-hex",
+        "label",
+        "field-a",
+        "inputs",
+        "field-r",
+        "field-g",
+        "field-b",
+        "field-h",
+        "field-s",
+        "field-l",
+        "presets",
+        "preset",
+        "panel",
+        "sliders",
+        "preview"
+      ],
+      "appearance": {
+        "api": "AWCColorPickerAppearanceScope(AWCColorPickerAppearance)",
+        "fields": [
+          "width",
+          "plateHeight",
+          "radius",
+          "surfaceColor",
+          "onSurface",
+          "outlineColor",
+          "outlineStrong",
+          "thumbSize",
+          "thumbBorder",
+          "presetSize",
+          "popoverElevation"
+        ]
+      }
     }
   }
 }

@@ -5,8 +5,9 @@ type FabMenuFocusableElement = HTMLElement & { rovingFocusVisible?: boolean; lab
 type FabMenuAnchor = HTMLElement & { setMenuIcon?: (icon: string | null) => Promise<void> };
 
 const CLOSE_ANIMATION_MS = 180;
-const _ITEM_STAGGER_MS = 50;
 const ICON_FADE_MS = 120;
+/** The anchor FAB's inline custom properties the open menu overrides (R1-05: prior inline values are restored on close). */
+const ANCHOR_COLOR_PROPS = ['--md-fab-container-color', '--md-fab-icon-color'] as const;
 
 const VARIANT_COLORS: Record<string, { bg: string; fg: string }> = {
   primary:   { bg: 'var(--md-sys-color-primary)',   fg: 'var(--md-sys-color-on-primary)' },
@@ -46,7 +47,9 @@ export class MdFabMenu {
    */
   @Prop({ reflect: true }) placement: 'up' | 'down' | 'auto' = 'up';
 
-  /** Skip open/close animation. */
+  /**
+   * Close without the exit delay: `close()` commits `open=false` at once (mdClose, whenClosed). Entry motion still plays.
+   */
   @Prop() quick: boolean = false;
 
   /**
@@ -81,6 +84,8 @@ export class MdFabMenu {
   private openTaskFrames = new Set<number>();
   private openTaskTimers = new Set<ReturnType<typeof setTimeout>>();
   private iconMorphTimer?: ReturnType<typeof setTimeout>;
+  /** The anchor's own inline values of ANCHOR_COLOR_PROPS (value, priority) while the menu overrides them. */
+  private savedAnchorStyle: { el: HTMLElement; values: Array<[string, string, string]> } | null = null;
   private focusedIndex = -1;
   /** Set when the anchor is activated via Enter/Space (cleared on pointer down). */
   private openedViaKeyboard = false;
@@ -340,8 +345,7 @@ export class MdFabMenu {
 
       const colors = VARIANT_COLORS[this.variant];
       if (colors) {
-        anchorEl.style.setProperty('--md-fab-container-color', colors.bg);
-        anchorEl.style.setProperty('--md-fab-icon-color', colors.fg);
+        this.overrideAnchorColors(anchorEl, colors);
       }
 
       this.iconMorphTimer = setTimeout(() => {
@@ -354,8 +358,7 @@ export class MdFabMenu {
       anchorEl.removeAttribute('data-shape');
       anchorEl.setAttribute('data-icon-morphing', '');
 
-      anchorEl.style.removeProperty('--md-fab-container-color');
-      anchorEl.style.removeProperty('--md-fab-icon-color');
+      this.restoreAnchorColors();
 
       this.iconMorphTimer = setTimeout(() => {
         void anchorEl.setMenuIcon?.(null);
@@ -367,15 +370,36 @@ export class MdFabMenu {
   }
 
   private resetAnchorFab() {
+    this.restoreAnchorColors();
     const anchorEl = this.getAnchorEl() as FabMenuAnchor | null;
     if (!anchorEl) return;
     clearTimeout(this.iconMorphTimer);
     anchorEl.removeAttribute('data-shape');
     anchorEl.removeAttribute('data-icon-morphing');
     void anchorEl.setMenuIcon?.(null);
-    anchorEl.style.removeProperty('--md-fab-container-color');
-    anchorEl.style.removeProperty('--md-fab-icon-color');
     anchorEl.removeEventListener('keydown', this.handleAnchorKeyDown);
+  }
+
+  /** Saves the anchor's own inline colour values once per override, then applies the menu variant's colours. */
+  private overrideAnchorColors(anchorEl: HTMLElement, colors: { bg: string; fg: string }) {
+    if (this.savedAnchorStyle?.el !== anchorEl) {
+      this.restoreAnchorColors();
+      const style = anchorEl.style;
+      this.savedAnchorStyle = { el: anchorEl, values: ANCHOR_COLOR_PROPS.map(p => [p, style.getPropertyValue(p), typeof style.getPropertyPriority === 'function' ? style.getPropertyPriority(p) : ''] as [string, string, string]) };
+    }
+    anchorEl.style.setProperty('--md-fab-container-color', colors.bg);
+    anchorEl.style.setProperty('--md-fab-icon-color', colors.fg);
+  }
+
+  /** Puts the anchor's own inline values back: an authored value survives the menu, an absent one stays absent. */
+  private restoreAnchorColors() {
+    const saved = this.savedAnchorStyle;
+    this.savedAnchorStyle = null;
+    if (!saved) return;
+    for (const [p, value, priority] of saved.values) {
+      if (value) saved.el.style.setProperty(p, value, priority);
+      else saved.el.style.removeProperty(p);
+    }
   }
 
   private restoreFocusToAnchor() {

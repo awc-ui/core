@@ -830,7 +830,7 @@
         "Dedicated native list: all eight properties (list, listbox with single/multi selection, menu and other role overrides, density 0…−4), mdSelect, mdActivate and mdReorder with the source payloads (item references become stable native node IDs), the four methods through AWCListController, ten appearance hooks and the drop-placeholder part.",
         "Roving focus with wrap, Home/End and 500 ms typeahead; pointer reorder from the drag handle (lift, sibling shift, dashed placeholder glide, drop) and Alt+Arrow keyboard reorder, measured against Chrome frame by frame.",
         "A reorder keeps the authored composition and translates rows to their displayed slots; on Compose the accessibility order follows the authored order until the host applies mdReorder.",
-        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
+        "macOS SwiftUI/AppKit, iOS simulator (iPhone and iPad on iOS 26.3, iPhone on iOS 18.6; docs/native-parity/ios-harness.md) and Android emulator renderers are verified against the Chrome oracles; their accessibility trees are compared with Chrome's on all three platforms by tools/ax (docs/native-parity/accessibility.md). Spoken VoiceOver/TalkBack output is not automated."
       ],
       "verification": "not-device-verified",
       "visualParts": [
@@ -886,7 +886,7 @@
         "Dedicated native list: all eight properties (list, listbox with single/multi selection, menu and other role overrides, density 0…−4), mdSelect, mdActivate and mdReorder with the source payloads (item references become stable native node IDs), the four methods through AWCListController, ten appearance hooks and the drop-placeholder part.",
         "Roving focus with wrap, Home/End and 500 ms typeahead; pointer reorder from the drag handle (lift, sibling shift, dashed placeholder glide, drop) and Alt+Arrow keyboard reorder, measured against Chrome frame by frame.",
         "A reorder keeps the authored composition and translates rows to their displayed slots; on Compose the accessibility order follows the authored order until the host applies mdReorder.",
-        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
+        "macOS SwiftUI/AppKit, iOS simulator (iPhone and iPad on iOS 26.3, iPhone on iOS 18.6; docs/native-parity/ios-harness.md) and Android emulator renderers are verified against the Chrome oracles; their accessibility trees are compared with Chrome's on all three platforms by tools/ax (docs/native-parity/accessibility.md). Spoken VoiceOver/TalkBack output is not automated."
       ],
       "verification": "not-device-verified",
       "visualParts": [

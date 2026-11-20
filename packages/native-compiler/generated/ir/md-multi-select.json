@@ -2754,9 +2754,53 @@
         "Not supported: filterMode (filtering is local (contains); the source's remote mode is the app's (setQuery / loadOptions)).",
         "Not supported: rowHeight (virtualization row height (no virtualized list)).",
         "Not supported: countFormatter (a JavaScript function value).",
-        "Not supported: searchingLabel (remote-search status text (no remote mode))."
+        "Not supported: searchingLabel (remote-search status text (no remote mode)).",
+        "Laboratory (gate 3): typed hooks (md-select's eight fields; md-multi-select's 38 hooks as a hook map), retained updates of every supported property, the controller methods (show, close, focusTrigger, reset, loadOptions, setQuery, getLabels, getValidity, checkValidity, reportValidity, setCustomValidity) with results, copyable examples; the SwiftUI and Compose live hosts render the menu in flow below the field."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "appearance": {
+        "api": ".awcMultiSelectAppearance(AWCMultiSelectAppearance)",
+        "fields": [
+          "caret-box-size",
+          "caret-color",
+          "caret-size",
+          "chip-gap",
+          "chip-height",
+          "chip-outline",
+          "chip-radius",
+          "clear-bg",
+          "clear-color",
+          "clear-focus-ring-color",
+          "clear-focus-ring-offset",
+          "clear-focus-ring-width",
+          "clear-hover-bg",
+          "clear-icon-size",
+          "clear-radius",
+          "clear-size",
+          "empty-color",
+          "empty-font",
+          "empty-padding",
+          "frame-gap",
+          "inline-chips-block-start",
+          "loader-size",
+          "loading-padding",
+          "min-width",
+          "option-icon-color",
+          "option-icon-size",
+          "search-bg",
+          "search-border-color",
+          "search-border-width",
+          "search-color",
+          "search-padding",
+          "search-placeholder-color",
+          "search-spinner-size",
+          "select-all-divider-color",
+          "select-all-divider-width",
+          "spinner-size",
+          "trigger-width",
+          "width"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
@@ -2849,9 +2893,53 @@
         "Not supported: filterMode (filtering is local (contains); the source's remote mode is the app's (setQuery / loadOptions)).",
         "Not supported: rowHeight (virtualization row height (no virtualized list)).",
         "Not supported: countFormatter (a JavaScript function value).",
-        "Not supported: searchingLabel (remote-search status text (no remote mode))."
+        "Not supported: searchingLabel (remote-search status text (no remote mode)).",
+        "Laboratory (gate 3): typed hooks (md-select's eight fields; md-multi-select's 38 hooks as a hook map), retained updates of every supported property, the controller methods (show, close, focusTrigger, reset, loadOptions, setQuery, getLabels, getValidity, checkValidity, reportValidity, setCustomValidity) with results, copyable examples; the SwiftUI and Compose live hosts render the menu in flow below the field."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "appearance": {
+        "api": "AWCMultiSelectAppearanceScope(AWCMultiSelectAppearance)",
+        "fields": [
+          "caret-box-size",
+          "caret-color",
+          "caret-size",
+          "chip-gap",
+          "chip-height",
+          "chip-outline",
+          "chip-radius",
+          "clear-bg",
+          "clear-color",
+          "clear-focus-ring-color",
+          "clear-focus-ring-offset",
+          "clear-focus-ring-width",
+          "clear-hover-bg",
+          "clear-icon-size",
+          "clear-radius",
+          "clear-size",
+          "empty-color",
+          "empty-font",
+          "empty-padding",
+          "frame-gap",
+          "inline-chips-block-start",
+          "loader-size",
+          "loading-padding",
+          "min-width",
+          "option-icon-color",
+          "option-icon-size",
+          "search-bg",
+          "search-border-color",
+          "search-border-width",
+          "search-color",
+          "search-padding",
+          "search-placeholder-color",
+          "search-spinner-size",
+          "select-all-divider-color",
+          "select-all-divider-width",
+          "spinner-size",
+          "trigger-width",
+          "width"
+        ]
+      }
     }
   }
 }

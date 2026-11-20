@@ -71,26 +71,36 @@ macOS, iOS and Android (n1-A128, `outputs/native-parity/_ax-n1/`).
 
 Installed in the canonical tree through the main queue: n1-067 (renderers, Laboratory integration, docs; native compiler, studio tabs + navigation-bar suites 6/6, Swift package build, Android compile, Laboratory APK); every install was applied to a copy of the tree first. Verified on the canonical tree on 2026-10-30 (n1-069): the Laboratory playground rebuilt with SwiftPM's build-manifest cache disabled (n1-067's playground build had reused a manifest from before the install), SwiftUI live host 27/27, studio suite 775/778 (the 3 failures are md-text-field's), Laboratory server restarted, macOS tools/ax on the canonical build 4 cases with 0 open findings (`outputs/native-parity/_ax-n1-canonical/`).
 
-## Gate-7 fixes (d6, 2026-10-31)
+## Gate-7 fixes (d6, 2026-10-31 … 2026-11-05)
 
-Evidence: `work/d6-lab/out/` (jobs d6-002…d6-007, d6-A001; canonical install `d6-install-1`). Re-applied to canonical with the
-anchored patch scripts in `work/d6-lab/` (r601, r608, r610, r614).
+Evidence: `work/d6-lab/out/` (jobs d6-002…d6-031, d6-A001…d6-A007, d6b-001…005); canonical installs `d6-install-1` (d6-009),
+`d6-install-2` (d6-019) and `d6-install-3` (d6-032), each re-applying the anchored, pre-image-checked patch scripts in
+`work/d6-lab/` (r601, r608, r610, r614, r603/*, r611, r609*) with automatic rollback.
 
 ### iOS simulator (gate 6, R6-07)
 
 | Suite | iPhone 17 Pro · iOS 26.3 | iPad Pro 11-inch (M5) · iOS 26.3 | iPhone 16 Pro · iOS 18.6 |
 | --- | --- | --- | --- |
-| `NativeNavigationBarPaintIntegration` | 14500/14500 | 14500/14500 | 14500/14500 |
-| `NativeNavigationBarStatesIntegration` | 189384/189386 | 189386/189386 | not run |
+| `NativeNavigationBarPaintIntegration` | 16159/16159 | 16159/16159 | 16159/16159 |
+| `NativeNavigationBarStatesIntegration` | 189386/189386 | 189386/189386 | 189374/189374 |
 
-Xcode 26.3, `apps/native-ios-parity` harness (`work/d6-lab/harness.sh`), d6's own simulators (AWC-d6, AWC-d6-ipad, AWC-d6-18).
+Xcode 26.3, `apps/native-ios-parity` harness (`work/d6-lab/harness.sh`), d6's own simulators (AWC-d6, AWC-d6-ipad, AWC-d6-18), on the
+installed code (job d6-030, logs `work/d6-lab/out/ios-final/console-<simulator>-<suite>.log`).
 
 ### Findings
 
 - **R6-14 (CEM).** The ten md-navigation-tab hooks without a header description (indicator, icon, label, state-layer and
   badge colours) were invisible to the docs generator; each now has its description and the regenerated CEM lists them.
-- **R6-11 (`--md-navigation-tab-slotted-icon-font`): open.**
-- **R6-03 (parts): open** (see Remaining).
+- **R6-11 (`--md-navigation-tab-slotted-icon-font`).** Fixed (d6). The hook is a CSS family *list*: natively the first available family lays out text slotted as an icon (generic families as Chrome maps them — system-ui → the system font; Apple: sans-serif Helvetica, serif Times, monospace Menlo; Android: the platform sans-serif / serif / monospace; a named family when installed), at the icon size, centred on the 24 px icon box and never truncated (the source's inline-flex box lets the run overflow both sides). Before, SwiftUI passed the raw list to `Font.custom` as one family name (the system font in practice) and truncated runs wider than the box; Compose parsed the hook but never applied it and drew slotted text in the default text style. Oracle: Mac Chrome `navbar.html?slotted-font` (`slotted-text-icon`, `hook-tab-slotted-icon-font`, `-dark-rtl`; `Menlo, monospace`; the run's box from a Range): SwiftUI x / width / centre / size / colour in NativeNavigationBarPaintIntegration (16159/16159, d6-022, d6-026); Compose: the resolved family, the centring and the monospace run width (within 1 px) in NativeNavigationBarParityTest (d6-A006, d6-A007).
+- **R6-03 (parts).** Typed: md-navigation-tab `AWCNavigationTabPartAppearance` (`.awcNavigationTabPartAppearance(_:for:)` / `AWCNavigationTabPartAppearanceScope`) — state-layer (colour, opacity), icon, label and indicator colours, badge fill and text; md-navigation-bar `AWCNavigationBarPartAppearance` — the bar's container background. Part rules come from the outer tree, so a typed value wins over the hooks and every internal state rule (a state-layer opacity shows in every state), as `::part()` rules do in Chrome. Oracle: Mac Chrome 153 `::part()` cases (6 cases in `_nav-web-reference/navbar.html?parts`: light / dark × LTR / RTL, selected labels, label-only; job d6-016). SwiftUI: NativeNavigationBarPaintIntegration 16159/16159 (macOS, d6-026); Compose: NativeNavigationBarParityTest pass (d6-A003, d6-A007; the probe's `color` is the host colour, `iconColor` the icon ink). Laboratory: `visualParts` in both support policies and copyable SwiftUI / Compose examples for every typed part (22 SwiftUI examples typecheck (d6-026), 22 Compose examples compile (d6-A007)).
+
+#### Typed box target (gate-7 R6-17): md-navigation-tab ::part(container)
+
+`::part(container)` of md-navigation-tab is the destination's column (indicator, icon, label); it is 100 % of the tab plus its border and padding, so it overflows the tab and the bar ends as in Chrome. It is a typed part target, not an exception: `AWCPartBox` (background, border width / colour, border radius, padding shorthand; physical edges, content-box) on `AWCNavigationTabPartAppearance(container:)` for SwiftUI and `AWCNavigationTabPartAppearance(container:)` for Compose, taking layout space around the wrapper's content as in Chrome (everything inside and after it shifts), and the Laboratory's `visualParts` / copyable examples carry it. Oracle: Mac Chrome 153 `::part(container)` box cases merged into the paint fixtures; paint checks compare the typed box (background, border, radius, padding) and the wrapper geometry, plus flat pixels, on macOS, iOS and Android ([NativeNavigationBarPaintIntegration.swift](../../packages/native-ios/Tests/NativeNavigationBarPaintIntegration.swift), [NativeNavigationBarParityTest.kt](../../apps/native-android-playground/src/androidTest/java/dev/awc/playground/NativeNavigationBarParityTest.kt)).
+
+#### Typed box target (gate-7 R6-17): md-navigation-tab ::part(icon-container)
+
+`::part(icon-container)` of md-navigation-tab is the indicator-sized box around the icon; its border and padding grow it, the badge and the focus ring follow its padding box. It is a typed part target, not an exception: `AWCPartBox` (background, border width / colour, border radius, padding shorthand; physical edges, content-box) on `AWCNavigationTabPartAppearance(iconContainer:)` for SwiftUI and `AWCNavigationTabPartAppearance(iconContainer:)` for Compose, taking layout space around the wrapper's content as in Chrome (everything inside and after it shifts), and the Laboratory's `visualParts` / copyable examples carry it. Oracle: Mac Chrome 153 `::part(icon-container)` box cases merged into the paint fixtures; paint checks compare the typed box (background, border, radius, padding) and the wrapper geometry, plus flat pixels, on macOS, iOS and Android ([NativeNavigationBarPaintIntegration.swift](../../packages/native-ios/Tests/NativeNavigationBarPaintIntegration.swift), [NativeNavigationBarParityTest.kt](../../apps/native-android-playground/src/androidTest/java/dev/awc/playground/NativeNavigationBarParityTest.kt)).
 
 ## Remaining
 

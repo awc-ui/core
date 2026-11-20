@@ -1,6 +1,11 @@
 package dev.awc.nativeui
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -59,10 +64,11 @@ internal data class AccordionChassisTargets(val barWidth:Double,val barOpacity:D
  * in primary (the expanded rule, later in the sheet, keeps on-secondary-container). Both custom
  * hooks replace the defaults in every state.
  */
-internal fun accordionChassisTargets(i:AccordionChassisInput,handleColor:Color?,hoverBackground:Color?,onSurfaceVariant:Color,onSecondaryContainer:Color,primary:Color,stateLayer:Color):AccordionChassisTargets {
+internal fun accordionChassisTargets(i:AccordionChassisInput,handleColor:Color?,hoverBackground:Color?,onSurfaceVariant:Color,onSecondaryContainer:Color,primary:Color,stateLayer:Color,forced:Boolean=false):AccordionChassisTargets {
     val active=i.pressed
     val width=if(i.dragging || active) 40.0 else if(i.hovered) 38.0 else 32.0
-    val opacity=if(i.dragging || active) 1.0 else if(i.hovered) .9 else .45
+    // forced-colors: `.md-accordion-item__chassis-handle-bar { opacity: 1 }`.
+    val opacity=if(forced || i.dragging || active) 1.0 else if(i.hovered) .9 else .45
     val color=handleColor ?: if(i.expanded) onSecondaryContainer else if(i.dragging) primary else onSurfaceVariant
     val tint=if(active) hoverBackground ?: stateLayer.copy(alpha=stateLayer.alpha*.16f) else if(i.hovered) hoverBackground ?: stateLayer.copy(alpha=stateLayer.alpha*.10f) else Color.Transparent
     return AccordionChassisTargets(width,opacity,color,tint)
@@ -109,4 +115,33 @@ internal class NativeAccordionChassisStyle {
         handleBackground.set(t.handleBackground,now,timing.effectsDuration,timing.effectsCurve)
     }
     fun running(now:Double)=barWidth.isRunning(now) || barOpacity.isRunning(now) || barColor.isRunning(now) || handleBackground.isRunning(now)
+}
+
+/**
+ * Hosts the floating panel: in place, or (floating, with an [AWCModalScope]) as an entry of the scope's overlay layer. `movableContentOf`
+ * keeps the panel's remembered state when `floating` moves it between the two; the placeholder in the flow has no size. The entry keeps the
+ * placeholder's composition locals and is inert while a modal is open, like the page content the panel belongs to.
+ */
+@OptIn(androidx.compose.runtime.ExperimentalComposeApi::class)
+@Composable internal fun AccordionFloatingLayer(floating:Boolean,id:String,zIndex:Double,panel:@Composable ()->Unit) {
+    val session=LocalAWCModalSession.current
+    val latest=rememberUpdatedState(panel)
+    val movable=remember { movableContentOf { latest.value() } }
+    // Without an overlay scope the panel is always in place: its content is composed inline, so the items' layout nodes are attached when the
+    // group's connection effect runs (s7-12-01). movableContentOf attaches them after that effect, so no item had a marker, index or
+    // parent coordinates at connection and the defaultExpanded pass ran on unregistered, provisionally owned items.
+    // Inside an AWCModalScope the panel is composed inline too while it is not floating (s7-20-01): movableContentOf attaches the items' nodes
+    // after the group's connection effect in a dialog or sheet exactly as outside one, so the first mdItemToggle read index -1 / expanded false.
+    // Only a floating panel is hosted by the scope's overlay entry, through the movable content.
+    if(session==null || !floating) { panel();return }
+    val locals=currentCompositionLocalContext
+    Box(Modifier.size(0.dp))
+    AWCModalEntryEffect(session,id,true,zIndex) {
+        CompositionLocalProvider(locals) {
+            val blocked=session.isActive
+            Box(Modifier.then(if(blocked) Modifier.clearAndSetSemantics {}.pointerInput(Unit) {
+                awaitPointerEventScope { while(true) { awaitPointerEvent(PointerEventPass.Initial).changes.forEach { it.consume() } } }
+            } else Modifier)) { movable() }
+        }
+    }
 }

@@ -537,6 +537,7 @@ struct AWCNativeBottomSheet: View {
         .accessibilityElement(children: .contain)
         .accessibilityLabel(accessibleName)
         .accessibilityAddTraits(.isModal)
+        .awcModalSurfaceAccessibility(id: id, role: AWCModalSurfaceRole(kind: .dialog, modal: true))
         .awcInspect(nodeID: id, part: "container", name: "container") { size in
             ["role": .string("dialog"), "label": .string(accessibleName), "radius": .number(Double(corners.radii(in: size).first?.width ?? 0))]
         }
@@ -665,7 +666,7 @@ extension AWCNativeView {
             return items.isEmpty ? nil : AnyView(ForEach(items) { item in child(item) })
         }
         return AWCNativeBottomSheet(id: node.id, model: AWCBottomSheetModel(local), theme: theme,
-                                    open: Binding(get: { b("open") }, set: { set("open", .bool($0)) }),
+                                    open: $local[awcBool: "open"],
                                     slots: AWCBottomSheetSlots(content: slot(nil), headline: slot("headline"), close: slot("close"), actions: slot("actions")),
                                     emit: { name in emit(name) })
     }

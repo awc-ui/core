@@ -37,21 +37,23 @@ class AWCInspectionCollector {
     private val entries = linkedMapOf<String, Entry>()
     private var current = AWCInspectionSnapshot(emptyList())
 
+    // g6-sync: snapshot() may be called from a test/host thread while recomposition records and removes nodes.
     fun snapshot(): AWCInspectionSnapshot {
         // A graphicsLayer transform can change without layout or placement.
         // Refresh the live coordinates when a host captures its rendered frame.
-        entries.values.mapNotNull { it.owner as? InspectionRecord }.forEach { it.publish() }
-        return current
+        val records = synchronized(this) { entries.values.mapNotNull { it.owner as? InspectionRecord } }
+        records.forEach { it.publish() }
+        return synchronized(this) { current }
     }
-    fun clear() { entries.clear(); current = AWCInspectionSnapshot(emptyList()) }
-    internal fun record(owner: Any, node: AWCInspectionNode) {
+    fun clear() = synchronized(this) { entries.clear(); current = AWCInspectionSnapshot(emptyList()) }
+    internal fun record(owner: Any, node: AWCInspectionNode) = synchronized(this) {
         val prior = entries[node.id]
-        if (prior?.owner === owner && prior.node == node) return
+        if (prior?.owner === owner && prior.node == node) return@synchronized
         entries[node.id] = Entry(owner, node)
         publish()
     }
-    internal fun remove(owner: Any, id: String) {
-        if (entries[id]?.owner !== owner) return
+    internal fun remove(owner: Any, id: String) = synchronized(this) {
+        if (entries[id]?.owner !== owner) return@synchronized
         entries.remove(id)
         publish()
     }
@@ -105,10 +107,10 @@ private class InspectionRecord(
 }
 
 @Composable
-private fun rememberInspectionRecord(context: AWCInspectionContext?, part: String, name: String, allowZeroSize: Boolean = false): InspectionRecord? {
+private fun rememberInspectionRecord(context: AWCInspectionContext?, part: String, name: String, allowZeroSize: Boolean = false, flat: Boolean = false): InspectionRecord? {
     if (context == null) return null
     val id = if (part.isEmpty()) context.id else "${context.id}.$part"
-    val parentId = if (part.isEmpty()) context.parentId else if (part.contains('.')) "${context.id}.${part.substringBeforeLast('.')}" else context.id
+    val parentId = if (part.isEmpty()) context.parentId else if (part.contains('.') && !flat) "${context.id}.${part.substringBeforeLast('.')}" else context.id
     val density = LocalDensity.current.density.toDouble()
     val record = remember(context.collector, id, name, parentId, density, allowZeroSize) { InspectionRecord(context, id, name, parentId, density, allowZeroSize) }
     DisposableEffect(record) { onDispose { context.collector.remove(record, id) } }
@@ -117,8 +119,8 @@ private fun rememberInspectionRecord(context: AWCInspectionContext?, part: Strin
 
 @Composable
 internal fun Modifier.inspectAWCNode(context: AWCInspectionContext?, part: String, name: String, metrics: AWCInspectionMetrics? = null,
-                                   allowZeroSize: Boolean = false): Modifier {
-    val record = rememberInspectionRecord(context, part, name, allowZeroSize) ?: return this
+                                   allowZeroSize: Boolean = false, flat: Boolean = false): Modifier {
+    val record = rememberInspectionRecord(context, part, name, allowZeroSize, flat) ?: return this
     // A metric can change without requiring remeasurement (e.g. border or direction).
     SideEffect { record.metrics = metrics; record.publish() }
     return onSizeChanged {

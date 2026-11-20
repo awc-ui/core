@@ -54,6 +54,7 @@ internal class NativeFabMenuState(
     var props: Props=emptyMap()
     var onOpenCommit: (Boolean)->Unit={}
     var onAnchorFocus: ()->Unit={}
+    var onKeyboardInput: ()->Unit={}
     var onOpeningFocus: ()->Boolean={false}
     val items=mutableStateListOf<NativeFabMenuItemEntry>()
     private val initialized=CompletableDeferred<Unit>()
@@ -161,6 +162,7 @@ internal class NativeFabMenuState(
     fun itemActivated() { close();onAnchorFocus() }
     fun itemKey(id: Any,key: String,shift: Boolean=false): Boolean {
         if(!open || items.isEmpty()) return false
+        onKeyboardInput()
         val original=items.indexOfFirst { it.id===id }.takeIf { it>=0 } ?: focusedIndex
         when(key) {
             "Escape" -> { close();onAnchorFocus() }

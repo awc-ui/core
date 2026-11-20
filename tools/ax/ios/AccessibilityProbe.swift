@@ -3,6 +3,7 @@ import SwiftUI
 @testable import AWCUI
 #if canImport(UIKit)
 import UIKit
+import Accessibility
 
 // tools/ax iOS probe, run inside the native-ios-parity simulator harness (apps/native-ios-parity/scripts/run-fixture.sh).
 // It renders the exact effective nodes the macOS Laboratory host rendered (AWC_AX_CASES_FILE) with the Laboratory's
@@ -28,13 +29,15 @@ struct AXProbeRoot: View {
         else if node.tag == "md-snackbar" { AWCSnackbarScope { AWCNativeView(node: node).awcSnackbarController(snackbar) }.frame(width: state.width, height: state.height) }
         else if node.tag == "md-tooltip" { AWCTooltipScope { AWCNativeView(node: node).awcTooltipController(tooltip) }.frame(width: state.width, height: state.height) }
         else if ["md-dialog", "md-bottom-sheet", "md-side-sheet"].contains(node.tag) {
-            AWCModalScope { ZStack(alignment: .topLeading) {
-                AWCNativeView(node: node).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                // The Laboratory host's launcher (LiveModalLauncher in the SwiftUI host): an "Open …" tonal button.
+            // The Laboratory host's presentation (LiveModalLauncher in the SwiftUI host, LivePreviewModalHost on Android) in the
+            // recipe's page order: an "Open …" tonal launcher, then the component (a standard side sheet inline below it; R4-25).
+            AWCModalScope { VStack(alignment: .leading, spacing: 0) {
                 AWCNativeView(node: AWCNode(id: "modal-launcher", tag: "md-button", properties: ["variant": "tonal"], children: [.text("Open " + node.tag.dropFirst(3).replacingOccurrences(of: "-", with: " "))]))
                     .fixedSize().padding(24)
-            } }.frame(width: state.width, height: state.height)
+                AWCNativeView(node: node).padding(.leading, 24)
+            }.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading) }.frame(width: state.width, height: state.height)
         }
+        else if node.tag == "md-date-picker" { AWCModalScope { AWCNativeView(node: node).padding(24).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading) }.frame(width: state.width, height: state.height) }
         else if node.tag == "md-time-picker" { AWCModalScope { AWCNativeView(node: node).padding(24).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading) }.frame(width: state.width, height: state.height) }
         else if node.tag == "md-color-picker" { AWCNativeView(node: node).padding(24).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading).frame(width: state.width, height: state.height) }
         else if node.tag == "md-skeleton" { AWCNativeView(node: node).awcSkeletonSizingContext(.init(parentHeight: 160)).frame(width: 260, height: 160, alignment: .topLeading) }
@@ -45,6 +48,8 @@ struct AXProbeRoot: View {
         }
         else if node.tag == "md-badge" { anchorButton.awcBadgeOverlay { AWCNativeView(node: node) } }
         else if ["md-segmented-button", "md-segmented-button-set"].contains(node.tag) { AWCPreviewSegmented(node: node) }
+        // md-autocomplete: the suggestions in a menu scope, as the Swift live host presents them.
+        else if node.tag == "md-autocomplete" { AXAutocompleteHost(node: node) }
         else if AWCPreviewMenu.tags.contains(node.tag) { AWCPreviewMenu(node: node, state: menus) }
         else if ["md-fab-menu", "md-fab-menu-item"].contains(node.tag) { AWCPreviewFabMenu(node: node, controller: fabMenu) }
         else if node.tag == "md-accordion" {
@@ -53,7 +58,7 @@ struct AXProbeRoot: View {
         else { AWCNativeView(node: node) }
     }
     var body: some View {
-        let overlay = ["md-snackbar", "md-tooltip", "md-dialog", "md-bottom-sheet", "md-side-sheet", "md-time-picker", "md-color-picker"].contains(node.tag)
+        let overlay = ["md-snackbar", "md-tooltip", "md-dialog", "md-bottom-sheet", "md-side-sheet", "md-time-picker", "md-color-picker", "md-date-picker"].contains(node.tag)
         AWCPreviewScope { example }
             .id(state.epoch)
             .padding(overlay ? 0 : 32)
@@ -63,6 +68,16 @@ struct AXProbeRoot: View {
             .environment(\.colorScheme, state.dark ? .dark : .light)
             .environment(\.layoutDirection, state.rtl ? .rightToLeft : .leftToRight)
             .awcTheme(.generated(dark: state.dark, tokens: [:]))
+    }
+}
+
+/// md-autocomplete with its own menu scope per case (the probe content is re-created per case through `.id(epoch)`).
+struct AXAutocompleteHost: View {
+    let node: AWCNode
+    @State private var menus = AWCMenuScopeState()
+    var body: some View {
+        AWCMenuScope(state: menus) { AWCNativeView(node: node).padding(.top, 12).frame(maxWidth: .infinity, alignment: .top) }
+            .frame(minWidth: 320, maxWidth: .infinity, minHeight: 320, alignment: .top)
     }
 }
 
@@ -87,6 +102,8 @@ enum AXWalk {
         let f = o.accessibilityFrame; out["frame"] = [f.minX - origin.x, f.minY - origin.y, f.width, f.height]
         if let actions = o.accessibilityCustomActions, !actions.isEmpty { out["customActions"] = actions.map(\.name) }
         if o.accessibilityViewIsModal { out["modal"] = true }
+        if let cell = o as? UIAccessibilityContainerDataTableCell { let r = cell.accessibilityRowRange(); if r.location != NSNotFound { out["rowRange"] = [r.location, r.length] } }
+        switch o.accessibilityContainerType { case .semanticGroup: out["containerType"] = "semanticGroup"; case .landmark: out["containerType"] = "landmark"; case .list: out["containerType"] = "list"; case .dataTable: out["containerType"] = "dataTable"; default: break }
         if let labels = o.accessibilityUserInputLabels, !labels.isEmpty { out["inputLabels"] = labels }
         if o.accessibilityRespondsToUserInteraction { out["interactive"] = true }
         // A keyboard-editable element (UIKit gives text fields no trait; VoiceOver identifies them by text input). An empty
@@ -95,6 +112,23 @@ enum AXWalk {
         if let field = o as? UITextField { out["textInput"] = true; out["text"] = field.isSecureTextEntry ? String(repeating: "\u{2022}", count: (field.text ?? "").count) : field.text ?? ""; if let p = field.placeholder { out["placeholder"] = p } }
         else if let view = o as? UITextView { out["textInput"] = view.isEditable; out["text"] = view.text ?? "" }
         else if o is UITextInput { out["textInput"] = true }
+        // A chart plot's data: the descriptor VoiceOver reads as chart details / Audio Graph (AXChart; built from this content)
+        // — the x axis title and categories, each series' name and values, a pie's share axis and shares: the Web's
+        // screen-reader table counterpart.
+        if let d = (o as? AWCChartPlotFocusView)?.configuration?.descriptor {
+            var words = [d.xTitle] + d.categories
+            for s in d.series { words.append(s.name); words += s.values.compactMap { $0.map(awcJSNumberString) } }
+            if let shares = d.shares { words.append(d.shareTitle); words += shares.compactMap { $0.map(awcChartAXPercent) } }
+            out["chartData"] = words.filter { !$0.isEmpty }
+        } else if let chart = (o as? AXChart)?.accessibilityChartDescriptor ?? ((o as? NSObject).flatMap { n in n.responds(to: NSSelectorFromString("accessibilityChartDescriptor")) ? n.value(forKey: "accessibilityChartDescriptor") as? AXChartDescriptor : nil }) {
+            // A descriptor on another element (SwiftUI accessibilityChartDescriptor: an empty chart's message lists its categories).
+            var words: [String] = [chart.xAxis.title]
+            if let x = chart.xAxis as? AXCategoricalDataAxisDescriptor { words += x.categoryOrder }
+            // AXDataPointValue: the number case / property, read by reflection (its Swift shape differs between SDKs).
+            func number(_ v: Any?) -> Double? { guard let v else { return nil }; return v as? Double ?? Mirror(reflecting: v).children.first { $0.label == "number" }?.value as? Double }
+            for s in chart.series { words.append(s.name ?? ""); for p in s.dataPoints { if let y = number(p.yValue) { words.append(chart.yAxis?.valueDescriptionProvider(y) ?? awcJSNumberString(y)) } } }
+            out["chartData"] = words.filter { !$0.isEmpty }
+        }
         return out
     }
     /// Exposed elements in VoiceOver navigation order with their container context. A modal container hides its
@@ -144,6 +178,10 @@ extension UIResponder { @objc func awcAXCaptureFirstResponder(_ sender: Any?) { 
         for c in cases {
             guard let id = c["id"] as? String, let nodeObject = c["node"], let nodeData = try? JSONSerialization.data(withJSONObject: nodeObject),
                   let node = try? JSONDecoder().decode(AWCNode.self, from: nodeData) else { results.append(["id": c["id"] ?? "?", "error": "bad case"]); continue }
+            // Each case starts without keyboard focus: the previous case's first responder must not steer its first Tab.
+            AXFirstResponderFinder.found = nil
+            UIApplication.shared.sendAction(#selector(UIResponder.awcAXCaptureFirstResponder(_:)), to: nil, from: nil, for: nil)
+            if let r = AXFirstResponderFinder.found, !(r is UIWindow) { _ = r.resignFirstResponder() }
             state.node = node; state.width = c["width"] as? Double ?? 640; state.height = c["height"] as? Double ?? 240
             state.dark = c["dark"] as? Bool ?? false; state.rtl = (c["direction"] as? String) == "rtl"; state.epoch += 1
             pump(c["settle"] as? Double ?? 0.6)

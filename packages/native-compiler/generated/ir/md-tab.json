@@ -1779,7 +1779,7 @@
         "Rendered by its md-tabs (geometry, state and motion) or, outside a tablist, as a single tab with its own active state; activation outside a tablist emits mdTabClick only.",
         "Stacked (icon above the label) or inline icons, the secondary variant, badges (a count or a dot, on the icon or inline), density 0 to -4 and label truncation as the source; slotted icon and badge content renders natively.",
         "Hover, press and keyboard focus (8 % / 12 % state layer, inset 3-point focus ring) with the md-ripple wave; colours transition over 200 ms.",
-        "Typed ::part() targets (AWCTabPartAppearance): state-layer (colour, fixed opacity), icon, label, indicator and divider colours; content is a layout wrapper (exception record, md-tabs.md)."
+        "Typed ::part() targets (AWCTabPartAppearance): state-layer (colour, fixed opacity), icon, label, indicator and divider colours, and content as a box (AWCPartBox: background, border width / colour, corner radius and physical padding with the layout shift)."
       ],
       "verification": "not-device-verified",
       "visualParts": [
@@ -1787,7 +1787,8 @@
         "icon",
         "label",
         "indicator",
-        "divider"
+        "divider",
+        "content"
       ],
       "appearance": {
         "api": ".awcTabAppearance(AWCTabAppearance)",
@@ -1833,7 +1834,7 @@
         "Rendered by its md-tabs (geometry, state and motion) or, outside a tablist, as a single tab with its own active state; activation outside a tablist emits mdTabClick only.",
         "Stacked (icon above the label) or inline icons, the secondary variant, badges (a count or a dot, on the icon or inline), density 0 to -4 and label truncation as the source; slotted icon and badge content renders natively.",
         "Hover, press and keyboard focus (8 % / 12 % state layer, inset 3-point focus ring) with the md-ripple wave; colours transition over 200 ms.",
-        "Typed ::part() targets (AWCTabPartAppearance): state-layer (colour, fixed opacity), icon, label, indicator and divider colours; content is a layout wrapper (exception record, md-tabs.md)."
+        "Typed ::part() targets (AWCTabPartAppearance): state-layer (colour, fixed opacity), icon, label, indicator and divider colours, and content as a box (AWCPartBox: background, border width / colour, corner radius and physical padding with the layout shift)."
       ],
       "verification": "not-device-verified",
       "visualParts": [
@@ -1841,7 +1842,8 @@
         "icon",
         "label",
         "indicator",
-        "divider"
+        "divider",
+        "content"
       ],
       "appearance": {
         "api": "AWCTabAppearanceScope(AWCTabAppearance)",

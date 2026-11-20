@@ -1446,9 +1446,23 @@
         "Not supported: virtualize (not virtualized: the native lists render every option (loadOptions / options replace the list)).",
         "Not supported: filterMode (filtering is local (contains); the source's remote mode is the app's (setQuery / loadOptions)).",
         "Not supported: rowHeight (virtualization row height (no virtualized list)).",
-        "Not supported: searchingLabel (remote-search status text (no remote mode))."
+        "Not supported: searchingLabel (remote-search status text (no remote mode)).",
+        "Laboratory (gate 3): typed hooks (md-select's eight fields; md-multi-select's 38 hooks as a hook map), retained updates of every supported property, the controller methods (show, close, focusTrigger, reset, loadOptions, setQuery, getLabels, getValidity, checkValidity, reportValidity, setCustomValidity) with results, copyable examples; the SwiftUI and Compose live hosts render the menu in flow below the field."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "appearance": {
+        "api": ".awcSelectAppearance(AWCSelectAppearance)",
+        "fields": [
+          "width",
+          "minWidth",
+          "caretColor",
+          "caretSize",
+          "clearColor",
+          "trailingGap",
+          "optionIconColor",
+          "spinnerSize"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
@@ -1523,9 +1537,23 @@
         "Not supported: virtualize (not virtualized: the native lists render every option (loadOptions / options replace the list)).",
         "Not supported: filterMode (filtering is local (contains); the source's remote mode is the app's (setQuery / loadOptions)).",
         "Not supported: rowHeight (virtualization row height (no virtualized list)).",
-        "Not supported: searchingLabel (remote-search status text (no remote mode))."
+        "Not supported: searchingLabel (remote-search status text (no remote mode)).",
+        "Laboratory (gate 3): typed hooks (md-select's eight fields; md-multi-select's 38 hooks as a hook map), retained updates of every supported property, the controller methods (show, close, focusTrigger, reset, loadOptions, setQuery, getLabels, getValidity, checkValidity, reportValidity, setCustomValidity) with results, copyable examples; the SwiftUI and Compose live hosts render the menu in flow below the field."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "appearance": {
+        "api": "AWCSelectAppearanceScope(AWCSelectAppearance)",
+        "fields": [
+          "width",
+          "minWidth",
+          "caretColor",
+          "caretSize",
+          "clearColor",
+          "trailingGap",
+          "optionIconColor",
+          "spinnerSize"
+        ]
+      }
     }
   }
 }

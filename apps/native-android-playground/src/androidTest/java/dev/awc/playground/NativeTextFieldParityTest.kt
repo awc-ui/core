@@ -31,6 +31,9 @@ import kotlin.math.abs
  */
 class NativeTextFieldParityTest {
     @get:Rule val compose=createComposeRule()
+    // Touch mode is per display (Android 14+): a key-driven suite earlier in the run leaves keyboard mode, where a field takes
+    // initial focus when composed. Chrome's baseline is a pointer session: start and leave every test in touch mode.
+    @org.junit.Before @org.junit.After fun touchMode() { runCatching { androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().setInTouchMode(true) } }
     private var case by mutableStateOf(JSONObject("{\"name\":\"init\",\"props\":{},\"slots\":[],\"width\":320}"))
     private var epoch by mutableIntStateOf(0)
     private val collector=AWCInspectionCollector()
@@ -47,7 +50,8 @@ class NativeTextFieldParityTest {
             c("input-color"),c("label-color"),l("optical-nudge"),c("outline-color"),l("padding-inline-start"),l("padding-inline-end"),c("supporting-text-color")) }
     private fun parts(h:JSONObject?)=if(h==null) AWCTextFieldPartAppearance() else AWCTextFieldPartAppearance(h.optString("containerColor").ifEmpty { null },
         h.optString("labelColor").ifEmpty { null },h.optString("inputColor").ifEmpty { null },h.optString("caretColor").ifEmpty { null },
-        h.optString("supportingTextColor").ifEmpty { null },h.optString("counterColor").ifEmpty { null })
+        h.optString("supportingTextColor").ifEmpty { null },h.optString("counterColor").ifEmpty { null },h.optString("chipsBackgroundColor").ifEmpty { null },
+        if(h.has("chipsGap")) h.getDouble("chipsGap") else null)
     private fun props(c:JSONObject):Map<String,Any?> { val o=c.getJSONObject("props");val m=mutableMapOf<String,Any?>()
         for(k in o.keys()) m[k]=when(val v=o.get(k)) { is Number -> v.toDouble(); else -> v };return m }
     private fun rgba(css:String):List<Double> { val n=Regex("[-0-9.]+").findAll(css).map { it.value.toDouble() }.toList()
@@ -120,6 +124,10 @@ class NativeTextFieldParityTest {
                 if(f!=null) { if(c.optString("dir")=="rtl") near(f.bounds.x+f.bounds.width-inset-start,r.getDouble("x")+r.getDouble("width"),"legend end",1.2) else near(f.bounds.x+inset+start,r.getDouble("x"),"legend x",1.2) }
                 near((v("fieldset","legendWidth") as? Double) ?: -1.0,r.getDouble("width"),"legend width",1.2) } } }
         rect(n("prefix"),c.optJSONObject("prefix"),"prefix",wTol=1.2);rect(n("suffix"),c.optJSONObject("suffix"),"suffix",wTol=1.2)
+        // The chips box (one line, or chips-wrap rows and the input on its own line once it no longer fits): md-chip widths differ by
+        // their own 0.6 dp paint tolerance each; with ::part(chips) its background.
+        if(chips) c.optJSONObject("chips")?.let { w-> rect(n("chips"),w,"chips",1.6,2.0)
+            if(c.optJSONObject("parts")?.has("chipsBackgroundColor")==true) check(close(v("chips","background"),w.getString("backgroundColor")),"$name chips background ${v("chips","background")} vs ${w.getString("backgroundColor")}") }
         val parts=mapOf("Clear" to "clear","Show password" to "password-toggle","Hide password" to "password-toggle","Start voice input" to "speech","Stop listening" to "speech")
         for(b in c.getJSONArray("buttons").objects()) { val part=parts[b.optString("label")] ?: b.optString("label");val node=n(part)
             if(node==null) check(false,"$name $part missing") else { val r=b.getJSONObject("rect")

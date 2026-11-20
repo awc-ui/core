@@ -154,7 +154,68 @@
       "description": "The avatar's <img> (exported)"
     }
   ],
-  "cssCustomProps": [],
+  "cssCustomProps": [
+    {
+      "name": "--md-org-chart-connector-color",
+      "description": "Connector line colour"
+    },
+    {
+      "name": "--md-org-chart-connector-width",
+      "description": "Connector line thickness"
+    },
+    {
+      "name": "--md-org-chart-node-color",
+      "description": "Node card background"
+    },
+    {
+      "name": "--md-org-chart-node-outline-color",
+      "description": "Node card border colour"
+    },
+    {
+      "name": "--md-org-chart-node-outline-width",
+      "description": "Node card border width"
+    },
+    {
+      "name": "--md-org-chart-node-shape",
+      "description": "Node card corner radius"
+    },
+    {
+      "name": "--md-org-chart-node-min-width",
+      "description": "Node card min inline-size"
+    },
+    {
+      "name": "--md-org-chart-node-max-width",
+      "description": "Node card max inline-size"
+    },
+    {
+      "name": "--md-org-chart-selected-color",
+      "description": "Selected node accent (border + tint)"
+    },
+    {
+      "name": "--md-org-chart-focus-ring-color",
+      "description": "Focus outline colour (default: buttons')"
+    },
+    {
+      "name": "--md-org-chart-state-layer-color",
+      "description": "Hover / selected overlay colour"
+    },
+    {
+      "name": "--md-org-chart-toggle-size",
+      "description": "Expand/collapse toggler diameter"
+    },
+    {
+      "name": "--md-org-chart-level-gap",
+      "description": "Vertical gap between levels"
+    },
+    {
+      "name": "--md-org-chart-sibling-gap",
+      "description": "Horizontal gap between siblings"
+    },
+    {
+      "name": "--md-org-chart-duration",
+      "description": "Motion duration"
+    }
+  ],
   "dependencies": [
     "md-ripple",
     "md-avatar",

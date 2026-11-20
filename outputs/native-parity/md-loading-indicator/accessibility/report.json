@@ -1,6 +1,6 @@
 {
  "tag": "md-loading-indicator",
- "at": "2026-10-29T11:11:39.864Z",
+ "at": "2026-11-05T01:32:18.749Z",
  "rows": [
   {
    "case": "default",
@@ -12,7 +12,7 @@
     "texts": [],
     "focus": [],
     "contrast": {
-     "measured": 2,
+     "measured": 0,
      "findings": []
     }
    },
@@ -29,7 +29,7 @@
      "announcements": [],
      "focus": [],
      "findings": [],
-     "contrastMeasured": 1
+     "contrastMeasured": 0
     },
     "ios": {
      "status": "pass",
@@ -51,6 +51,87 @@
      "nativeElements": 1,
      "elements": [
       "progressbar:Loading your workspace"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 1,
+     "atf": {
+      "elements": 10,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "contained",
+   "web": {
+    "elements": [
+     "progressbar:Loading projects",
+     "status:"
+    ],
+    "texts": [],
+    "focus": [],
+    "contrast": {
+     "measured": 0,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "progressbar:Loading projects"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "progressbar:Loading projects"
+     ],
+     "texts": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "progressbar:Loading projects"
      ],
      "texts": [],
      "announcements": [],
@@ -96,87 +177,6 @@
        "contentDescription": "",
        "changes": 0,
        "class": "dev.awc.playground.LivePreviewActivity"
-      }
-     ]
-    }
-   }
-  },
-  {
-   "case": "contained",
-   "web": {
-    "elements": [
-     "progressbar:Loading projects",
-     "status:"
-    ],
-    "texts": [],
-    "focus": [],
-    "contrast": {
-     "measured": 2,
-     "findings": []
-    }
-   },
-   "platforms": {
-    "macos": {
-     "status": "pass",
-     "matched": 1,
-     "webElements": 1,
-     "nativeElements": 1,
-     "elements": [
-      "progressbar:Loading projects"
-     ],
-     "texts": [],
-     "announcements": [],
-     "focus": [],
-     "findings": [],
-     "contrastMeasured": 1
-    },
-    "ios": {
-     "status": "pass",
-     "matched": 1,
-     "webElements": 1,
-     "nativeElements": 1,
-     "elements": [
-      "progressbar:Loading projects"
-     ],
-     "texts": [],
-     "focus": [],
-     "findings": [],
-     "contrastMeasured": 0
-    },
-    "android": {
-     "status": "pass",
-     "matched": 1,
-     "webElements": 1,
-     "nativeElements": 1,
-     "elements": [
-      "progressbar:Loading projects"
-     ],
-     "texts": [],
-     "announcements": [],
-     "focus": [],
-     "findings": [],
-     "contrastMeasured": 1,
-     "atf": {
-      "elements": 10,
-      "results": 0
-     },
-     "childOrder": "semantics (replacedChildren)",
-     "events": [
-      {
-       "type": "TYPE_WINDOW_STATE_CHANGED",
-       "via": "system",
-       "text": [],
-       "contentDescription": "",
-       "changes": 0,
-       "class": "android.app.Presentation"
-      },
-      {
-       "type": "TYPE_WINDOW_CONTENT_CHANGED",
-       "via": "window",
-       "text": [],
-       "contentDescription": "",
-       "changes": 1,
-       "class": "android.view.ViewGroup"
       }
      ]
     }

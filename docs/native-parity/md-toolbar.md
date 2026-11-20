@@ -38,21 +38,23 @@ role=toolbar named by `aria-label` (or `aria-labelledby`) with its orientation. 
 
 ## Exceptions
 
-None: every property, event, method, slot and hook is implemented natively (8 properties, 0 events, 1 method, 4 slots, 11 hooks; no parts).
+None. `::part(fab-container)` is a typed box target (gate-7 R6-17, below). Every property, event, method, slot and hook is implemented natively (8 properties, 0 events, 1 method, 4 slots, 11 hooks), and the `container` and `fab-container` parts are typed.
 
-## Gate-7 fixes (d6, 2026-10-31)
+## Gate-7 fixes (d6, 2026-10-31 … 2026-11-05)
 
-Evidence: `work/d6-lab/out/` (jobs d6-002…d6-007, d6-A001; canonical install `d6-install-1`). Re-applied to canonical with the
-anchored patch scripts in `work/d6-lab/` (r601, r608, r610, r614).
+Evidence: `work/d6-lab/out/` (jobs d6-002…d6-031, d6-A001…d6-A007, d6b-001…005); canonical installs `d6-install-1` (d6-009),
+`d6-install-2` (d6-019) and `d6-install-3` (d6-032), each re-applying the anchored, pre-image-checked patch scripts in
+`work/d6-lab/` (r601, r608, r610, r614, r603/*, r611, r609*) with automatic rollback.
 
 ### iOS simulator (gate 6, R6-07)
 
 | Suite | iPhone 17 Pro · iOS 26.3 | iPad Pro 11-inch (M5) · iOS 26.3 | iPhone 16 Pro · iOS 18.6 |
 | --- | --- | --- | --- |
-| `NativeToolbarPaintIntegration` | 7466/7466 | 7466/7466 | 7466/7466 |
-| `NativeToolbarStatesIntegration` | 2255/2255 | 2255/2255 | not run |
+| `NativeToolbarPaintIntegration` | 8006/8006 | 8006/8006 | 8006/8006 |
+| `NativeToolbarStatesIntegration` | 2255/2255 | 2255/2255 | 2255/2255 |
 
-Xcode 26.3, `apps/native-ios-parity` harness (`work/d6-lab/harness.sh`), d6's own simulators (AWC-d6, AWC-d6-ipad, AWC-d6-18).
+Xcode 26.3, `apps/native-ios-parity` harness (`work/d6-lab/harness.sh`), d6's own simulators (AWC-d6, AWC-d6-ipad, AWC-d6-18), on the
+installed code (job d6-030, logs `work/d6-lab/out/ios-final/console-<simulator>-<suite>.log`).
 
 ### Findings
 
@@ -60,7 +62,11 @@ Xcode 26.3, `apps/native-ios-parity` harness (`work/d6-lab/harness.sh`), d6's ow
   four-edge arrays and `gap` as `{row, column}` (the Laboratory server's schema); the scalar values stay as `itemGap`,
   `paddingValue`, `paddingInline`, `marginInline`. `test-live-nav.mjs` validates every frame with the server's own
   `validateNativeInspection` (10/10 frames).
-- **R6-03 (parts `container`, `fab-container`): open.** Typed part appearances are not implemented yet (see Remaining).
+- **R6-03 (parts).** Typed: `container` — `AWCToolbarPartAppearance(containerColor:)` (`.awcToolbarPartAppearance(_:)` / `AWCToolbarPartAppearanceScope`): the floating pill's fill (its elevation kept) or a fill over the docked content box. Part rules come from the outer tree, so a typed value wins over the hooks and every internal state rule (a state-layer opacity shows in every state), as `::part()` rules do in Chrome. Oracle: Mac Chrome 153 `::part()` cases (10 cases in `md-toolbar/web-reference/paint.html?set=parts`: docked / floating × light / dark × LTR / RTL, vibrant, vertical; job d6-018). SwiftUI: NativeToolbarPaintIntegration 8006/8006 (macOS, d6-026); Compose: NativeToolbarParityTest pass (d6-A005, d6-A007). Laboratory: `visualParts` in both support policies and copyable SwiftUI / Compose examples for every typed part (22 SwiftUI examples typecheck (d6-026), 22 Compose examples compile (d6-A007)).
+
+#### Typed box target (gate-7 R6-17): md-toolbar ::part(fab-container)
+
+`::part(fab-container)` of md-toolbar is the wrapper of the slotted FAB; the bar and the host grow around its border and padding. It is a typed part target, not an exception: `AWCPartBox` (background, border width / colour, border radius, padding shorthand; physical edges, content-box) on `AWCToolbarPartAppearance(fabContainer:)` for SwiftUI and `AWCToolbarPartAppearance(fabContainer:)` for Compose, taking layout space around the wrapper's content as in Chrome (everything inside and after it shifts), and the Laboratory's `visualParts` / copyable examples carry it. Oracle: Mac Chrome 153 `::part(fab-container)` box cases merged into the paint fixtures; paint checks compare the typed box (background, border, radius, padding) and the wrapper geometry, plus flat pixels, on macOS, iOS and Android ([NativeToolbarPaintIntegration.swift](../../packages/native-ios/Tests/NativeToolbarPaintIntegration.swift), [NativeToolbarParityTest.kt](../../apps/native-android-playground/src/androidTest/java/dev/awc/playground/NativeToolbarParityTest.kt)).
 
 ## Remaining
 

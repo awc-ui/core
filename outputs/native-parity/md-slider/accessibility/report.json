@@ -1,0 +1,707 @@
+{
+ "tag": "md-slider",
+ "at": "2026-11-05T01:33:54.214Z",
+ "rows": [
+  {
+   "case": "default",
+   "web": {
+    "elements": [
+     "slider:Volume"
+    ],
+    "texts": [
+     "30"
+    ],
+    "focus": [
+     "slider:Volume"
+    ],
+    "contrast": {
+     "measured": 2,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "slider:Volume"
+     ],
+     "texts": [
+      "30"
+     ],
+     "announcements": [],
+     "focus": [
+      "slider:Volume",
+      "slider:Volume"
+     ],
+     "findings": [],
+     "contrastMeasured": 2
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "slider:Volume"
+     ],
+     "texts": [
+      "30"
+     ],
+     "focus": [
+      "slider:Volume",
+      "∅"
+     ],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "ios: slider \"Volume\" target 24×44 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "slider:Volume"
+     ],
+     "texts": [
+      "30"
+     ],
+     "announcements": [],
+     "focus": [
+      "slider:Volume",
+      "slider:Volume"
+     ],
+     "findings": [],
+     "contrastMeasured": 2,
+     "atf": {
+      "elements": 10,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "range",
+   "web": {
+    "elements": [
+     "slider:Minimum price",
+     "slider:Maximum price"
+    ],
+    "texts": [
+     "20",
+     "60"
+    ],
+    "focus": [
+     "slider:Minimum price",
+     "slider:Maximum price"
+    ],
+    "contrast": {
+     "measured": 4,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "slider:Minimum price",
+      "slider:Maximum price"
+     ],
+     "texts": [
+      "20",
+      "60"
+     ],
+     "announcements": [],
+     "focus": [
+      "slider:Minimum price",
+      "slider:Maximum price",
+      "slider:Minimum price"
+     ],
+     "findings": [],
+     "contrastMeasured": 4
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "slider:Minimum price",
+      "slider:Maximum price"
+     ],
+     "texts": [
+      "20",
+      "60"
+     ],
+     "focus": [
+      "slider:Minimum price",
+      "slider:Maximum price",
+      "∅"
+     ],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "ios: slider \"Minimum price\" target 24×44 below 44pt",
+       "status": "info"
+      },
+      {
+       "kind": "target",
+       "detail": "ios: slider \"Maximum price\" target 24×44 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 2,
+     "nativeElements": 2,
+     "elements": [
+      "slider:Minimum price",
+      "slider:Maximum price"
+     ],
+     "texts": [
+      "20",
+      "60"
+     ],
+     "announcements": [],
+     "focus": [
+      "slider:Minimum price",
+      "slider:Maximum price",
+      "slider:Minimum price"
+     ],
+     "findings": [],
+     "contrastMeasured": 4,
+     "atf": {
+      "elements": 13,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "valuetext",
+   "web": {
+    "elements": [
+     "slider:Brightness"
+    ],
+    "texts": [
+     "3"
+    ],
+    "focus": [],
+    "contrast": {
+     "measured": 2,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "slider:Brightness"
+     ],
+     "texts": [
+      "3"
+     ],
+     "announcements": [],
+     "focus": [],
+     "findings": [
+      {
+       "kind": "range",
+       "web": {
+        "role": "slider",
+        "name": "Brightness",
+        "range": {
+         "min": 0,
+         "max": 5,
+         "now": 3,
+         "text": "3"
+        }
+       },
+       "native": {
+        "role": "slider",
+        "name": "Brightness",
+        "range": {
+         "min": 0,
+         "max": 5,
+         "now": 3,
+         "text": "Level 3 of 5"
+        }
+       },
+       "detail": "slider \"Brightness\" valuetext \"3\" → \"Level 3 of 5\"",
+       "status": "expected",
+       "reason": "The Web value is CDP's valuetext, which never carries aria-valuetext (Chrome 153 probe: a role=\"slider\" with aria-valuetext reports \"\", a native range input its value string) while the input holds aria-valuetext=\"Level 3 of 5\" from valueText. Native exposes valueText as the value description (macOS AXValueDescription, iOS accessibilityValue, Android stateDescription)."
+      }
+     ],
+     "contrastMeasured": 2
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "slider:Brightness"
+     ],
+     "texts": [
+      "3"
+     ],
+     "focus": [],
+     "findings": [
+      {
+       "kind": "range",
+       "web": {
+        "role": "slider",
+        "name": "Brightness",
+        "range": {
+         "min": 0,
+         "max": 5,
+         "now": 3,
+         "text": "3"
+        }
+       },
+       "native": {
+        "role": "slider",
+        "name": "Brightness",
+        "range": {
+         "text": "Level 3 of 5"
+        }
+       },
+       "detail": "slider \"Brightness\" valuetext \"3\" → \"Level 3 of 5\"",
+       "status": "expected",
+       "reason": "The Web value is CDP's valuetext, which never carries aria-valuetext (Chrome 153 probe: a role=\"slider\" with aria-valuetext reports \"\", a native range input its value string) while the input holds aria-valuetext=\"Level 3 of 5\" from valueText. Native exposes valueText as the value description (macOS AXValueDescription, iOS accessibilityValue, Android stateDescription)."
+      },
+      {
+       "kind": "target",
+       "detail": "ios: slider \"Brightness\" target 24×44 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "slider:Brightness"
+     ],
+     "texts": [
+      "3"
+     ],
+     "announcements": [],
+     "focus": [],
+     "findings": [
+      {
+       "kind": "range",
+       "web": {
+        "role": "slider",
+        "name": "Brightness",
+        "range": {
+         "min": 0,
+         "max": 5,
+         "now": 3,
+         "text": "3"
+        }
+       },
+       "native": {
+        "role": "slider",
+        "name": "Brightness",
+        "range": {
+         "min": 0,
+         "max": 5,
+         "now": 3,
+         "text": "Level 3 of 5"
+        }
+       },
+       "detail": "slider \"Brightness\" valuetext \"3\" → \"Level 3 of 5\"",
+       "status": "expected",
+       "reason": "The Web value is CDP's valuetext, which never carries aria-valuetext (Chrome 153 probe: a role=\"slider\" with aria-valuetext reports \"\", a native range input its value string) while the input holds aria-valuetext=\"Level 3 of 5\" from valueText. Native exposes valueText as the value description (macOS AXValueDescription, iOS accessibilityValue, Android stateDescription)."
+      }
+     ],
+     "contrastMeasured": 2,
+     "atf": {
+      "elements": 10,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "vertical",
+   "web": {
+    "elements": [
+     "slider:Volume"
+    ],
+    "texts": [
+     "40"
+    ],
+    "focus": [],
+    "contrast": {
+     "measured": 2,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "slider:Volume"
+     ],
+     "texts": [
+      "40"
+     ],
+     "announcements": [],
+     "focus": [],
+     "findings": [],
+     "contrastMeasured": 2
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "slider:Volume"
+     ],
+     "texts": [
+      "40"
+     ],
+     "focus": [],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "ios: slider \"Volume\" target 44×24 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "slider:Volume"
+     ],
+     "texts": [
+      "40"
+     ],
+     "announcements": [],
+     "focus": [],
+     "findings": [
+      {
+       "kind": "target",
+       "detail": "android: slider \"Volume\" target 88×96 below 48dp",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 2,
+     "atf": {
+      "elements": 10,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "disabled",
+   "web": {
+    "elements": [
+     "slider:Volume"
+    ],
+    "texts": [
+     "30"
+    ],
+    "focus": [],
+    "contrast": {
+     "measured": 1,
+     "findings": [
+      "text \"30\" 2.06:1 (#fbf9fb on #b1b0b1) < 4.5:1"
+     ]
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "slider:Volume {\"disabled\":\"true\"}"
+     ],
+     "texts": [
+      "30"
+     ],
+     "announcements": [],
+     "focus": [
+      "∅",
+      "∅"
+     ],
+     "findings": [
+      {
+       "kind": "contrast",
+       "detail": "text \"30\" 2.06:1 (#fbf9fb on #b1b0b1) < 4.5:1; Web 2.06:1",
+       "status": "expected",
+       "reason": "Disabled slider: the value label fades with the host (CSS opacity 0.38 over the indicator as one group) to the Web source's ratio; WCAG 1.4.3 exempts text of inactive user interface components."
+      }
+     ],
+     "contrastMeasured": 1
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "slider:Volume {\"disabled\":\"true\"}"
+     ],
+     "texts": [
+      "30"
+     ],
+     "focus": [
+      "∅",
+      "∅"
+     ],
+     "findings": [],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "slider:Volume {\"disabled\":\"true\"}"
+     ],
+     "texts": [
+      "30"
+     ],
+     "announcements": [],
+     "focus": [
+      "∅",
+      "∅"
+     ],
+     "findings": [
+      {
+       "kind": "contrast",
+       "detail": "text \"30\" 2.04:1 (#fbf9fb on #b1b1b2) < 4.5:1; Web 2.06:1",
+       "status": "expected",
+       "reason": "Disabled slider: the value label fades with the host (CSS opacity 0.38 over the indicator as one group) to the Web source's ratio; WCAG 1.4.3 exempts text of inactive user interface components."
+      }
+     ],
+     "contrastMeasured": 1,
+     "atf": {
+      "elements": 11,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

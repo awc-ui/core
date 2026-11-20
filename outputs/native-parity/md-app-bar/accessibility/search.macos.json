@@ -1,0 +1,402 @@
+{
+ "tag": "md-app-bar",
+ "case": "search",
+ "request": {
+  "tag": "md-app-bar",
+  "properties": {
+   "variant": "search",
+   "searchPlaceholder": "Search mail"
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "children": [
+          {
+           "actions": [
+            "AXPress"
+           ],
+           "description": "Open navigation",
+           "disclosing": false,
+           "disclosureLevel": 0,
+           "enabled": true,
+           "expanded": false,
+           "focused": false,
+           "frame": [
+            36,
+            40,
+            48,
+            48
+           ],
+           "identifier": "example-md-app-bar-leading-icon",
+           "index": 0,
+           "invalid": "false",
+           "required": false,
+           "role": "AXButton",
+           "roleDescription": "button",
+           "selected": false
+          }
+         ],
+         "enabled": true,
+         "focused": false,
+         "frame": [
+          36,
+          40,
+          48,
+          48
+         ],
+         "identifier": "example-md-app-bar-leading-icon",
+         "role": "AXGroup",
+         "roleDescription": "group"
+        },
+        {
+         "actions": [
+          "AXShowMenu",
+          "AXConfirm"
+         ],
+         "description": "Search mail",
+         "enabled": true,
+         "focused": false,
+         "frame": [
+          109,
+          51,
+          438,
+          26
+         ],
+         "help": "",
+         "invalid": "false",
+         "placeholder": "Search mail",
+         "required": false,
+         "role": "AXTextField",
+         "roleDescription": "search text field",
+         "subrole": "AXSearchField",
+         "value": ""
+        },
+        {
+         "children": [
+          {
+           "actions": [
+            "AXPress"
+           ],
+           "description": "Search",
+           "disclosing": false,
+           "disclosureLevel": 0,
+           "enabled": true,
+           "expanded": false,
+           "focused": false,
+           "frame": [
+            556,
+            40,
+            48,
+            48
+           ],
+           "identifier": "86C9062E-0F6E-4BB7-A1C6-3FDDF64DB10B",
+           "index": 0,
+           "invalid": "false",
+           "required": false,
+           "role": "AXButton",
+           "roleDescription": "button",
+           "selected": false
+          }
+         ],
+         "enabled": true,
+         "focused": false,
+         "frame": [
+          556,
+          40,
+          48,
+          48
+         ],
+         "identifier": "86C9062E-0F6E-4BB7-A1C6-3FDDF64DB10B",
+         "role": "AXGroup",
+         "roleDescription": "group"
+        }
+       ],
+       "enabled": true,
+       "focused": false,
+       "frame": [
+        32,
+        32,
+        576,
+        64
+       ],
+       "identifier": "example-md-app-bar",
+       "role": "AXGroup",
+       "roleDescription": "group"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      128
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    128
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [
+   {
+    "children": [],
+    "id": "86C9062E-0F6E-4BB7-A1C6-3FDDF64DB10B",
+    "properties": {
+     "aria-label": "Search",
+     "icon": "search"
+    },
+    "slot": "trailing",
+    "tag": "md-icon-button"
+   }
+  ],
+  "id": "example-md-app-bar",
+  "properties": {
+   "density": 0,
+   "headline": "Your workspace",
+   "leadingIcon": "menu",
+   "leadingIconLabel": "Open navigation",
+   "scrolled": false,
+   "searchAriaLabel": "",
+   "searchDisabled": false,
+   "searchPlaceholder": "Search mail",
+   "searchValue": "",
+   "subtitle": "",
+   "titleAlignment": "start",
+   "variant": "search"
+  },
+  "tag": "md-app-bar"
+ },
+ "focus": [
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Open navigation",
+    "frame": [
+     36,
+     40,
+     48,
+     48
+    ],
+    "identifier": "example-md-app-bar-leading-icon",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCFieldNSTextField",
+    "description": "Search mail",
+    "frame": [
+     108,
+     52,
+     440,
+     24
+    ],
+    "role": "AXTextField",
+    "subrole": "AXSearchField"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Search",
+    "frame": [
+     556,
+     40,
+     48,
+     48
+    ],
+    "identifier": "86C9062E-0F6E-4BB7-A1C6-3FDDF64DB10B",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 64,
+     "width": 576,
+     "x": 32,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "fill": "#FFFBFE",
+     "renderTime": 596019313.0846668,
+     "role": "banner",
+     "scrolled": false,
+     "variant": "search",
+     "warned": 0
+    },
+    "name": "md-app-bar"
+   },
+   {
+    "bounds": {
+     "height": 48,
+     "width": 48,
+     "x": 36,
+     "y": 40
+    },
+    "id": "component.leading",
+    "name": "leading",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 48,
+     "width": 48,
+     "x": 36,
+     "y": 40
+    },
+    "id": "component.leading-icon",
+    "name": "leading-icon",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 64,
+     "width": 576,
+     "x": 32,
+     "y": 32
+    },
+    "id": "component.row",
+    "name": "row",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 56,
+     "width": 456,
+     "x": 92,
+     "y": 36
+    },
+    "id": "component.search",
+    "metrics": {
+     "fill": "#E6E0E9",
+     "focusRing": false,
+     "focused": false,
+     "hovered": false,
+     "layer": 0,
+     "layerOpacity": 0,
+     "opacity": 1,
+     "pressed": false,
+     "renderTime": 596019313.0846668
+    },
+    "name": "search",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 24,
+     "width": 456,
+     "x": 92,
+     "y": 52
+    },
+    "id": "component.search-field",
+    "name": "search-field",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 64,
+     "width": 456,
+     "x": 92,
+     "y": 32
+    },
+    "id": "component.search-host",
+    "name": "search-host",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 24,
+     "width": 456,
+     "x": 92,
+     "y": 52
+    },
+    "id": "component.search-input",
+    "metrics": {
+     "disabled": false,
+     "label": "Search mail",
+     "padStart": 16,
+     "placeholder": "Search mail",
+     "placeholderCentered": false,
+     "selection": 0,
+     "value": ""
+    },
+    "name": "search-input",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 56,
+     "width": 456,
+     "x": 92,
+     "y": 36
+    },
+    "id": "component.search-state-layer",
+    "metrics": {
+     "opacity": 0
+    },
+    "name": "search-state-layer",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 48,
+     "width": 48,
+     "x": 556,
+     "y": 40
+    },
+    "id": "component.trailing",
+    "name": "trailing",
+    "parentId": "component"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

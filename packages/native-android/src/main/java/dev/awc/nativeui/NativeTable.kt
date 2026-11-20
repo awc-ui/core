@@ -26,6 +26,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.TextStyle
@@ -217,6 +218,8 @@ internal val LocalNativeTableCellData = staticCompositionLocalOf<NativeTableCell
     /** captureFlip: the row's transform (px) and entrant fade; an order change leaves its pending move here for the play. */
     val flip = Animatable(0f); val fade = Animatable(1f)
     var pendingDy: Float? = null; var pendingEnter = false
+    /** The row's layout position (without its FLIP transform) and the glide it is running (a newer glide ends the older one). */
+    var layoutY = Float.NaN; var flipRun = 0
     val id get() = props.str("id")
     val value get() = props.str("value")
     val identity get() = value.ifEmpty { groupIndex.toString() }
@@ -277,8 +280,11 @@ internal val LocalNativeTableCellData = staticCompositionLocalOf<NativeTableCell
     /** FLIP bracket: a body-row order change before this uptime glides (sort / pagination / animateNextChange). */
     var armedUntil = 0L
     var lastOrder: List<Any> = emptyList()
-    /** Bumped when rows moved / appeared under an armed bracket: the table plays the staggered FLIP next frame. */
-    var flipRequest by mutableIntStateOf(0)
+    /** Rows moved / appeared under an armed bracket in this layout pass: the table plays the staggered FLIP once the pass is over
+     *  (`playFlip`, set by the table: dispatched after the frame's traversal, when every row has reported). */
+    var flipScheduled = false
+    var playFlip: (() -> Unit)? = null
+    fun requestFlip() { if (!flipScheduled) { flipScheduled = true; playFlip?.invoke() ?: run { flipScheduled = false } } }
     var motion: AWCTableMotionRecorder? = null
     var announced by mutableStateOf<Int?>(null)
     // Interaction state (host property changes win, as on SwiftUI).
@@ -402,6 +408,11 @@ internal val LocalNativeTableOwner = staticCompositionLocalOf<NativeTableOwner?>
 internal val NativeTableArrows = setOf(Key.DirectionLeft, Key.DirectionRight, Key.DirectionUp, Key.DirectionDown)
 internal val LocalNativeTableGroup = staticCompositionLocalOf { NativeTableGroup.BODY }
 internal val LocalNativeTableRow = staticCompositionLocalOf<NativeTableRow?> { null }
+/** aria-rowindex − 1: with row-count, the row's position in the whole dataset (row-offset; foot rows after it), else its order. */
+internal fun NativeTableOwner.axRowIndex(row: NativeTableRow): Int {
+    val i = rows.indexOf(row); val heads = rows.count { it.group == NativeTableGroup.HEAD }; val rc = props.int("rowCount")
+    return if (rc <= 0) i else when (row.group) { NativeTableGroup.HEAD -> row.groupIndex; NativeTableGroup.BODY -> heads + props.int("rowOffset") + row.groupIndex; NativeTableGroup.FOOT -> heads + rc + row.groupIndex }
+}
 /** Auto-wired selection checkbox: props overlay + mdChange handler for the md-checkbox inside a checkbox cell. */
 internal class NativeTableCheckboxControl(val props: Props, val onChange: (Boolean) -> Unit)
 internal val LocalNativeTableCheckbox = staticCompositionLocalOf<NativeTableCheckboxControl?> { null }
@@ -507,18 +518,42 @@ internal fun tableTextStyle(size: Double, line: Double, weight: Int, tracking: D
         ins.metrics["table.count"] = st.count; ins.metrics["table.busy"] = p.bool("loading"); ins.metrics["table.columnOrder"] = owner.pinLayout?.visible } }
     SideEffect { if (container != null && container.frozenChild.value != frozen) container.frozenChild.value = frozen; container?.armTable?.set(0) { owner.arm() } }
     // captureFlip play: movers glide back from their old box on the fast spatial spring, entrants drop in from -8 dp and fade
-    // in (150 ms effects curve); 18 ms stagger per element in document order, capped at 6.
-    LaunchedEffect(owner.flipRequest) {
-        if (owner.flipRequest == 0) return@LaunchedEffect
-        val spring = CubicBezierEasing(0.42f, 1.67f, 0.21f, 0.9f); val fade = CubicBezierEasing(0.31f, 0.94f, 0.34f, 1f)
-        val minDelta = 6 * density.density
-        var movers = 0; var entrants = 0
-        // Stagger in the new document order (settled positions: the rows are still drawn at their old boxes).
-        owner.rows.filter { it.group == NativeTableGroup.BODY }.sortedBy { if (it.y.isNaN()) Float.MAX_VALUE else it.y - it.flip.value }.forEach { r ->
-            if (r.pendingEnter) { r.pendingEnter = false; val d = min(entrants++, 6) * 18
-                launch { r.fade.animateTo(1f, tween(150, d, fade)) }; launch { r.flip.animateTo(0f, tween(350, d, spring)) } }
-            else r.pendingDy?.let { dy -> r.pendingDy = null
-                if (kotlin.math.abs(dy) > minDelta) { val d = min(movers++, 6) * 18; launch { r.flip.animateTo(0f, tween(350, d, spring)) } } else launch { r.flip.snapTo(0f) } }
+    // in (150 ms effects curve); 18 ms stagger per element in document order, capped at 6. The timeline is the source's CSS
+    // transitions': they start with the frame that painted the inverted rows (the layout pass that moved them), so the next
+    // frame already shows one frame of progress. The play is dispatched after that pass — not through a recomposition (a frame
+    // later) and not in an effect (its restart cancelled the glides it had started: rows stayed at their old boxes).
+    val flipScope = rememberCoroutineScope()
+    val flipFrameNanos = (1_000_000_000.0 / (LocalView.current.display?.refreshRate?.takeIf { it > 0f } ?: 60f)).toLong()
+    SideEffect {
+        owner.playFlip = {
+            flipScope.launch {
+                owner.flipScheduled = false
+                val spring = CubicBezierEasing(0.42f, 1.67f, 0.21f, 0.9f); val fadeCurve = CubicBezierEasing(0.31f, 0.94f, 0.34f, 1f)
+                val minDelta = 6 * density.density
+                fun eased(play: Float, delay: Int, ms: Int, e: Easing) = if (play <= delay) 0f else if (play >= delay + ms) 1f else e.transform((play - delay) / ms)
+                var movers = 0; var entrants = 0
+                val steps = mutableListOf<suspend (Float) -> Boolean>()
+                // Stagger in the new document order (the rows' layout positions).
+                owner.rows.filter { it.group == NativeTableGroup.BODY }.sortedBy { if (it.layoutY.isNaN()) Float.MAX_VALUE else it.layoutY }.forEach { r ->
+                    if (r.pendingEnter) {
+                        r.pendingEnter = false; val d = min(entrants++, 6) * 18; val run = ++r.flipRun; val from = r.flip.value
+                        steps += { play -> if (r.flipRun != run) true else { r.fade.snapTo(eased(play, d, 150, fadeCurve)); r.flip.snapTo(from * (1 - eased(play, d, 350, spring))); play >= d + 350 } }
+                    } else r.pendingDy?.let { dy ->
+                        r.pendingDy = null; val run = ++r.flipRun
+                        if (kotlin.math.abs(dy) > minDelta) {
+                            val d = min(movers++, 6) * 18; val from = r.flip.value
+                            steps += { play -> if (r.flipRun != run) true else { r.flip.snapTo(from * (1 - eased(play, d, 350, spring))); play >= d + 350 } }
+                        } else r.flip.snapTo(0f)
+                    }
+                }
+                var start = Long.MIN_VALUE
+                while (steps.isNotEmpty()) {
+                    val now = withFrameNanos { it }
+                    if (start == Long.MIN_VALUE) start = now - flipFrameNanos
+                    val play = (now - start) / 1_000_000f
+                    val each = steps.iterator(); while (each.hasNext()) if (each.next()(play)) each.remove()
+                }
+            }
         }
     }
     val label = p.str("label").ifEmpty { p.str("caption") }.ifEmpty { "Data table" }
@@ -545,8 +580,10 @@ internal fun tableTextStyle(size: Double, line: Double, weight: Int, tracking: D
             Column(Modifier.fillMaxWidth()
                 .onSizeChanged { if (!frozen) owner.lastHeight = it.height }
                 .then(if (keepHeight && !frozen) owner.heightFloor?.let { Modifier.heightIn(min = with(density) { it.toDp() }) } ?: Modifier else Modifier)) {
-                if (p.str("caption").isNotEmpty()) BasicText(p.str("caption"), Modifier.padding(horizontal = m.padInline.dp, vertical = 12.dp).clearAndSetSemantics { },
-                    style = tableTextStyle(14.0, 20.0, 500, 0.1, owner.palette.color("on-surface-variant")))
+                if (p.str("caption").isNotEmpty()) { val cap = tablePart(AWCTablePart.Caption, p.str("id"))
+                    BasicText(p.str("caption"), Modifier.fillMaxWidth().tablePartSurface(cap).padding(cap.paddingOr(PaddingValues(horizontal = m.padInline.dp, vertical = 12.dp), rtl))
+                        .then(if (cap.fontSize != null) Modifier.tableLineBox(20.0) else Modifier).clearAndSetSemantics { },
+                        style = tableTextStyle(cap.sizeOver(14.0), 20.0, cap.weightOver(500), cap.trackingOver(0.1), cap.colorOver(owner.palette.color("on-surface-variant")))) }
                 // The source moves a frozen table's md-table-head into its internal "head" slot (and back): a head group
                 // authored in that slot is the table's head in either mode.
                 if (frozen) NativeTableFrozen(owner, p, fh, fv, container?.bodyMaxHeight) {
@@ -557,12 +594,12 @@ internal fun tableTextStyle(size: Double, line: Double, weight: Int, tracking: D
                     if (p.bool("empty") && !loading) NativeTableEmpty(owner, content)
                 }
             }
-            if (loading && !skeleton) Box(Modifier.matchParentSize().clearAndSetSemantics { }) {
+            if (loading && !skeleton) Box(Modifier.matchParentSize().clearAndSetSemantics { }.tablePartBox(tablePart(AWCTablePart.Loading, p.str("id")), rtl)) {
                 // `loader` (or the older `loading`) replaces the progress line and scrim; `loader` wins when both are given.
                 var loader by remember { mutableStateOf(false) }; var legacy by remember { mutableStateOf(false) }
                 NativeTableSlot(onPresence = { loader = it }) { Column { content?.invoke("loader") } }
                 if (!loader) NativeTableSlot(onPresence = { legacy = it }) { Column { content?.invoke("loading") } }
-                if (!loader && !legacy) Box(Modifier.padding(top = m.headHeight.dp).fillMaxWidth()) {
+                if (!loader && !legacy) Box(Modifier.padding(top = m.headHeight.dp).fillMaxWidth().tablePartBox(tablePart(AWCTablePart.Progress, p.str("id")), rtl)) {
                     // The table's reduced-motion / forced-colours environment reaches the nested indicator.
                     AWCAccessibilityAppearanceScope(reducedMotion = LocalAWCTableReducedMotion.current, forcedColors = if (forced) true else null) {
                         AWCComponent("md-progress-indicator", mapOf("variant" to "linear", "indeterminate" to true, "ariaLabel" to "Loading")) } }
@@ -576,8 +613,18 @@ internal fun tableTextStyle(size: Double, line: Double, weight: Int, tracking: D
 /** The grid area: available width tracking, horizontal / vertical scroll context, frozen header body and scrollbars. */
 @Composable private fun NativeTableGridArea(owner: NativeTableOwner, p: Props, skeleton: Boolean, rows: @Composable () -> Unit) {
     val density = LocalDensity.current
+    // ::part(grid) paints behind the body rows (head / foot rows and pinned cells keep their own surfaces); with a frozen header
+    // the head rows sit in the source's separate ::part(header-grid).
+    val frozen = p.bool("frozenHeader"); val g = tablePart(AWCTablePart.Grid, p.str("id")); val hg = tablePart(AWCTablePart.HeaderGrid, p.str("id"))
+    val headH = if (frozen) owner.rows.count { it.group == NativeTableGroup.HEAD } * (owner.metrics.headHeight + 1) else 0.0
     Layout(content = {
-        Column(Modifier.fillMaxWidth()) {
+        Column(Modifier.fillMaxWidth()
+            .then(if (!frozen) g.opacity?.let { Modifier.alpha(it.toFloat()) } ?: Modifier else Modifier)
+            .then(if (g.backgroundColor == null && hg.backgroundColor == null) Modifier else Modifier.drawBehind {
+                val hpx = headH.dp.toPx()
+                hg.backgroundColor?.takeIf { hpx > 0 }?.let { drawRoundRect(tableColor(it), Offset.Zero, Size(size.width, hpx), androidx.compose.ui.geometry.CornerRadius((hg.cornerRadius ?: 0.0).dp.toPx()), alpha = (hg.opacity ?: 1.0).toFloat()) }
+                g.backgroundColor?.let { drawRoundRect(tableColor(it), Offset(0f, hpx), Size(size.width, max(0f, size.height - hpx)), androidx.compose.ui.geometry.CornerRadius((g.cornerRadius ?: 0.0).dp.toPx())) }
+            })) {
             rows()
             if (skeleton) repeat(max(1, p.int("loadingRows", 4))) { k -> NativeTableSkeletonRow(owner, k == max(1, p.int("loadingRows", 4)) - 1) }
         }
@@ -633,7 +680,8 @@ internal fun tableTextStyle(size: Double, line: Double, weight: Int, tracking: D
                 val press by animateFloatAsState(if (thumbPressed) 1f else 0f, if (owner.reduced) snap() else tween(150, easing = CubicBezierEasing(0.31f, 0.94f, 0.34f, 1f)), label = "thumb")
                 val rest = if (owner.forced) owner.palette.color("on-surface") else owner.palette.color("outline")
                 val active = if (owner.forced) rest else owner.palette.color("on-surface-variant")
-                Box(Modifier.padding(horizontal = 8.dp, vertical = 2.dp).height(10.dp).fillMaxWidth().clearAndSetSemantics { }
+                val hTrack = tablePart(AWCTablePart.Hscrollbar, p.str("id")); val hKnob = tablePart(AWCTablePart.HscrollbarThumb, p.str("id"))
+                Box(Modifier.padding(horizontal = 8.dp, vertical = 2.dp).height(10.dp).fillMaxWidth().tablePartSurface(hTrack).clearAndSetSemantics { }
                     .onGloballyPositioned { c -> inspection?.let { ins -> val o = c.positionInRoot(); val left = if (rtl) c.size.width - x - thumb else x
                         ins.metrics["hthumb.x"] = ((o.x + left + thumb / 2) / density.density).toDouble(); ins.metrics["hthumb.y"] = ((o.y + c.size.height / 2f) / density.density).toDouble() } }
                     // The thumb drags the body (pointer only; the body itself is the keyboard tab stop).
@@ -647,7 +695,8 @@ internal fun tableTextStyle(size: Double, line: Double, weight: Int, tracking: D
                     .drawBehind {
                         owner.motion?.record("thumb:" + p.str("id"), press.toDouble())
                         val px = if (rtl) size.width - x - thumb else x
-                        drawRoundRect(androidx.compose.ui.graphics.lerp(rest, active, press), Offset(px, 1.dp.toPx()), Size(thumb, 8.dp.toPx()), androidx.compose.ui.geometry.CornerRadius(4.dp.toPx()))
+                        drawRoundRect(hKnob.fillOver(androidx.compose.ui.graphics.lerp(rest, active, press)), Offset(px, 1.dp.toPx()), Size(thumb, 8.dp.toPx()),
+                            androidx.compose.ui.geometry.CornerRadius((hKnob.cornerRadius ?: 4.0).dp.toPx()), alpha = (hKnob.opacity ?: 1.0).toFloat())
                     })
             }
         }
@@ -692,8 +741,10 @@ internal fun tableTextStyle(size: Double, line: Double, weight: Int, tracking: D
             val bodyContent = bodyH + v.maxValue
             val thumb = max(with(density) { 24.dp.toPx() }, bodyH * bodyH / bodyContent)
             val y = (bodyH - thumb) * (v.value.toFloat() / v.maxValue)
-            Box(Modifier.align(Alignment.TopEnd).padding(top = headBox.dp, end = 3.dp).width(8.dp).height(bodyMax.dp).clearAndSetSemantics { }.drawBehind {
-                drawRoundRect(if (owner.forced) owner.palette.color("on-surface") else tableMix(owner.palette.hex("on-surface"), 0.5, null), Offset(0f, y), Size(size.width, thumb), androidx.compose.ui.geometry.CornerRadius(4.dp.toPx()))
+            val vTrack = tablePart(AWCTablePart.Vscrollbar, p.str("id")); val vKnob = tablePart(AWCTablePart.VscrollbarThumb, p.str("id"))
+            Box(Modifier.align(Alignment.TopEnd).padding(top = headBox.dp, end = 3.dp).width(8.dp).height(bodyMax.dp).tablePartSurface(vTrack).clearAndSetSemantics { }.drawBehind {
+                drawRoundRect(vKnob.fillOver(if (owner.forced) owner.palette.color("on-surface") else tableMix(owner.palette.hex("on-surface"), 0.5, null)), Offset(0f, y), Size(size.width, thumb),
+                    androidx.compose.ui.geometry.CornerRadius((vKnob.cornerRadius ?: 4.0).dp.toPx()), alpha = (vKnob.opacity ?: 1.0).toFloat())
             })
         }
     }
@@ -787,14 +838,16 @@ internal fun tableTextStyle(size: Double, line: Double, weight: Int, tracking: D
             if (armed && lastY[0].isNaN()) {
                 row.pendingEnter = true
                 scope.launch(start = kotlinx.coroutines.CoroutineStart.UNDISPATCHED) { flip.snapTo(-8 * density.density); row.fade.snapTo(0f) }
-                owner.flipRequest++
-            } else if (armed && y != lastY[0]) {
+                owner.requestFlip()
+            } else if (armed && kotlin.math.abs(y - lastY[0]) > 2f) {
+                // (A placement that moves the row by 2 px or less is not a move (tb-contract: the rows below the first shift by 1 px about 130-260 ms in, when its height settles): re-arming would restart the running glide from its
+                // current offset, with the spring's slow start, and bend the curve — md-table-container tb-contract [0] at about 170 ms.)
                 val from = lastY[0] - y + flip.value
                 row.pendingDy = from
                 scope.launch(start = kotlinx.coroutines.CoroutineStart.UNDISPATCHED) { flip.snapTo(from) }
-                owner.flipRequest++
+                owner.requestFlip()
             }
-            lastY[0] = y
+            lastY[0] = y; row.layoutY = y
         }
         .graphicsLayer { translationY = flip.value; alpha = row.fade.value }
         .onGloballyPositioned { c -> owner.place(row, c.positionInRoot().y); row.visible = c.boundsInRoot()
@@ -839,8 +892,7 @@ internal fun tableTextStyle(size: Double, line: Double, weight: Int, tracking: D
             // aria-expanded only under a treegrid (a table with an expandable row), never for a lone row.
             if (expandable && !owner.props.bool("awcTablePresentational")) stateDescription = if (open) "expanded" else "collapsed"
             // aria-rowindex (row-offset / row-count: the row's position in the whole dataset; foot rows after it).
-            val heads = rows.count { it.group == NativeTableGroup.HEAD }; val rc = owner.props.int("rowCount")
-            val index = if (rc <= 0) i else when (group) { NativeTableGroup.HEAD -> row.groupIndex; NativeTableGroup.BODY -> heads + owner.props.int("rowOffset") + row.groupIndex; NativeTableGroup.FOOT -> heads + rc + row.groupIndex }
+            val index = owner.axRowIndex(row)
             if (index >= 0) collectionItemInfo = CollectionItemInfo(index, 1, 0, 1) }
         .padding(top = borderTop.dp, bottom = borderBottom.dp)
     ) {
@@ -908,12 +960,15 @@ internal fun tableTextStyle(size: Double, line: Double, weight: Int, tracking: D
     val alpha by animateFloatAsState(if (open) 1f else 0f, if (owner.reduced) snap() else if (open) tween(200, 60, CubicBezierEasing(0.34f, 0.8f, 0.34f, 1f)) else tween(100, easing = LinearEasing), label = "expand-alpha")
     val shift by animateFloatAsState(if (open) 0f else -10f, if (owner.reduced) snap() else if (open) tween(350, 60, CubicBezierEasing(0.38f, 1.21f, 0.22f, 1f)) else tween(150, easing = CubicBezierEasing(0.3f, 0f, 0.8f, 0.15f)), label = "expand-shift")
     val row = LocalNativeTableRow.current
+    // ::part(expanded) is the panel around the inner content (its background does not slide with the inner offset).
+    val ex = tablePart(AWCTablePart.RowExpanded, row?.id ?: ""); val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     Layout(content = {
+        Box(Modifier.fillMaxWidth().graphicsLayer { this.alpha = panel }.tablePartBox(ex, rtl)) {
         Box(Modifier.fillMaxWidth().padding(start = owner.metrics.padInline.dp, end = owner.metrics.padInline.dp, top = 12.dp, bottom = 16.dp)
-            .graphicsLayer { this.alpha = alpha * panel; translationY = shift.dp.toPx() }) {
+            .graphicsLayer { this.alpha = alpha; translationY = shift.dp.toPx() }) {
             // The expanded zone inherits the row's body text (14 / 20 at standard density).
-            CompositionLocalProvider(LocalTextStyle provides tableTextStyle(owner.metrics.fontSize, owner.metrics.lineHeight, 400, 0.25, owner.palette.color("on-surface")), LocalAWCSourceText provides true) {
-                Column { content?.invoke("expanded") } } }
+            CompositionLocalProvider(LocalTextStyle provides tableTextStyle(owner.metrics.fontSize, owner.metrics.lineHeight, 400, 0.25, ex.colorOver(owner.palette.color("on-surface"))), LocalAWCSourceText provides true) {
+                Column { content?.invoke("expanded") } } } }
     }, modifier = Modifier.fillMaxWidth().clipToBounds().semantics { if (!open) invisibleToUser() }) { ms, c ->
         val pl = ms.first().measure(c.copy(minHeight = 0, maxHeight = Constraints.Infinity))
         owner.motion?.record("expand:" + (row?.id ?: ""), fraction.toDouble())
@@ -929,7 +984,9 @@ internal fun tableTextStyle(size: Double, line: Double, weight: Int, tracking: D
     val t by shimmer.animateFloat(0f, 1f, infiniteRepeatable(tween(1400, easing = CubicBezierEasing(0.25f, 0.1f, 0.25f, 1f))), label = "shimmer-t")
     val position = if (owner.reduced) 1f else 1f - t
     val widths = owner.widths.widths
-    Row(Modifier.fillMaxWidth().heightIn(min = m.rowHeight.dp).drawBehind { if (!last) drawRect(tableColor(owner.divider), Offset(0f, size.height - 1.dp.toPx()), Size(size.width, 1.dp.toPx())) }
+    // ::part(skeleton-row): the row box behind its bars.
+    val st = tablePart(AWCTablePart.SkeletonRow, owner.props.str("id"))
+    Row(Modifier.fillMaxWidth().heightIn(min = m.rowHeight.dp).drawBehind { st.backgroundColor?.let { drawRect(tableColor(it)) }; if (!last) drawRect(tableColor(owner.divider), Offset(0f, size.height - 1.dp.toPx()), Size(size.width, 1.dp.toPx())) }
         .padding(bottom = if (last) 0.dp else 1.dp).clearAndSetSemantics { }, verticalAlignment = Alignment.CenterVertically) {
         widths.forEach { w ->
             Box(Modifier.width(w.dp).padding(horizontal = m.padInline.dp).height(16.dp).clip(CircleShape).drawBehind {
@@ -943,11 +1000,14 @@ internal fun tableTextStyle(size: Double, line: Double, weight: Int, tracking: D
 
 @Composable private fun NativeTableEmpty(owner: NativeTableOwner, content: Slot?) {
     val m = owner.metrics
-    Box(Modifier.fillMaxWidth().heightIn(min = (owner.hooks.emptyMinHeight ?: 160.0).dp).padding(vertical = 32.dp, horizontal = m.padInline.dp), contentAlignment = Alignment.Center) {
-        CompositionLocalProvider(LocalTextStyle provides tableTextStyle(m.fontSize, m.lineHeight, 400, 0.25, owner.palette.color("on-surface-variant")), LocalAWCSourceText provides true) {
+    val e = tablePart(AWCTablePart.Empty, owner.props.str("id")); val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    val text = tableTextStyle(e.sizeOver(m.fontSize), m.lineHeight, e.weightOver(400), e.trackingOver(0.25), e.colorOver(owner.palette.color("on-surface-variant")))
+    Box(Modifier.fillMaxWidth().tablePartSurface(e).heightIn(min = (owner.hooks.emptyMinHeight ?: 160.0).dp)
+        .padding(e.paddingOr(PaddingValues(vertical = 32.dp, horizontal = m.padInline.dp), rtl)), contentAlignment = Alignment.Center) {
+        CompositionLocalProvider(LocalTextStyle provides text, LocalAWCSourceText provides true) {
             var slotted by remember { mutableStateOf(false) }
             NativeTableSlot(onPresence = { slotted = it }) { Column(horizontalAlignment = Alignment.CenterHorizontally) { content?.invoke("empty") } }
-            if (!slotted) BasicText("No data", style = tableTextStyle(m.fontSize, m.lineHeight, 400, 0.25, owner.palette.color("on-surface-variant")))
+            if (!slotted) BasicText("No data", if (e.fontSize != null) Modifier.tableLineBox(m.lineHeight) else Modifier, style = text)
         }
     }
 }
@@ -990,7 +1050,10 @@ internal val NativeTablePresentational: Props = mapOf("awcTablePresentational" t
     val showPin = pinnedHead && vars["--md-table-cell-pin-display"] != "none"
     val disabledRow = row?.props?.bool("disabled") == true
     val cellColor = hookColor("--md-table-cell-color")
-    val color: Color = when {
+    // ::part(content) wraps the slotted content: its colour over the cell's own, its box around the content.
+    val contentPart = tablePart(AWCTablePart.CellContent, p.str("id")); val pinPart = tablePart(AWCTablePart.CellPin, p.str("id"))
+    val cellRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    val color: Color = contentPart.color?.let { tableColor(it) } ?: when {
         cellColor != null -> tableColor(cellColor)
         owner.forced && selected && group == NativeTableGroup.BODY -> pal.color("on-primary")
         group == NativeTableGroup.HEAD -> tableColor(owner.headColor)
@@ -1043,14 +1106,17 @@ internal val NativeTablePresentational: Props = mapOf("awcTablePresentational" t
         .padding(start = if (padding == "none") 0.dp else if (padding == "checkbox") 4.dp else padInline.dp, end = if (padding == "default") padInline.dp else 0.dp,
             top = if (padding == "default") padBlock.dp else 0.dp, bottom = if (padding == "default") padBlock.dp else 0.dp)
         // columnheader / rowheader: a heading named by its content (a control inside it keeps its own node).
-        .semantics(mergeDescendants = head) { if (head) heading() }, contentAlignment = Alignment.CenterStart) {
-        Row(Modifier.align(when (horizontal) { Alignment.End -> Alignment.CenterEnd; Alignment.CenterHorizontally -> Alignment.Center; else -> Alignment.CenterStart })
-            .onGloballyPositioned { c -> if (!showPin) inspection?.let { ins -> ins.contents[p.str("id")] = c.tableBox(density) } },
+        // The cell's position (aria-rowspan / aria-colspan included: the source reflects rowspan to semantics only, decision log).
+        .semantics(mergeDescendants = head) { if (head) heading()
+            if (row != null && !owner.props.bool("awcTablePresentational")) { val ri = owner.axRowIndex(row); val ci = cellData?.column ?: -1
+                if (ri >= 0 && ci >= 0) collectionItemInfo = CollectionItemInfo(ri, p.int("rowSpan", p.int("rowspan", 1)).coerceIn(1, 65534), ci, cellData?.span ?: 1) } }, contentAlignment = Alignment.CenterStart) {
+        Row(Modifier.align(when (horizontal) { Alignment.End -> Alignment.CenterEnd; Alignment.CenterHorizontally -> Alignment.Center; else -> Alignment.CenterStart }),
             verticalAlignment = Alignment.CenterVertically) {
-            if (showPin) { NativeTablePin(p.str("pinIcon").ifEmpty { owner.props.str("pinIcon") }, if (owner.forced) pal.color("on-surface") else tableColor(vars.color("--md-table-cell-pin-color") ?: pal.hex("primary")),
-                vars.length("--md-table-cell-pin-size")); Spacer(Modifier.width(4.dp)) }
-            // The content box is the slotted content (the pin glyph sits in the cell's own shadow part before it).
-            Row(Modifier.onGloballyPositioned { c -> if (showPin) inspection?.let { ins -> ins.contents[p.str("id")] = c.tableBox(density) } },
+            if (showPin) { Box(Modifier.tablePartBox(pinPart, cellRtl)) { NativeTablePin(p.str("pinIcon").ifEmpty { owner.props.str("pinIcon") },
+                pinPart.colorOver(if (owner.forced) pal.color("on-surface") else tableColor(vars.color("--md-table-cell-pin-color") ?: pal.hex("primary"))),
+                vars.length("--md-table-cell-pin-size")) }; Spacer(Modifier.width(4.dp)) }
+            // The content box is the slotted content (the pin glyph sits in the cell's own shadow part before it): ::part(content).
+            Row(Modifier.onGloballyPositioned { c -> inspection?.let { ins -> ins.contents[p.str("id")] = c.tableBox(density) } }.tablePartBox(contentPart, cellRtl),
                 verticalAlignment = Alignment.CenterVertically) {
             // Head and foot cells (weight 500) keep their text on one line: the Compose paragraph at 500 can need more than the
             // measured run advance and would wrap a word that fits its column.
@@ -1109,7 +1175,16 @@ internal val NativeTablePresentational: Props = mapOf("awcTablePresentational" t
     val iconAlpha by animateFloatAsState(iconTarget, if (reduced) snap() else tween(150, easing = CubicBezierEasing(0.31f, 0.94f, 0.34f, 1f)), label = "sort-op")
     val ringColor = pal.color("secondary")
     val rotation by animateFloatAsState(if (active && order == "desc") 180f else 0f, if (reduced) snap() else tween(350, easing = CubicBezierEasing(0.42f, 1.67f, 0.21f, 0.9f)), label = "sort-rot")
-    val style = LocalTextStyle.current.copy(color = color)
+    // ::part(label) (the label text's box and font) and ::part(icon) (the arrow's colour / background; its opacity wins over the state's).
+    val lbl = tablePart(AWCTablePart.SortLabelLabel, p.str("id")); val ic = tablePart(AWCTablePart.SortLabelIcon, p.str("id"))
+    val labelRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    // In a cell the label takes the cell's text; alone (a toolbar, a top slot) it takes the head typography (title-small 14/20, 500),
+    // as on iOS / macOS — the platform's default text style has no bearing on a table label.
+    val base = if (cellData == null) tableTextStyle(14.0, 20.0, 500, 0.1, rest) else LocalTextStyle.current
+    val style = base.copy(color = lbl.colorOver(color), fontSize = lbl.fontSize?.sp ?: base.fontSize,
+        fontWeight = lbl.fontWeight?.let { androidx.compose.ui.text.font.FontWeight(it.roundToInt().coerceIn(1, 1000)) } ?: base.fontWeight,
+        letterSpacing = lbl.letterSpacing?.sp ?: base.letterSpacing)
+    val iconColor = ic.colorOver(color)
     fun activate() {
         if (disabled || column.isEmpty()) return
         if (AWCTableTrace.activations) android.util.Log.w("AWCTable", "DIAG sort-label activate $column", Throwable())
@@ -1118,12 +1193,14 @@ internal val NativeTablePresentational: Props = mapOf("awcTablePresentational" t
         if (owner != null) owner.requestSort(column, def) else onEvent("mdSortRequest", mapOf("column" to column, "defaultOrder" to def))
     }
     val arrow: @Composable () -> Unit = {
-        Box(Modifier.size(iconSize).graphicsLayer { owner?.motion?.let { it.record("sort-rot:" + p.str("id"), (rotation / 180f).toDouble()); it.record("sort-op:" + p.str("id"), iconAlpha.toDouble()) }
-            alpha = iconAlpha; rotationZ = rotation }) {
-            if (p.str("icon").isNotEmpty()) CompositionLocalProvider(androidx.compose.material3.LocalContentColor provides color) { AWCMaterialSymbol(p.str("icon"), size = iconSize) }
+        val op = ic.opacity?.toFloat() ?: iconAlpha
+        Box(Modifier.size(iconSize).graphicsLayer { owner?.motion?.let { it.record("sort-rot:" + p.str("id"), (rotation / 180f).toDouble()); it.record("sort-op:" + p.str("id"), op.toDouble()) }
+            alpha = op; rotationZ = rotation }
+            .then(ic.backgroundColor?.let { Modifier.background(tableColor(it), RoundedCornerShape((ic.cornerRadius ?: 0.0).dp)) } ?: Modifier)) {
+            if (p.str("icon").isNotEmpty()) CompositionLocalProvider(androidx.compose.material3.LocalContentColor provides iconColor) { AWCMaterialSymbol(p.str("icon"), size = iconSize) }
             else Canvas(Modifier.size(iconSize)) { val s = size.width / 24f
                 val pts = listOf(4f to 12f, 5.41f to 13.41f, 11f to 7.83f, 11f to 20f, 13f to 20f, 13f to 7.83f, 18.58f to 13.42f, 20f to 12f, 12f to 4f)
-                drawPath(Path().apply { pts.forEachIndexed { i, (x, y) -> if (i == 0) moveTo(x * s, y * s) else lineTo(x * s, y * s) }; close() }, color) }
+                drawPath(Path().apply { pts.forEachIndexed { i, (x, y) -> if (i == 0) moveTo(x * s, y * s) else lineTo(x * s, y * s) }; close() }, iconColor) }
         }
     }
     Row(Modifier.layout { me, c -> val over = 8.dp.roundToPx()
@@ -1153,7 +1230,7 @@ internal val NativeTablePresentational: Props = mapOf("awcTablePresentational" t
         .semantics { role = Role.Button; liveRegion = LiveRegionMode.Polite; if (active) stateDescription = if (order == "desc") p.str("sortedDescendingLabel", "sorted descending") else p.str("sortedAscendingLabel", "sorted ascending") },
         horizontalArrangement = Arrangement.spacedBy(hooks.length("--md-table-sort-label-gap")?.dp ?: gap), verticalAlignment = Alignment.CenterVertically) {
         if (p.str("iconPosition") == "start") arrow()
-        CompositionLocalProvider(LocalTextStyle provides style, LocalAWCSlotTextNoWrap provides true) { content?.invoke("") }
+        Box(Modifier.tablePartBox(lbl, labelRtl)) { CompositionLocalProvider(LocalTextStyle provides style, LocalAWCSlotTextNoWrap provides true) { content?.invoke("") } }
         if (p.str("iconPosition") != "start") arrow()
     }
 }
@@ -1220,6 +1297,10 @@ internal val NativeTablePresentational: Props = mapOf("awcTablePresentational" t
     val shadowLayers = remember(shadowCss) { NativeShadowLayer.parse(shadowCss) }
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val arrowScope = rememberCoroutineScope()
+    // ::part(top) / ::part(scroll) / ::part(bottom): the three regions' boxes (a region without content renders nothing).
+    val topPart = tablePart(AWCTablePart.ContainerTop, p.str("id")); val scrollPart = tablePart(AWCTablePart.ContainerScroll, p.str("id"))
+    val bottomPart = tablePart(AWCTablePart.ContainerBottom, p.str("id"))
+    var hasTop by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxWidth()
         .onGloballyPositioned { c -> containerInspection?.let { ins -> val b = c.boundsInRoot(); ins.metrics["container.center"] = listOf((b.center.x / scale).toDouble(), (b.center.y / scale).toDouble()) } }
         .accordionShadow(AWCCornerShape.uniform(radius.toDouble()), shadowLayers, inset = false)
@@ -1228,7 +1309,8 @@ internal val NativeTablePresentational: Props = mapOf("awcTablePresentational" t
         // Arrows never move focus between the family's controls (no grid keyboard model); the scrollport below scrolls with them.
         .onKeyEvent { e -> e.key in NativeTableArrows }) {
         CompositionLocalProvider(LocalNativeTableContainer provides ctx, LocalAWCTableVars provides vars) {
-            content?.invoke("top")
+            NativeTableSlot(if (hasTop) Modifier.fillMaxWidth().tablePartBox(topPart, rtl) else Modifier, onPresence = { hasTop = it }) { Column { content?.invoke("top") } }
+            Box(Modifier.fillMaxWidth().tablePartBox(scrollPart, rtl)) {
             if (frozen) content?.invoke("")
             else BoxWithConstraints(Modifier.fillMaxWidth().heightIn(min = (minH ?: 0.0).dp, max = maxH?.dp ?: Dp.Infinity)) {
                 val mw = maxWidth; val mh = maxHeight
@@ -1248,7 +1330,8 @@ internal val NativeTablePresentational: Props = mapOf("awcTablePresentational" t
                     Box(Modifier.widthIn(min = mw)) { NativeTableScrollContext(hScroll, vScroll, mw, mh) { content?.invoke("") } }
                 }
             }
-            NativeTableSlot(onPresence = { hasBottom = it }) { Column { content?.invoke("bottom") } }
+            }
+            NativeTableSlot(if (hasBottom) Modifier.fillMaxWidth().tablePartBox(bottomPart, rtl) else Modifier, onPresence = { hasBottom = it }) { Column { content?.invoke("bottom") } }
         }
     }
 }
@@ -1279,34 +1362,42 @@ internal fun Modifier.awcTableShadow(css: String?, shape: androidx.compose.ui.gr
     val minH = if (compact) 48.0 else vars.length("--md-table-toolbar-min-height") ?: (64 + scale * 4)
     val padBlock = if (compact) 6.0 else vars.length("--md-table-toolbar-padding-block") ?: if (scale <= -2) 8.0 else 12.0
     val toolbarBg = if (selection) hook("--md-table-toolbar-selection-bg") ?: pal.color("secondary-container") else hook("--md-table-toolbar-bg") ?: Color.Transparent
+    val tbRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    val mainPart = tablePart(AWCTablePart.ToolbarMain, p.str("id")); val leadPart = tablePart(AWCTablePart.ToolbarLeading, p.str("id"))
+    val hl = tablePart(AWCTablePart.ToolbarHeadline, p.str("id")); val stp = tablePart(AWCTablePart.ToolbarSupportingText, p.str("id"))
+    val sc = tablePart(AWCTablePart.ToolbarSelectionCaption, p.str("id")); val actPart = tablePart(AWCTablePart.ToolbarActions, p.str("id"))
     Row(Modifier.fillMaxWidth().background(toolbarBg)
         .padding(horizontal = padInline.dp, vertical = padBlock.dp).heightIn(min = minH.dp)
         .semantics { contentDescription = p.str("headline").ifEmpty { "Table toolbar" } },
         verticalAlignment = Alignment.CenterVertically) {
         // The leading part takes a flex gap whenever it is shown (authored content, or the empty part in selection mode).
-        if (selection) Spacer(Modifier.width(gap.dp))
-        else NativeTableSlot(Modifier.padding(end = if (hasLeading) gap.dp else 0.dp), onPresence = { hasLeading = it }) { Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { content?.invoke("leading") } }
-        Box(Modifier.weight(1f).padding(end = gap.dp)) {
-            if (selection) BasicText(awcTableSelectedLabel(p.str("labelSelected", "%count% selected"), count), Modifier.semantics { liveRegion = LiveRegionMode.Polite },
-                style = tableTextStyle(max(13.0, 16 + scale * 0.5), max(18.0, 24 + scale), 500, 0.0, fg))
+        // (the empty leading part in selection mode still has its part box)
+        if (selection) { Box(Modifier.tablePartBox(leadPart, tbRtl)); Spacer(Modifier.width(gap.dp)) }
+        else NativeTableSlot(Modifier.padding(end = if (hasLeading) gap.dp else 0.dp).then(if (hasLeading) Modifier.tablePartBox(leadPart, tbRtl) else Modifier), onPresence = { hasLeading = it }) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { content?.invoke("leading") } }
+        Box(Modifier.weight(1f).padding(end = gap.dp).tablePartBox(mainPart, tbRtl)) {
+            if (selection) BasicText(awcTableSelectedLabel(p.str("labelSelected", "%count% selected"), count), Modifier.tablePartBox(sc, tbRtl).then(if (sc.fontSize != null) Modifier.tableLineBox(max(18.0, 24 + scale)) else Modifier).semantics { liveRegion = LiveRegionMode.Polite },
+                style = tableTextStyle(sc.sizeOver(max(13.0, 16 + scale * 0.5)), max(18.0, 24 + scale), sc.weightOver(500), sc.trackingOver(0.0), sc.colorOver(fg)))
             else Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 // The headline / supporting-text slots replace the property text (rendered only while that property is set).
                 if (p.str("headline").isNotEmpty()) {
-                    val style = tableTextStyle(if (compact) 16.0 else max(16.0, 22 + scale), if (compact) 24.0 else max(22.0, 28 + scale), 400, 0.0, fg)
+                    val style = tableTextStyle(hl.sizeOver(if (compact) 16.0 else max(16.0, 22 + scale)), if (compact) 24.0 else max(22.0, 28 + scale), hl.weightOver(400), hl.trackingOver(0.0), hl.colorOver(fg))
                     var slotted by remember { mutableStateOf(false) }
+                    Box(Modifier.tablePartBox(hl, tbRtl)) {
                     NativeTableSlot(Modifier.semantics { heading() }, onPresence = { slotted = it }) { CompositionLocalProvider(LocalTextStyle provides style, LocalAWCSourceText provides true) { content?.invoke("headline") } }
-                    if (!slotted) BasicText(p.str("headline"), Modifier.semantics { heading() }, style = style)
+                    if (!slotted) BasicText(p.str("headline"), Modifier.then(if (hl.fontSize != null) Modifier.tableLineBox(if (compact) 24.0 else max(22.0, 28 + scale)) else Modifier).semantics { heading() }, style = style) }
                 }
                 if (p.str("supportingText").isNotEmpty()) {
-                    val style = tableTextStyle(14.0, 20.0, 400, 0.25, pal.color("on-surface-variant"))
+                    val style = tableTextStyle(stp.sizeOver(14.0), 20.0, stp.weightOver(400), stp.trackingOver(0.25), stp.colorOver(pal.color("on-surface-variant")))
                     var slotted by remember { mutableStateOf(false) }
+                    Box(Modifier.tablePartBox(stp, tbRtl)) {
                     NativeTableSlot(onPresence = { slotted = it }) { CompositionLocalProvider(LocalTextStyle provides style, LocalAWCSourceText provides true) { content?.invoke("supporting-text") } }
-                    if (!slotted) BasicText(p.str("supportingText"), style = style)
+                    if (!slotted) BasicText(p.str("supportingText"), if (stp.fontSize != null) Modifier.tableLineBox(20.0) else Modifier, style = style) }
                 }
                 if (p.str("headline").isEmpty() && p.str("supportingText").isEmpty()) content?.invoke("title-area")
             }
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(max(0.0, 4 + scale).dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.tablePartBox(actPart, tbRtl), horizontalArrangement = Arrangement.spacedBy(max(0.0, 4 + scale).dp), verticalAlignment = Alignment.CenterVertically) {
             AWCIconButtonAppearanceScope(AWCIconButtonAppearance(iconSize = max(18.0, 24 + scale), width = max(32.0, 40 + scale * 4), height = max(32.0, 40 + scale * 4))) {
                 content?.invoke(if (selection) "selection-actions" else "actions")
             }
@@ -1330,6 +1421,10 @@ internal fun Modifier.awcTableShadow(css: String?, shape: androidx.compose.ui.gr
     val selectDensity = if (scale <= -2) max(-4.0, scale) else -2.0
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val arm = LocalNativeTableContainer.current?.armTable
+    val dispPart = tablePart(AWCTablePart.PaginationDisplay, p.str("id")); val rppPart = tablePart(AWCTablePart.PaginationRpp, p.str("id"))
+    val rppSelectPart = tablePart(AWCTablePart.PaginationRppSelect, p.str("id")); val navPart = tablePart(AWCTablePart.PaginationNav, p.str("id"))
+    val buttonParts = mapOf("first_page" to tablePart(AWCTablePart.PaginationFirstButton, p.str("id")), "chevron_left" to tablePart(AWCTablePart.PaginationPrevButton, p.str("id")),
+        "chevron_right" to tablePart(AWCTablePart.PaginationNextButton, p.str("id")), "last_page" to tablePart(AWCTablePart.PaginationLastButton, p.str("id")))
     fun go(t: Int) { val target = t.coerceIn(0, model.lastPage); if (target != model.clampedPage) { page = target; arm?.get(0)?.invoke(); onEvent("mdPageChange", mapOf("page" to target)) } }
     fun setRows(n: Int) { if (n > 0 && n != model.rowsPerPage) { rpp = n; page = 0; arm?.get(0)?.invoke(); onEvent("mdRowsPerPageChange", mapOf("rowsPerPage" to n)); onEvent("mdPageChange", mapOf("page" to 0)) } }
     val controller = LocalAWCTablePaginationControllers.current[p.str("id")]
@@ -1343,12 +1438,13 @@ internal fun Modifier.awcTableShadow(css: String?, shape: androidx.compose.ui.gr
         .padding(horizontal = max(8.0, 16 + scale * 2).dp, vertical = if (compact) 4.dp else (vars.length("--md-table-pagination-padding-block")?.dp ?: if (scale <= -3) 4.dp else 8.dp))
         .semantics { contentDescription = p.str("label", "Pagination") },
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy((if (compact) 12.0 else max(12.0, 24 + scale * 3)).dp)) {
-        BasicText(model.display(p.str("labelDisplayedRows", "%from%–%to% of %count%")), Modifier.weight(1f).semantics { liveRegion = LiveRegionMode.Polite }, style = tableTextStyle(size, line, 400, 0.4, fg), maxLines = 1)
-        Row(horizontalArrangement = Arrangement.spacedBy(max(4.0, 8 + scale).dp), verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.weight(1f)) { BasicText(model.display(p.str("labelDisplayedRows", "%from%–%to% of %count%")), Modifier.tablePartBox(dispPart, rtl).then(if (dispPart.fontSize != null) Modifier.tableLineBox(line) else Modifier).semantics { liveRegion = LiveRegionMode.Polite },
+            style = tableTextStyle(dispPart.sizeOver(size), line, dispPart.weightOver(400), dispPart.trackingOver(0.4), dispPart.colorOver(fg)), maxLines = 1) }
+        Row(Modifier.tablePartBox(rppPart, rtl), horizontalArrangement = Arrangement.spacedBy(max(4.0, 8 + scale).dp), verticalAlignment = Alignment.CenterVertically) {
             BasicText(p.str("labelRowsPerPage", "Rows per page:"), Modifier.clearAndSetSemantics { }, style = tableTextStyle(size, line, 400, 0.4, fg), maxLines = 1)
             val rppInspection = LocalAWCTableInspection.current; val rppDensity = LocalDensity.current
-            Box(Modifier.size((vars.length("--md-table-pagination-select-width") ?: max(56.0, 80 + selectDensity * 4)).dp, (56 + selectDensity * 4).dp)
-                .onGloballyPositioned { c -> rppInspection?.metrics?.set("pagination.rpp", c.tableBox(rppDensity).let { listOf(it.x, it.y, it.width, it.height) }) }) {
+            Box(Modifier.onGloballyPositioned { c -> rppInspection?.metrics?.set("pagination.rpp", c.tableBox(rppDensity).let { listOf(it.x, it.y, it.width, it.height) }) }
+                .tablePartBox(rppSelectPart, rtl).size((vars.length("--md-table-pagination-select-width") ?: max(56.0, 80 + selectDensity * 4)).dp, (56 + selectDensity * 4).dp)) {
                 AWCComponent("md-select", mapOf("options" to options.map { mapOf("value" to it.first.toString(), "label" to it.second) }, "value" to model.rowsPerPage.toString(),
                     "density" to selectDensity, "disabled" to disabled, "placement" to "top-start", "ariaLabel" to p.str("labelRowsPerPage", "Rows per page:")),
                     // Internal select / buttons' events stop at the pagination (onInternalChrome).
@@ -1357,10 +1453,15 @@ internal fun Modifier.awcTableShadow(css: String?, shape: androidx.compose.ui.gr
                             if (n != null) setRows(n) } })
             }
         }
-        Row(Modifier.graphicsLayer { scaleX = if (rtl) -1f else 1f }, horizontalArrangement = Arrangement.spacedBy(max(0.0, 4 + scale).dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.tablePartBox(navPart, rtl), horizontalArrangement = Arrangement.spacedBy(max(0.0, 4 + scale).dp), verticalAlignment = Alignment.CenterVertically) {
             AWCIconButtonAppearanceScope(AWCIconButtonAppearance(iconSize = max(18.0, 24 + scale), width = max(32.0, 40 + scale * 4), height = max(32.0, 40 + scale * 4))) {
+                // ::part(first-button) … ::part(last-button): the icon button hosts, whose default corners are the button's full round
+                // container shape. The row's order follows the direction; each glyph mirrors in right-to-left (the source's
+                // scaleX(-1) on the nav buttons), the part box outside the mirror.
                 @Composable fun nav(icon: String, label: String, off: Boolean, action: () -> Unit) =
-                    AWCComponent("md-icon-button", mapOf("size" to "sm", "icon" to icon, "aria-label" to label, "disabled" to off), onEvent = { n, d -> if (n !in setOf("mdChange", "mdClick", "mdOpen", "mdClose")) onEvent(n, d); if (n == "mdClick") action() })
+                    Box(Modifier.tablePartBox((buttonParts[icon] ?: AWCTablePartStyle()).let { if (it.cornerRadius == null) it.copy(cornerRadius = 999.0) else it }, rtl)) {
+                    Box(Modifier.graphicsLayer { scaleX = if (rtl) -1f else 1f }) {
+                    AWCComponent("md-icon-button", mapOf("size" to "sm", "icon" to icon, "aria-label" to label, "disabled" to off), onEvent = { n, d -> if (n !in setOf("mdChange", "mdClick", "mdOpen", "mdClose")) onEvent(n, d); if (n == "mdClick") action() }) } }
                 if (p.bool("showFirstLast")) nav("first_page", p.str("labelFirstPage", "First page"), disabled || model.clampedPage == 0) { go(0) }
                 nav("chevron_left", p.str("labelPreviousPage", "Previous page"), disabled || model.clampedPage == 0) { go(model.clampedPage - 1) }
                 nav("chevron_right", p.str("labelNextPage", "Next page"), disabled || model.clampedPage >= model.lastPage) { go(model.clampedPage + 1) }

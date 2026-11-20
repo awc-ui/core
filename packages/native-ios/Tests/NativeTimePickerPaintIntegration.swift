@@ -132,6 +132,7 @@ struct TPGrid {
         state.node = AWCNode(id: "tp", tag: "md-time-picker", properties: props)
         state.measurements = []; state.epoch += 1; pump(open ? 0.9 : 0.35)
         if c["active"].string.hasSuffix("input-hour") && name == "input-hour-focused" { _ = runtime?.input("input-hour").focus(); pump(0.2) }
+        if c["labels"]["message"] != .null { let ctl = AWCTimePickerController(); ctl.runtime = runtime; _ = ctl.reportValidity(); pump(0.9) }
         let ms = state.measurements
         func m(_ part: String) -> AWCNativeInspectionNode? { ms.first { $0.name == part } }
         func near(_ a: Double, _ b: Double, _ label: String, _ tol: Double = snapTolerance) { check(abs(a - b) <= tol, "\(name) \(label) \(a) vs \(b)") }
@@ -145,6 +146,10 @@ struct TPGrid {
         guard let root = m("md-time-picker") else { check(false, "\(name) measured"); return }
         near(root.bounds.minX, h["x"].number!, "host x"); near(root.bounds.minY, h["y"].number!, "host y")
         near(root.bounds.width, h["width"].number!, "host width"); near(root.bounds.height, h["height"].number!, "host height")
+        // Translated labels (6-2): the strings Chrome renders for headline-input-label, toggle-dial-label, period-label and the validity labels.
+        if case .object(let want) = c["labels"] { for (k, v) in want {
+            let got: String? = k == "message" ? root.metrics["validationMessage"]?.string : m(k)?.metrics[k == "headline" ? "text" : "label"]?.string
+            check(got == v.string, "\(name) label \(k) \(got ?? "-") vs \(v.string)") } }
         let direct: Set<String> = ["scrim", "dialog", "headline", "body", "input-area", "input-hour", "input-minute", "footer", "toggle-mode", "actions",
                                    "cancel-button", "confirm-button", "period-toggle", "period-am", "period-pm", "time-area", "dial-wrap", "dial"]
         for e in c["elements"].array {
@@ -184,7 +189,7 @@ struct TPGrid {
         // The focused part (Chrome's active element).
         let active = c["active"].string, focused = runtime?.focused
         let expected = active == "body" ? nil : active.components(separatedBy: " > ").last
-        check(focused == expected, "\(name) focus \(focused ?? "body") vs \(expected ?? "body")")
+        if c["labels"]["message"] == .null { check(focused == expected, "\(name) focus \(focused ?? "body") vs \(expected ?? "body")") }
         // Pixels.
         let clip = c["clip"], cxp = Int(clip["x"].number!), cyp = Int(clip["y"].number!), cw = Int(clip["width"].number!), ch = Int(clip["height"].number!)
         guard let src = NSImage(contentsOf: shots.appendingPathComponent(name + ".png"))?.cgImage(forProposedRect: nil, context: nil, hints: nil) else { check(false, "\(name) source shot"); return }

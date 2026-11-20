@@ -31,7 +31,7 @@ export const TEXT_FIELD_APPEARANCE_FIELDS = Object.freeze([
 /** The source's ::part names with their typed native part fields (AWCTextFieldPartAppearance). */
 export const TEXT_FIELD_PARTS = Object.freeze({
   container: ['containerColor'], label: ['labelColor'], input: ['inputColor', 'caretColor'],
-  'supporting-text': ['supportingTextColor'], counter: ['counterColor'], chips: [],
+  'supporting-text': ['supportingTextColor'], counter: ['counterColor'], chips: ['chipsBackgroundColor', 'chipsGap'],
 });
 const CODE = 'INVALID_TEXT_FIELD_APPEARANCE';
 const invalid = message => Object.assign(new Error(message), { code: CODE });

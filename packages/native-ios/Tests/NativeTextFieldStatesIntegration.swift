@@ -9,8 +9,12 @@ import Observation
 // host height) and the per-frame label, indicator and outline motion inside Chrome's ±2-frame envelope.
 #if canImport(AppKit)
 final class TFKeyWindow: NSWindow { override var canBecomeKey: Bool { true }; override var canBecomeMain: Bool { true } }
+/// SwiftUI receives a synthesized press while the test process is not the active application (another process activated):
+/// NSWindow.sendEvent hands an inactive app's first click only to views that accept first mouse (fi, 2026-10-31).
+final class TFAcceptingHost: NSHostingView<TFStatesFixture> { override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true } }
 #else
 typealias TFKeyWindow = NSWindow
+typealias TFAcceptingHost = NSHostingView<TFStatesFixture>
 #endif
 @Observable final class TFStatesState {
     var node = AWCNode(id: "tf", tag: "md-text-field")
@@ -20,6 +24,7 @@ typealias TFKeyWindow = NSWindow
     var reduced = false
     var form: AWCFormState? = nil
     var measurements: [AWCNativeInspectionNode] = []
+    var formatting = AWCTextFieldFormatting()
 }
 struct TFRecorded { let t: Double; let name: String; let detail: AWCValue }
 @MainActor var tfEvents: [TFRecorded] = []
@@ -47,7 +52,7 @@ struct TFRecorded { let t: Double; let name: String; let detail: AWCValue }
         let t = e.t, v = e.detail.string
         fire(before: t); current = v
         if debounce > 0 { debounceDue = (t + debounce, v) }
-        if throttle > 0 { if windowEnd == nil { distinct(t, v); pending = false; windowEnd = t + throttle } else { pending = true } }
+        if throttle > 0 { if windowEnd == nil { distinct(t, v); pending = false; windowEnd = t + throttle + 1 } else { pending = true } }
         if debounce <= 0 && throttle <= 0 { distinct(t, v) }
     }
     fire(before: .infinity)
@@ -69,6 +74,7 @@ struct TFStatesFixture: View {
             .environment(\.awcFormState, state.form)
             .environment(\.awcNativePointerState, tfPointer)
             .awcTextFieldController(textFieldStatesController)
+            .awcTextFieldFormatting(state.formatting)
             .awcFieldReducedMotion(state.reduced)
             .awcTheme(theme)
             .awcNativeInspection(rootID: "tf", coordinateSpace: "awc-native-preview") { if state.epoch == epoch { state.measurements = $0 } }
@@ -82,8 +88,17 @@ struct TFStatesFixture: View {
     static let state = TFStatesState()
     static var host: NSHostingView<TFStatesFixture>!, window: TFKeyWindow!
     static var checks = 0, failures: [String] = [], report: [[String: Any]] = []
-    static func check(_ value: Bool, _ name: String) { checks += 1; if !value { failures.append(name); print("FAIL: " + name); fflush(stdout) } }
-    struct Sample { let t: Double; let m: [String: AWCNativeInspectionNode] }
+    static func dgSuffix() -> String {
+        #if !canImport(AppKit)
+        return AWCDG.suffix()
+        #else
+        return ""
+        #endif
+    }
+    static func check(_ value: Bool, _ name: String) { checks += 1; if !value { failures.append(name); print("FAIL: " + name + dgSuffix()); fflush(stdout) } }
+    struct Sample { var t: Double; var m: [String: AWCNativeInspectionNode]; var ph: Int; var at: Double
+        nonisolated(unsafe) static var cur = 0
+        @MainActor init(t: Double, m: [String: AWCNativeInspectionNode], ph: Int = Sample.cur, at: Double? = nil) { self.t = t; self.m = m; self.ph = ph; self.at = at ?? tfClock() } }
     static var samples: [Sample] = []
     static var phaseStart = 0.0
     static var tabBackFocuses = false
@@ -170,7 +185,7 @@ struct TFStatesFixture: View {
                 let wp = host.convert(c, to: nil), hit = window.contentView?.hitTest(wp)
                 func views(_ v: NSView) -> [NSView] { [v] + v.subviews.flatMap(views) }
                 let texts = window.contentView.map(views)?.filter { $0 is NSTextView || $0 is NSTextField }.map { "\(Swift.type(of: $0)) \($0.convert($0.bounds, to: nil)) hidden \($0.isHiddenOrHasHiddenAncestor)" } ?? []
-                print("  \(run) \(label): press at \(wp) focused nothing; hit \(hit.map { "\(Swift.type(of: $0)) \($0.convert($0.bounds, to: nil))" } ?? "nil"); first responder \(window.firstResponder.map { "\(Swift.type(of: $0))" } ?? "nil"); inputs \(texts)")
+                print("  \(run) \(label): press at \(wp) focused nothing (app active \(NSApp.isActive), key \(window.isKeyWindow)); hit \(hit.map { "\(Swift.type(of: $0)) \($0.convert($0.bounds, to: nil))" } ?? "nil"); first responder \(window.firstResponder.map { "\(Swift.type(of: $0))" } ?? "nil"); inputs \(texts)")
             }
             #endif
         }
@@ -234,17 +249,31 @@ struct TFStatesFixture: View {
         state.measurements = []; state.epoch += 1; samples = []; pump(0.4)
         tfEvents = []
         let t0 = tfClock()
+        #if !canImport(AppKit)
+        AWCDG.start()
+        #endif
         var phaseEnds: [(String, [String: AWCNativeInspectionNode])] = []
         for (i, p) in r["phases"].array.enumerated() {
             let label = p["label"].string
+            Sample.cur = i
             let next = i + 1 < r["phases"].array.count ? r["phases"].array[i + 1]["t"].number! : (p["t"].number! + 450)
             let prevStart = phaseStart
             phaseStart = t0 + p["t"].number!
-            let carried = samples.map { Sample(t: $0.t + prevStart - phaseStart, m: $0.m) }.filter { $0.t >= -45 && $0.t < 0 }
+            #if !canImport(AppKit)
+            AWCDG.input(planned: phaseStart)
+            #endif
+            let carried = samples.map { Sample(t: $0.t + prevStart - phaseStart, m: $0.m, ph: $0.ph, at: $0.at) }.filter { $0.t >= -45 && $0.t < 0 }
+            // The earlier phases' frames are re-timed once (carried) and never kept under their old times (C96-01, 9-6-124).
+            samples = carried
             // Hold the phase start against the oracle timeline (each phase begins at its recorded offset).
             let wait = phaseStart - tfClock(); if wait > 0 { pump(wait / 1000) }
             // Keep the frames just before the phase: native may lead Chrome by up to 40 ms (±2 frames).
-            samples = carried + samples.filter { $0.t >= -45 && $0.t < 0 }
+            samples = samples.filter { $0.t >= -45 && $0.t < 0 }
+            if ProcessInfo.processInfo.environment["AWC_DIAG_CARRY"] != nil {
+                let stale = samples.filter { Swift.abs($0.t - ($0.at - phaseStart)) > 1 }.count
+                var byPh: [Int: Int] = [:]; for x in samples { byPh[x.ph, default: 0] += 1 }
+                print("DIAG-CARRY \(name) phase#\(i) \(label): buffer=\(samples.count) staleTime=\(stale) otherPhase=\(samples.filter { $0.ph != i }.count) byPhase=\(byPh.sorted { $0.key < $1.key }.map { "\($0.key):\($0.value)" }.joined(separator: ","))"); fflush(stdout)
+            }
             tabBackFocuses = label == "tab-back-in" && (p["samples"].array.last?["input"]["focused"].bool ?? false)
             // Chrome's keystroke times in this phase: its `input` / mdInput events (one per key).
             let pEnd = next
@@ -277,15 +306,22 @@ struct TFStatesFixture: View {
                let k = samples.firstIndex(where: { $0.t >= 0 && abs((nativeFont($0) ?? n0) - n0) > 0.01 }), k > 0, let v1 = nativeFont(samples[k]) {
                 let tp = samples[k - 1].t, tk = samples[k].t, crossing = tp + (tk - tp) * min(1, max(0, (n0 - cv) / (n0 - v1)))
                 if crossing > chromeAt {
-                    shift = crossing - chromeAt; samples = samples.map { Sample(t: $0.t - shift, m: $0.m) }
+                    shift = crossing - chromeAt; samples = samples.map { Sample(t: $0.t - shift, m: $0.m, ph: $0.ph, at: $0.at) }
                     report.append(["run": name, "phase": label, "tapReleaseFocusLatency": shift])
                 }
             }
             #endif
             // Motion: every oracle frame inside the native envelope.
             var motion = 0, motionBad = 0
+            var dlv = 0.0
+            #if !canImport(AppKit)
+            if ProcessInfo.processInfo.environment["AWC_CMP"] != "none", ["tab-out", "blur"].contains(label) { // AWCDLV (default; AWC_CMP=none = planned input)
+                if let k = AWCShimTouch.keyArrivals.first(where: { $0 >= phaseStart - 2 && $0 <= phaseStart + 200 }) { dlv = k - phaseStart }
+                print("DLV tf \(name) \(label) d=" + String(format: "%.1f", dlv)); fflush(stdout)
+            }
+            #endif
             for s in p["samples"].array {
-                let t = s["t"].number!
+                let t = s["t"].number! + dlv
                 if let fs = s["label"]["fontSize"].number, let env = envelope(t, { $0.m["label"]?.metrics["fontSize"]?.number }) {
                     motion += 1; if fs < env.0 - 0.05 || fs > env.1 + 0.05 { motionBad += 1; if motionBad <= 3 { print("  \(name) \(label) t=\(t) label font \(fs) not in \(env)") } }
                 }
@@ -348,7 +384,12 @@ struct TFStatesFixture: View {
         if timed { maxLate = max(maxLate, lateness) }
         // On the last attempt any delivery jitter (or a late frame/input that would have repeated the run) puts a throttle boundary
         // (1 ms) or a debounce window out of Chrome's order: the source's emitSearch is replayed on the delivered keystrokes.
-        let replay = timed && tfFinalAttempt && (lateness > 4 || maxLate > 12)
+        // A key within one frame (Chrome's timers are frame-quantised: its window ended 16.7 ms late) of the throttle window end is a
+        // boundary race the host cannot reproduce (S71-07, 9-8): the source's emitSearch is replayed on the delivered times.
+        let thrWin = state.node.properties["throttle"]?.number ?? 0
+        var nearBoundary = false
+        if timed, thrWin > 0, let n0 = ni.first { for b in ni where abs((b - n0) - thrWin) <= 20 { nearBoundary = true } }
+        let replay = timed && (nearBoundary || (tfFinalAttempt && (lateness > 4 || maxLate > 12)) || lateness > 12)
         let web = replay ? tfReplay(webAll, native: native, debounce: state.node.properties["debounce"]?.number ?? 0, throttle: state.node.properties["throttle"]?.number ?? 0) : webAll
         if replay { report.append(["run": name, "replayedTimers": true, "lateness": lateness]) }
         check(native.count == web.count, "\(name) \(native.count) md events vs \(web.count): native \(native.map { "\($0.name) \($0.detail.string) @\(Int($0.t))" })")
@@ -369,9 +410,107 @@ struct TFStatesFixture: View {
         }
         _ = window.makeFirstResponder(nil); tfPointer.update(phase: .leave)
     }
+    /// 6-3: Shift+Tab out of a field between two buttons (a window without a document-order root) moves to the previous button;
+    /// Tab still moves to the next one (n2-083 probe: Shift+Tab went forward, the field editor's own key-view loop).
+    #if canImport(AppKit)
+    static func shiftTabCheck() {
+        func all(_ v: NSView) -> [NSView] { [v] + v.subviews.flatMap(all) }
+        func name(_ w: NSWindow) -> String {
+            guard let r = w.firstResponder, r !== w else { return "body" }
+            if let tv = r as? NSTextView, tv.delegate is NSView { return "field" }
+            if let v = r as? NSView { return v.accessibilityLabel() ?? "view" }
+            return "other"
+        }
+        func key(_ w: NSWindow, shift: Bool) {
+            let c = shift ? "\u{19}" : "\t"
+            for t in [NSEvent.EventType.keyDown, .keyUp] {
+                NSApp.postEvent(NSEvent.keyEvent(with: t, location: .zero, modifierFlags: shift ? [.shift] : [], timestamp: ProcessInfo.processInfo.systemUptime,
+                                                 windowNumber: w.windowNumber, context: nil, characters: c, charactersIgnoringModifiers: "\t", isARepeat: false, keyCode: 48)!, atStart: false)
+            }
+            pump(0.25)
+        }
+        let root = AWCMenuScope {
+            HStack(spacing: 16) {
+                AWCNativeView(tag: "md-button", properties: ["label": "Before"])
+                AWCNativeView(tag: "md-text-field", properties: ["label": "Fruit"]).frame(width: 220)
+                AWCNativeView(tag: "md-button", properties: ["label": "After"])
+            }.padding(40)
+        }
+        let h = NSHostingView(rootView: root)
+        let w = TFKeyWindow(contentRect: .init(x: -20000, y: -20000, width: 700, height: 300), styleMask: [.borderless], backing: .buffered, defer: false)
+        w.isReleasedWhenClosed = false; w.contentView = h; w.orderFrontRegardless(); w.makeKeyAndOrderFront(nil); NSApp.activate(ignoringOtherApps: true); pump(0.6)
+        guard let tf = all(h).first(where: { $0 is NSTextField }) else { check(false, "shift-tab: no text field"); return }
+        _ = w.makeFirstResponder(tf); pump(0.2)
+        var back = [name(w)]
+        for _ in 0..<3 { key(w, shift: true); back.append(name(w)) }
+        check(back == ["field", "Before", "After", "field"], "shift-tab backward order \(back) vs [field, Before, After, field]")
+        _ = w.makeFirstResponder(tf); pump(0.2)
+        var fwd = [name(w)]
+        for _ in 0..<3 { key(w, shift: false); fwd.append(name(w)) }
+        check(fwd == ["field", "After", "Before", "field"], "tab forward order \(fwd) vs [field, After, Before, field]")
+        w.close(); pump(0.2)
+    }
+    #endif
+    // S71-05: members of md-text-field that no native test covered. Each reads the field's own inspection (the values the renderer
+    // applies), so a renderer that ignores the member fails the case.
+    static func memberCase(_ props: [String: AWCValue], children: [AWCNode] = []) {
+        state.node = AWCNode(id: "tf", tag: "md-text-field", properties: props, children: children); state.measurements = []; state.reduced = true; state.epoch += 1; pump(0.3)
+    }
+    static func metric(_ part: String, _ key: String) -> AWCValue? { state.measurements.first { $0.name == part }?.metrics[key] }
+    static func memberCases() {
+        func mc(_ ok: Bool, _ name: String) { check(ok, "member " + name) }
+        memberCase(["label": "Q", "enterKeyHint": "search", "autoCapitalize": "words", "spellcheck": false])
+        mc(metric("input", "enterKeyHint")?.string == "search", "enterKeyHint search"); mc(metric("input", "autocapitalize")?.string == "words", "autoCapitalize words"); mc(metric("input", "spellcheck")?.bool == false, "spellcheck false")
+        memberCase(["label": "Q", "enterKeyHint": "done", "autoCapitalize": "characters", "spellcheck": true])
+        mc(metric("input", "enterKeyHint")?.string == "done", "enterKeyHint done"); mc(metric("input", "autocapitalize")?.string == "characters", "autoCapitalize characters"); mc(metric("input", "spellcheck")?.bool == true, "spellcheck true")
+        memberCase(["label": "Q"])
+        mc(metric("input", "enterKeyHint")?.string == "" && metric("input", "autocapitalize")?.string == "" && metric("input", "spellcheck")?.bool == true, "hint defaults")
+        memberCase(["label": "P", "type": "password", "passwordToggle": true, "value": "secret", "showPasswordLabel": "Mostrar", "hidePasswordLabel": "Ocultar"])
+        mc(metric("password-toggle", "label")?.string == "Mostrar", "showPasswordLabel")
+        if let c = centre("password-toggle") { click(c); pump(0.3) } else { mc(false, "password-toggle measured") }
+        mc(metric("password-toggle", "label")?.string == "Ocultar", "hidePasswordLabel")
+        memberCase(["label": "P", "type": "password", "passwordToggle": true, "value": "secret"])
+        mc(metric("password-toggle", "label")?.string == "Show password", "showPasswordLabel default")
+        memberCase(["label": "V", "speechToText": true, "speechLang": "ro-RO"])
+        mc(metric("speech", "lang")?.string == "ro-RO", "speechLang")
+        memberCase(["label": "V", "speechToText": true])
+        mc(metric("speech", "lang")?.string == "", "speechLang default")
+        for (slot, props, part) in [("clear-icon", ["clearable": true, "value": "x"] as [String: AWCValue], "clear"), ("password-toggle-icon", ["type": "password", "passwordToggle": true, "value": "x"], "password-toggle"), ("speech-icon", ["speechToText": true], "speech")] {
+            var p = props; p["label"] = "S"
+            memberCase(p, children: [.symbol("star", slot: slot)])
+            mc(metric(part, "icon")?.string == "slot", "slot " + slot)
+            memberCase(p)
+            mc(metric(part, "icon")?.string == "default", "slot " + slot + " absent")
+        }
+        // formatOn + parser (the formatter shows upper case; the parser turns the typed text back to lower case for the events)
+        state.formatting = AWCTextFieldFormatting(formatter: { $0.uppercased() }, parser: { $0.lowercased() })
+        for (fo, shown) in [("input", "AB"), ("blur", "ab")] {
+            memberCase(["label": "F", "formatOn": .string(fo)]); tfEvents = []
+            if let c = centre("input") { click(c); pump(0.2) } else { mc(false, "input measured") }
+            type("ab"); pump(0.2)
+            let got = metric("input", "value")?.string ?? "nil"
+            mc(got == shown, "formatOn " + fo + " shows " + shown + " got " + got)
+            if fo == "input" { let last = tfEvents.last { $0.name == "mdInput" }?.detail.string ?? "nil"; mc(last == "ab", "parser detail ab got " + last) }
+        }
+        state.formatting = AWCTextFieldFormatting()
+        // inputRole, inputExpanded, inputAriaAutocomplete
+        memberCase(["label": "C", "inputRole": "combobox", "inputExpanded": true, "inputAriaAutocomplete": "list"])
+        mc(metric("input", "role")?.string == "combobox", "inputRole combobox"); mc(metric("input", "expanded")?.string == "true", "inputExpanded true"); mc(metric("input", "ariaAutocomplete")?.string == "list", "inputAriaAutocomplete list")
+        memberCase(["label": "C", "inputRole": "combobox", "inputExpanded": false])
+        mc(metric("input", "expanded")?.string == "false", "inputExpanded false")
+        memberCase(["label": "C"])
+        mc(metric("input", "role")?.string == "textbox" && metric("input", "expanded")?.string == "none" && metric("input", "ariaAutocomplete")?.string == "", "inputRole defaults")
+        // mdSpeechResult (external speech: the host owns recognition, the field reports the toggle)
+        memberCase(["label": "V", "speechToText": "external"]); tfEvents = []
+        for (n, want) in [(1, true), (2, false)] {
+            if let c = centre("speech") { click(c); pump(0.2) } else { mc(false, "speech measured") }
+            let sp = tfEvents.filter { $0.name == "mdSpeechResult" }
+            mc(sp.count == n && sp.last?.detail["listening"].bool == want && sp.last?.detail["transcript"].string == "", "mdSpeechResult \(n) listening \(want) count \(sp.count)")
+        }
+    }
     static func main() {
         _ = NSApplication.shared; NSApp.setActivationPolicy(.accessory)
-        host = NSHostingView(rootView: TFStatesFixture(state: state))
+        host = TFAcceptingHost(rootView: TFStatesFixture(state: state))
         window = TFKeyWindow(contentRect: .init(x: -20000, y: -20000, width: 480, height: 320), styleMask: [.borderless], backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false; window.colorSpace = .sRGB; window.contentView = host; window.orderFrontRegardless()
         #if canImport(AppKit)
@@ -394,6 +533,10 @@ struct TFStatesFixture: View {
                 }
             }
         }
+        if only == nil || only == "members" { memberCases() }
+        #if canImport(AppKit)
+        if only == nil || only == "shift-tab" { shiftTabCheck() }
+        #endif
         if let output = ProcessInfo.processInfo.environment["AWC_TF_STATES_OUTPUT"] { try! JSONSerialization.data(withJSONObject: ["checks": checks, "failures": failures, "report": report], options: [.prettyPrinted, .sortedKeys]).write(to: URL(fileURLWithPath: output)) }
         print("Text field native states: \(checks - failures.count)/\(checks) checks passed")
         window.close(); if !failures.isEmpty { exit(1) }

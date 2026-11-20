@@ -31,3 +31,6 @@ export const orgChartAppearance = Object.freeze({
   formatInput: (name, value) => profile.formatInput(name, value),
   nativeValue: (name, value, platform) => profile.nativeValue(name, value, platform),
 });
+
+/** md-organization-chart's typed part targets (::part names; AWCOrgChartPart natively, gate-7 r5 R5-06). */
+export const ORGCHART_PARTS = Object.freeze(["viewport", "tree", "group", "branch", "branch-on-path", "node", "node-selected", "state-layer", "avatar", "avatar-image", "name", "title", "toggle", "empty"]);

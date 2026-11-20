@@ -195,12 +195,15 @@ fun AWCNavigationTabControllerScope(controller: AWCNavigationTabController, cont
 /**
  * `::part()` styling of md-navigation-tab: state-layer (background-color, opacity), icon / label (color), indicator
  * (background-color), badge (background-color, color). Part rules come from the outer tree and win over the hooks and every
- * internal state rule. `container` / `icon-container` are layout wrappers (exception record in md-navigation-bar.md).
+ * internal state rule. `container` (indicator, icon and label) and `icon-container` take boxes ([AWCPartBox]: background, border,
+ * radius, padding with the layout shift; gate-7 R6-17).
  */
 @Immutable data class AWCNavigationTabPartAppearance(val stateLayerColor: String? = null, val stateLayerOpacity: Double? = null, val iconColor: String? = null,
-    val labelColor: String? = null, val indicatorColor: String? = null, val badgeColor: String? = null, val badgeLabelColor: String? = null) {
+    val labelColor: String? = null, val indicatorColor: String? = null, val badgeColor: String? = null, val badgeLabelColor: String? = null,
+    val container: AWCPartBox? = null, val iconContainer: AWCPartBox? = null) {
     fun merging(o: AWCNavigationTabPartAppearance) = AWCNavigationTabPartAppearance(o.stateLayerColor ?: stateLayerColor, o.stateLayerOpacity ?: stateLayerOpacity,
-        o.iconColor ?: iconColor, o.labelColor ?: labelColor, o.indicatorColor ?: indicatorColor, o.badgeColor ?: badgeColor, o.badgeLabelColor ?: badgeLabelColor)
+        o.iconColor ?: iconColor, o.labelColor ?: labelColor, o.indicatorColor ?: indicatorColor, o.badgeColor ?: badgeColor, o.badgeLabelColor ?: badgeLabelColor,
+        AWCPartBox.merge(container, o.container), AWCPartBox.merge(iconContainer, o.iconContainer))
     internal val layerColor get() = stateLayerColor?.let { awcRippleHex(it) }
     internal val layerOpacity get() = stateLayerOpacity?.takeIf { it.isFinite() }?.coerceIn(0.0, 1.0)
     internal val icon get() = iconColor?.let { awcRippleHex(it) }
@@ -210,7 +213,8 @@ fun AWCNavigationTabControllerScope(controller: AWCNavigationTabController, cont
     internal val badgeLabel get() = badgeLabelColor?.let { awcRippleHex(it) }
     companion object {
         fun fromValues(v: Map<String, Any?>) = AWCNavigationTabPartAppearance(v["stateLayerColor"]?.toString(), (v["stateLayerOpacity"] as? Number)?.toDouble(),
-            v["iconColor"]?.toString(), v["labelColor"]?.toString(), v["indicatorColor"]?.toString(), v["badgeColor"]?.toString(), v["badgeLabelColor"]?.toString())
+            v["iconColor"]?.toString(), v["labelColor"]?.toString(), v["indicatorColor"]?.toString(), v["badgeColor"]?.toString(), v["badgeLabelColor"]?.toString(),
+            AWCPartBox.fromValue(v["container"]), AWCPartBox.fromValue(v["iconContainer"]))
     }
 }
 /** `::part(container)` of md-navigation-bar: the bar's background-color. */
@@ -270,6 +274,12 @@ internal class NavigationChild {
     var pressed by mutableStateOf(false)
     var slotIcon by mutableStateOf(false)
     var slotActiveIcon by mutableStateOf(false)
+    /** The destination's `::part(container)` / `::part(icon-container)` boxes (gate-7 R6-17), reported by the destination: they take
+     *  part in the bar's layout. */
+    var containerBox by mutableStateOf<AWCPartBox?>(null)
+    var iconBox by mutableStateOf<AWCPartBox?>(null)
+    /** The slotted icon's box in dp, relative to the destination (x, y, width, height; NaN until laid out) — the probe's "slotted". */
+    val slottedBox = DoubleArray(4) { Double.NaN }
     val labelSlot = AWCSlotTextRegistry()
     val motion = NavigationMotion()
     val ripple = AWCRippleController()
@@ -354,26 +364,38 @@ internal class NavigationMetrics(val d: Double, val look: AWCNavigationTabAppear
     val focusOpacity get() = look.focusStateLayerOpacity ?: 0.1
 }
 
-internal class NavigationGeometry(val x: Double, val width: Double, val height: Double, val container: TabRect, val indicator: TabRect, val icon: TabRect, val label: TabRect?)
+/** [iconContainer]: the icon-container's border box; [iconPadding]: its padding box (the containing block of the badge and the focus ring). */
+internal class NavigationGeometry(val x: Double, val width: Double, val height: Double, val container: TabRect, val indicator: TabRect, val icon: TabRect, val label: TabRect?,
+    val iconContainer: TabRect = indicator, val iconPadding: TabRect = indicator)
 
 internal object NavigationLayout {
-    fun geometry(labelWidth: Double, m: NavigationMetrics, x: Double, width: Double, height: Double): NavigationGeometry {
+    fun geometry(labelWidth: Double, m: NavigationMetrics, x: Double, width: Double, height: Double, container: AWCPartBox? = null, iconContainer: AWCPartBox? = null): NavigationGeometry {
         val iw = m.indicatorWidth; val ih = m.indicatorHeight; val hasLabel = m.behavior != "none"
-        val stackH = ih + if (hasLabel) m.gap + m.lineHeight else 0.0
+        // ::part(container) / ::part(icon-container) boxes (gate-7 R6-17): border + padding (physical edges) around their content.
+        val ci = container.boxInsets; val ki = iconContainer.boxInsets
+        val kw = iw + ki[1] + ki[3]; val kh = ih + ki[0] + ki[2]
+        val stackH = kh + if (hasLabel) m.gap + m.lineHeight else 0.0; val boxH = stackH + ci[0] + ci[2]
         // justify-content: center (icon-only) centres even an overflowing stack (negative free space splits evenly).
-        val top = if (hasLabel) m.padTop else m.padTop + (height - m.padTop - m.padBottom - stackH) / 2
+        val top = if (hasLabel) m.padTop else m.padTop + (height - m.padTop - m.padBottom - boxH) / 2
         val lw = min(width, labelWidth)
-        return NavigationGeometry(x, width, height, TabRect(0.0, top, width, stackH), TabRect((width - iw) / 2, top, iw, ih),
-            TabRect((width - m.iconSize) / 2, top + (ih - m.iconSize) / 2, m.iconSize, m.iconSize),
-            if (hasLabel) TabRect((width - lw) / 2, top + ih + m.gap, lw, m.lineHeight) else null)
+        // The container is 100 % wide plus its border and padding, centred on the tab; x0 / y0: its content box.
+        val cx = -(ci[1] + ci[3]) / 2; val x0 = cx + ci[3]; val y0 = top + ci[0]
+        val kc = TabRect(x0 + (width - kw) / 2, y0, kw, kh); val kb = iconContainer.boxBorder
+        return NavigationGeometry(x, width, height, TabRect(cx, top, width + ci[1] + ci[3], boxH),
+            // The indicator is absolutely positioned: block-start at the container's padding edge, centred on its content box.
+            TabRect(x0 + (width - iw) / 2, top + container.boxBorder, iw, ih),
+            TabRect(kc.x + ki[3] + (iw - m.iconSize) / 2, y0 + ki[0] + (ih - m.iconSize) / 2, m.iconSize, m.iconSize),
+            if (hasLabel) TabRect(x0 + (width - lw) / 2, y0 + kh + m.gap, lw, m.lineHeight) else null,
+            kc, TabRect(kc.x + kb, kc.y + kb, max(0.0, kw - 2 * kb), max(0.0, kh - 2 * kb)))
     }
     /** Small dot: 6 × 6 at top 2 / inline-end 14 of the icon container. Large: 16 tall, min 16 wide (4 dp padding), anchored on the
      *  glyph's inline-end top corner, then translate(50%, −50%) (physical, also in RTL as Chrome renders it). */
     fun badge(text: String, g: NavigationGeometry, m: NavigationMetrics, rtl: Boolean, measure: (String) -> Double): TabRect {
-        val c = g.indicator
+        // The badge's containing block is the icon-container's padding box; its offsets come from the indicator metrics.
+        val c = g.iconPadding
         if (text.isEmpty()) return TabRect(if (rtl) c.x + 14 else c.maxX - 14 - 6, c.y + 2, 6.0, 6.0)
         val w = max(16.0, measure(text) + 8)
-        val inset = (c.w - m.iconSize) / 2; val top = (c.h - m.iconSize) / 2
+        val inset = (m.indicatorWidth - m.iconSize) / 2; val top = (m.indicatorHeight - m.iconSize) / 2
         val x0 = if (rtl) c.x + inset else c.maxX - inset - w
         return TabRect(x0 + w / 2, c.y + top - 8, w, 16.0)
     }
@@ -538,7 +560,7 @@ internal fun NativeNavigationBar(p: Props, emit: EventSink, slot: Slot?) {
                     val m = context.metrics(c); val activeNow = if (standalone) c.props.bool("active") else i == state.active
                     val lw = if (m.behavior == "none") 0.0 else text.width(c.labelText, m.labelSize, (if (activeNow) m.activeWeight else m.inactiveWeight).toInt(), 0.5)
                     // RTL starts at the right edge (an overflowing row overflows to the left).
-                    geos[c] = NavigationLayout.geometry(lw, m, if (rtl) span - x - widths[i] else x, widths[i], height); x += widths[i]
+                    geos[c] = NavigationLayout.geometry(lw, m, if (rtl) span - x - widths[i] else x, widths[i], height, c.containerBox, c.iconBox); x += widths[i]
                 }
                 state.placed = geos
                 val hPx = (height * density).roundToInt()
@@ -586,6 +608,7 @@ internal fun NativeNavigationTab(p: Props, emit: EventSink, slot: Slot?, child: 
     val hover = !hard && child.hover; val pressed = !hard && child.pressed
     val m = ctx.metrics(child)
     val parts = LocalAWCNavigationTabPartAppearance.current
+    SideEffect { if (child.containerBox != parts.container) child.containerBox = parts.container; if (child.iconBox != parts.iconContainer) child.iconBox = parts.iconContainer }
     val color0 = parts.icon ?: if (active) pal.activeIcon else pal.inactiveIcon
     // focus-visible wins, then pressed, then hover (the stylesheet order); a soft-disabled destination shows only the focus layer.
     val (layerTarget0, layerColor0) = when { focusVisible -> m.focusOpacity to pal.focus; inert -> 0.0 to color0; pressed -> 0.12 to pal.pressed; hover -> 0.08 to pal.hover; else -> 0.0 to color0 }
@@ -657,21 +680,35 @@ internal fun NativeNavigationTab(p: Props, emit: EventSink, slot: Slot?, child: 
         Layout(content = { CompositionLocalProvider(LocalAWCSlotTextRegistry provides child.labelSlot) { slot?.invoke("") } }, modifier = Modifier.size(0.dp)) { ms, _ ->
             ms.forEach { it.measure(Constraints()) }; layout(0, 0) {} }
         if (g != null) {
+            // ::part(container) / ::part(icon-container) boxes (gate-7 R6-17), in the source's paint order: the container under the
+            // indicator, the icon-container over it and under the icon.
+            parts.container?.takeIf { it.paints }?.let { b -> val r = g.container; Box(Modifier.fillMaxSize().drawBehind { drawAWCPartBox(b, color, Offset(r.x.dp.toPx(), r.y.dp.toPx()), Size(r.w.dp.toPx(), r.h.dp.toPx())) }) }
             val ind = g.indicator
             val radius = min(m.shape, min(ind.h / 2, ind.w / 2))
             Box(Modifier.offset(ind.x.dp, ind.y.dp).size(ind.w.dp, ind.h.dp)
                 .graphicsLayer { scaleX = scale.toFloat(); alpha = opacity.toFloat() }
                 .background(parts.indicator ?: pal.indicator, RoundedCornerShape(radius.dp)))
+            parts.iconContainer?.takeIf { it.paints }?.let { b -> val r = g.iconContainer; Box(Modifier.fillMaxSize().drawBehind { drawAWCPartBox(b, color, Offset(r.x.dp.toPx(), r.y.dp.toPx()), Size(r.w.dp.toPx(), r.h.dp.toPx())) }) }
             val ic = g.icon
             // The active destination shows the active-icon slot, else the icon glyph; an inactive one the icon slot, else the glyph.
             val slotName = if (active) "active-icon" else "icon"
             val hasSlot = if (active) child.slotActiveIcon else child.slotIcon
-            androidx.compose.runtime.CompositionLocalProvider(androidx.compose.material3.LocalContentColor provides color) {
+            // Slotted text: `--md-navigation-tab-slotted-icon-font` (a CSS family list; default system-ui) at the icon size, line
+            // height 1, centred on the icon box and never wrapped or truncated (the source's inline-flex box lets it overflow).
+            val iconFamily = remember(m.look.slottedIconFont) { awcCSSFontFamily(m.look.slottedIconFont) }
+            val iconSp = with(LocalDensity.current) { m.iconSize.dp.toSp() }
+            androidx.compose.runtime.CompositionLocalProvider(androidx.compose.material3.LocalContentColor provides color,
+                androidx.compose.material3.LocalTextStyle provides TextStyle(color = color, fontFamily = iconFamily.first, fontSize = iconSp, lineHeight = iconSp, textAlign = TextAlign.Center,
+                    platformStyle = PlatformTextStyle(includeFontPadding = false), lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None)),
+                LocalAWCSlotTextNoWrap provides true, LocalAWCSlotTextOverflow provides TextOverflow.Visible) {
                 Layout(content = { slot?.invoke(slotName) }, modifier = Modifier.clearAndSetSemantics { }) { ms, _ ->
                     val has = ms.isNotEmpty(); if (active) { if (child.slotActiveIcon != has) child.slotActiveIcon = has } else if (child.slotIcon != has) child.slotIcon = has
                     val bw = (ic.w * density).roundToInt(); val bh = (ic.h * density).roundToInt()
-                    val pls = ms.map { it.measure(Constraints.fixed(bw, bh)) }
-                    layout(bw, bh) { pls.forEach { it.place((ic.x * density).roundToInt(), (ic.y * density).roundToInt()) } }
+                    // At least the icon box (a fill-size child fills it); wider text keeps its run and is centred.
+                    val pls = ms.map { it.measure(Constraints(minWidth = bw, minHeight = bh, maxWidth = Constraints.Infinity, maxHeight = bh)) }
+                    pls.firstOrNull()?.let { pl -> child.slottedBox[0] = ic.x + (bw - pl.width) / 2.0 / density; child.slottedBox[1] = ic.y
+                        child.slottedBox[2] = pl.width / density.toDouble(); child.slottedBox[3] = pl.height / density.toDouble() }
+                    layout(bw, bh) { pls.forEach { it.place((ic.x * density).roundToInt() + (bw - it.width) / 2, (ic.y * density).roundToInt()) } }
                 }
             }
             val glyph = if (active && child.activeIcon.isNotEmpty()) child.activeIcon else child.icon
@@ -698,8 +735,10 @@ internal fun NativeNavigationTab(p: Props, emit: EventSink, slot: Slot?, child: 
                             letterSpacing = with(LocalDensity.current) { 0.5.dp.toSp() }, maxLines = 1, softWrap = false, style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))) }
                 }
             }
-            if (focusVisible) Box(Modifier.offset((ind.x - 4).dp, (ind.y - 4).dp).size((ind.w + 8).dp, (ind.h + 8).dp).drawBehind {
-                val w = 3 * density; val r = (min(m.shape, min((ind.h + 8) / 2, (ind.w + 8) / 2)) * density).toFloat()
+            // The focus ring is the icon-container's ::after at inset -4: around its padding box (the indicator's rect without a box).
+            val ring = g.iconPadding
+            if (focusVisible) Box(Modifier.offset((ring.x - 4).dp, (ring.y - 4).dp).size((ring.w + 8).dp, (ring.h + 8).dp).drawBehind {
+                val w = 3 * density; val r = (min(m.shape, min((ring.h + 8) / 2, (ring.w + 8) / 2)) * density).toFloat()
                 drawRoundRect(pal.focusRing, topLeft = Offset(w / 2, w / 2), size = Size(size.width - w, size.height - w), cornerRadius = CornerRadius(r - w / 2, r - w / 2), style = Stroke(w))
             })
         }
@@ -708,11 +747,33 @@ internal fun NativeNavigationTab(p: Props, emit: EventSink, slot: Slot?, child: 
     if (probe != null && g != null) SideEffect {
         val badge = child.badge?.let { NavigationLayout.badge(it, g, m, ctx.rtl) { s -> ctx.text.width(s, 11.0, 500, 0.5) } }
         probe.tabs[child.id] = mapOf("active" to active, "disabled" to hard, "softDisabled" to soft, "tabStop" to tabStop, "focused" to child.focused, "focusVisible" to focusVisible,
+            "slotted" to child.slottedBox, "slottedFamily" to awcCSSFontFamily(m.look.slottedIconFont).second,
             "hover" to hover, "pressed" to pressed, "color" to (if (parts.icon != null) (if (active) pal.activeIcon else pal.inactiveIcon) else color), "iconColor" to color, "layer" to layer, "layerColor" to layerColor, "labelColor" to labelColor, "labelOpacity" to labelOpacity,
             "scale" to scale, "opacity" to opacity, "renderTime" to now, "animating" to child.motion.running(now), "name" to name, "behavior" to m.behavior,
             "alpha" to if (inert) m.disabledOpacity else 1.0, "width" to g.width, "height" to g.height, "coords" to coords, "labelWeight" to (if (active) m.activeWeight else m.inactiveWeight),
             "labelSize" to m.labelSize, "badge" to child.badge, "indicatorColor" to (parts.indicator ?: pal.indicator), "badgeColor" to (parts.badge ?: pal.badge), "badgeTextColor" to (parts.badgeLabel ?: pal.onBadge),
             "radius" to min(m.shape, min(g.indicator.h / 2, g.indicator.w / 2)),
-            "rects" to mapOf("container" to g.container, "indicator" to g.indicator, "icon" to g.icon, "label" to g.label, "badge" to badge).mapValues { (_, r) -> r?.let { listOf(it.x, it.y, it.w, it.h) } })
+            "boxes" to mapOf("container" to parts.container?.probe(color), "icon-container" to parts.iconContainer?.probe(color)), "focusRing" to g.iconPadding.let { listOf(it.x - 4, it.y - 4, it.w + 8, it.h + 8) },
+            "rects" to mapOf("container" to g.container, "indicator" to g.indicator, "iconContainer" to g.iconContainer, "icon" to g.icon, "label" to g.label, "badge" to badge).mapValues { (_, r) -> r?.let { listOf(it.x, it.y, it.w, it.h) } })
     }
+}
+
+/**
+ * The first available family of a CSS `font-family` list, as Chrome on Android resolves it: `system-ui` / `sans-serif` → the
+ * default sans-serif (Roboto); serif, monospace, cursive → the platform families; a named family when installed (a name the
+ * system font map does not know resolves to the default typeface); an empty or unavailable list → sans-serif. (family, name).
+ */
+internal fun awcCSSFontFamily(list: String?): Pair<FontFamily, String> {
+    for (raw in (list ?: "").split(',')) {
+        val n = raw.trim().trim('"', '\''); if (n.isEmpty()) continue
+        when (n.lowercase()) {
+            "system-ui", "-apple-system", "blinkmacsystemfont", "ui-sans-serif", "sans-serif" -> return FontFamily.SansSerif to "sans-serif"
+            "serif" -> return FontFamily.Serif to "serif"
+            "monospace" -> return FontFamily.Monospace to "monospace"
+            "cursive" -> return FontFamily.Cursive to "cursive"
+        }
+        val tf = android.graphics.Typeface.create(n, android.graphics.Typeface.NORMAL)
+        if (tf !== android.graphics.Typeface.DEFAULT) return FontFamily(tf) to n
+    }
+    return FontFamily.SansSerif to "sans-serif"
 }

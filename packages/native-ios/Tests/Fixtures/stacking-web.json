@@ -1,0 +1,171 @@
+{
+ "viewport": {
+  "width": 480,
+  "height": 360
+ },
+ "teal": [
+  0,
+  137,
+  123
+ ],
+ "floating": {
+  "rects": {
+   "before": [
+    0,
+    0,
+    73.859375,
+    40
+   ],
+   "acc": [
+    24,
+    60,
+    360,
+    64
+   ],
+   "item": [
+    24,
+    60,
+    360,
+    64
+   ],
+   "second": [
+    0,
+    40,
+    480,
+    160
+   ],
+   "after": [
+    60,
+    100,
+    62.078125,
+    40
+   ]
+  },
+  "probes": [
+   {
+    "label": "panel over the later container",
+    "x": 30,
+    "y": 92,
+    "top": "item",
+    "rgb": [
+     247,
+     242,
+     250
+    ]
+   },
+   {
+    "label": "panel right part",
+    "x": 324,
+    "y": 66,
+    "top": "item",
+    "rgb": [
+     247,
+     242,
+     250
+    ]
+   },
+   {
+    "label": "later container beside the panel",
+    "x": 100,
+    "y": 164,
+    "top": "second",
+    "rgb": [
+     0,
+     137,
+     123
+    ]
+   }
+  ],
+  "tab": [
+   "before",
+   "item>md-acc-item-1-header",
+   "after"
+  ],
+  "inflow": {
+   "item": [
+    0,
+    40,
+    480,
+    64
+   ],
+   "second": [
+    0,
+    104,
+    480,
+    160
+   ]
+  }
+ },
+ "card": {
+  "rects": {
+   "first": [
+    0,
+    0,
+    480,
+    68
+   ],
+   "card": [
+    8,
+    8,
+    464,
+    52
+   ],
+   "second": [
+    0,
+    68,
+    480,
+    138
+   ]
+  },
+  "before": [
+   {
+    "label": "later container before the drag",
+    "x": 38,
+    "y": 86,
+    "top": "second",
+    "rgb": [
+     0,
+     137,
+     123
+    ]
+   }
+  ],
+  "dragged": [
+   8,
+   78,
+   464,
+   52
+  ],
+  "zIndex": "1000",
+  "probes": [
+   {
+    "label": "dragged card over the later container",
+    "x": 38,
+    "y": 86,
+    "top": "card",
+    "rgb": [
+     198,
+     194,
+     202
+    ]
+   },
+   {
+    "label": "dragged card lower edge",
+    "x": 38,
+    "y": 124,
+    "top": "card",
+    "rgb": [
+     198,
+     194,
+     202
+    ]
+   }
+  ],
+  "after": [
+   8,
+   8,
+   464,
+   52
+  ]
+ }
+}

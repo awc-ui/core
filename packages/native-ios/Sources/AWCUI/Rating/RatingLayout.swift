@@ -24,6 +24,12 @@ struct AWCRatingHooks {
     /// --md-rating-value-label-font is a `font` shorthand: only its family and line-height survive (size / weight are re-set).
     var valueLabelFontFamily: String? = nil, valueLabelLineHeight: Double? = nil
     var popScale: Double? = nil, durationMs: Double? = nil
+    /// ::part(value-label) only (no hook sets them): font size / weight and letter spacing of the value label.
+    var valueLabelFontSize: Double? = nil, valueLabelFontWeight: Double? = nil, valueLabelLetterSpacing: Double? = nil
+    /// ::part(icon-filled) colour: the filled glyph only (the host's colour stays the active colour).
+    var iconFilledColor: String? = nil
+    /// ::part(item) width / height: the item box (the glyph keeps --_size, centred in it).
+    var itemBox: Double? = nil
 }
 
 /// A press ripple: started at `start` (ms) at (x %, y %) of the item, 420 ms emphasized, circle 0 → 85 %, opacity .22 → 0.
@@ -47,9 +53,12 @@ struct AWCRatingPaint {
     /// Glyph axes: the empty layer is FILL 0 / wght 500 with outline-empty, else FILL 1 / wght 400; the filled layer FILL 1 / wght 500.
     var emptyFill: Int, emptyWeight: Int, glyphSize: Double
     var activeColor: AWCSRRGBA, inactiveColor: AWCSRRGBA, stateLayerColor: AWCSRRGBA
+    /// The filled glyph's colour when ::part(icon-filled) sets one (nil: the active colour).
+    var iconColor: AWCSRRGBA? = nil
     var focusRing: Bool, focusRingColor: AWCSRRGBA, focusRingWidth: Double, focusRingOffset: Double
     var label: AWCSliderRect?, labelText: String?, labelColor: AWCSRRGBA, labelFontFamily: String
     var labelFontSize: Double, labelFontWeight: Double, labelLineHeight: Double
+    var labelLetterSpacing = 0.0
 }
 
 private func luCeil(_ x: Double) -> Double { (Double(Float(x)) * 64).rounded(.up) / 64 }
@@ -72,7 +81,8 @@ enum AWCRatingLayout {
         let rung = densityProp.flatMap { (-4 ... -1).contains($0) ? $0 : nil }
         let d = rung.map(Double.init) ?? theme.densityScale
         let (gapXs, gapMd) = rung.map(gapsForRung) ?? (theme.gapXs, theme.gapMd)
-        let itemSize = hooks.itemSize ?? Swift.max(12, base(size) + d * 2)
+        let glyph = hooks.itemSize ?? Swift.max(12, base(size) + d * 2)
+        let itemSize = hooks.itemBox ?? glyph      // the item box (::part(item) width / height); the glyph keeps --_size
         let gap = hooks.itemGap ?? gapXs
         let c = { (css: String) in awcSRParseColor(css) }
         let active = c(hooks.activeColor ?? theme.secondary)
@@ -82,10 +92,10 @@ enum AWCRatingLayout {
         let n = r.max
         let itemsW = Double(n) * itemSize + Double(Swift.max(0, n - 1)) * gap
         // Value label: an inline grid stacking the hidden sizers (every step's label) under the visible text.
-        let labelFont = 14.0, labelWeight = 500.0
+        let labelFont = hooks.valueLabelFontSize ?? 14.0, labelWeight = hooks.valueLabelFontWeight ?? 500.0, labelSpacing = hooks.valueLabelLetterSpacing ?? 0
         let labelLine = hooks.valueLabelLineHeight ?? theme.labelLineHeight
         let labelText: String? = showValueLabel ? r.label(r.displayValue) : nil
-        let labelW = labelText.map { t in (r.labelVariants() + [t]).map { luCeil(measure($0, labelFont, labelWeight)) }.max() ?? 0 } ?? 0
+        let labelW = labelText.map { t in (r.labelVariants() + [t]).map { luCeil(measure($0, labelFont, labelWeight) + labelSpacing * Double($0.count)) }.max() ?? 0 } ?? 0
         let hostW = itemsW + (showValueLabel ? gapMd + labelW : 0)
         let hostH = Swift.max(itemSize, showValueLabel ? labelLine : 0)
         let rtl = r.rtl
@@ -121,12 +131,12 @@ enum AWCRatingLayout {
         return AWCRatingPaint(
             width: hostW, height: hostH, opacity: r.disabled || r.softDisabled ? theme.disabledContentOpacity : 1,
             items: items, itemList: list, icon: icon, emptyIcon: outlineEmpty ? icon : emptyIcon,
-            emptyFill: outlineEmpty ? 0 : 1, emptyWeight: outlineEmpty ? 500 : 400, glyphSize: itemSize,
-            activeColor: active, inactiveColor: inactive, stateLayerColor: stateColor,
+            emptyFill: outlineEmpty ? 0 : 1, emptyWeight: outlineEmpty ? 500 : 400, glyphSize: glyph,
+            activeColor: active, inactiveColor: inactive, stateLayerColor: stateColor, iconColor: hooks.iconFilledColor.map(c),
             focusRing: r.focused && r.focusVisible, focusRingColor: c(hooks.focusRingColor ?? theme.secondary),
             focusRingWidth: hooks.focusRingWidth ?? 3, focusRingOffset: hooks.focusRingOffset ?? 2,
             label: label, labelText: labelText, labelColor: labelColor, labelFontFamily: hooks.valueLabelFontFamily ?? theme.labelFontFamily,
-            labelFontSize: labelFont, labelFontWeight: labelWeight, labelLineHeight: labelLine)
+            labelFontSize: labelFont, labelFontWeight: labelWeight, labelLineHeight: labelLine, labelLetterSpacing: labelSpacing)
     }
 
     /// The ripple circle's radius in points for an item box (CSS `circle(r%)` resolves against √(w²+h²)/√2).

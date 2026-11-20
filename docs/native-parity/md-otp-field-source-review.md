@@ -144,9 +144,11 @@ Runs: `otp-keyboard-{ltr,rtl}`, `otp-paste-autosubmit` and
 4. **Paste into a masked cell (macOS).** `NSSecureTextField` never calls `paste:` on a custom field editor; the pasted text
    arrives as one edit and runs the same whole-value pipeline as the source's paste handler (whitespace stripped, `mdInvalidInput`
    with `input-change`, completion not forced). *Revert:* not applicable (AppKit secure-input behaviour).
-5. **Hover on iOS.** A touch never hovers: only a hovering pointer (trackpad, pencil hover) draws the hover outline, so after a tap
-   the cell rests on the outline colour where Chrome's mouse would leave it hovered. *Revert:* read the host pointer state on iOS
-   in `hovered(_:)`.
+5. **Hover on iOS / iPadOS.** A touch never hovers. The iPadOS pointer (trackpad, mouse; pencil hover) hovers a cell through
+   `.onContinuousHover`, the native equivalent of the source's `:hover` (no exception needed); the iOS states suite rests that
+   pointer where Chrome's mouse rests (the simulator cannot inject pointer hover, so the suite drives the same entry,
+   `AWCOTPFieldRuntime.pointerHover`). After a tap without a pointer the cell rests on the outline colour. *Revert:* read the
+   host pointer state on iOS in `hovered(_:)`.
 6. **Cell frame for assistive technologies (macOS).** Chrome's textbox is the whole 48 × 56 bordered cell; the native text input is
    the text line inside it. macOS reports the cell box (AXPosition / AXSize grown to the border), so VoiceOver's cursor and the
    contrast measurement see the cell's border as on the Web. *Alternative:* the inner line box. *Revert:* `axOutset = .zero` in

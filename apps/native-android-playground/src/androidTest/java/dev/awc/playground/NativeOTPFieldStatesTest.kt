@@ -37,6 +37,9 @@ import kotlin.math.abs
 @OptIn(ExperimentalTestApi::class)
 class NativeOTPFieldStatesTest {
     @get:Rule val compose=createComposeRule()
+    // Touch mode is per display (Android 14+): a key-driven suite earlier in the run leaves keyboard mode, where a field takes
+    // initial focus when composed. Chrome's baseline is a pointer session: start and leave every test in touch mode.
+    @org.junit.Before @org.junit.After fun touchMode() { runCatching { androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().setInTouchMode(true) } }
     private var run by mutableStateOf(JSONObject("{\"name\":\"init\",\"html\":\"<md-otp-field></md-otp-field>\"}"))
     private var reduced by mutableStateOf(false);private var epoch by mutableIntStateOf(0)
     private val collector=AWCInspectionCollector();private var values:Map<String,Map<String,Any?>> = emptyMap()

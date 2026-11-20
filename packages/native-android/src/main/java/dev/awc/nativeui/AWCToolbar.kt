@@ -64,6 +64,23 @@ data class AWCToolbarAppearance(
     }
 }
 internal val LocalAWCToolbarAppearance = staticCompositionLocalOf { AWCToolbarAppearance() }
+/**
+ * `::part(container)` of md-toolbar: the container's background-color (floating: the pill's fill, its elevation kept; docked: a
+ * fill over the content box, above the bar's own background). Part rules come from the outer tree, so they win over the
+ * `--md-toolbar-container-color` hook and the standard / vibrant colours. `fab-container` — the wrapper of the slotted FAB — takes a
+ * box ([AWCPartBox]: background, border, radius, padding; the bar and the host grow around it as in Chrome; gate-7 R6-17).
+ */
+@Immutable data class AWCToolbarPartAppearance(val containerColor: String? = null, val fabContainer: AWCPartBox? = null) {
+    fun merging(o: AWCToolbarPartAppearance) = AWCToolbarPartAppearance(o.containerColor ?: containerColor, AWCPartBox.merge(fabContainer, o.fabContainer))
+    internal val container get() = awcRippleHex(containerColor)
+    /** Laboratory names (the fields above; `fabContainer` as an [AWCPartBox] map). */
+    companion object { fun fromValues(v: Map<String, Any?>) = AWCToolbarPartAppearance(v["containerColor"] as? String, AWCPartBox.fromValue(v["fabContainer"])) }
+}
+internal val LocalAWCToolbarPartAppearance = staticCompositionLocalOf { AWCToolbarPartAppearance() }
+/** Applies md-toolbar `::part()` styling (container, fab-container) to descendant toolbars. */
+@Composable
+fun AWCToolbarPartAppearanceScope(appearance: AWCToolbarPartAppearance, content: @Composable () -> Unit) =
+    CompositionLocalProvider(LocalAWCToolbarPartAppearance provides LocalAWCToolbarPartAppearance.current.merging(appearance), content = content)
 /** The md-toolbar hooks for this subtree; nearer values win field by field. */
 @Composable
 fun AWCToolbarAppearanceScope(appearance: AWCToolbarAppearance, content: @Composable () -> Unit) {
@@ -270,7 +287,11 @@ internal fun NativeToolbar(p: Props, emit: EventSink, slot: Slot?) {
     fun hexOf(c: Color) = String.format("#%02X%02X%02X", (c.red * 255).roundToInt(), (c.green * 255).roundToInt(), (c.blue * 255).roundToInt())
     val vibrant = p.str("color", "standard") == "vibrant"
     val container = appearance.containerColor?.let { awcRippleHex(it) } ?: if (vibrant) token("primary-container", 0xFFEADDFF) else token("surface-container", 0xFFF3EDF7)
+    val partFill = LocalAWCToolbarPartAppearance.current.container
     val ink = appearance.iconColor ?: hexOf(if (vibrant) token("on-surface", 0xFF1C1B1F) else token("on-surface-variant", 0xFF49454F))
+    // ::part(fab-container) box (gate-7 R6-17); a border without a colour takes the bar's text colour (the icon colour).
+    val fabBox = LocalAWCToolbarPartAppearance.current.fabContainer
+    val fabInk = awcRippleHex(ink) ?: if (vibrant) token("on-surface", 0xFF1C1B1F) else token("on-surface-variant", 0xFF49454F)
     val scheme = AWCIconButtonScheme(ink, if (vibrant) hexOf(token("surface-container", 0xFFF3EDF7)) to hexOf(token("on-surface", 0xFF1C1B1F)) else null,
         if (vibrant) hexOf(token("secondary-container", 0xFFE8DEF8)) to hexOf(token("on-secondary-container", 0xFF1E192B)) else null)
     val wrap = appearance.flexWrap == "wrap" || appearance.flexWrap == "wrap-reverse"
@@ -314,8 +335,8 @@ internal fun NativeToolbar(p: Props, emit: EventSink, slot: Slot?) {
     fun writeProbe() {
         probe ?: return
         probe.bar = mapOf("role" to (if (toolbar) "toolbar" else "generic"), "orientation" to (if (toolbar) (if (m.vertical) "vertical" else "horizontal") else ""),
-            "label" to (if (toolbar) label else ""), "background" to (if (m.floating) Color.Transparent else container), "pill" to (if (m.floating) container else Color.Transparent),
-            "radius" to m.shape, "elevation" to 2, "floating" to m.floating, "padding" to (if (m.floating) m.padding else 0.0), "host" to state.host, "container" to state.container, "fab" to state.fab,
+            "label" to (if (toolbar) label else ""), "background" to (if (m.floating) Color.Transparent else container), "pill" to (if (m.floating) partFill ?: container else partFill ?: Color.Transparent),
+            "radius" to m.shape, "elevation" to 2, "floating" to m.floating, "padding" to (if (m.floating) m.padding else 0.0), "host" to state.host, "container" to state.container, "fab" to state.fab, "fabBox" to fabBox?.probe(fabInk),
             "members" to members.map { it.id }, "active" to (if (toolbar) stop?.id ?: "" else ""), "scrollMax" to state.scrollMax, "scroll" to state.scroll)
         for (c in order) probe.items[c.id] = mapOf("slot" to c.slot, "member" to (c in members), "tabStop" to (c === stop && c in members), "rect" to state.rects[c],
             "scheme" to (if (c.tag == "md-icon-button" && c.slot != "fab") scheme.appearance(c.props.str("variant", "standard"), c.props.bool("toggle"), c.props.bool("selected"))?.values else null),
@@ -335,7 +356,8 @@ internal fun NativeToolbar(p: Props, emit: EventSink, slot: Slot?) {
         // 0: the container (floating: the pill with its chrome and padding).
         val pillShape = AWCCornerShape.uniform(points = m.shape)
         Box(Modifier.layoutId("container")
-            .then(if (m.floating) Modifier.accordionShadow(pillShape, shadows.getOrElse(2) { emptyList() }, false).background(container, pillShape) else Modifier)
+            // ::part(container): the pill's fill (floating) or a plain fill over the content box (docked).
+            .then(if (m.floating) Modifier.accordionShadow(pillShape, shadows.getOrElse(2) { emptyList() }, false).background(partFill ?: container, pillShape) else partFill?.let { Modifier.background(it) } ?: Modifier)
             .onGloballyPositioned { state.container = it; writeProbe() }
             .padding((if (m.floating) m.padding else 0.0).dp)
             .then(if (clips) Modifier.clipToBounds() else Modifier)
@@ -351,7 +373,8 @@ internal fun NativeToolbar(p: Props, emit: EventSink, slot: Slot?) {
         }
         // 1: the FAB container.
         Layout(content = { CompositionLocalProvider(LocalToolbarRow provides ToolbarContext(true), LocalToolbarSlot provides "fab") { slot?.invoke("fab") } },
-            modifier = Modifier.layoutId("fab").onGloballyPositioned { state.fab = it; writeProbe() }) { ms, _ ->
+            // ::part(fab-container) box: border + padding around the FAB (physical edges); the host layout measures the FAB with it.
+            modifier = Modifier.layoutId("fab").onGloballyPositioned { state.fab = it; writeProbe() }.then(if (hasFab) Modifier.awcPartBox(fabBox, fabInk) else Modifier)) { ms, _ ->
             val kids = ms.mapNotNull { it.layoutId as? ToolbarChild }; if (kids != state.fabs) state.fabs = kids
             val shown = ms.filter { (it.layoutId as? ToolbarChild)?.hidden != true }.map { it.measure(Constraints()) }
             val w = shown.sumOf { it.width }; val h = shown.maxOfOrNull { it.height } ?: 0

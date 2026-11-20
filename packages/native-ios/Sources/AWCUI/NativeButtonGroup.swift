@@ -112,7 +112,9 @@ struct AWCNativeButtonGroupView: View {
     @Environment(\.awcEventDispatcher) private var dispatcher
     @Environment(\.awcEventTargetListeners) private var listeners
     @Environment(\.layoutDirection) private var inheritedDirection
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
+    @Environment(\.awcReducedMotion) private var reducedOverride
+    private var reduceMotion: Bool { reducedOverride ?? systemReduceMotion }
     init(node: AWCNode, onEvent: @escaping (AWCEvent) -> Void) {
         self.node = node; self.onEvent = onEvent
         _initialMotionEnabled = State(initialValue: node.properties["variant"]?.string != "connected")
@@ -133,6 +135,8 @@ struct AWCNativeButtonGroupView: View {
     private var focusItems: [AWCButtonFocusItem] { state.children.map { .init(id:$0.id,disabled:$0.properties["disabled"]?.bool == true,selected:state.selected[$0.id] == true) } }
     private func syncFocus() { focus.parent = parentFocus; focus.configure(items:focusItems,singleSelection:!multiple,rightToLeft:direction == .rightToLeft) }
     private func press(_ id: String) {
+        // one start per press (isPressed and the held pointer both report it)
+        if state.motionTarget == id, let started = state.motionStarted, Date().timeIntervalSince(started) < 0.05 { return }
         parentContext?.press(id)
         guard initialMotionEnabled, !connected, !reduceMotion, state.children.count > 1, !(required && state.selected[id] == true) else { return }
         state.motionTarget = id; state.motionStarted = Date()
@@ -191,7 +195,7 @@ struct AWCNativeButtonGroupView: View {
         return 0
     }
     var body: some View {
-        TimelineView(.animation(minimumInterval:1/60,paused:state.motionStarted == nil || reduceMotion)) { clock in
+        TimelineView(.animation(minimumInterval:nil,paused:state.motionStarted == nil || reduceMotion)) { clock in
             AWCNativeButtonGroupLayout(appearance:appearance,fullWidth:fullWidth,gap:gap,rtl:direction == .rightToLeft,stretchesHeight:parentContext != nil) {
                 ForEach(node.children) { authored in
                     let child = transformed(authored)

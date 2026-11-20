@@ -55,14 +55,12 @@ Installed with md-dialog and md-side-sheet; the shared details and results are i
 
 ## Platform differences and open decisions
 
-- **The 0.8 dragging indicator (open decision).** Chrome never renders the source's `--dragging` indicator opacity (0.8)
-  during a handle drag. Only hover (0.6) and rest (0.4) appear, so native follows Chrome.
+- **The 0.8 dragging indicator (decided).** Chrome never renders the source's `--dragging` indicator opacity (0.8)
+  during a handle drag. Only hover (0.6) and rest (0.4) appear, so native follows Chrome. The decision, its alternative and
+  the revert path are recorded in [md-bottom-sheet-source-review.md](md-bottom-sheet-source-review.md#decisions-autonomous-2026-10-31-reversible) (item 2).
 - **Slotted content shrinks as in the source (gate-7 R4-01, 2026-11-04).** The content is a flex column: slotted blocks shrink by
   their basis down to their minimum before the content scrolls (SwiftUI `AWCSheetFlexColumn`, Compose `AWCSheetFlexColumn` with
   min/max intrinsic heights). The sheet's natural height stays the unshrunk content. Both paint tests compare the full body box.
-- **Android density hand-off.** `AWCComponent` hands renderers only the resolved density. A local rung that defines
-  fewer spacing tokens than the inherited one therefore uses the defaults (`local-density-wins` case, reported as a
-  deviation).
 - **Hover.**
   - Native `:hover` follows pointer movement over an open sheet only. Chrome does not re-hit-test a sheet that moves
     under a still pointer.

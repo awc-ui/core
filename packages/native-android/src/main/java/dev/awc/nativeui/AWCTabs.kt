@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -122,12 +123,13 @@ data class AWCTabsAppearance(
 /**
  * `::part()` styling of md-tab: state-layer (background-color, opacity), icon / label (color), indicator / divider
  * (background-color). Part rules come from the outer tree, so they win over the hooks and every internal state rule (a fixed
- * state-layer opacity shows in every state, as in Chrome). `content` is a layout wrapper (exception record in md-tabs.md).
+ * state-layer opacity shows in every state, as in Chrome). `content` — the wrapper of icon, label and badge — takes a box
+ * ([AWCPartBox]: background, border, radius, padding with the layout shift; gate-7 R6-17).
  */
 @Immutable data class AWCTabPartAppearance(val stateLayerColor: String? = null, val stateLayerOpacity: Double? = null, val iconColor: String? = null,
-    val labelColor: String? = null, val indicatorColor: String? = null, val dividerColor: String? = null) {
+    val labelColor: String? = null, val indicatorColor: String? = null, val dividerColor: String? = null, val content: AWCPartBox? = null) {
     fun merging(o: AWCTabPartAppearance) = AWCTabPartAppearance(o.stateLayerColor ?: stateLayerColor, o.stateLayerOpacity ?: stateLayerOpacity, o.iconColor ?: iconColor,
-        o.labelColor ?: labelColor, o.indicatorColor ?: indicatorColor, o.dividerColor ?: dividerColor)
+        o.labelColor ?: labelColor, o.indicatorColor ?: indicatorColor, o.dividerColor ?: dividerColor, AWCPartBox.merge(content, o.content))
     internal val layerColor get() = stateLayerColor?.let { awcRippleHex(it) }
     internal val layerOpacity get() = stateLayerOpacity?.takeIf { it.isFinite() }?.coerceIn(0.0, 1.0)
     internal val icon get() = iconColor?.let { awcRippleHex(it) }
@@ -135,9 +137,9 @@ data class AWCTabsAppearance(
     internal val indicator get() = indicatorColor?.let { awcRippleHex(it) }
     internal val divider get() = dividerColor?.let { awcRippleHex(it) }
     companion object {
-        /** Laboratory names (the fields above). */
+        /** Laboratory names (the fields above; `content` as an [AWCPartBox] map). */
         fun fromValues(v: Map<String, Any?>) = AWCTabPartAppearance(v["stateLayerColor"]?.toString(), (v["stateLayerOpacity"] as? Number)?.toDouble(),
-            v["iconColor"]?.toString(), v["labelColor"]?.toString(), v["indicatorColor"]?.toString(), v["dividerColor"]?.toString())
+            v["iconColor"]?.toString(), v["labelColor"]?.toString(), v["indicatorColor"]?.toString(), v["dividerColor"]?.toString(), AWCPartBox.fromValue(v["content"]))
     }
 }
 /** `::part(container)` of md-tabs: the scrolling strip's background-color (painted over the host background). */
@@ -203,6 +205,8 @@ internal class TabChild {
     var props by mutableStateOf<Props>(emptyMap())
     var slotIcon by mutableStateOf(false)
     var slotBadgeWidth by mutableStateOf<Double?>(null)
+    /** The tab's `::part(content)` box (gate-7 R6-17), reported by the tab: it takes part in the strip's layout. */
+    var contentBox by mutableStateOf<AWCPartBox?>(null)
     val slotBadgeText = AWCSlotTextRegistry()
     val focus = FocusRequester()
     var focused by mutableStateOf(false)
@@ -296,7 +300,7 @@ internal object TabsLayout {
     }
     fun intrinsic(c: TabChild, m: TabMetrics, primary: Boolean, text: TabsText): Double {
         val content = contentSize(c, m, text).first
-        return max(m.minWidth, 2 * m.padX + if (primary) max(content, 24.0) else content)
+        return max(m.minWidth, 2 * m.padX + (if (primary) max(content, 24.0) else content) + (c.contentBox?.horizontal ?: 0.0))
     }
     /** `equal`: flex 1 1 0 with each tab's minimum (frozen on violation); `auto`: content; a length: exactly. */
     fun widths(kids: List<TabChild>, inherited: Double, primary: Boolean, mode: String, fixed: Double?, viewport: Double, text: TabsText): List<Double> {
@@ -320,15 +324,20 @@ internal object TabsLayout {
         val h = m.height(primary && c.stacked); g.height = h
         val indH = indicatorHeight ?: if (primary) 3.0 else 2.0
         val avail = max(0.0, w - 2 * m.padX); val size = contentSize(c, m, text); val lw = labelWidth(c, m, text)
-        val box: TabRect
+        // ::part(content) box (gate-7 R6-17): border + padding widen the content's border box (the primary indicator spans it); a
+        // primary content fills the tab's height and centres its children in the padded area, a secondary one grows around them.
+        val ins = c.contentBox.boxInsets; val insH = ins[1] + ins[3]; val insV = ins[0] + ins[2]
+        val outer: TabRect
         if (primary) {
-            val inner = min(max(size.first, 24.0), avail); val innerX = m.padX + (avail - inner) / 2
-            box = TabRect(innerX, 0.0, inner, max(0.0, h - indH - 2)); g.indicator = TabRect(innerX, h - indH, inner, indH)
+            val inner = min(max(size.first, 24.0) + insH, avail); val innerX = m.padX + (avail - inner) / 2
+            outer = TabRect(innerX, 0.0, inner, max(0.0, h - indH - 2)); g.indicator = TabRect(innerX, h - indH, inner, indH)
         } else {
-            val cw = min(size.first, avail)
-            box = TabRect(m.padX + (avail - cw) / 2, (h - size.second) / 2, cw, size.second); g.indicator = TabRect(0.0, h - indH, w, indH)
+            val cw = min(size.first + insH, avail); val ch = size.second + insV
+            outer = TabRect(m.padX + (avail - cw) / 2, (h - ch) / 2, cw, ch); g.indicator = TabRect(0.0, h - indH, w, indH)
         }
-        g.content = box
+        g.content = outer
+        // The content area: the border box less border and padding (physical edges).
+        val box = TabRect(outer.x + ins[3], outer.y + ins[0], max(0.0, outer.w - insH), max(0.0, outer.h - insV))
         val stackW = min(size.first, box.w); val stackH = size.second; val stackY = box.y + (box.h - stackH) / 2
         val labelRoom = if (c.inline) stackW - m.icon - 8 else stackW
         val labelW = min(lw.second, max(0.0, labelRoom)); val textW = max(0.0, labelW - (lw.second - lw.first))
@@ -680,6 +689,7 @@ internal fun NativeTab(p: Props, emit: EventSink, slot: Slot?, child: TabChild?)
     val focusVisible = child.focused && !child.pointerFocus
     val hover = !disabled && child.hover; val pressed = !disabled && child.pressed
     val parts = LocalAWCTabPartAppearance.current
+    SideEffect { if (child.contentBox != parts.content) child.contentBox = parts.content }
     val targets = TabTargets(if (disabled) pal.disabled else if (active) pal.activeLabel else pal.inactiveLabel, parts.icon ?: if (active) pal.activeIcon else pal.inactiveIcon,
         parts.layerOpacity ?: if (disabled) 0.0 else if (pressed || focusVisible) 0.12 else if (hover) 0.08 else 0.0, if (active) 1.0 else 0.0,
         if (active) listOf(0.0, 1.0) else listOf(0.0, if (ctx.primary) 0.88 else 1.0), ctx.primary, ctx.reduced, pal.glide)
@@ -748,6 +758,10 @@ internal fun NativeTab(p: Props, emit: EventSink, slot: Slot?, child: TabChild?)
         }
         .inspectAWCNode(inspection, "", "md-tab", null)) {
         if (g != null) {
+            // ::part(content) box (gate-7 R6-17): over the state layer and the divider, under the tab's content and the indicator (the
+            // source's stacking order), clipped by the tab as the strip's scroll container clips it.
+            parts.content?.takeIf { it.paints }?.let { b -> val cb = g.content
+                Box(Modifier.fillMaxSize().drawBehind { clipRect { drawAWCPartBox(b, color, Offset((cb.x * density).toFloat(), (cb.y * density).toFloat()), Size((cb.w * density).toFloat(), (cb.h * density).toFloat())) } }) }
             val ic = g.icon
             if (child.icon.isNotEmpty() && ic != null) Box(Modifier.offset(ic.x.dp, ic.y.dp).size(ic.w.dp, ic.h.dp).clearAndSetSemantics { }, contentAlignment = Alignment.Center) {
                 val fs = with(LocalDensity.current) { m.icon.dp.toSp() }
@@ -806,7 +820,7 @@ internal fun NativeTab(p: Props, emit: EventSink, slot: Slot?, child: TabChild?)
             "name" to child.name, "width" to g.width, "height" to g.height, "coords" to coords,
             "rects" to mapOf("content" to g.content, "icon" to g.icon, "label" to g.label, "indicator" to g.indicator, "divider" to g.divider, "badge" to g.badge)
                 .mapValues { (_, r) -> r?.let { listOf(it.x, it.y, it.w, it.h) } }, "indicatorColor" to (parts.indicator ?: pal.indicator), "divider" to (parts.divider ?: pal.tabDivider), "container" to pal.container,
-            "labelColor" to (parts.label ?: color), "layerColor" to (parts.layerColor ?: color))
+            "labelColor" to (parts.label ?: color), "layerColor" to (parts.layerColor ?: color), "contentBox" to parts.content?.probe(color))
     }
 }
 
@@ -848,6 +862,9 @@ internal fun NativeTabPanel(p: Props, emit: EventSink, slot: Slot?, child: Panel
     val active = child?.active ?: p.bool("active")
     val probe = LocalAWCTabsProbe.current
     val ring = awcRippleHex(LocalAWCThemeTokens.current["--md-sys-color-primary"]) ?: Color(0xFF6750A4)
+    // The source sets no colour on the panel: slotted text inherits the page colour. Natively inherited text in a panel paints the
+    // theme's on-surface colour on both platforms (gate-7 R6-23; decision in md-tabs-source-review.md).
+    val onSurface = awcRippleHex(LocalAWCThemeTokens.current["--md-sys-color-on-surface"]) ?: Color(0xFF1C1B1F)
     val density = LocalDensity.current.density
     var focused by remember { mutableStateOf(false) }
     val label = child?.label ?: ""
@@ -865,6 +882,6 @@ internal fun NativeTabPanel(p: Props, emit: EventSink, slot: Slot?, child: Panel
                 val w = 3 * density; val o = 2 * density + w / 2
                 drawRoundRect(ring, topLeft = Offset(-o, -o), size = Size(size.width + 2 * o, size.height + 2 * o), cornerRadius = CornerRadius(6 * density + w / 2), style = Stroke(w))
             }
-        }) { slot?.invoke("") }
+        }) { CompositionLocalProvider(androidx.compose.material3.LocalContentColor provides onSurface) { slot?.invoke("") } }
     if (probe != null) SideEffect { probe.panels[p.str("id")] = mapOf("active" to active, "label" to label, "tabStop" to active, "focused" to focused, "focusVisible" to (focused && active)) }
 }

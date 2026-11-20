@@ -1,0 +1,200 @@
+{
+ "tag": "md-stepper",
+ "case": "horizontal",
+ "elements": [
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup:Progress"
+   ],
+   "depth": 7,
+   "frame": [
+    101.66666666666666,
+    310,
+    52.66666666666666,
+    68
+   ],
+   "interactive": true,
+   "label": "Step 1 of 3: Account, current",
+   "traits": [
+    "button"
+   ],
+   "value": "Expanded"
+  },
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup:Progress"
+   ],
+   "depth": 7,
+   "frame": [
+    286,
+    310,
+    68,
+    68
+   ],
+   "label": "Step 2 of 3: Workspace",
+   "traits": [
+    "button",
+    "notEnabled"
+   ],
+   "value": "Collapsed"
+  },
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup:Progress"
+   ],
+   "depth": 7,
+   "frame": [
+    486,
+    310,
+    52,
+    68
+   ],
+   "label": "Step 3 of 3: Review",
+   "traits": [
+    "button",
+    "notEnabled"
+   ],
+   "value": "Collapsed"
+  },
+  {
+   "class": "AccessibilityNode",
+   "containers": [
+    "semanticGroup:Progress",
+    "semanticGroup:Account"
+   ],
+   "depth": 8,
+   "frame": [
+    32,
+    393.8359375,
+    406.66666666666663,
+    20.333333333333314
+   ],
+   "label": "Complete this section, then continue to the next step.",
+   "traits": [
+    "staticText"
+   ]
+  },
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup:Progress",
+    "semanticGroup"
+   ],
+   "depth": 8,
+   "frame": [
+    447.3333333333333,
+    450,
+    63.666666666666686,
+    40
+   ],
+   "label": "Back",
+   "traits": [
+    "button",
+    "notEnabled"
+   ]
+  },
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup:Progress",
+    "semanticGroup"
+   ],
+   "depth": 8,
+   "frame": [
+    519,
+    450,
+    89,
+    40
+   ],
+   "interactive": true,
+   "label": "Continue",
+   "traits": [
+    "button"
+   ]
+  }
+ ],
+ "focus": [
+  {
+   "firstResponder": {
+    "class": "AWCNativeButtonFocusView",
+    "frame": [
+     101.66666666666666,
+     310,
+     52.66666666666666,
+     68
+    ],
+    "interactive": true,
+    "label": "Step 1 of 3: Account, current",
+    "traits": [
+     "button"
+    ],
+    "value": "Expanded"
+   }
+  },
+  {
+   "firstResponder": {
+    "class": "AWCNativeButtonFocusView",
+    "frame": [
+     519,
+     450,
+     89,
+     40
+    ],
+    "interactive": true,
+    "label": "Continue",
+    "traits": [
+     "button"
+    ]
+   }
+  },
+  {},
+  {
+   "firstResponder": {
+    "class": "AWCNativeButtonFocusView",
+    "frame": [
+     101.66666666666666,
+     310,
+     52.66666666666666,
+     68
+    ],
+    "interactive": true,
+    "label": "Step 1 of 3: Account, current",
+    "traits": [
+     "button"
+    ],
+    "value": "Expanded"
+   }
+  },
+  {
+   "firstResponder": {
+    "class": "AWCNativeButtonFocusView",
+    "frame": [
+     519,
+     450,
+     89,
+     40
+    ],
+    "interactive": true,
+    "label": "Continue",
+    "traits": [
+     "button"
+    ]
+   }
+  },
+  {}
+ ],
+ "id": "md-stepper/horizontal",
+ "image": {
+  "scale": 3,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "ios": "26.3.1",
+ "platform": "ios"
+}

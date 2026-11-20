@@ -63,6 +63,9 @@ struct SwitchStatesGrid {
     static let state = SwitchStatesFixtureState()
     static var host: NSHostingView<SwitchStatesFixture>!, window: NSWindow!
     static var checks = 0, failures: [String] = [], report: [[String: Any]] = [], skipped: [String] = []
+    // Story 9-39: crossing-offset limits in ms (late limit env-overridable for diagnostics only; default 17 ms = about one frame).
+    static let crossingLevel = 0.04, crossingLimit = ProcessInfo.processInfo.environment["AWC_SWITCH_STATES_CROSSING_LIMIT"].flatMap(Double.init) ?? 17.0, crossingEarly = 34.0
+    static var crossingMeasured = 0, crossingUnmeasurable = 0
     static func check(_ value: Bool, _ name: String) { checks += 1; if !value { failures.append(name); print("FAIL: " + name); fflush(stdout) } }
     static func pump(_ duration: Double = 0.1) { let end = Date().addingTimeInterval(duration); repeat { while let e = NSApp.nextEvent(matching: .any, until: .distantPast, inMode: .default, dequeue: true) { NSApp.sendEvent(e) }; host.layoutSubtreeIfNeeded(); host.displayIfNeeded(); _ = RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.002)) } while Date() < end }
     static func now() -> Double { CACurrentMediaTime() * 1000 }
@@ -216,6 +219,52 @@ struct SwitchStatesGrid {
             let varies = Set(web.map { readWeb($0).map { ($0 * 1000).rounded() } }).count > 1
             check((compared[prop] ?? 0) > (varies ? 8 : 0), "\(name) \(prop) samples compared (\(compared[prop] ?? 0))")
         }
+        // Story 9-39 (s7-20-02 pattern): the crossing-offset check. The envelope above compares every native frame with Chrome over
+        // [t-34, t+40] ms, so a state layer that starts 33 ms late (and, at most, a thumb that does) still sits inside it. Here the
+        // half-crossings (state layer: opacity 0.04 up/down; handle position: the middle of Chrome's travel) are located by linear
+        // interpolation between frames on both sides, and every Chrome crossing needs a native crossing of the same direction within
+        // [-crossingEarly, +crossingLimit] ms. A Chrome crossing inside a frame gap wider than the shared window (34 ms) has no Chrome
+        // frame to locate it: counted and printed (CROSS-UNMEASURABLE), not compared. The shared window above is unchanged.
+        // Native frames are sampled at render times only, so a snap (reduced motion) leaves a held value for longer than 34 ms before the render
+        // that shows the new one: across such a gap the crossing is the render of the new value, not an interpolation over the held span.
+        for prop in ["state layer", "handle position"] {
+            guard let pr = props.first(where: { $0.0 == prop }) else { continue }
+            func scalar(_ v: [Double]) -> Double { prop == "state layer" ? max(v[0], 0) : v[0] }
+            let webSeries: [(Double, Double)] = web.compactMap { w in guard let t = w["t"].number, let v = pr.2(w).first else { return nil }; return (t, scalar([v])) }
+            guard let firstWeb = webSeries.first?.0, let lo = webSeries.map(\.1).min(), let hi = webSeries.map(\.1).max() else { continue }
+            let level = prop == "state layer" ? crossingLevel : (lo + hi) / 2
+            if prop != "state layer" && hi - lo < 2 { continue }
+            func crossings(_ p: [(Double, Double)], held: Bool = false) -> [(Double, Bool, Double)] {
+                var out: [(Double, Bool, Double)] = []
+                for k in 1..<max(p.count, 1) { let (t0, v0) = p[k - 1], (t1, v1) = p[k]
+                    if (v0 < level && v1 >= level) || (v0 >= level && v1 < level), v1 != v0 { out.append((held && t1 - t0 > 34 ? t1 : t0 + (level - v0) * (t1 - t0) / (v1 - v0), v1 > v0, t1 - t0)) } }
+                return out
+            }
+            var nat: [(Double, Double)] = [], seenAt = Set<Double>()
+            for s in samples { guard let v = pr.3(s), !v.isEmpty else { continue }; let at = s.renderT ?? s.t
+                if !seenAt.insert(at).inserted { continue }; nat.append((webTime(at), scalar(v))) }
+            nat.sort { $0.0 < $1.0 }
+            let nc = crossings(nat.filter { $0.0 - 34 >= firstWeb }, held: true), wc = crossings(webSeries)
+            var measured = 0, unmeasurable = 0
+            var iosOffsets: [String] = []
+            for w in wc where nat.first.map({ w.0 > $0.0 + 34 }) ?? false && nat.last.map({ w.0 < $0.0 - 34 }) ?? false {
+                if w.2 > 34 { unmeasurable += 1; print(String(format: "CROSS-UNMEASURABLE %@ %@ web %.1f gapweb %.0f", name, prop, w.0 - webT0, w.2)); continue }
+                let bestC = nc.filter { $0.1 == w.1 }.min { abs($0.0 - w.0) < abs($1.0 - w.0) }; let best = bestC.map { $0.0 - w.0 }
+                measured += 1
+                if let best { print(String(format: "CROSS %@ %@ %@ web %.1f gapweb %.0f gapnat %.0f offset %.1f", name, prop, w.1 ? "up" : "down", w.0 - webT0, w.2, bestC?.2 ?? -1, best)) }
+                #if os(iOS)
+                // Story 9-39, coordinator decision 2026-11-20: on iOS the crossings are measured and printed, not judged, until the iOS offset of the focus step is decided.
+                iosOffsets.append(String(format: "%@ web %d %@", w.1 ? "up" : "down", Int(w.0 - webT0), best.map { String(format: "%.1f", $0) } ?? "none"))
+                #else
+                check(best.map { $0 <= crossingLimit && $0 >= -crossingEarly } ?? false, "\(name) \(prop) half-crossing \(w.1 ? "up" : "down") at web \(Int(w.0 - webT0)): native offset \(best.map { String(format: "%.1f", $0) } ?? "none") ms outside -\(crossingEarly)/+\(crossingLimit) ms")
+                #endif
+            }
+            #if os(iOS)
+            print("crossing offsets, iOS, not judged yet: \(name) \(prop) limit -\(crossingEarly)/+\(crossingLimit) ms: " + iosOffsets.joined(separator: "; "))
+            #endif
+            print("CROSS-SUMMARY \(name) \(prop) web \(wc.count) measured \(measured) unmeasurable \(unmeasurable)")
+            crossingMeasured += measured; crossingUnmeasurable += unmeasurable
+        }
         // Phase paint: every flat pixel of each source phase screenshot. The source's probes are native <button>s
         // (plain spacers here, not part of the switch); inside the form "after" follows the switch 1px later.
         let b = c["before"], probe = CGRect(x: b["x"].number!, y: b["y"].number!, width: b["width"].number!, height: b["height"].number!)
@@ -263,6 +312,8 @@ struct SwitchStatesGrid {
         }
         if only == nil { heldSpace() }
         if let output = ProcessInfo.processInfo.environment["AWC_SWITCH_STATES_OUTPUT"] { try! JSONSerialization.data(withJSONObject: ["checks": checks, "failures": failures, "skipped": skipped, "report": report], options: [.prettyPrinted, .sortedKeys]).write(to: URL(fileURLWithPath: output)) }
+        print("CROSS-TOTAL measured \(crossingMeasured) unmeasurable \(crossingUnmeasurable)")
+        if only == nil { check(crossingMeasured >= 20, "crossing-offset check measured \(crossingMeasured) crossings (at least 20 expected)") }
         print("Switch native states: \(checks - failures.count)/\(checks) checks passed")
         window.close(); if !failures.isEmpty { exit(1) }
     }

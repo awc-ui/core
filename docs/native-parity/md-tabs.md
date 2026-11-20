@@ -71,19 +71,21 @@ iOS and Android (n1-A127, `outputs/native-parity/_ax-n1/`).
 
 Installed in the canonical tree through the main queue: n1-067 (renderers, Laboratory integration, docs; native compiler, studio tabs + navigation-bar suites 6/6, Swift package build, Android compile, Laboratory APK); every install was applied to a copy of the tree first. Verified on the canonical tree on 2026-10-30 (n1-069): the Laboratory playground rebuilt with SwiftPM's build-manifest cache disabled (n1-067's playground build had reused a manifest from before the install), SwiftUI live host 38/38, studio suite 775/778 (the 3 failures are md-text-field's), Laboratory server restarted, macOS tools/ax on the canonical build 6 cases with 0 open findings (`outputs/native-parity/_ax-n1-canonical/`).
 
-## Gate-7 fixes (d6, 2026-10-31)
+## Gate-7 fixes (d6, 2026-10-31 … 2026-11-05)
 
-Evidence: `work/d6-lab/out/` (jobs d6-002…d6-007, d6-A001; canonical install `d6-install-1`). Re-applied to canonical with the
-anchored patch scripts in `work/d6-lab/` (r601, r608, r610, r614).
+Evidence: `work/d6-lab/out/` (jobs d6-002…d6-031, d6-A001…d6-A007, d6b-001…005); canonical installs `d6-install-1` (d6-009),
+`d6-install-2` (d6-019) and `d6-install-3` (d6-032), each re-applying the anchored, pre-image-checked patch scripts in
+`work/d6-lab/` (r601, r608, r610, r614, r603/*, r611, r609*) with automatic rollback.
 
 ### iOS simulator (gate 6, R6-07)
 
 | Suite | iPhone 17 Pro · iOS 26.3 | iPad Pro 11-inch (M5) · iOS 26.3 | iPhone 16 Pro · iOS 18.6 |
 | --- | --- | --- | --- |
-| `NativeTabsPaintIntegration` | 14297/14297 | 14297/14297 | 14297/14297 |
-| `NativeTabsStatesIntegration` | 132004/132004 | 14500/14500 | 14500/14500 |
+| `NativeTabsPaintIntegration` | 15379/15379 | 15379/15379 | 15379/15379 |
+| `NativeTabsStatesIntegration` | 132004/132004 | 132004/132004 | 132004/132004 |
 
-Xcode 26.3, `apps/native-ios-parity` harness (`work/d6-lab/harness.sh`), d6's own simulators (AWC-d6, AWC-d6-ipad, AWC-d6-18).
+Xcode 26.3, `apps/native-ios-parity` harness (`work/d6-lab/harness.sh`), d6's own simulators (AWC-d6, AWC-d6-ipad, AWC-d6-18), on the
+installed code (job d6-030, logs `work/d6-lab/out/ios-final/console-<simulator>-<suite>.log`).
 
 ### Findings
 
@@ -94,7 +96,13 @@ Xcode 26.3, `apps/native-ios-parity` harness (`work/d6-lab/harness.sh`), d6's ow
   reaches the panel (`work/d6-lab/out/d6-003/ax`). Tabs paint 14297/14297 and states 137124/137124 (macOS) unchanged.
 - **R6-09 (`controls` / aria-controls).** macOS: each tab's AWC focus element reports `AXLinkedUIElements` = its panel's
   element (explicit `controls` id, else md-tab-panels' auto-wiring by index); tools/ax now records Web `controls` and macOS
-  linked elements and compares them (finding kind `relation`).
+  linked elements and compares them (finding kind `relation`). Verified through the Accessibility API in the Laboratory host
+  (d6-031): scenario `tabs-panels` renders the Studio's composed reference (md-tabs + md-tab-panels for them) and
+  `test-live-tabs.mjs` reads the active tab's AXLinkedUIElements — Overview → its panel, after `selectTab(2)` Settings → its
+  panel. The lookup walks the window's accessibility tree including SwiftUI's accessibility nodes (they implement the
+  NSAccessibility methods without the formal protocol conformance). An inactive tab's panel is hidden from accessibility, so
+  only the active tab reports a link (Chrome leaves a hidden aria-controls target out of the relation). tools/ax cases render
+  one component each and do not exercise the relation.
   **Exception record for iOS and Android (proposed; reviewer acceptance pending).**
   - *Source behaviour:* `aria-controls` relates a tab to its panel (Chrome: AXLinkedUIElements on macOS).
   - *Platform/API:* UIKit accessibility and Compose semantics.
@@ -106,7 +114,13 @@ Xcode 26.3, `apps/native-ios-parity` harness (`work/d6-lab/harness.sh`), d6's ow
   - *Evidence:* `work/d6-lab/out/d6-003/ax`, `work/d6-lab/out/d6-A001`.
 - **R6-14 (CEM).** `--md-tab-glide-x` / `--md-tab-glide-scale` are annotated `@private` in md-tab.css and no longer listed as
   hooks (the generator skips `@private` names).
-- **R6-03 (parts): open** (see Remaining).
+- **R6-03 (parts).** Typed: md-tab `AWCTabPartAppearance` (`.awcTabPartAppearance(_:for:)` / `AWCTabPartAppearanceScope`) — state-layer (colour, opacity), icon, label, indicator and divider colours; md-tabs `AWCTabsPartAppearance` (`.awcTabsPartAppearance(_:)` / `AWCTabsPartAppearanceScope`) — the strip's container background. Part rules come from the outer tree, so a typed value wins over the hooks and every internal state rule (a state-layer opacity shows in every state), as `::part()` rules do in Chrome. Oracle: Mac Chrome 153 `::part()` cases (8 cases in `_nav-web-reference/tabs.html?parts`: primary / secondary × light / dark × LTR / RTL, disabled, label-only; job d6-012). SwiftUI: NativeTabsPaintIntegration 15379/15379 (macOS, d6-026); Compose: NativeTabsParityTest paint + states pass (d6-A002). Laboratory: `visualParts` in both support policies and copyable SwiftUI / Compose examples for every typed part (22 SwiftUI examples typecheck (d6-026), 22 Compose examples compile (d6-A007)).
+
+#### Typed box target (gate-7 R6-17): md-tab ::part(content)
+
+`::part(content)` of md-tab is the flex column holding icon, label and badge; its border and padding add to the tab's content height. It is a typed part target, not an exception: `AWCPartBox` (background, border width / colour, border radius, padding shorthand; physical edges, content-box) on `AWCTabPartAppearance(content:)` for SwiftUI and `AWCTabPartAppearance(content:)` for Compose, taking layout space around the wrapper's content as in Chrome (everything inside and after it shifts), and the Laboratory's `visualParts` / copyable examples carry it. Oracle: Mac Chrome 153 `::part(content)` box cases merged into the paint fixtures; paint checks compare the typed box (background, border, radius, padding) and the wrapper geometry, plus flat pixels, on macOS, iOS and Android ([NativeTabsPaintIntegration.swift](../../packages/native-ios/Tests/NativeTabsPaintIntegration.swift), [NativeTabsParityTest.kt](../../apps/native-android-playground/src/androidTest/java/dev/awc/playground/NativeTabsParityTest.kt)).
+
+- **R6-23 (decision, d6, 2026-11-14).** Inherited text in an md-tab-panel (the source sets no colour; the Web page inherits its body colour) is painted in the theme's `on-surface` token colour on SwiftUI and Compose. Compose painted #000000 before; the Laboratory live test now reads the panel copy's glyph ink (expected #1C1B1F in light). Alternative: leave the colour to the host's `LocalContentColor`; revert by removing the panel colour in AWCTabs.kt.
 
 ## Remaining
 

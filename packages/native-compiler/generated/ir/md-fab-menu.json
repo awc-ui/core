@@ -68,7 +68,7 @@
       "reflect": false,
       "attribute": "quick",
       "optional": false,
-      "description": "Skip open/close animation."
+      "description": "Close without the exit delay: `close()` commits `open=false` at once (mdClose, whenClosed). Entry motion still plays."
     },
     {
       "name": "menuLabel",
@@ -255,43 +255,43 @@
       "code": "DOM_GLOBAL",
       "severity": "warning",
       "message": "Document access requires a native adapter.",
-      "line": 234
+      "line": 239
     },
     {
       "code": "DOM_LAYOUT",
       "severity": "warning",
       "message": "getBoundingClientRect depends on browser semantics and requires a native adapter.",
-      "line": 399
+      "line": 423
     },
     {
       "code": "DOM_QUERY",
       "severity": "warning",
       "message": "querySelector depends on browser semantics and requires a native adapter.",
-      "line": 407
+      "line": 431
     },
     {
       "code": "SHADOW_DOM",
       "severity": "warning",
       "message": "shadowRoot depends on browser semantics and requires a native adapter.",
-      "line": 407
+      "line": 431
     },
     {
       "code": "CSS_RUNTIME",
       "severity": "warning",
       "message": "Computed CSS must become native theme/layout values.",
-      "line": 411
+      "line": 435
     },
     {
       "code": "ANIMATION_FRAME",
       "severity": "warning",
       "message": "Animation timing requires a native lifecycle adapter.",
-      "line": 482
+      "line": 506
     },
     {
       "code": "CANCELABLE_EVENT",
       "severity": "warning",
       "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
-      "line": 19
+      "line": 20
     }
   ],
   "source": {
@@ -299,7 +299,7 @@
     "styleUrl": "md-fab-menu.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "1e5dfaaf67ac865a77ac597df16f739bfe4facebe74bba502f3bb6239bd2fb57"
+    "sha256": "897ae957bc225080a3fadaeb07fa48f328359523ef572ae72714fa8486eac059"
   },
   "styles": [
     {

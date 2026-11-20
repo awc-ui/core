@@ -1,6 +1,6 @@
 # Button Group migration audit
 
-Status: Web, macOS SwiftUI, Android and Laboratory checkpoints passed, including the final nested/wrapped-child corrections. iOS runtime execution and the separate final audit remain pending.
+Status: Web, macOS SwiftUI, Android and Laboratory checkpoints passed, including the final nested/wrapped-child corrections. iOS simulator execution (iPhone 17 Pro iOS 26.3, iPhone 16 Pro iOS 18.6, gate 6) passed. Gate 7 re-check s7-7 (2026-11-15) reopened one iOS 18.6 sample (R1-17, a display frame lost mid-motion); story 9-5 fixes the family-states sampler (stall attribution across a lost frame) and a gate-7 re-check of md-button-group follows.
 
 ## Source contract
 
@@ -42,6 +42,10 @@ Reference artifacts are at `../../../../outputs/native-parity/md-button-group`: 
 The independently identified nested/wrapped-child corrections, actual native checks and host rebuilds are complete. A separate final integration review remains pending. Shared gate tests must run again after later components change shared code. iOS simulator/device execution is unavailable in this environment and remains an unverified gate; macOS SwiftUI execution does not replace it.
 
 <!-- fi:ios-gate6:start -->
+## Reduced motion (gate-7 decision)
+
+The standard variant's 400 ms press motion (the pressed button grows, its neighbours shrink; Web Animations) is spatial motion and is skipped under `prefers-reduced-motion: reduce` (`md-button-group.reduced-motion.e2e.ts`); SwiftUI and Compose skip it too. A fast click still runs the full motion after the release (Chrome 153 record `bg-*/click2`): the natives start it from the held pointer.
+
 ## iOS simulator execution (gate 6)
 
 The same fixtures and Chrome oracles as the macOS runs, compiled for the simulator by the [iOS parity harness](ios-harness.md)

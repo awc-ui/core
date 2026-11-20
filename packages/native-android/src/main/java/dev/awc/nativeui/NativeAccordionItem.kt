@@ -1,6 +1,7 @@
 @file:OptIn(androidx.compose.ui.text.ExperimentalTextApi::class)
 package dev.awc.nativeui
 
+import androidx.compose.foundation.border
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -206,11 +207,18 @@ private enum class HeaderPart { Drag, Leading, Text, Trailing }
     remember(candidate,child) { NativeAccordionRegistration(candidate,child) }
     candidate?.retarget(child)
     DisposableEffect(controller,item) { controller?.item=item;onDispose { if(controller?.item===item) controller.item=null } }
+    item.hidden=p.bool("hidden")
+    if(item.hidden) return
     val owner=candidate?.takeIf { item.index>=0 && item.owner===it.state }
     val configuration=owner?.state?.configuration ?: NativeAccordionConfiguration()
     val outlined=configuration.variant=="outlined"
     val d=LocalAWCNativeDensity.current
-    val appearance=LocalAWCAccordionItemAppearance.current.normalized()
+    // forced-colors: author colours are forced (backgrounds Canvas, text and icons CanvasText); state layers are display: none.
+    val forcedPalette=awcForcedColors()
+    val appearance=LocalAWCAccordionItemAppearance.current.normalized().let { a-> forcedPalette?.let { f-> a.copy(containerColor=f.canvas,containerColorExpanded=f.canvas,
+        containerColorDragging=f.canvas,headerColor=f.canvas,headerColorExpanded=f.canvas,headlineColor=f.canvasText,headlineColorExpanded=f.canvasText,supportingColor=f.canvasText,
+        iconColor=f.canvasText,iconColorExpanded=f.canvasText,stateLayerColor="#00000000",stateLayerColorExpanded="#00000000",elevation=emptyList(),elevationExpanded=emptyList(),
+        chassisHandleColor=f.canvasText) } ?: a }
     val groupAppearance=LocalAWCAccordionAppearance.current.normalized()
     val colors=MaterialTheme.colorScheme
     val tokens=LocalAWCThemeTokens.current
@@ -328,7 +336,7 @@ private enum class HeaderPart { Drag, Leading, Text, Trailing }
     val chassisHoverHook=appearance.chassisHandleBackgroundHover?.let(::statusDotColor)
     val chassisStateLayer=hex(appearance.stateLayerColor,colors.onSurface)
     chassisStyle.live={ chassisStyle.pointer.copy(dragging=owner?.state?.chassisDragging==true,expanded=item.expanded) }
-    chassisStyle.targets={ accordionChassisTargets(chassisStyle.live(),chassisHook,chassisHoverHook,colors.onSurfaceVariant,colors.onSecondaryContainer,colors.primary,chassisStateLayer) }
+    chassisStyle.targets={ accordionChassisTargets(chassisStyle.live(),chassisHook,chassisHoverHook,colors.onSurfaceVariant,colors.onSecondaryContainer,colors.primary,chassisStateLayer,forcedPalette!=null) }
     val accordionViewport=LocalAWCAccordionViewport.current
     val chassisBounds=remember { arrayOfNulls<androidx.compose.ui.geometry.Rect>(1) }
     SideEffect {
@@ -396,8 +404,10 @@ private enum class HeaderPart { Drag, Leading, Text, Trailing }
         .background(container,currentShape)
         .accordionShadow(currentShape,shadow,true)
         .then(if(dragging) Modifier.clip(currentShape) else Modifier)
-        .then(if(forced) Modifier.drawWithContent { drawContent();drawOutline(currentShape.createOutline(size,layoutDirection,this),colors.onSurface,style=Stroke(1.dp.toPx())) } else Modifier)
-        .inspectAWCNode(ctx,"","md-accordion-item")) {
+        .awcCursor(if(dragging) AWCCursorStyle.Grabbing else null,stable=true)
+        .inspectAWCNode(ctx,"","md-accordion-item")
+        // forced-colors: `:host { border: 1px solid CanvasText }`, inside the item's border box.
+        .then(if(forcedPalette!=null) Modifier.border(1.dp,awcColor(forcedPalette.canvasText,Color.White),currentShape).awcBorderInset(1.dp) else Modifier)) {
       Layout(contents=listOf({
         // ---- heading (source h1-h6 box) + header ----
         Box(Modifier.fillMaxWidth()
@@ -482,8 +492,9 @@ private enum class HeaderPart { Drag, Leading, Text, Trailing }
                     if(headerPart.border>0) { val w=(headerPart.border*density.density).toFloat()
                         inset(w/2) { drawOutline(headerStyleShape.createOutline(size,layoutDirection,this),hex(headerPart.borderColor,headerInkStyled),style=Stroke(w)) } }
                     if(focusVisible) { val w=3.dp.toPx()
-                        inset(w/2) { drawOutline(headerStyleShape.createOutline(size,layoutDirection,this),if(forced) colors.primary else focusColor,style=Stroke(w)) } }
+                        inset(w/2) { drawOutline(headerStyleShape.createOutline(size,layoutDirection,this),focusColor,style=Stroke(w)) } }
                 }
+                .awcCursor(if(item.disabled) AWCCursorStyle.NotAllowed else AWCCursorStyle.Pointer)
                 .inspectAWCNode(ctx,"header","header")) {
                 if(!item.disabled && !forced) Box(Modifier.matchParentSize().absolutePadding(headerPart.border.dp,headerPart.border.dp,headerPart.border.dp,headerPart.border.dp)) {
                     Box(Modifier.fillMaxSize().inspectAWCNode(ctx,"state-layer","state-layer")
@@ -502,6 +513,7 @@ private enum class HeaderPart { Drag, Leading, Text, Trailing }
                                     val now=style.frameMillis
                                     alpha=dragPart.opacity?.toFloat() ?: style.gripOpacity.presented(now).toFloat()
                                     val scale=style.gripScale.presented(now).toFloat();scaleX=scale;scaleY=scale }
+                                .awcCursor(if(dragging) AWCCursorStyle.Grabbing else AWCCursorStyle.Grab)
                                 .inspectAWCNode(ctx,"drag-handle","drag-handle")
                                 .accordionDecor(hex(dragPart.backgroundColor,Color.Transparent),dragPart.border,hex(dragPart.borderColor,dragInk),dragPart.cornerShape ?: AccordionZeroShape)
                                 .clearAndSetSemantics {},AccordionBoxFrame((dragPart.width ?: 24.0).dp,(dragPart.height ?: 24.0).dp,dragPart.padding,dragPart.border)) {
@@ -688,7 +700,8 @@ private enum class HeaderPart { Drag, Leading, Text, Trailing }
         val total=body+(line?.height ?: 0)
         layout(width,total) { heading.place(px(headingMargin.left),headingY);panel.place(px(panelMargin.left),panelY);line?.place(0,body) }
       }
-      if(chassis && owner!=null) AccordionChassisHandle(Modifier.align(Alignment.TopCenter),owner,chassisStyle,chassisBounds,accordionViewport,ctx)
+      if(chassis && owner!=null) AccordionChassisHandle(Modifier.align(Alignment.TopCenter),owner,chassisStyle,chassisBounds,accordionViewport,ctx,
+          part(AWCAccordionItemPart.ChassisHandle),part(AWCAccordionItemPart.ChassisHandleBar))
     }
 }
 
@@ -699,11 +712,13 @@ private enum class HeaderPart { Drag, Leading, Text, Trailing }
  * release or cancellation ends it; payloads are physical viewport client coordinates.
  */
 @Composable private fun AccordionChassisHandle(modifier:Modifier,owner:NativeAccordionOwner,style:NativeAccordionChassisStyle,
-                                               bounds:Array<androidx.compose.ui.geometry.Rect?>,viewport:AccordionViewportHolder?,ctx:AWCInspectionContext?) {
+                                               bounds:Array<androidx.compose.ui.geometry.Rect?>,viewport:AccordionViewportHolder?,ctx:AWCInspectionContext?,
+                                               handlePart:AWCAccordionPartAppearance=AWCAccordionPartAppearance(),barPart:AWCAccordionPartAppearance=AWCAccordionPartAppearance()) {
     val density=LocalDensity.current.density
     @Suppress("UNUSED_VARIABLE") val v=style.version
     val coordinates=remember { arrayOfNulls<androidx.compose.ui.layout.LayoutCoordinates>(1) }
-    Box(modifier.padding(top=4.dp).size(52.dp,16.dp)
+    Box(modifier.padding(top=4.dp).size((handlePart.width ?: 52.0).dp,(handlePart.height ?: 16.0).dp)
+        .then(handlePart.opacity?.let { o-> Modifier.graphicsLayer { alpha=o.toFloat() } } ?: Modifier)
         .onGloballyPositioned { bounds[0]=it.boundsInRoot();coordinates[0]=it }
         .pointerInput(owner) {
             awaitPointerEventScope {
@@ -758,18 +773,22 @@ private enum class HeaderPart { Drag, Leading, Text, Trailing }
         }
         .drawBehind {
             @Suppress("UNUSED_VARIABLE") val vv=style.version
-            val c=style.handleBackground.presented(style.frameMillis)
-            if(c.alpha>0f) drawRoundRect(c,cornerRadius=androidx.compose.ui.geometry.CornerRadius(size.height/2,size.height/2))
+            // A declared ::part(chassis-handle) background wins in every state; its corner shape replaces the pill.
+            val c=handlePart.backgroundColor?.let(::statusDotColor) ?: style.handleBackground.presented(style.frameMillis)
+            if(c.alpha>0f) { val cs=handlePart.cornerShape
+                if(cs!=null) drawOutline(cs.createOutline(size,layoutDirection,this),c) else drawRoundRect(c,cornerRadius=androidx.compose.ui.geometry.CornerRadius(size.height/2,size.height/2)) }
         }
+        .awcCursor(if(owner.state.chassisDragging) AWCCursorStyle.Grabbing else AWCCursorStyle.Grab)
         .inspectAWCNode(ctx,"chassis-handle","chassis-handle")
         .clearAndSetSemantics {},contentAlignment=Alignment.Center) {
         Box(Modifier.layout { m,_->
                 @Suppress("UNUSED_VARIABLE") val vv=style.version
-                val w=(style.barWidth.presented(style.frameMillis)*density).roundToInt();val h=(4*density).roundToInt()
+                val w=((barPart.width ?: style.barWidth.presented(style.frameMillis))*density).roundToInt();val h=((barPart.height ?: 4.0)*density).roundToInt()
                 val p=m.measure(Constraints.fixed(w,h));layout(w,h) { p.place(0,0) } }
-            .graphicsLayer { @Suppress("UNUSED_VARIABLE") val vv=style.version;alpha=style.barOpacity.presented(style.frameMillis).toFloat() }
+            .graphicsLayer { @Suppress("UNUSED_VARIABLE") val vv=style.version;alpha=(barPart.opacity ?: style.barOpacity.presented(style.frameMillis)).toFloat() }
             .drawBehind { @Suppress("UNUSED_VARIABLE") val vv=style.version
-                drawRoundRect(style.barColor.presented(style.frameMillis),cornerRadius=androidx.compose.ui.geometry.CornerRadius(size.height/2,size.height/2)) }
+                val c=barPart.backgroundColor?.let(::statusDotColor) ?: style.barColor.presented(style.frameMillis);val cs=barPart.cornerShape
+                if(cs!=null) drawOutline(cs.createOutline(size,layoutDirection,this),c) else drawRoundRect(c,cornerRadius=androidx.compose.ui.geometry.CornerRadius(size.height/2,size.height/2)) }
             .inspectAWCNode(ctx,"chassis-handle-bar","chassis-handle-bar"))
     }
 }

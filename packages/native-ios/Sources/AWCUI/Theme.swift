@@ -110,3 +110,28 @@ public struct AWCNativeScope<Content: View>: View {
     public init(@ViewBuilder content: () -> Content) { self.content = content() }
     public var body: some View { content.environment(\.awcInteractionStore, store) }
 }
+
+extension AWCTheme {
+    /// The theme as forced colours paint md-accordion(+item): foreground roles (on-*, outline*, accent inks) become CanvasText,
+    /// backgrounds (surfaces, containers) Canvas, `secondary` (the focus rings, `outline-color: Highlight` in the source)
+    /// Highlight, and elevation shadows none.
+    func awcForced(_ palette: AWCForcedColorPalette?) -> AWCTheme {
+        guard let palette else { return self }
+        var value = self, tokens = self.tokens
+        for key in Array(tokens.keys) {
+            if key.hasPrefix("--md-sys-color-") { tokens[key] = Self.forcedRole(String(key.dropFirst(15)), palette) }
+            else if key.hasPrefix("--md-sys-elevation-") { tokens[key] = "none" }
+        }
+        value.tokens = tokens
+        value.primary = Color(awcHex: palette.canvasText); value.secondary = Color(awcHex: palette.highlight); value.tertiary = Color(awcHex: palette.canvasText)
+        value.error = Color(awcHex: palette.canvasText); value.surface = Color(awcHex: palette.canvas); value.background = Color(awcHex: palette.canvas)
+        value.onPrimary = Color(awcHex: palette.canvas); value.onSurface = Color(awcHex: palette.canvasText)
+        return value
+    }
+    static func forcedRole(_ role: String, _ p: AWCForcedColorPalette) -> String {
+        if role == "secondary" { return p.highlight }
+        let ink = role.hasPrefix("on-") || role.hasPrefix("inverse-on-") || role.hasPrefix("outline")
+            || ["primary", "tertiary", "error", "inverse-primary", "primary-fixed-dim", "secondary-fixed-dim", "tertiary-fixed-dim"].contains(role)
+        return ink ? p.canvasText : p.canvas
+    }
+}

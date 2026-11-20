@@ -35,6 +35,8 @@ public struct AWCButtonAppearance: Equatable, Sendable {
     public let maxWidth: Double?
     public let height: Double?
     public let minHeight: Double?
+    /// The focus ring's outline offset (CSS `outline-offset`, default 2px): md-date-picker's day and year cells use -1px.
+    public let focusRingOffset: Double?
 
     public init(
         containerColor: String? = nil,
@@ -65,7 +67,8 @@ public struct AWCButtonAppearance: Equatable, Sendable {
         maxWidth: Double? = nil,
         height: Double? = nil,
         minHeight: Double? = nil,
-        stateLayerOpacity: Double? = nil
+        stateLayerOpacity: Double? = nil,
+        focusRingOffset: Double? = nil
     ) {
         self.containerColor = Self.hex(containerColor)
         self.labelColor = Self.hex(labelColor)
@@ -96,6 +99,7 @@ public struct AWCButtonAppearance: Equatable, Sendable {
         self.height = Self.number(height, 0...2400)
         self.minHeight = Self.number(minHeight, 0...2400)
         self.stateLayerOpacity = Self.number(stateLayerOpacity, 0...1)
+        self.focusRingOffset = Self.number(focusRingOffset, -8...16)
     }
 
     /// Strict JSON values: booleans and numeric strings are not accepted as numbers.
@@ -132,7 +136,8 @@ public struct AWCButtonAppearance: Equatable, Sendable {
             focusRingColor: text("focusRingColor"),
             width: number("width"), minWidth: number("minWidth"), maxWidth: number("maxWidth"),
             height: number("height"), minHeight: number("minHeight"),
-            stateLayerOpacity: number("stateLayerOpacity")
+            stateLayerOpacity: number("stateLayerOpacity"),
+            focusRingOffset: number("focusRingOffset")
         )
     }
 
@@ -163,7 +168,8 @@ public struct AWCButtonAppearance: Equatable, Sendable {
             focusRingColor: local.focusRingColor ?? focusRingColor,
             width: local.width ?? width, minWidth: local.minWidth ?? minWidth, maxWidth: local.maxWidth ?? maxWidth,
             height: local.height ?? height, minHeight: local.minHeight ?? minHeight,
-            stateLayerOpacity: local.stateLayerOpacity ?? stateLayerOpacity
+            stateLayerOpacity: local.stateLayerOpacity ?? stateLayerOpacity,
+            focusRingOffset: local.focusRingOffset ?? focusRingOffset
         )
     }
 

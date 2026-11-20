@@ -50,7 +50,7 @@ struct MenuPaintFixture: View {
                         MenuAnchorView(node: n, theme: theme).frame(width: anchor.width, height: anchor.height)
                             .awcMenuAnchor(n.id).padding(.leading, anchor.minX).padding(.top, anchor.minY)
                     } else {
-                        AWCNativeView(node: n).fixedSize()
+                        MenuInlineFillFixture(node: n, size: c["inlineFill"])
                             .frame(width: box.width, alignment: rtl ? .topTrailing : .topLeading)
                             .environment(\.layoutDirection, rtl ? .rightToLeft : .leftToRight)
                             .padding(.leading, box.minX).padding(.top, box.minY)
@@ -59,6 +59,7 @@ struct MenuPaintFixture: View {
             }
         }
         .awcMenuAppearance(AWCMenuAppearance(css: hooks))
+        .modifier(MenuPartsFixture(parts: c["parts"].array))
         .awcMenuHeader(for: "m") { MenuHeaderView(nodes: all, theme: theme) }
         .awcMenuReducedMotion(false)
         .modifier(MenuGlobalDensity(value: density))
@@ -241,11 +242,44 @@ struct MenuGrid {
         window = NSWindow(contentRect: .init(x: -20000, y: -20000, width: 1200, height: 900), styleMask: [.borderless], backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false; window.colorSpace = .sRGB; window.contentView = host; window.orderFrontRegardless(); pump(0.2)
         let fixtures = URL(fileURLWithPath: #filePath).deletingLastPathComponent().appendingPathComponent("Fixtures")
-        let oracle = try! JSONDecoder().decode(AWCValue.self, from: Data(contentsOf: fixtures.appendingPathComponent("menu-web-paint.json")))
+        // Both Chrome oracles run by default (gate-7 r4 R4-23): menu-web-paint and menu-r4-paint (the R4-12 parts and the R4-14
+        // hooks); AWC_MENU_FIXTURE runs one of them.
+        let selected = ProcessInfo.processInfo.environment["AWC_MENU_FIXTURE"].map { [$0] } ?? ["menu-web-paint", "menu-r4-paint"]
         let only = ProcessInfo.processInfo.environment["AWC_MENU_ONLY"]
-        for c in oracle["cases"].array where only.map({ o in o.split(separator: ",").contains { c["name"].string.contains($0) } }) ?? true { run(c, shots: fixtures.appendingPathComponent("menu-web-paint")) }
+        for fixture in selected {
+            let oracle = try! JSONDecoder().decode(AWCValue.self, from: Data(contentsOf: fixtures.appendingPathComponent("\(fixture).json")))
+            for c in oracle["cases"].array where only.map({ o in o.split(separator: ",").contains { c["name"].string.contains($0) } }) ?? true { run(c, shots: fixtures.appendingPathComponent(fixture)) }
+        }
         if let out = ProcessInfo.processInfo.environment["AWC_MENU_OUTPUT"] { try! JSONSerialization.data(withJSONObject: ["checks": checks, "failures": failures, "report": report], options: [.prettyPrinted, .sortedKeys]).write(to: URL(fileURLWithPath: out)) }
         print("Menu native paint: \(checks - failures.count)/\(checks) checks passed")
         window.close(); if !failures.isEmpty { exit(1) }
+    }
+}
+
+/// Inline-fill cases (fixture `inlineFill`: the flex container's size): the menu fills it through .awcMenuInlineFill().
+struct MenuInlineFillFixture: View {
+    let node: AWCNode, size: AWCValue
+    var body: some View {
+        if let w = size["width"].number, let h = size["height"].number {
+            AWCNativeView(node: node).frame(width: w, height: h, alignment: .topLeading).awcMenuInlineFill()
+        } else { AWCNativeView(node: node).fixedSize() }
+    }
+}
+/// A case's `::part` rules as typed part appearances (fixture `parts`: {tag, id?, part, values}).
+struct MenuPartsFixture: ViewModifier {
+    let parts: [AWCValue]
+    func body(content: Content) -> some View {
+        var view = AnyView(content)
+        for p in parts {
+            var values: [String: AWCValue] = [:]; if case .object(let o) = p["values"] { values = o }
+            let a = AWCMenuPartAppearance(values: values), id: String? = p["id"].string.isEmpty ? nil : p["id"].string, name = p["part"].string
+            switch p["tag"].string {
+            case "md-menu": if let part = AWCMenuPart(rawValue: name) { view = AnyView(view.awcMenuPartAppearance(a, part: part, for: id)) }
+            case "md-menu-item": if let part = AWCMenuItemPart(rawValue: name) { view = AnyView(view.awcMenuItemPartAppearance(a, part: part, for: id)) }
+            case "md-sub-menu-item": if let part = AWCSubMenuItemPart(rawValue: name) { view = AnyView(view.awcSubMenuItemPartAppearance(a, part: part, for: id)) }
+            default: break
+            }
+        }
+        return view
     }
 }

@@ -351,6 +351,8 @@ struct AWCNativeChartView: View {
     @Environment(\.layoutDirection) private var direction
     @Environment(\.awcNativeDensity) private var inheritedDensity
     @Environment(\.awcChartFormatters) private var allFormatters
+    @Environment(\.awcChartParts) private var partRules
+    @Environment(\.awcChartPartTargets) private var partTargets
     @Environment(\.awcEventDispatcher) private var dispatcher
     @Environment(\.awcEventTargetListeners) private var listeners
     let onEvent: (AWCEvent) -> Void
@@ -371,12 +373,29 @@ struct AWCNativeChartView: View {
     private var formatters: AWCChartFormatters { allFormatters[nodeID] ?? allFormatters[""] ?? AWCChartFormatters() }
     private var host: AWCChartHostMetrics { AWCChartHostMetrics.of(kind, tokens: tokens, density: density) }
     private var rtl: Bool { direction == .rightToLeft }
+    /// The host's own inline layout CSS (`style="block-size:360px"` / `height:`), which sizes the host like the source.
+    private var styleHeight: Double? {
+        for decl in (properties["style"]?.string ?? "").split(separator: ";") {
+            let kv = decl.split(separator: ":", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespaces) }
+            if kv.count == 2, kv[0] == "block-size" || kv[0] == "height", let v = awcChartCSSPixels(kv[1]) { return v }
+        }
+        return nil
+    }
+    /// `::part()` declarations of one of this chart's parts (targeted rules over the shared ones).
+    private func part(_ p: AWCChartPart) -> AWCPartStyle {
+        let base = partRules[p] ?? .init()
+        return partTargets[nodeID]?[p].map { base.merging($0) } ?? base
+    }
     private var explicitHeight: Double? {
+        if let v = styleHeight { return v }
         if kind == .sparkline { return awcChartCSSPixels(props.optStr("height")) ?? awcChartCSSPixels(tokens["--md-sparkline-block-size"]) ?? 28 }
         return awcChartCSSPixels(props.optStr("height")) ?? awcChartCSSPixels(tokens["--\(kind.prefix)-block-size"])
     }
     private var zoomSliderOn: Bool { (kind == .line || kind == .area || (kind == .bar && !props.bool("polar"))) && ["slider", "both"].contains(props.str("zoom", "none")) }
+    /// The reserved zoom band (--_zoom-size). ::part(zoom) is absolutely positioned at the bottom with a content-box
+    /// block-size: its vertical padding grows the strip upward over the plot without moving the plot.
     private var zoomSize: Double { awcChartCSSPixels(tokens["--\(kind.prefix)-zoom-size"]) ?? 28 }
+    private var zoomPadV: Double { let pad = part(.zoom).padding; return (pad?.top ?? 0) + (pad?.bottom ?? 0) }
     private var isEmpty: Bool {
         let loading = props.bool("loading")
         switch kind {
@@ -399,7 +418,11 @@ struct AWCNativeChartView: View {
                 // absolutely positioned canvas, which covers the whole padding box (chart CSS) — so they share its top.
                 let flow = (slots["header"] ?? []) + (slots["footer"] ?? [])
                 if !flow.isEmpty {
-                    VStack(alignment: .leading, spacing: 8) { ForEach(flow) { AWCNativeView(node: $0) } }
+                    // ::part(header) / ::part(footer) are `display: contents` wrappers: only their inherited text styles apply.
+                    VStack(alignment: .leading, spacing: 8) {
+                        ForEach(slots["header"] ?? []) { AWCNativeView(node: $0).modifier(AWCChartPartText(style: part(.header))) }
+                        ForEach(slots["footer"] ?? []) { AWCNativeView(node: $0).modifier(AWCChartPartText(style: part(.footer))) }
+                    }
                         .padding(.vertical, 8)
                         .frame(width: plotW, alignment: .topLeading)
                         .environment(\.layoutDirection, direction)
@@ -408,11 +431,17 @@ struct AWCNativeChartView: View {
                 if plotW >= 2 && plotH >= 2 {
                     plotStack(plotW, plotH, globalTop: geo.frame(in: .global).minY + h.padding)
                         .frame(width: plotW, height: plotH, alignment: .topLeading)
+                        .background { part(.canvas).backgroundView }
+                        .opacity(part(.canvas).opacity ?? 1)
                         .offset(x: h.padding, y: h.padding)
                     if zoomSliderOn {
-                        AWCChartZoomSlider(ctl: ctl, tokens: tokens, prefix: kind.prefix, rtl: rtl, labelStart: props.str("labelZoomStart", "Zoom range start"), labelEnd: props.str("labelZoomEnd", "Zoom range end"), xData: props.obj("xAxis")?["data"].array ?? [])
-                            .frame(width: plotW, height: zoomSize)
-                            .offset(x: h.padding, y: h.padding + plotH)
+                        AWCChartZoomSlider(ctl: ctl, tokens: tokens, prefix: kind.prefix, rtl: rtl, labelStart: props.str("labelZoomStart", "Zoom range start"), labelEnd: props.str("labelZoomEnd", "Zoom range end"), xData: props.obj("xAxis")?["data"].array ?? [],
+                                           parts: Dictionary(uniqueKeysWithValues: [AWCChartPart.zoomSlider, .zoomPan, .zoomTrack, .zoomWindow, .zoomHandle].map { ($0, part($0)) }))
+                            .padding(part(.zoom).padding?.insets(rtl: rtl) ?? EdgeInsets())
+                            .background { part(.zoom).backgroundView }
+                            .opacity(part(.zoom).opacity ?? 1)
+                            .frame(width: plotW, height: zoomSize + zoomPadV)
+                            .offset(x: h.padding, y: h.padding + plotH - zoomPadV)
                     }
                 }
                 if kind == .pie, let center = slots["center"], !center.isEmpty, let scene = ctl.pie?.scene {
@@ -420,11 +449,15 @@ struct AWCNativeChartView: View {
                     // plus the padding), capped at the hole (getHoleBox()); physical coordinates in either direction.
                     let c = scene.pieCenterSlot ?? AWCChartPt(x: scene.plot.x + scene.plot.width / 2, y: scene.plot.y + scene.plot.height / 2)
                     let holeW = scene.pieHoleSize ?? 0, holeH = scene.pieHoleHeight ?? 0
-                    ZStack { ForEach(center) { AWCNativeView(node: $0) } }
+                    let cp = part(.center)
+                    // The box is shrink-to-fit (absolutely positioned): its content takes min(max-content, hole) — the hole caps the
+                    // content box (`max-width` / `max-height`), ::part(center) padding sits outside it.
+                    AWCChartShrinkToFit(maxWidth: holeW > 0 ? holeW : nil, maxHeight: holeH > 0 ? holeH : nil) { ZStack { ForEach(center) { AWCNativeView(node: $0) } } }
                         .multilineTextAlignment(.center)
-                        .foregroundStyle(Color(awcChartCSS: tokens["--md-pie-chart-center-color"].flatMap { $0.isEmpty ? nil : $0 } ?? awcChartToken(tokens, "--md-sys-color-on-surface", "#1C1B1F")))
-                        .frame(maxWidth: holeW > 0 ? holeW : nil, maxHeight: holeH > 0 ? holeH : nil)
-                        .fixedSize(horizontal: holeW <= 0, vertical: holeH <= 0)
+                        .modifier(AWCChartPartText(style: cp))
+                        .awcTablePartBox(cp)
+                        .foregroundStyle(Color(awcChartCSS: cp.color ?? tokens["--md-pie-chart-center-color"].flatMap { $0.isEmpty ? nil : $0 } ?? awcChartToken(tokens, "--md-sys-color-on-surface", "#1C1B1F")))
+                        .fixedSize()
                         .environment(\.layoutDirection, direction)
                         .position(x: h.padding + c.x, y: h.padding + c.y)
                 }
@@ -453,7 +486,7 @@ struct AWCNativeChartView: View {
     /// Laboratory inspection: the host box hooks, the plot box, the live announcement and the interaction state.
     private func inspectionMetrics(_ size: CGSize) -> [String: AWCValue] {
         let h = host
-        var m: [String: AWCValue] = ["background": .string(h.background), "padding": .number(h.padding), "shape": .number(h.shape),
+        var m: [String: AWCValue] = ["background": .string(h.background), "padding": .array([.number(h.padding), .number(h.padding), .number(h.padding), .number(h.padding)]), "hostPadding": .number(h.padding), "shape": .number(h.shape),
                                      "width": .number(Double(size.width)), "height": .number(Double(size.height)), "announcement": .string(ctl.announcement)]
         if let scene = ctl.activePlot?.scene ?? ctl.pie?.scene {
             m["plotX"] = .number(scene.plot.x); m["plotY"] = .number(scene.plot.y); m["plotWidth"] = .number(scene.plot.width); m["plotHeight"] = .number(scene.plot.height)
@@ -518,7 +551,7 @@ struct AWCNativeChartView: View {
     }
 
     private var bandColor: String {
-        tokens["--\(kind.prefix)-zoom-band-color"].flatMap { $0.isEmpty ? nil : $0 } ?? awcChartWithAlpha(awcChartToken(tokens, "--md-sys-color-primary", "#6750A4"), 0.16)
+        part(.zoomBand).backgroundColor ?? tokens["--\(kind.prefix)-zoom-band-color"].flatMap { $0.isEmpty ? nil : $0 } ?? awcChartWithAlpha(awcChartToken(tokens, "--md-sys-color-primary", "#6750A4"), 0.16)
     }
     private var handleEdge: some View {
         Rectangle().fill(Color(awcChartCSS: tokens["--\(kind.prefix)-zoom-handle-color"].flatMap { $0.isEmpty ? nil : $0 } ?? awcChartToken(tokens, "--md-sys-color-primary", "#6750A4"))).frame(width: 1)
@@ -595,32 +628,50 @@ struct AWCNativeChartView: View {
 
     private func emptyOverlay(_ h: AWCChartHostMetrics) -> some View {
         let fontSize = awcChartCSSPixels(tokens["--\(kind.prefix)-empty-font-size"]) ?? awcChartCSSPixels(tokens["--md-sys-typescale-body-medium-font-size"]) ?? 14
+        let ep = part(.empty)
         return VStack(spacing: 12) {
             if let slot = slots["empty"], !slot.isEmpty { ForEach(slot) { AWCNativeView(node: $0) } }
-            else { Text(props.str("labelEmpty", "No data to display")).font(.custom("Roboto-Regular", fixedSize: fontSize)).multilineTextAlignment(.center) }
+            else {
+                // An empty chart has no plot element, but the Web still lists its categories in the screen-reader table: the empty
+                // message carries the chart descriptor (VoiceOver's chart details).
+                Text(props.str("labelEmpty", "No data to display")).font(.custom("Roboto-Regular", fixedSize: ep.fontSize ?? fontSize)).multilineTextAlignment(.center)
+                    .modifier(AWCChartEmptyDescriptor(descriptor: kind == .sparkline ? nil : awcChartAXDescriptor(kind: kind, props: props, summary: summary)))
+            }
         }
-        .foregroundColor(Color(awcChartCSS: h.emptyColor))
-        .padding(24)
+        .foregroundColor(Color(awcChartCSS: ep.color ?? h.emptyColor))
+        // ::part(empty) wins over the empty hooks for its own box.
+        .padding(ep.padding?.insets(rtl: rtl) ?? EdgeInsets(top: 24, leading: 24, bottom: 24, trailing: 24))
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(awcChartCSS: h.emptyBackground), in: RoundedRectangle(cornerRadius: h.shape))
+        .background(Color(awcChartCSS: ep.backgroundColor ?? h.emptyBackground), in: RoundedRectangle(cornerRadius: ep.cornerRadius ?? h.shape))
+        .opacity(ep.opacity ?? 1)
         .allowsHitTesting(false)
     }
 
     private func loadingOverlay(_ h: AWCChartHostMetrics) -> some View {
         let label = props.str("loadingLabel", "Loading chart…")
         let fontSize = awcChartCSSPixels(tokens["--md-sys-typescale-body-medium-font-size"]) ?? 14
-        return VStack(spacing: 12) {
-            if let slot = slots["loader"] ?? slots["loading"], !slot.isEmpty { ForEach(slot) { AWCNativeView(node: $0) } }
+        let lp = part(.loading)
+        let custom = slots["loader"] ?? slots["loading"] ?? []
+        // Slotted loader content positioned `absolute; inset: 0` fills the loading layer's padding box (not its content box).
+        let fills = custom.contains { AWCAuthoredStyle($0.properties["style"]?.string ?? "").fill }
+        return ZStack {
+            if fills { ForEach(custom) { AWCNativeView(node: $0) }.frame(maxWidth: .infinity, maxHeight: .infinity) }
             else {
-                AWCNativeView(node: AWCNode(id: "\(nodeID)-spinner", tag: "md-progress-indicator", properties: ["variant": .string("circular"), "indeterminate": .bool(true), "label": .string(label)]))
-                    .frame(width: 40, height: 40)
-                Text(label).font(.custom("Roboto-Regular", fixedSize: fontSize)).accessibilityHidden(true)
+                VStack(spacing: 12) {
+                    if !custom.isEmpty { ForEach(custom) { AWCNativeView(node: $0) } }
+                    else {
+                        AWCNativeView(node: AWCNode(id: "\(nodeID)-spinner", tag: "md-progress-indicator", properties: ["variant": .string("circular"), "indeterminate": .bool(true), "label": .string(label)]))
+                            .frame(width: 40, height: 40)
+                        Text(label).font(.custom("Roboto-Regular", fixedSize: lp.fontSize ?? fontSize)).accessibilityHidden(true)
+                    }
+                }
+                .padding(lp.padding?.insets(rtl: rtl) ?? EdgeInsets(top: 24, leading: 24, bottom: 24, trailing: 24))
             }
         }
-        .foregroundColor(Color(awcChartCSS: h.emptyColor))
-        .padding(24)
+        .foregroundColor(Color(awcChartCSS: lp.color ?? h.emptyColor))
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(awcChartCSS: h.emptyBackground), in: RoundedRectangle(cornerRadius: h.shape))
+        .background(Color(awcChartCSS: lp.backgroundColor ?? h.emptyBackground), in: RoundedRectangle(cornerRadius: lp.cornerRadius ?? h.shape))
+        .opacity(lp.opacity ?? 1)
     }
 
     /// a11y.ts `buildChartSummary` (the host's aria-label) unless `summary` is authored.
@@ -726,6 +777,14 @@ private struct AWCChartKeyboard: ViewModifier {
     }
 }
 
+/// The chart descriptor on the empty message (when the empty chart still has categories).
+private struct AWCChartEmptyDescriptor: ViewModifier {
+    let descriptor: AWCChartAXDescriptor?
+    func body(content: Content) -> some View {
+        if let descriptor { content.accessibilityChartDescriptor(descriptor) } else { content }
+    }
+}
+
 /// The host: a labelled container (the Web host's aria-label summary), or for md-sparkline an image (role="img").
 private struct AWCChartHostAccessibility: ViewModifier {
     let image: Bool
@@ -746,6 +805,8 @@ private struct AWCChartZoomSlider: View {
     let labelStart: String
     let labelEnd: String
     let xData: [AWCValue]
+    /// ::part(zoom-slider) (the md-slider), ::part(zoom-pan) (its pan grip) and md-slider's exported track / window / handle.
+    var parts: [AWCChartPart: AWCPartStyle] = [:]
     @State private var panning = false
     var body: some View {
         GeometryReader { geo in
@@ -755,24 +816,29 @@ private struct AWCChartZoomSlider: View {
             let width = geo.size.width
             let x: (Int) -> Double = { i in let f = Double(i) / last; return (rtl ? 1 - f : f) * width }
             let frac: (Double) -> Double = { px in let raw = px / Swift.max(1, width); return Swift.min(Swift.max(rtl ? 1 - raw : raw, 0), 1) }
-            let track = tok("track-color", "--md-sys-color-surface-container-highest", "#E6E0E9")
-            let window = tok("window-color", "--md-sys-color-secondary-container", "#E8DEF8")
-            let handle = tok("handle-color", "--md-sys-color-primary", "#6750A4")
+            let track = parts[.zoomTrack]?.backgroundColor ?? tok("track-color", "--md-sys-color-surface-container-highest", "#E6E0E9")
+            let window = parts[.zoomWindow]?.backgroundColor ?? tok("window-color", "--md-sys-color-secondary-container", "#E8DEF8")
+            let handle = parts[.zoomHandle]?.backgroundColor ?? tok("handle-color", "--md-sys-color-primary", "#6750A4")
             let lo = Swift.min(x(w.0), x(w.1)), hi = Swift.max(x(w.0), x(w.1))
             ZStack(alignment: .leading) {
-                Capsule().fill(Color(awcChartCSS: track)).frame(height: 12)
-                Capsule().fill(Color(awcChartCSS: window)).frame(width: Swift.max(0, hi - lo), height: 12).offset(x: lo)
-                // Pan grip, inset 10px at both ends so the thumbs stay grabbable.
-                Color.clear.contentShape(Rectangle()).frame(width: Swift.max(0, hi - lo - 20), height: geo.size.height).offset(x: lo + 10)
+                // ::part(zoom-slider) (track, window, thumbs): its opacity is the slider's alone.
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Color(awcChartCSS: track)).frame(height: 12)
+                    Capsule().fill(Color(awcChartCSS: window)).frame(width: Swift.max(0, hi - lo), height: 12).offset(x: lo)
+                    thumb(handle, at: x(w.0), height: geo.size.height, label: labelStart, value: text(w.0)) { v in ctl.perform { p?.zoomSliderInput(Double(v), Double(w.1)) } } drag: { px in
+                        ctl.perform { p?.zoomSliderInput((frac(px) * last).rounded(), Double(w.1)) }
+                    }
+                    thumb(handle, at: x(w.1), height: geo.size.height, label: labelEnd, value: text(w.1)) { v in ctl.perform { p?.zoomSliderInput(Double(w.0), Double(v)) } } drag: { px in
+                        ctl.perform { p?.zoomSliderInput(Double(w.0), (frac(px) * last).rounded()) }
+                    }
+                }
+                .frame(height: geo.size.height)
+                .opacity(parts[.zoomSlider]?.opacity ?? 1)
+                // ::part(zoom-pan): the slider's sibling above it (z-index 1), inset 10px at both ends so the thumbs stay grabbable.
+                (parts[.zoomPan]?.backgroundColor.map { Color(awcChartCSS: $0) } ?? Color.clear).contentShape(Rectangle()).frame(width: Swift.max(0, hi - lo - 20), height: geo.size.height).offset(x: lo + 10)
                     .gesture(DragGesture(minimumDistance: 0, coordinateSpace: .named("awc-zoom")).onChanged { v in
                         ctl.perform { if !panning { panning = true; p?.panStart(frac(v.startLocation.x)) }; p?.panMove(frac(v.location.x)) }
                     }.onEnded { _ in panning = false; ctl.perform { p?.panEnd() } })
-                thumb(handle, at: x(w.0), height: geo.size.height, label: labelStart, value: text(w.0)) { v in ctl.perform { p?.zoomSliderInput(Double(v), Double(w.1)) } } drag: { px in
-                    ctl.perform { p?.zoomSliderInput((frac(px) * last).rounded(), Double(w.1)) }
-                }
-                thumb(handle, at: x(w.1), height: geo.size.height, label: labelEnd, value: text(w.1)) { v in ctl.perform { p?.zoomSliderInput(Double(w.0), Double(v)) } } drag: { px in
-                    ctl.perform { p?.zoomSliderInput(Double(w.0), (frac(px) * last).rounded()) }
-                }
             }
             .frame(height: geo.size.height)
             .coordinateSpace(name: "awc-zoom")
@@ -856,5 +922,23 @@ func awcChartDrawBarLabels(_ ctx: inout GraphicsContext, _ scene: AWCChartScene)
             y = bl.atLowEnd == true ? hiY + 4 : loY - 4; ay = bl.atLowEnd == true ? 0 : -1
         }
         awcChartDrawSpan(&ctx, text: bl.text, x: x, y: y, ax: ax, ay: ay, size: bl.size, weight: bl.fontWeight ?? 400, color: bl.color)
+    }
+}
+
+/// CSS shrink-to-fit sizing of an absolutely positioned box: the content takes min(max-content, the cap) and is centred in it
+/// (flex centring; content taller than a height cap overflows both ways, as with `align-items: center`).
+struct AWCChartShrinkToFit: Layout {
+    var maxWidth: CGFloat?, maxHeight: CGFloat?
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        guard let s = subviews.first else { return .zero }
+        let ideal = s.sizeThatFits(.unspecified)
+        let cap = [maxWidth, proposal.width].compactMap { $0 }.min()
+        let fit = s.sizeThatFits(.init(width: cap.map { Swift.min(ideal.width, $0) } ?? ideal.width, height: nil))
+        return CGSize(width: fit.width, height: maxHeight.map { Swift.min($0, fit.height) } ?? fit.height)
+    }
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        guard let s = subviews.first else { return }
+        let fit = s.sizeThatFits(.init(width: bounds.width, height: nil))
+        s.place(at: CGPoint(x: bounds.midX, y: bounds.midY), anchor: .center, proposal: .init(width: bounds.width, height: fit.height))
     }
 }

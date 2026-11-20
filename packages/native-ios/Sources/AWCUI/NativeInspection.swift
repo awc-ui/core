@@ -62,27 +62,65 @@ private struct AWCNativeInspectionPreference: PreferenceKey {
     }
 }
 
+/// R2-D11: a hidden host renders nothing (display:none, d3-040: no slot, no gap). When that host is itself the single
+/// inspection root (a Laboratory preview, a fixture), EmptyView would also drop the collector's modifiers, so the root
+/// keeps reporting its last nodes. The root instead publishes the empty inspection; nested hidden hosts stay EmptyView.
+struct AWCHiddenHost: View {
+    let nodeID: String
+    @Environment(\.awcNativeInspectionScope) private var scope
+    var body: some View {
+        if scope?.rootID == nodeID { Color.clear.frame(width: 0, height: 0).awcInspectionAbsent().accessibilityHidden(true) }
+        else { EmptyView() }
+    }
+}
+
+/// 9-19: the last inspection delivered by a root and the latest value its preference was recomputed with. When SwiftUI
+/// recomputes the root preference but does not run the onPreferenceChange action (measured on iPhone 26.3: 4 of 80 runs
+/// after a clear; KNOWN-CAUSES 9-19), the value is delivered on the next main-queue turn instead.
+final class AWCInspectionDeliveryBox {
+    var delivered: [AWCNativeInspectionNode]?
+    private var latest: [AWCNativeInspectionNode] = []
+    private var scheduled = false
+    func saw(_ value: [AWCNativeInspectionNode], _ deliver: @escaping ([AWCNativeInspectionNode]) -> Void) {
+        latest = value
+        guard value != (delivered ?? []), !scheduled else { return }
+        scheduled = true
+        DispatchQueue.main.async { [self] in
+            scheduled = false
+            guard latest != (delivered ?? []) else { return }
+            deliver(latest)
+        }
+    }
+}
+
 private struct AWCNativeInspectionModifier: ViewModifier {
     let rootID: String
     let coordinateSpace: String
     let onChange: ([AWCNativeInspectionNode]) -> Void
+    @State private var box = AWCInspectionDeliveryBox()
 
     func body(content: Content) -> some View {
         content
             .environment(\.awcNativeInspectionScope, .init(rootID: rootID, coordinateSpace: coordinateSpace))
-            .onPreferenceChange(AWCNativeInspectionPreference.self) { measured in
-                let byID = Dictionary(measured.map { ($0.id, $0) }, uniquingKeysWith: { _, latest in latest })
-                let resolved = byID.values.map { node in
-                    var node = node
-                    // Multi-node scopes qualify ids; metric sources stay node-relative.
-                    let prefix = rootID.contains("|") ? node.id.split(separator: ":").first.map { String($0) + ":" } ?? "" : ""
-                    for (metric, source) in node.metricSources {
-                        if let value = byID[prefix + source]?.metrics[metric] { node.metrics[metric] = value }
-                    }
-                    return node
-                }.sorted { $0.id < $1.id }
-                onChange(resolved)
+            // 9-19: the transform sees every recomputed root value; SwiftUI can drop the change action (KNOWN-CAUSES 9-19).
+            .transformPreference(AWCNativeInspectionPreference.self) { [box] v in box.saw(v) { deliver($0) } }
+            .onPreferenceChange(AWCNativeInspectionPreference.self) { measured in deliver(measured) }
+    }
+
+    private func deliver(_ measured: [AWCNativeInspectionNode]) {
+        guard box.delivered != measured else { return }
+        box.delivered = measured
+        let byID = Dictionary(measured.map { ($0.id, $0) }, uniquingKeysWith: { _, latest in latest })
+        let resolved = byID.values.map { node in
+            var node = node
+            // Multi-node scopes qualify ids; metric sources stay node-relative.
+            let prefix = rootID.contains("|") ? node.id.split(separator: ":").first.map { String($0) + ":" } ?? "" : ""
+            for (metric, source) in node.metricSources {
+                if let value = byID[prefix + source]?.metrics[metric] { node.metrics[metric] = value }
             }
+            return node
+        }.sorted { $0.id < $1.id }
+        onChange(resolved)
     }
 }
 
@@ -148,3 +186,111 @@ extension View {
                                         metricSources: metricSources, metrics: metrics))
     }
 }
+
+#if canImport(AppKit)
+import AppKit
+
+// MARK: - Nested host (a SwiftUI subtree inside an AppKit container; R6-13)
+
+/// An AppKit container that is an accessibility element (role group, subrole `AXLandmarkNavigation`, named by `label`)
+/// holding the content in its own hosting view, so the content's elements are the landmark's children with a consistent
+/// parent chain (the SwiftUI container node cannot take a subrole; an AppKit element listing SwiftUI children exposes them twice).
+final class AWCNestedLandmarkView: NSView {
+    var label = "", elementIdentifier = ""
+    let controller: NSHostingController<AnyView>
+    init(root: AnyView) {
+        controller = NSHostingController(rootView: root)
+        controller.sizingOptions = []
+        super.init(frame: .zero)
+        let host = controller.view
+        host.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(host)
+        NSLayoutConstraint.activate([host.leadingAnchor.constraint(equalTo: leadingAnchor), host.trailingAnchor.constraint(equalTo: trailingAnchor),
+                                     host.topAnchor.constraint(equalTo: topAnchor), host.bottomAnchor.constraint(equalTo: bottomAnchor)])
+    }
+    required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
+    private var refreshTimer: Timer?
+    // The nested host does not repaint (or republish its accessibility tree) by itself while the window settles: nudge it for a short time after it joins a window.
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        refreshTimer?.invalidate(); refreshTimer = nil
+        guard window != nil else { return }
+        var n = 0
+        refreshTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 30, repeats: true) { [weak self] t in
+            guard let self else { t.invalidate(); return }
+            n += 1
+            self.controller.rootView = self.controller.rootView
+            self.controller.view.needsLayout = true
+            self.controller.view.needsDisplay = true
+            if n == 120 { NSAccessibility.post(element: self, notification: .layoutChanged); t.invalidate() }
+        }
+    }
+    override func isAccessibilityElement() -> Bool { true }
+    override func accessibilityRole() -> NSAccessibility.Role? { .group }
+    override func accessibilitySubrole() -> NSAccessibility.Subrole? { NSAccessibility.Subrole(rawValue: "AXLandmarkNavigation") }
+    override func accessibilityLabel() -> String? { label }
+    override func accessibilityIdentifier() -> String { elementIdentifier }
+}
+
+/// Re-applies the outer environment (every key, including the library's own) inside the nested tree, and, inside an
+/// inspection scope, names the same coordinate space and reports the nodes up (the outer view offsets them by the container's origin).
+private struct AWCNestedInspectionRoot: ViewModifier {
+    let report: ([AWCNativeInspectionNode]) -> Void
+    @Environment(\.awcNativeInspectionScope) private var scope
+    @ViewBuilder func body(content: Content) -> some View {
+        if let scope {
+            content.coordinateSpace(name: scope.coordinateSpace)
+                .onPreferenceChange(AWCNativeInspectionPreference.self) { report($0) }
+                // The nodes go up through `report` (offset by the container origin); the nested tree's own values must not reach the outer scope.
+                .transformPreference(AWCNativeInspectionPreference.self) { $0 = [] }
+        } else { content }
+    }
+}
+
+private struct AWCNestedLandmarkRepresentable<Content: View>: NSViewRepresentable {
+    let label: String, identifier: String, content: Content
+    let direction: LayoutDirection
+    let report: ([AWCNativeInspectionNode]) -> Void
+    private func root(_ context: Context, _ phase: String) -> AnyView {
+        let environment = context.environment
+        // The representable's own context can report the hosting view's layout direction (the locale's) on updates, so the
+        // outer view's direction is passed explicitly and applied after the whole environment is re-applied.
+        return AnyView(content.modifier(AWCNestedInspectionRoot(report: report)).environment(\.layoutDirection, direction)
+            .transformEnvironment(\.self) { $0 = environment })
+    }
+    func makeNSView(context: Context) -> AWCNestedLandmarkView {
+        let v = AWCNestedLandmarkView(root: root(context, "make")); v.label = label; v.elementIdentifier = identifier; return v
+    }
+    func updateNSView(_ v: AWCNestedLandmarkView, context: Context) {
+        v.label = label; v.elementIdentifier = identifier; v.controller.rootView = root(context, "update")
+    }
+    func sizeThatFits(_ proposal: ProposedViewSize, nsView: AWCNestedLandmarkView, context: Context) -> CGSize? {
+        let size = nsView.controller.sizeThatFits(in: CGSize(width: proposal.width ?? 1200, height: proposal.height ?? 100_000))
+        return CGSize(width: proposal.width ?? size.width, height: size.height)
+    }
+}
+
+/// The content in a navigation landmark (macOS). Environment, sizing and inspection pass through the nested host.
+struct AWCNestedLandmark<Content: View>: View {
+    let label: String, identifier: String
+    @ViewBuilder let content: Content
+    @Environment(\.awcNativeInspectionScope) private var scope
+    @Environment(\.layoutDirection) private var direction
+    @State private var nodes: [AWCNativeInspectionNode] = []
+    var body: some View {
+        AWCNestedLandmarkRepresentable(label: label, identifier: identifier, content: content, direction: direction, report: { nodes = $0 })
+            .background {
+                if let scope {
+                    GeometryReader { g in
+                        let origin = g.frame(in: .named(scope.coordinateSpace)).origin
+                        Color.clear.preference(key: AWCNativeInspectionPreference.self, value: nodes.map {
+                            AWCNativeInspectionNode(id: $0.id, name: $0.name, parentId: $0.parentId,
+                                                    bounds: AWCNativeInspectionNode.measured($0.bounds.offsetBy(dx: origin.x, dy: origin.y)),
+                                                    metrics: $0.metrics, metricSources: $0.metricSources)
+                        })
+                    }.allowsHitTesting(false).accessibilityHidden(true)
+                }
+            }
+    }
+}
+#endif

@@ -391,11 +391,37 @@ Defects found and fixed:
   is now b/√2 (was b/2: 0.71 of the source width, measured on blur 6 and 24).
   This affects every accordion shadow; all accordion fixtures re-pass.
 
-Platform difference, listed for review: SwiftUI `zIndex` orders siblings of one
-container, whereas `position: fixed` with `z-index` stacks against the whole
-document. Floating panels stack as in the source among siblings; a panel inside a
-deeper container can be covered by later views of an ancestor. Not executed:
-UIKit touch capture (no iOS SDK) and pointer cancellation in a rendered host.
+Document stacking (gate-7 r3-19). `position: fixed` with `z-index` stacks against
+the whole document, whereas SwiftUI `zIndex` (Compose `Modifier.zIndex`) orders the
+children of one container. The panel therefore lifts the hosts above it (lift
+chain, `StackingLift.swift` / `AWCStacking.kt`): it publishes its z-index, and every
+AWC host on the way to the root takes the largest lifted z-index of its subtree as
+its own order among its siblings. The panel paints, and is hit, above the later
+siblings of each ancestor; no view moves, so component state, Tab order and the
+accessibility tree are those of the document. Chrome oracle
+`d3-lab/web2/stacking.mjs` (a panel declared in an earlier container over the
+container that follows it, Tab order before / header / after), replayed by
+`NativeStackingIntegration` and `NativeStackingTest`.
+- Application containers between AWC components join with `awcStackingLift()`
+  (SwiftUI) or `AWCStackingLift { }` (Compose). In SwiftUI a root-level AWC view
+  leaves its `zIndex` to the application (stacked `zIndex` modifiers resolve
+  innermost-first): root views that share a stack take `awcStackingLift(zIndex:)`.
+- Mechanism 2 (story 9-4, 2026-11-16): the floating panel is published as an entry of the `AWCModalScope` overlay layer (SwiftUI: `AccordionFloating.swift`; Compose: `NativeAccordionFloating.kt` with `movableContentOf`), with a zero-size placeholder in the flow. An ancestor that clips no longer clips the panel (residual 1 closed), and the panel orders against open sheets and dialogs as in Chrome: above a bottom sheet's scrim, below a dialog (residual 2 closed). Chrome oracle `stacking2-web.json` (clip scene, bottom sheet, dialog), replayed by `NativeStackingOverlayIntegration` (macOS, iOS 26.3, iOS 18.6) and `NativeStackingOverlayTest` (Android); each failed on the previous sources (macOS 28/35, Android 0/1) and passes after the change (35/35, 35/35, 35/35, 1/1). Mechanism 1 (`NativeStackingIntegration`, `NativeStackingTest`) still passes.
+- Open, listed for review: the document-order Tab tokens and the macOS accessibility re-parenting of the placeholder are not separately probed (tools/ax md-accordion: 0 open findings on macOS); residuals 3 (an ancestor rises as a whole) and 4 (`awcStackingLift(zIndex:)` on a root-level view) stay as the 3-1 record states and are re-tested by `NativeAccordionLiftIntegration` 280/280 and `NativeStackingIntegration` 12/12; the exception record above remains rejected for residuals 1 and 2 and is not re-proposed.
+
+**Exception record proposal, r3-19 residuals (3-1, 2026-11-15; to be accepted or rejected by the gate-7 reviewer of story 7-8; not accepted yet).**
+Decision of the coordinator (2026-11-15): mechanism 2 (viewport layer) is not built in story 3-1. Scope: the floating `md-accordion` panel only; the dragged `md-card` has no residual (it stays in its slot and is clipped by its scroll containers in Chrome too). The three paint criteria of r3-19 (panel above a later sibling container, card dragged over a later container, Tab / accessibility order unchanged) are met by mechanism 1 and are not part of this proposal.
+- *Exact source behavior.* `md-accordion[floating]` panel: `position: fixed; z-index: 1000` (raised by bring-to-front). It leaves the flow, is not clipped by any ancestor (no ancestor has a transform/filter in the supported layouts), and stacks against the whole document: above page content, below the modal layer's sheets (z-index 1000/1001) and dialogs (top layer) when it was declared first, in z-index then document order otherwise.
+- *Platform and API.* SwiftUI (macOS, iOS, iPadOS): `zIndex` and `clipped()`/scroll views order and clip within one container. Compose: `Modifier.zIndex` and `clip`/scroll containers do the same. Implementation: `StackingLift.swift`, `AWCStacking.kt` (lift chain, mechanism 1).
+- *What differs (four residuals).* (1) An application container that clips (scroll view, `clipShape`, Compose `clip`) between the accordion and the root still clips the panel; Chrome does not. (2) The panel is ordered inside the modal layer's content, not by z-index against sheets and dialogs, so where a panel overlaps an open sheet or dialog the order can differ from Chrome. (3) Every AWC ancestor of the panel rises as a whole; its other content paints above later siblings too, visible only where in-flow content of that ancestor overlaps content that follows it. (4) SwiftUI only: a root-level AWC view leaves its `zIndex` to the application, so root views that share an application stack must take `awcStackingLift(zIndex:)` (Compose root hosts lift themselves).
+- *Technical reason.* SwiftUI and Compose order and clip children of one container; neither has a viewport-level layer a live subtree can join without being re-created. SwiftUI re-creates a view that changes position (all `@State`, slotted text input, in-flight gestures and the original environment are lost); Compose `movableContentOf` keeps remembered state but re-attaches layout nodes and cancels a pointer gesture in progress. A card cannot be re-parented during its own drag at all. Design and rationale: `work/d3-lab/PROGRESS.md` "r3-19 design".
+- *User-visible effect.* Only for a floating accordion panel whose app places the accordion inside a clipping container (1), opens a sheet or dialog over a visible panel (2), overlaps in-flow content of a lifted ancestor (3), or shares a root stack without the lift modifier (4). In the Laboratory and in the documented layouts (panel over a later sibling container, nested app containers without clipping) the panel paints and is hit as in Chrome. Tab order, accessibility order and state are unchanged in every case.
+- *Tested native equivalent.* Mechanism 1: `NativeStackingIntegration` (Chrome oracle `d3-lab/web2/stacking.mjs`: panel in an earlier container over a later one, card dragged over a later container, Tab order before / header / after, `floating` toggled with an expanded item) macOS 12/12 and iOS 26.3 11/11; `NativeStackingTest` on Android (3-1-A003, 3-1-A006 ok); accordion floating 47648/47648, card lifecycle, modal stack 149/149, container AX 22/22 on macOS (install `3-1-007-install-batch3`). The four residuals are the behavior that is not tested against Chrome; the reviewer may ask for pinned probes.
+- *Alternative considered and its cost.* Mechanism 2: publish the panel as an entry of the `AWCModalScope` overlay with a zero-size placeholder that re-publishes the document-order tokens, macOS accessibility re-parenting, and on Compose `movableContentOf` with a focus-group placeholder. It removes residuals 1 and 2. Cost: rewires the modal scope, preferences, focus and macOS AX on both platforms; touches shared files (`ModalScope.swift`, `ContainerAccessibility`, `AWCComponent.kt`); needs failing-first tests on three platforms and a regression pass over modal, dialog, sheet, accordion and container-AX suites (estimated one dedicated story). Alternative rejected: re-parenting without a placeholder (loses state and Tab order). Residual 3 is not removed by mechanism 2 for the card chain; residual 4 stays an application-facing API.
+- *Reviewer and acceptance.* Reviewer: gate-7 story 7-8. Acceptance: pending. If rejected, mechanism 2 becomes its own story (design above).
+
+Not executed: UIKit touch capture (no iOS SDK) and pointer cancellation in a
+rendered host.
 
 ## Laboratory integration (2026-10-23)
 

@@ -57,7 +57,14 @@ struct OrgChartStatesFixture: View {
     static func pump(_ duration: Double = 0.1) { let end = Date().addingTimeInterval(duration); repeat { while let e = NSApp.nextEvent(matching: .any, until: .distantPast, inMode: .default, dequeue: true) { NSApp.sendEvent(e) }; host.layoutSubtreeIfNeeded(); host.displayIfNeeded(); _ = RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.002)) } while Date() < end }
     static func now() -> Double { CACurrentMediaTime() * 1000 }
     static func mouse(_ kind: NSEvent.EventType, _ p: CGPoint) { let point = host.convert(.init(x: p.x, y: host.isFlipped ? p.y : host.bounds.height - p.y), to: nil); let e = NSEvent.mouseEvent(with: kind, location: point, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber, context: nil, eventNumber: 1, clickCount: 1, pressure: kind == .leftMouseUp ? 0 : 1)!; window.sendEvent(e) }
-    static func key(_ code: UInt16, _ text: String, _ flags: NSEvent.ModifierFlags = []) { let e = NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: flags, timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber, context: nil, characters: text, charactersIgnoringModifiers: text, isARepeat: false, keyCode: code)!; window.sendEvent(e) }
+    static func key(_ code: UInt16, _ text: String, _ flags: NSEvent.ModifierFlags = []) { let e = NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: flags, timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber, context: nil, characters: text, charactersIgnoringModifiers: text, isARepeat: false, keyCode: code)!; window.sendEvent(e)
+        #if canImport(UIKit)
+        // The simulator's HID key reaches UIKit's key commands asynchronously, a frame or two later on iPad (its keyboard focus
+        // system) than on iPhone, and the window sees no event to await. Real time until it is handled — the frame clock does not
+        // move, so the key still takes effect at the next frame, as AppKit's synchronous sendEvent does.
+        pump(0.1)
+        #endif
+    }
     static func all(_ v: NSView) -> [NSView] { [v] + v.subviews.flatMap(all) }
     static func focusView(_ id: String) -> AWCNativeButtonFocusView? { all(host).compactMap { $0 as? AWCNativeButtonFocusView }.first { $0.accessibilityIdentifier() == id } }
     /// The focused element as the oracle names it: a tree item's data-id, a probe button's id, or nil (body).
@@ -125,6 +132,12 @@ struct OrgChartStatesFixture: View {
             pump(0.25); hoverTo(q); pump(0.05)
             if pressAt > 1500.0 / 60 { until(pressAt - 1000.0 / 60) }
             down(q); pump(0.05); until(actMs - 1000.0 / 60); pump(0.05); up(q)
+            #if canImport(UIKit)
+            // UIKit delivers the release to the card's gesture (its onEnded stamps the click's frame, `pointerCommitAt`) a few
+            // milliseconds to a frame later, longer on iPad: real time before the frame clock moves, so the release restyle lands in
+            // the frame Chrome's does (as for HID keys, see `key`).
+            pump(0.1)
+            #endif
         }
         let keys: [String: (UInt16, String)] = ["Tab": (48, "\t"), "ArrowDown": (125, "\u{F701}"), "ArrowUp": (126, "\u{F700}"), "ArrowRight": (124, "\u{F703}"), "ArrowLeft": (123, "\u{F702}"),
                                                "Home": (115, "\u{F729}"), "End": (119, "\u{F72B}"), "Enter": (36, "\r"), "Space": (49, " ")]

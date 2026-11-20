@@ -137,6 +137,12 @@ struct AccordionPlaceholderImage { let width:Int, height:Int, scale:Double, byte
                     check(abs(wp-np)<=0.15,"\(name) \(side) dash period \(np) vs \(wp)")
                 }
                 if side=="top", let wf=wr_.first, let nf=nr.first { check(abs(wf.0-nf.0)<=0.75,"\(name) top dash phase starts at the corner end like the source (\(nf.0) vs \(wf.0))") }
+                // Every side's phase (r3-20): each full source dash centre has a native dash centre within 1.25 px.
+                let wc=wr_.dropFirst().dropLast().map{($0.0+$0.1)/2},nc=nr.map{($0.0+$0.1)/2}
+                if !wc.isEmpty && !nc.isEmpty {
+                    let residual=wc.map{c in nc.map{abs($0-c)}.min()!}.max()!
+                    check(residual<=1.25,"\(name) \(side) every source dash centre has a native dash within 1.25 px (worst \(residual))")
+                }
             }
         } else {
             // No outline: the edge row is plain fill.

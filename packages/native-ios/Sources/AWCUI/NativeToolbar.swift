@@ -56,6 +56,31 @@ func awcToolbarRGBA(_ hex: String) -> AWCValue {
 }
 
 private struct AWCToolbarAppearanceKey: EnvironmentKey { static let defaultValue = AWCToolbarAppearance() }
+/// `::part(container)` of md-toolbar: the container's background-color (floating: the pill's fill, its elevation kept; docked: a
+/// fill over the content box, above the bar's own background). Part rules come from the outer tree, so they win over the
+/// `--md-toolbar-container-color` hook and the standard / vibrant colours. `fab-container` — the wrapper of the slotted FAB — takes a
+/// box (`AWCPartBox`: background, border, radius, padding; the bar and the host grow around it as in Chrome; gate-7 R6-17).
+public struct AWCToolbarPartAppearance: Equatable, Sendable {
+    public let containerColor: String?
+    public let fabContainer: AWCPartBox?
+    public init(containerColor: String? = nil, fabContainer: AWCPartBox? = nil) { self.containerColor = awcToolbarHex(containerColor); self.fabContainer = fabContainer }
+    /// Laboratory names (the fields above; `fabContainer` as an `AWCPartBox` object).
+    public init(values: [String: AWCValue]) { self.init(containerColor: values["containerColor"]?.string, fabContainer: AWCPartBox(value: values["fabContainer"])) }
+    public func merging(_ o: Self) -> Self { .init(containerColor: o.containerColor ?? containerColor, fabContainer: AWCPartBox.merge(fabContainer, o.fabContainer)) }
+}
+private struct AWCToolbarPartAppearanceKey: EnvironmentKey { static let defaultValue = AWCToolbarPartAppearance() }
+extension EnvironmentValues {
+    var awcToolbarPartAppearance: AWCToolbarPartAppearance { get { self[AWCToolbarPartAppearanceKey.self] } set { self[AWCToolbarPartAppearanceKey.self] = newValue } }
+}
+private struct AWCToolbarPartAppearanceModifier: ViewModifier {
+    @Environment(\.awcToolbarPartAppearance) private var inherited
+    let value: AWCToolbarPartAppearance
+    func body(content: Content) -> some View { content.environment(\.awcToolbarPartAppearance, inherited.merging(value)) }
+}
+public extension View {
+    /// Applies md-toolbar `::part(container)` styling to descendant toolbars.
+    func awcToolbarPartAppearance(_ value: AWCToolbarPartAppearance) -> some View { modifier(AWCToolbarPartAppearanceModifier(value: value)) }
+}
 /// setFocus(): focuses the toolbar's roving Tab stop (the remembered member, else the preferred one); no-op when the
 /// roving group is empty or the toolbar is generic.
 @Observable public final class AWCToolbarController {
@@ -357,6 +382,7 @@ struct AWCNativeToolbarView: View {
     let onEvent: (AWCEvent) -> Void
     @State private var runtime = AWCToolbarRuntime()
     @Environment(\.awcToolbarAppearance) private var appearance
+    @Environment(\.awcToolbarPartAppearance) private var partAppearance
     @Environment(\.awcToolbarController) private var controller
     @Environment(\.awcNativeDensity) private var scale
     /// The bar's own density rung wins over the inherited scale (and, for -2…-4, the spacing rung), read from its property so
@@ -458,16 +484,18 @@ struct AWCNativeToolbarView: View {
         if p["hidden"]?.bool == true { EmptyView() } else { bar }
     }
     private var bar: some View {
-        let m = metrics, fab = children.filter { $0.slot == .fab }
+        let m = metrics, fab = children.filter { $0.slot == .fab }, partFill = partAppearance.containerColor
         let radius = { (size: CGSize) -> Double in min(m.shape, Double(min(size.width, size.height)) / 2) }
         let _ = bindController()
         return AWCToolbarHostLayout(metrics: m, rtl: rtl) {
             container
                 .padding(CGFloat(m.floating ? m.padding : 0))
                 .frame(height: m.floating && !m.vertical ? CGFloat(m.height) : nil)
-                .background { AWCToolbarSurface(color: containerHex, radius: radius, tokens: tokens).opacity(m.floating ? 1 : 0) }
+                .background { AWCToolbarSurface(color: m.floating ? partFill ?? containerHex : containerHex, radius: radius, tokens: tokens).opacity(m.floating ? 1 : 0) }
+                // ::part(container) on the docked bar: a plain fill over the content box (no radius or elevation of its own).
+                .background { if !m.floating, let c = partFill { Rectangle().fill(Color(awcHex: c)) } }
             .awcInspect(nodeID: node.id, part: "container", name: "container") { size in
-                ["background": m.floating ? awcToolbarRGBA(containerHex) : awcToolbarRGBA("#00000000"), "radius": .number(m.floating ? radius(size) : 0),
+                ["background": m.floating ? awcToolbarRGBA(partFill ?? containerHex) : awcToolbarRGBA(partFill ?? "#00000000"), "radius": .number(m.floating ? radius(size) : 0),
                  "elevation": .number(m.floating ? 2 : 0), "gap": .object(["row": .number(m.gap), "column": .number(m.gap)]), "itemGap": .number(m.gap), "sectionGap": .number(m.sectionGap), "justify": .string(m.justify),
                  // Laboratory inspection schema: four-edge padding, {row, column} gap; the scalar values stay under their own keys.
                  "padding": .array(Array(repeating: .number(m.floating ? m.padding : 0), count: 4)), "paddingValue": .number(m.floating ? m.padding : 0), "scrollMax": .number(runtime.scrollMax), "scroll": .number(runtime.scroll)]
@@ -475,7 +503,10 @@ struct AWCNativeToolbarView: View {
             .layoutValue(key: AWCToolbarSlotKey.self, value: .content)
             if !fab.isEmpty {
                 HStack(spacing: 0) { ForEach(fab) { item($0) } }
-                    .awcInspect(nodeID: node.id, part: "fab-container", name: "fab-container") { _ in [:] }
+                    // ::part(fab-container) box (gate-7 R6-17): the host layout measures the FAB with its border and padding.
+                    // A border without a colour takes the bar's text colour (the icon colour).
+                    .awcPartBox(partAppearance.fabContainer, ink: Color(awcHex: inkHex))
+                    .awcInspect(nodeID: node.id, part: "fab-container", name: "fab-container") { _ in partAppearance.fabContainer?.metrics(ink: Color(awcHex: inkHex)) ?? [:] }
                     .layoutValue(key: AWCToolbarSlotKey.self, value: .fab)
             }
         }

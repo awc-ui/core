@@ -9,6 +9,8 @@ import Observation
 @Observable final class ListTipState {
     var epoch = 0
     var measurements: [AWCNativeInspectionNode] = []
+    /// md-list-item::part(headline-tooltip-popup) background (the shared md-tooltip popup part).
+    var popupColor: String? = nil
     let pointer = AWCNativePointerState()
 }
 struct ListTipFixture: View {
@@ -23,6 +25,8 @@ struct ListTipFixture: View {
                 .init(id: "u", tag: "md-list-item", properties: ["headline": "Fits", "supportingText": "Short"])]))
                 .frame(width: 240)
         }
+        // md-list-item::part(headline-tooltip-popup / supporting-tooltip-popup) is the shared md-tooltip's popup part.
+        .awcTooltipPartAppearance(.init(backgroundColor: state.popupColor), part: .popup)
         .environment(\.awcNativePointerState, state.pointer)
         .awcNativeInspection(rootID: "list|t|u|t.headline-tooltip|u.headline-tooltip|t.supporting-tooltip|u.supporting-tooltip", coordinateSpace: "awc-native-preview") { if state.epoch == epoch { state.measurements = $0 } }
         .id(epoch).frame(width: 700, height: 500, alignment: .topLeading)
@@ -70,6 +74,20 @@ struct ListTipFixture: View {
         check(change(closed, sample(box)) > 25, "hovering the clipped headline opens the md-tooltip popup (mean change \(change(closed, sample(box))))")
         state.pointer.update(phase: .move, location: CGPoint(x: 650, y: 450)); pump(0.8)
         check(change(closed, sample(box)) < 3, "leaving closes it again (mean change \(change(closed, sample(box))))")
+        // A tooltip appearance reaches the row's popup: the md-tooltip popup part's background paints the open popup (r3-14).
+        state.pointer.update(phase: .move, location: CGPoint(x: anchor.midX, y: anchor.midY)); pump(1.2)
+        let plain = sample(box)
+        state.pointer.update(phase: .move, location: CGPoint(x: 650, y: 450)); pump(0.8)
+        state.popupColor = "#00897B"; state.epoch += 1; pump(0.8)
+        let tipBox = state.measurements.first { $0.id.hasPrefix("t.headline-tooltip:") && $0.id.contains("popup") }?.bounds
+        let tipAnchor = state.measurements.first { $0.id.hasPrefix("t.headline-tooltip:") && $0.name == "md-tooltip" && $0.metrics["description"] != nil }?.bounds ?? anchor
+        state.pointer.update(phase: .move, location: CGPoint(x: tipAnchor.midX, y: tipAnchor.midY)); pump(1.2)
+        let tinted = sample(tipBox)
+        // #00897B in the window's colour space: green and blue well above red (the default popup is the grey inverse surface).
+        func teal(_ s: [Double]) -> Int { stride(from: 0, to: s.count, by: 3).filter { s[$0 + 1] > s[$0] + 40 && s[$0 + 2] > s[$0] + 40 }.count }
+        check(teal(tinted) * 2 >= tinted.count / 3 && !tinted.isEmpty && teal(plain) == 0,
+              "a tooltip appearance reaches the row's md-tooltip popup (teal samples: \(teal(tinted)) of \(tinted.count / 3) with the part, \(teal(plain)) of \(plain.count / 3) without; first \(tinted.prefix(3).map { Int($0) }))")
+        state.popupColor = nil; state.epoch += 1; state.pointer.update(phase: .move, location: CGPoint(x: 650, y: 450)); pump(0.8)
         if let ub = node("u", "md-list-item")?.bounds {
             let fitBox = state.measurements.first { $0.id.hasPrefix("u.headline-tooltip:") && $0.id.contains("popup") }?.bounds ?? ub
             let before = sample(fitBox)

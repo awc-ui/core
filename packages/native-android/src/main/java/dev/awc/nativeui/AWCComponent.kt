@@ -44,7 +44,16 @@ fun AWCComponent(
     val source = awcProperties(tag, properties).let { if(tableCheckbox != null) it + tableCheckbox.props else it }
     val formControl = rememberAutomaticFormControl(tag, source, onEvent)
     val p = formControl?.properties ?: source
-    if(tag in setOf("md-loading-indicator","md-skeleton") && p.bool("hidden")) return
+    // `:host([hidden]) { display: none !important }` is in every source stylesheet: a hidden host emits nothing.
+    // Renderers that coordinate hidden members themselves stay composed (the source keeps display:none members in its
+    // item lists): accordion/list items, ripple (tracks its surface while hidden), crumbs, tabs, panels, navigation
+    // tabs, toolbars and toolbar members. They render nothing for a hidden member.
+    if(p.bool("hidden") && tag !in AWCSelfHiddenTags && LocalToolbarRow.current==null) return
+    LocalAWCRailSubmenuProbe.current?.let { probe->
+        if(tag=="md-menu") { content?.invoke("");return }
+        if(tag=="md-menu-item") { val k=remember { probe.slot() }
+            SideEffect { probe.items[k]=RailSubmenuItem(p.str("headline"),!p.bool("disabled"),p.bool("selected") || p.str("aria-checked")=="true") };return }
+    }
     var loadingFocused by remember(tag) { mutableStateOf(false) }
     val suppliedModifier=if(tag=="md-loading-indicator") Modifier.onFocusChanged { loadingFocused=it.isFocused }.then(modifier) else modifier
     val inheritedDensity = resolveAWCDensity(p["density"], LocalAWCNativeDensity.current)
@@ -64,6 +73,9 @@ fun AWCComponent(
     val segmentChild=if(tag=="md-segmented-button") remember { SegmentedChild(Any()) } else null
     // A floating md-accordion stacks among its siblings with the source z-index (fixed panels default to 1000).
     val accordionFloating=if(tag=="md-accordion") remember { NativeAccordionFloatingHolder() } else null
+    // CSS document stacking (r3-19): this host is placed with the largest lifted z-index of its subtree.
+    val stacking=rememberAWCStackingNode()
+    if(accordionFloating!=null) { val z=accordionFloating.zIndex ?: 0f;androidx.compose.runtime.SideEffect { stacking.own=z } }
     val accordionChild=if(tag=="md-accordion-item") remember { NativeAccordionChild(NativeAccordionItemState(java.util.UUID.randomUUID().toString(),
         p.bool("expanded"),p.bool("disabled"),p.int("headingLevel",3),p.str("regionRole","region"),p.bool("collapsible",true))) } else null
     // A trail's crumb reports its holder as layout id: the trail computes the source model from the authored order.
@@ -71,7 +83,13 @@ fun AWCComponent(
     // A tablist's tab / a panel region's panel reports its holder as layout id (the parent computes selection and layout).
     val tabChild=if(tag=="md-tab" && LocalTabsStrip.current!=null) remember { TabChild() } else null
     val navigationChild=if(tag=="md-navigation-tab" && LocalNavigationBarRow.current!=null) remember { NavigationChild() } else null
+    // A rail's destination reports its holder as layout id (the rail lays out, roves and animates its destinations).
+    val railChild=if(tag=="md-navigation-rail-tab" && LocalRailRow.current!=null) remember { RailChild() } else null
+    // The first component composed in a rail's header slot reports whether it is an md-icon-button (centred on the rail's axis).
+    LocalAWCRailHeader.current?.let { h -> SideEffect { if(h.fresh) { h.fresh=false; if(h.iconButton!=(tag=="md-icon-button")) h.iconButton=tag=="md-icon-button" } } }
     val panelChild=if(tag=="md-tab-panel" && LocalTabPanels.current) remember { PanelChild() } else null
+    // Inside an md-search results slot: counted as a root / result row (the source's announcement count).
+    val searchResults=awcSearchResultMembership(tag,p)
     // A toolbar's direct child reports its holder as layout id (the toolbar lays out its sections, roves its activators and tints its icon buttons).
     val toolbarChild=if(LocalToolbarRow.current!=null) remember { ToolbarChild() } else null
     val toolbarSlot=LocalToolbarSlot.current
@@ -80,6 +98,12 @@ fun AWCComponent(
     val stepChild=if(tag=="md-step" && LocalStepperContext.current!=null) remember { StepChild() } else null
     if(stepChild!=null) { NativeStepParts(p, onEvent, content, stepChild); return }
     val menuSlot=rememberNativeMenuSlot(tag,p)
+    // A button-group child is measured as the group's part child.segment-N (registration = authored order).
+    // The index is read after composition (the child registers with the group while composing).
+    val groupScope=LocalSelection.current
+    var groupChildIndex by remember { mutableIntStateOf(-1) }
+    SideEffect { groupChildIndex=groupChild?.let { child -> groupScope?.indices?.indexOf(child.id) } ?: -1 }
+    val groupChildInspection=if(groupChild!=null && groupChildIndex>=0) Modifier.inspectAWCNode(LocalAWCInspection.current,"child.segment-$groupChildIndex",tag,flat=true) else Modifier
     val measuredModifier = (if (tag in setOf("md-button","md-icon-button","md-button-group","md-fab","md-divider","md-fab-menu","md-fab-menu-item","md-badge","md-status-dot","md-segmented-button","md-segmented-button-set","md-split-button","md-loading-indicator","md-meter","md-progress-indicator","md-skeleton","md-snackbar","md-tooltip","md-menu","md-menu-item","md-sub-menu-item","md-menu-item-group") || accordionChild!=null) suppliedModifier else suppliedModifier.inspectAWCNode(inspection, "", tag, allowZeroSize = accordionFloating?.zIndex != null))
         .nativeAnchorBounds(nativeAnchor)
         .nativeMenuAnchorAuto(p.str("id"),p.str("aria-label").ifEmpty { p.str("label") })
@@ -89,9 +113,9 @@ fun AWCComponent(
                 Modifier.layoutId(NativeStatusDotMetrics.from(p, LocalAWCStatusDotAppearance.current,
                     inheritedDensity, androidx.compose.ui.platform.LocalDensity.current.density.toDouble()))
             else if(tag == "md-avatar" && LocalAWCIconButtonSlot.current) Modifier.layoutId("awc-icon-avatar") else if(tableCell != null) Modifier.layoutId(tableCell) else Modifier)
-    Box(measuredModifier.awcCardContentMarker(tag,p.bool("hidden")).nativeMenuSlot(menuSlot).then(if(toolbarChild!=null) Modifier.layoutId(toolbarChild) else if(navigationChild!=null) Modifier.layoutId(navigationChild) else if(tabChild!=null) Modifier.layoutId(tabChild) else if(panelChild!=null) Modifier.layoutId(panelChild) else if(breadcrumbChild!=null) Modifier.layoutId(breadcrumbChild) else if(groupChild!=null) Modifier.layoutId(groupChild) else if(segmentChild!=null) Modifier.layoutId(segmentChild) else if(accordionChild!=null) Modifier.layoutId(accordionChild).then(AccordionChildMarkerElement(accordionChild)) else Modifier)
-        .then(accordionFloating?.zIndex?.let { Modifier.zIndex(it) } ?: if(tag=="md-table-head") Modifier.zIndex(2f) else if(tag=="md-table-foot") Modifier.zIndex(1f) else Modifier),propagateMinConstraints=groupChild!=null || segmentChild!=null || accordionChild!=null || tag=="md-segmented-button-set") {
-      CompositionLocalProvider(LocalToolbarRow provides null,LocalAWCInspection provides inspection,LocalButtonGroupChild provides groupChild,
+    Box(measuredModifier.then(groupChildInspection).awcCardContentMarker(tag,p.bool("hidden")).nativeMenuSlot(menuSlot).awcCursor(awcHostCursor(tag,p)).then(if(toolbarChild!=null) Modifier.layoutId(toolbarChild) else if(railChild!=null) Modifier.layoutId(railChild) else if(navigationChild!=null) Modifier.layoutId(navigationChild) else if(tabChild!=null) Modifier.layoutId(tabChild) else if(panelChild!=null) Modifier.layoutId(panelChild) else if(breadcrumbChild!=null) Modifier.layoutId(breadcrumbChild) else if(groupChild!=null) Modifier.layoutId(groupChild) else if(segmentChild!=null) Modifier.layoutId(segmentChild) else if(accordionChild!=null) Modifier.layoutId(accordionChild).then(AccordionChildMarkerElement(accordionChild)) else Modifier)
+        .then(if(tag=="md-table-head") Modifier.zIndex(2f) else if(tag=="md-table-foot") Modifier.zIndex(1f) else if(tag=="md-search") Modifier.zIndex(1f) else Modifier).awcSearchResultFocus(searchResults).awcStackingLift(stacking).awcAppBarChild(tag,p),propagateMinConstraints=groupChild!=null || segmentChild!=null || accordionChild!=null || tag=="md-segmented-button-set") {
+      CompositionLocalProvider(LocalToolbarRow provides null,LocalAWCSearchResults provides searchResults,LocalAWCStackingNode provides stacking,LocalAWCInspection provides inspection,LocalButtonGroupChild provides groupChild,
           LocalNativeAnchor provides nativeAnchor,LocalSegmentedChild provides segmentChild,
           LocalAWCNativeDensity provides inheritedDensity,LocalNativeMenuSlot provides menuSlot,LocalAWCDensityRungs provides awcDensityRungs(p["density"])) {
         when (tag) {
@@ -113,27 +137,31 @@ fun AWCComponent(
             "md-otp-field" -> NativeOTPField(p, onEvent, controlEvent, content, formControl?.field, formControl?.form)
             // Dedicated renderers (NativeSliderView.kt / NativeRatingView.kt): Web geometry, motion, events, per-thumb inputs.
             // Host-authored properties outside a form (the component's own writes live in its model until the host changes them).
-            "md-slider" -> NativeSliderView(if (formControl?.form != null) p else source, controlEvent)
+            "md-slider" -> NativeSliderView(if (formControl?.form != null) p else source, controlEvent, content)   // + the inset-icon slot (R6-04)
             "md-rating" -> NativeRatingView(if (formControl?.form != null) p else source, controlEvent)
             "md-select" -> NativeSelect(p, onEvent, controlEvent, content, formControl?.field, formControl?.form)
             "md-select-option" -> if(LocalAWCSelectOptions.current!=null) NativeSelectOption(p, content) else InputComponent(tag, p, controlEvent, content, formControl?.form)
             "md-multi-select" -> NativeMultiSelect(p, onEvent, controlEvent, content, formControl?.field, formControl?.form)
-            "md-text-field", "md-number-field", "md-otp-field", "md-search", "md-autocomplete" -> InputComponent(tag, p, controlEvent, content, formControl?.form)
+            "md-autocomplete" -> NativeAutocomplete(p, onEvent, controlEvent, content, formControl?.field, formControl?.form)
+            "md-search" -> NativeSearch(p, onEvent, content)
+            "md-text-field", "md-number-field", "md-otp-field", "md-search" -> InputComponent(tag, p, controlEvent, content, formControl?.form)
             "md-color-picker" -> NativeColorPicker(p, controlEvent, content)
             "md-time-picker" -> NativeTimePicker(p, controlEvent)
-            "md-date-picker" -> PickerComponent(tag, p, controlEvent)
+            "md-date-picker" -> NativeDatePicker(p, controlEvent, content)
             "md-dialog" -> NativeDialog(p, onEvent, content)
             "md-bottom-sheet" -> NativeBottomSheet(p, onEvent, content)
             "md-side-sheet" -> NativeSideSheet(p, onEvent, content)
             "md-menu" -> NativeMenu(p, onEvent, content)
             // Dedicated renderer (NativeChartView.kt): the ported engine's scene, hover layer, tooltips, legend, zoom, keyboard, motion.
             "md-bar-chart", "md-line-chart", "md-area-chart", "md-pie-chart", "md-sparkline" -> NativeChartView(tag, p, onEvent, content)
-            "md-transfer-list" -> TransferList(p, onEvent)
+            "md-transfer-list" -> NativeTransferList(p, onEvent)
             "md-organization-chart" -> NativeOrgChart(p, onEvent, content)
             "md-table", "md-table-container", "md-table-head", "md-table-body", "md-table-foot", "md-table-row", "md-table-cell", "md-table-sort-label", "md-table-expand-toggle", "md-table-pagination", "md-table-toolbar" -> NativeTableFamily(tag, p, onEvent, content, tableCell)
-            "md-accordion" -> NativeAccordionGroup(p, onEvent, content, accordionFloating!!)
-            "md-accordion-item" -> NativeAccordionItem(p, onEvent, content, accordionChild!!, inspection)
+            "md-accordion" -> AWCForcedColorScope(awcForcedColors()) { NativeAccordionGroup(p, onEvent, content, accordionFloating!!) }
+            "md-accordion-item" -> AWCForcedColorScope(awcForcedColors()) { NativeAccordionItem(p, onEvent, content, accordionChild!!, inspection) }
             "md-breadcrumbs" -> NativeBreadcrumbs(p, onEvent, content)
+            "md-navigation-rail" -> NativeNavigationRail(p, onEvent, content)
+            "md-navigation-rail-tab" -> NativeNavigationRailTab(p, onEvent, content, railChild)
             "md-navigation-bar" -> NativeNavigationBar(p, onEvent, content)
             "md-navigation-tab" -> NativeNavigationTab(p, onEvent, content, navigationChild, properties.keys)
             "md-tabs" -> NativeTabs(p, onEvent, content)
@@ -144,7 +172,7 @@ fun AWCComponent(
             // Dedicated renderers (NativeStepper.kt): Web geometry, motion, navigation rules and announcements.
             "md-stepper" -> NativeStepper(p, onEvent, content)
             "md-step" -> NativeStepStandalone(p, onEvent, content)
-            "md-navigation-bar", "md-navigation-rail", "md-tabs", "md-navigation-tab", "md-navigation-rail-tab", "md-tab", "md-tab-panels", "md-tab-panel", "md-breadcrumbs", "md-breadcrumb-item" -> NavigationComponent(tag, p, onEvent, content)
+            "md-navigation-bar", "md-tabs", "md-navigation-tab", "md-tab", "md-tab-panels", "md-tab-panel", "md-breadcrumbs", "md-breadcrumb-item" -> NavigationComponent(tag, p, onEvent, content)
             "md-list" -> NativeList(p, onEvent, content)
             "md-menu-item-group" -> NativeMenuGroup(p, content)
             "md-list-item" -> NativeListItem(p, onEvent, content)
@@ -161,18 +189,7 @@ fun AWCComponent(
             "md-skeleton" -> NativeSkeleton(p)
             "md-status-dot" -> NativeStatusDot(p)
             "md-toolbar" -> NativeToolbar(p, onEvent, content)
-            "md-app-bar" -> Surface(color = MaterialTheme.colorScheme.surfaceContainer, shape = RoundedCornerShape(16.dp)) {
-                Row(Modifier.fillMaxWidth().padding(spacing), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    content?.invoke("leading")
-                    if (p.str("leadingIcon").isNotBlank()) IconButton(onClick = { onEvent("mdLeadingClick", null) }) { Glyph(p.str("leadingIcon"), p.str("leadingIconLabel")) }
-                    Column(Modifier.weight(1f)) {
-                        if (p.str("headline").isNotEmpty()) Text(p.str("headline"), style = MaterialTheme.typography.titleLarge)
-                        if (p.str("subtitle").isNotEmpty()) Text(p.str("subtitle"), style = MaterialTheme.typography.bodySmall)
-                        content?.invoke("")
-                    }
-                    content?.invoke("trailing")
-                }
-            }
+            "md-app-bar" -> NativeAppBar(p, onEvent, content)
             "md-ripple" -> NativeRippleNode(p)
             else -> error("No native Android adapter for $tag")
         }

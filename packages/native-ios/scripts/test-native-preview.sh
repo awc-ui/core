@@ -11,6 +11,9 @@ swiftc -parse-as-library -module-cache-path "$build_dir/module-cache" -I "$libra
   "$library_dir"/AWCUI.build/*.o -o "$build_dir/slots"
 "$build_dir/slots"
 swiftc -parse-as-library -module-cache-path "$build_dir/module-cache" -I "$library_dir/Modules" \
+  "$package_dir/Tests/NativeBindingStuckProbe.swift" "$library_dir"/AWCUI.build/*.o -o "$build_dir/bindingstuck"
+"$build_dir/bindingstuck"
+swiftc -parse-as-library -module-cache-path "$build_dir/module-cache" -I "$library_dir/Modules" \
   "$package_dir/Tests/NativePreviewPresentationIntegration.swift" "$library_dir"/AWCUI.build/*.o -o "$build_dir/presentation"
 "$build_dir/presentation"
 AWC_NATIVE_LIVE_RENDERER="$library_dir/AWCLivePreview" node "$playground_dir/scripts/test-preview-presentation.mjs"

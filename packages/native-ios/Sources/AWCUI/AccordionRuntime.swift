@@ -42,6 +42,7 @@ extension AWCNativeAccordionItemState {
         self.init(id: node.id, expanded: p["expanded"]?.bool ?? false, disabled: p["disabled"]?.bool ?? false,
                   headingLevel: Int(exactly: p["headingLevel"]?.number ?? 3) ?? 3,
                   regionRole: p["regionRole"]?.string ?? "region", collapsible: p["collapsible"]?.bool ?? true)
+        hidden = p["hidden"]?.bool ?? false
     }
     func applyProperties(_ next: [String: AWCValue], previous: [String: AWCValue]) {
         // An unrelated authored edit must not overwrite a locally toggled item
@@ -50,6 +51,7 @@ extension AWCNativeAccordionItemState {
         if next["headingLevel"] != previous["headingLevel"] { headingLevel = Int(exactly: next["headingLevel"]?.number ?? 3) ?? 3 }
         if next["regionRole"] != previous["regionRole"] { regionRole = next["regionRole"]?.string ?? "region" }
         if next["collapsible"] != previous["collapsible"] { collapsible = next["collapsible"]?.bool ?? true }
+        if next["hidden"] != previous["hidden"] { hidden = next["hidden"]?.bool ?? false }
         if next["expanded"] != previous["expanded"] { setExpanded(next["expanded"]?.bool ?? false) }
     }
 }

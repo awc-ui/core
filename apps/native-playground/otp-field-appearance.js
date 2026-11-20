@@ -12,6 +12,11 @@ export const OTP_FIELD_APPEARANCE_FIELDS = Object.freeze([
   otp('fontSize', 'Font size', 'font-size', 'length'),
   otp('outlineColor', 'Outline color', 'outline-color', 'color'),
 ]);
+/** The source's ::part names with their typed native part fields (AWCOTPFieldPartAppearance). */
+export const OTP_FIELD_PARTS = Object.freeze({
+  cells: ['cellsGap'], cell: ['cellBorderColor', 'cellBorderWidth', 'cellBackgroundColor', 'cellTextColor', 'caretColor'],
+  separator: ['separatorColor', 'separatorOpacity'], 'supporting-text': ['supportingTextColor'],
+});
 export const otpFieldAppearance = appearanceProfile(OTP_FIELD_APPEARANCE_FIELDS, 'INVALID_OTP_FIELD_APPEARANCE', 'OTP Field');
 
 // ---- retained property updates (every source property) ----

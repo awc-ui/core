@@ -420,6 +420,7 @@ struct AWCNativeSideSheet: View {
         .accessibilityElement(children: .contain)
         .accessibilityLabel(accessibleName)
         .modifier(AWCSideSheetModalTrait(modal: modal))
+        .awcModalSurfaceAccessibility(id: id, role: modal ? AWCModalSurfaceRole(kind: .dialog, modal: true) : nil)
         .awcInspect(nodeID: id, part: "container", name: "container") { size in
             ["role": .string(modal ? "dialog" : "region"), "label": .string(accessibleName), "radius": .number(Double(corners.radii(in: size).first?.width ?? 0))]
         }
@@ -537,7 +538,7 @@ extension AWCNativeView {
             return items.isEmpty ? nil : AnyView(ForEach(items) { item in child(item) })
         }
         return AWCNativeSideSheet(id: node.id, model: AWCSideSheetModel(local), theme: theme,
-                                  open: Binding(get: { b("open") }, set: { set("open", .bool($0)) }),
+                                  open: $local[awcBool: "open"],
                                   slots: AWCSideSheetSlots(content: slot(nil), headline: slot("headline"), back: slot("back"), close: slot("close"), actions: slot("actions")),
                                   emit: { name in emit(name) })
     }

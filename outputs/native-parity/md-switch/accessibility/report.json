@@ -1,6 +1,6 @@
 {
  "tag": "md-switch",
- "at": "2026-10-29T11:11:42.028Z",
+ "at": "2026-11-05T01:32:20.562Z",
  "rows": [
   {
    "case": "off",
@@ -13,7 +13,7 @@
      "switch:Enable notifications"
     ],
     "contrast": {
-     "measured": 1,
+     "measured": 0,
      "findings": []
     }
    },
@@ -33,7 +33,7 @@
       "switch:Enable notifications"
      ],
      "findings": [],
-     "contrastMeasured": 1
+     "contrastMeasured": 0
     },
     "ios": {
      "status": "pass",
@@ -128,7 +128,7 @@
     "texts": [],
     "focus": [],
     "contrast": {
-     "measured": 1,
+     "measured": 0,
      "findings": []
     }
    },
@@ -145,7 +145,7 @@
      "announcements": [],
      "focus": [],
      "findings": [],
-     "contrastMeasured": 1
+     "contrastMeasured": 0
     },
     "ios": {
      "status": "pass",
@@ -194,6 +194,16 @@
        "contentDescription": "",
        "changes": 1,
        "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
       }
      ]
     }
@@ -432,7 +442,7 @@
     "texts": [],
     "focus": [],
     "contrast": {
-     "measured": 1,
+     "measured": 0,
      "findings": []
     }
    },
@@ -473,7 +483,7 @@
        "reason": "The Web source sets aria-required=\"true\" on the control; Chrome does not report required for checkbox/radio/switch roles in its tree. macOS exposes AXRequired as the source declares (iOS has no required channel)."
       }
      ],
-     "contrastMeasured": 1
+     "contrastMeasured": 0
     },
     "ios": {
      "status": "pass",

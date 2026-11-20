@@ -44,7 +44,7 @@ final class AWCColorPickerControlView: NSView {
         let key = names[event.keyCode] ?? (event.charactersIgnoringModifiers ?? "")
         if key != "Tab" { c.handle.showFocus = true; c.focusChanged(true) }
         if c.key(key, event.modifierFlags.contains(.shift)) { return }
-        if key == "Tab" { if event.modifierFlags.contains(.shift) { window?.selectPreviousKeyView(self) } else { window?.selectNextKeyView(self) }; return }
+        if key == "Tab" { AWCDocumentTabOrder.select(from: self, backward: event.modifierFlags.contains(.shift)); return }
         if ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End", "PageUp", "PageDown", "Space", "Enter"].contains(key) { return }
         super.keyDown(with: event)
     }

@@ -142,3 +142,10 @@ plate labels read as text; iOS hardware-keyboard Tab starts at the first text in
   an adjustable element, the presets group on macOS, the subtree-wide disabled state, Compose labels as text, iOS Tab start.
 * The Android interaction test retries a field action once when the field was recomposed into a new node between lookup and
   action (fi-907 under load: "the node is no longer in the tree").
+
+## Story 6-2 audit readiness (2026-11-18)
+
+Canonical (shim v5 `30db5861`, install 115 cpshift, 110 modenextframe+tabkeyat+releaseclock, 101 labels, 009 tap-shift). Evidence is in the story record `6-2-pickers-audit-readiness`; every run is a whole-suite run, load written in each job log.
+
+- macOS paint 13685/13685, states 20948-20950 of 20950 over 3 runs; Android 6/6 and tools/ax clean (2 cases).
+- iOS states after install 115 (job 116): iPhone 26.3 20948 and 20947, iPad 26.3 20949, iOS 18.6 20949 of 20950 (before the install: 20947 / 20940 / 20941). Open: drag-plate thumb press t=100/133 (iPhone, 2 of 2 runs, one check each), popover click-trigger-open t=133 / Space-on-trigger / show() (1 miss in 3 of 4 runs, different case each time). Findings S62-09 to S62-12 in `work/audit/DEFECTS.md`.

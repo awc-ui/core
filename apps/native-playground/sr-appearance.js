@@ -85,11 +85,12 @@ export const SLIDER_APPEARANCE_FIELDS = Object.freeze([
   sl('valueLineHeight', 'Value indicator line height', 'value-line-height', 'length'), sl('valuePaddingInline', 'Value indicator inline padding', 'value-padding-inline', 'length'),
   sl('valuePaddingBlock', 'Value indicator block padding', 'value-padding-block', 'length'), sl('insetIconColor', 'Inset icon color', 'inset-icon-color', 'color'),
   sl('insetIconActiveColor', 'Inset icon color on the active track', 'inset-icon-active-color', 'color'), sl('minTrackLength', 'Minimum track length', 'min-track-length', 'length'),
+  sl('valueIndicatorReserve', 'Value indicator reserve (labeled host)', 'value-indicator-reserve', 'length'),
 ]);
 export const sliderAppearance = profile(SLIDER_APPEARANCE_FIELDS, 'INVALID_SLIDER_APPEARANCE', 'Slider');
 export const SLIDER_APPEARANCE_GROUPS = Object.freeze([['Track', ['trackLength', 'minTrackLength', 'trackHeight', 'trackShape', 'activeColor', 'inactiveColor']],
   ['Stops', ['tickActiveColor', 'tickFilledColor', 'tickInactiveColor']], ['Handle', ['thumbColor', 'thumbWidth', 'thumbHeight']],
-  ['Value indicator', ['valueBackground', 'valueColor', 'valueShape', 'valueFontFamily', 'valueFontSize', 'valueFontWeight', 'valueLineHeight', 'valuePaddingInline', 'valuePaddingBlock']],
+  ['Value indicator', ['valueIndicatorReserve', 'valueBackground', 'valueColor', 'valueShape', 'valueFontFamily', 'valueFontSize', 'valueFontWeight', 'valueLineHeight', 'valuePaddingInline', 'valuePaddingBlock']],
   ['Inset icon', ['insetIconColor', 'insetIconActiveColor']]]);
 
 // ---- rating ----------------------------------------------------------------------------------------------------------
@@ -118,7 +119,7 @@ export const SR_PROPERTY_TYPES = Object.freeze({
   'md-rating': { value: N, defaultValue: N, max: N, precision: E([1, 0.5]), size: SIZE, readonly: B, disabled: B, softDisabled: B, icon: S,
     emptyIcon: S, outlineEmpty: B, showValueLabel: B, ratingLabel: S, name: S, hover: E(['preview', 'off']), density: DENSITY },
 });
-/** Retained updates: every source property except the getLabel closure (native API only). */
+/** Retained updates: every source property except the getLabel closure (native API: AWCRatingController.getLabel). */
 export const SR_UPDATE_PROPERTIES = Object.freeze(Object.fromEntries(Object.entries(SR_PROPERTY_TYPES).map(([tag, types]) => [tag, Object.freeze(Object.keys(types))])));
 const bytes = value => new TextEncoder().encode(value).length;
 export function validSrUpdate(tag, key, value) {

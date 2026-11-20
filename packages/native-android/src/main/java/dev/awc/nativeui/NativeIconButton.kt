@@ -98,7 +98,7 @@ private data class IconWave(val press: PressInteraction.Press, val start: Long?=
     LaunchedEffect(source["selected"]) { if(group!=null) group.states[identity]=source.bool("selected") }
     // A toolbar's per-state token map wins over inherited hooks, as the source's ::slotted declarations do.
     val appearance = LocalAWCIconButtonAppearance.current.let { a -> LocalAWCIconButtonScheme.current?.appearance(p.str("variant","standard"),p.bool("toggle"),selected)?.let { a.merged(it) } ?: a }
-    val metrics = NativeIconButtonMetrics(p.str("size","sm"),p.num("density"),p.str("buttonWidth","default"))
+    val metrics = NativeIconButtonMetrics(p.str("size","sm"),p.num("density").takeIf { it < 0 } ?: LocalAWCNativeDensity.current.toFloat(),p.str("buttonWidth","default"))
     val enabled = p.enabled()
     // Selected palette selectors explicitly exclude disabled source hosts.
     // Selected shape morphing does not, so retain selected for the geometry below.
@@ -129,13 +129,15 @@ private data class IconWave(val press: PressInteraction.Press, val start: Long?=
     val focus=nativeButtonFocusModifier(p,identity,group?.focus,selected,groups.map { it.focus })
     val focused=focus.isFocusVisible
     val pressed=enabled && (pointerPressed || keyboardPressed)
-    val reduced=!ValueAnimator.areAnimatorsEnabled()
+    val reduced=LocalAWCButtonReducedMotion.current ?: !ValueAnimator.areAnimatorsEnabled()
     val keyboardScope=rememberCoroutineScope()
     var keyboardJob by remember { mutableStateOf<Job?>(null) }
     DisposableEffect(enabled) { onDispose { keyboardJob?.cancel();keyboardPressed=false } }
+    // md-ripple's wave ignores reduced motion (Chrome grows and fades it with reduce set): only the system animator setting.
+    val rippleReduced=!ValueAnimator.areAnimatorsEnabled()
     val waves=remember { mutableStateListOf<IconWave>() }
     var now by remember { mutableLongStateOf(0) }
-    LaunchedEffect(interactions,enabled,p.bool("ripple",true),reduced) {
+    LaunchedEffect(interactions,enabled,p.bool("ripple",true),rippleReduced) {
         if(!enabled || !p.bool("ripple",true)) waves.clear()
         var frames:Job?=null
         interactions.interactions.collect { event ->
@@ -149,7 +151,7 @@ private data class IconWave(val press: PressInteraction.Press, val start: Long?=
                     while(isActive && waves.isNotEmpty()) {
                         now=withFrameNanos { it }
                         waves.indices.forEach { i -> val wave=waves[i];waves[i]=wave.copy(start=wave.start ?: now,end=if(wave.released) wave.end ?: now else null) }
-                        waves.removeAll { it.end?.let { end -> reduced || now>max((it.start ?: now)+450_000_000L,end)+150_000_000L } ?: false }
+                        waves.removeAll { it.end?.let { end -> rippleReduced || now>max((it.start ?: now)+450_000_000L,end)+150_000_000L } ?: false }
                     }
                 }
             }
@@ -232,9 +234,9 @@ private data class IconWave(val press: PressInteraction.Press, val start: Long?=
                         val elapsed=max(0f,(now-(wave.start ?: now))/1_000_000f)
                         val origin=wave.press.pressPosition.takeIf { it.x.isFinite() && it.y.isFinite() } ?: center
                         val r=hypot(max(origin.x,size.width-origin.x),max(origin.y,size.height-origin.y))
-                        val growth=if(reduced) 1f else IconStandard.transform((elapsed/450f).coerceIn(0f,1f))
+                        val growth=if(rippleReduced) 1f else IconStandard.transform((elapsed/450f).coerceIn(0f,1f))
                         val fade=wave.end?.let { max(450f,(it-(wave.start ?: now))/1_000_000f) } ?: Float.POSITIVE_INFINITY
-                        val alpha=if(reduced) { if(wave.end==null) .12f else 0f } else .12f*(1-IconStandard.transform(((elapsed-fade)/150f).coerceIn(0f,1f)))
+                        val alpha=if(rippleReduced) { if(wave.end==null) .12f else 0f } else .12f*(1-IconStandard.transform(((elapsed-fade)/150f).coerceIn(0f,1f)))
                         // md-ripple inherits currentColor, independently of state-layer ink.
                         drawCircle(icon.copy(alpha=icon.alpha*alpha),r*growth,origin)
                     }

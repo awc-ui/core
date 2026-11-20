@@ -49,7 +49,8 @@ import UIKit
     /// UIKit's subview order of SwiftUI-hosted views does not follow the source order, so the order is the one AWCUI's
     /// AppKit branch gets from the window key-view loop: rows from top to bottom, and within a row from the leading to
     /// the trailing edge (right to left under a right-to-left layout). Views whose vertical extents overlap by at least
-    /// half of the smaller height share a row.
+    /// half of the smaller height share a row. The AWC focus views of a document-order root (NativeDocumentOrder.swift) then
+    /// take their positions in document (source) order.
     static func views(in window: UIWindow) -> [any AWCKeyView] {
         var found: [(view: any AWCKeyView, frame: CGRect)] = []
         func walk(_ view: UIView) {
@@ -69,13 +70,16 @@ import UIKit
             }
             rows.append((item.frame.minY, item.frame.maxY, [item]))
         }
-        return rows.flatMap { row -> [any AWCKeyView] in
+        let geometric = rows.flatMap { row -> [any AWCKeyView] in
             let rtl = row.items.first?.view.effectiveUserInterfaceLayoutDirection == .rightToLeft
             return row.items.sorted { rtl ? $0.frame.maxX > $1.frame.maxX : $0.frame.minX < $1.frame.minX }.map { $0.view }
         }
+        // Composites laid out in columns (AWCKeyViewGroup, md-transfer-list: text inputs carry no document token) keep their source order.
+        return AWCKeyViewGroup.reorderAll(AWCDocumentTabOrder.fill(geometric, token: { ($0 as? AWCNativeButtonFocusView)?.documentToken }, frame: { $0.convert($0.bounds, to: window) })) { $0 as UIView }
     }
     /// AppKit `selectNextKeyView` / `selectPreviousKeyView` from `current` (nil: from the document).
     @discardableResult static func select(from current: UIView?, in window: UIWindow, backward: Bool) -> Bool {
+        AWCKeyViewEngineEntry.entered = nil
         if let session = AWCModalHostView.active(in: window)?.session { return session.tab(backward: backward) }
         let all = views(in: window)
         let start = current.flatMap { view in all.firstIndex { $0 === view } }
@@ -83,14 +87,15 @@ import UIKit
         for index in indices where all[index].awcCanBecomeKeyView {
             if all[index].awcBecomeKeyView() { return true }
         }
-        // Past the last (first) tab stop Chrome leaves the page content: no AWC view keeps focus.
-        if let current, current.isFirstResponder { _ = current.resignFirstResponder() }
+        // Past the last (first) tab stop Chrome leaves the page content: no AWC view keeps focus. iPad: the document stand-in
+        // takes first responder at once (`AWCKeyViewEngineEntry`), so the next Tab reaches AWCUI before the focus engine.
+        if let current, current.isFirstResponder, !AWCKeyViewEngineEntry.claim(in: window) { _ = current.resignFirstResponder() }
         return false
     }
     /// Tab with no AWC first responder (the shortcut path): enter the loop from the start (end for Shift+Tab).
     static func enter(near anchor: UIView?, backward: Bool) {
         guard let window = anchor?.window else { return }
-        let responder = AWCFirstResponderProbe.current()
+        let responder = AWCFirstResponderProbe.current().flatMap { AWCKeyViewEngineEntry.isDocumentResponder($0) ? nil : $0 }
         // A host control (e.g. a text field) owns Tab; SwiftUI's hosting view, which takes first responder for keyboard
         // routing once an AWC view resigns, stands for the document like no first responder at all.
         if let responder, !(responder is any AWCKeyView), !(responder is AWCModalHostView) {
@@ -120,6 +125,78 @@ extension UIResponder {
 
 private final class AWCKeyViewAnchorView: UIView {
     override func point(inside point: CGPoint, with event: UIEvent?) -> Bool { false }
+    // iPad: the document's stand-in first responder (`AWCKeyViewEngineEntry`).
+    fileprivate var claiming = false
+    override var canBecomeFirstResponder: Bool { claiming || isFirstResponder }
+    override var canBecomeFocused: Bool { false }
+    override func didMoveToWindow() { super.didMoveToWindow(); AWCKeyViewEngineEntry.attach(self) }
+    override var keyCommands: [UIKeyCommand]? { isFirstResponder ? AWCKeyViewLoop.tabCommands(#selector(documentTab(_:))) : nil }
+    @objc private func documentTab(_ command: UIKeyCommand) { AWCKeyViewLoop.enter(near: self, backward: command.modifierFlags.contains(.shift)) }
+    override func resignFirstResponder() -> Bool {
+        guard super.resignFirstResponder() else { return false }
+        if let window { AWCKeyViewEngineEntry.reclaim(in: window) }; return true
+    }
+}
+/// iPad (a focus system is present). With no first responder (nothing focused yet, past either end of the loop, after a
+/// press on empty space), Tab / Shift+Tab reach no responder: the focus engine takes the key, before any key command or
+/// SwiftUI keyboard shortcut, and focuses its own initial item (the top-leading one, or the one it focused last) whatever
+/// the key's direction. Chrome enters at the first (Shift+Tab: last) tab stop from the document.
+/// 1. The document stand-in: when focus leaves the loop past either end, and whenever nothing is first responder and the
+///    engine focuses nothing, an entry anchor (invisible, never focused by the engine) becomes first responder; its priority Tab / Shift+Tab commands enter the loop at the first
+///    (last) stop before the engine sees the key. It stands for no focus (`isDocumentResponder`): it gives way to any
+///    responder and resigns when the engine focuses a non-AWC item, so host focus navigation keeps its keys.
+/// 2. Fallback, when the engine still entered from nothing (before the anchor could claim): UIKit delivers the key's
+///    release to the item the engine focused; an AWC key view there moves focus to the loop's first (last) stop.
+/// iPhone has no focus system: the SwiftUI shortcuts enter the loop.
+@MainActor enum AWCKeyViewEngineEntry {
+    /// The AWC key view the focus engine focused from no focus without an AWC request (until the next focus update or Tab).
+    static weak var entered: UIView?
+    /// An AWC view is asking the focus system for focus (pointer focus, `focus()`, the loop's own moves).
+    static var requesting = false
+    private static var observing = false
+    private static let anchors = NSHashTable<AWCKeyViewAnchorView>.weakObjects()
+    /// The responder standing for the document (no focus) on iPad: callers that ask for the first responder treat it as none.
+    static func isDocumentResponder(_ responder: UIResponder?) -> Bool { responder is AWCKeyViewAnchorView }
+    fileprivate static func attach(_ anchor: AWCKeyViewAnchorView) {
+        guard let window = anchor.window, UIFocusSystem.focusSystem(for: window) != nil else { return }
+        anchors.add(anchor); observe(); reclaim(in: window)
+    }
+    /// After focus left every responder: the anchor of `window` takes first responder (next run-loop turn, so a responder
+    /// that is taking over is not displaced).
+    static func reclaim(in window: UIWindow) {
+        DispatchQueue.main.async { [weak window] in
+            guard let window, let system = UIFocusSystem.focusSystem(for: window), system.focusedItem == nil,
+                  AWCFirstResponderProbe.current() == nil else { return }
+            claim(in: window)
+        }
+    }
+    /// The anchor of `window` takes first responder now (iPad); false without a focus system or an anchor.
+    @discardableResult static func claim(in window: UIWindow) -> Bool {
+        guard UIFocusSystem.focusSystem(for: window) != nil,
+              let anchor = anchors.allObjects.first(where: { $0.window === window && !$0.isHidden }) else { return false }
+        anchor.claiming = true; defer { anchor.claiming = false }
+        return anchor.becomeFirstResponder()
+    }
+    static func observe() {
+        guard !observing else { return }; observing = true
+        NotificationCenter.default.addObserver(forName: UIFocusSystem.didUpdateNotification, object: nil, queue: nil) { note in
+            let context = note.userInfo?[UIFocusSystem.focusUpdateContextUserInfoKey] as? UIFocusUpdateContext
+            let fromNothing = context?.previouslyFocusedItem == nil, nextItem = context?.nextFocusedItem
+            let next = nextItem as? UIView, window = (context?.previouslyFocusedItem as? UIView)?.window ?? next?.window
+            MainActor.assumeIsolated {
+                entered = fromNothing && !requesting && next is any AWCKeyView ? next : nil
+                if nextItem == nil, let window { reclaim(in: window) }
+                else if nextItem != nil, !(next is any AWCKeyView), let anchor = AWCFirstResponderProbe.current() as? AWCKeyViewAnchorView { _ = anchor.resignFirstResponder() }
+            }
+        }
+    }
+    /// An AWC key view's `pressesEnded`: true when this is the release of the Tab / Shift+Tab that made the engine focus it.
+    static func released(_ presses: Set<UIPress>, at view: UIView) -> Bool {
+        guard let entry = entered, entry === view, view.isFirstResponder, let window = view.window,
+              let key = presses.compactMap(\.key).first(where: { $0.keyCode == .keyboardTab }) else { return false }
+        AWCKeyViewLoop.select(from: nil, in: window, backward: key.modifierFlags.contains(.shift))
+        return true
+    }
 }
 private final class AWCKeyViewAnchorBox { weak var view: UIView? }
 private struct AWCKeyViewAnchor: UIViewRepresentable {

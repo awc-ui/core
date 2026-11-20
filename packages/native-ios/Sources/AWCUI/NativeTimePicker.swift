@@ -254,7 +254,9 @@ struct AWCNativeTimePicker: View {
         emit("mdModeChange", ["mode": .string(rt.mode.rawValue), "previousMode": .string(previous.rawValue)])
         rt.selecting = .hour
         rt.syncInputsFromDraft(twelve: twelve)
-        rt.modeAt = nil
+        // Chrome starts the mode-in keyframes at the next frame's timestamp: the first frame that renders the swapped area shows
+        // progress 0 (the start of a CSS animation is the frame after the style change, as the transitions in `retarget`).
+        rt.noteModeIn(rt.frameStart(CACurrentMediaTime() * 1000) + AWCColorPickerMotion.frame * 1000, duration: metrics.modeSwap)
         DispatchQueue.main.async { [rt] in _ = rt.input("input-hour").focus(); rt.input("input-hour").selectAll() }
     }
     private enum Scope { case hour, minute, both }
@@ -327,7 +329,7 @@ struct AWCNativeTimePicker: View {
     }
     private func dialReleased() {
         guard rt.dragging else { return }
-        rt.dragging = false
+        rt.dragging = false; rt.inputAt = nil
         if rt.selecting == .hour {
             rt.selecting = .minute
             DispatchQueue.main.async { [rt] in _ = rt.input("input-minute").focus(); rt.input("input-minute").selectAll() }
@@ -367,6 +369,7 @@ struct AWCNativeTimePicker: View {
     }
     private func trapTab(_ backward: Bool) -> Bool {
         let order = focusOrder(); guard !order.isEmpty else { return false }
+        rt.keyAt = CACurrentMediaTime() * 1000
         guard let current = currentFocus(), let i = order.firstIndex(of: current) else { return focusPart(order[backward ? order.count - 1 : 0]) }
         return focusPart(order[(i + (backward ? order.count - 1 : 1)) % order.count])
     }
@@ -434,9 +437,12 @@ struct AWCNativeTimePicker: View {
                 .frame(width: m.triggerWidth)
                 .contentShape(Rectangle())
                 .simultaneousGesture(TapGesture().onEnded { if !disabled { rt.activatedFromTrigger = true; openPicker() } })
+                // An explicit accessibility container: without it SwiftUI exposed the field's hidden leading glyph ("schedule") as
+                // static text (tools/ax closed case; fi-746: the container gesture is not the cause, this modifier removes it).
+                .accessibilityElement(children: .contain)
                 // The field's own parts report as the picker's `trigger` part (the source's ::part(trigger)).
                 .environment(\.awcInspectionAlias, AWCInspectionAlias(childID: node.id + "-trigger", parentID: node.id, part: "trigger"))
-                .awcInspect(nodeID: node.id, name: "md-time-picker") { _ in ["open": .bool(rt.isOpen), "mode": .string(rt.mode.rawValue)] }
+                .awcInspect(nodeID: node.id, name: "md-time-picker") { _ in ["open": .bool(rt.isOpen), "mode": .string(rt.mode.rawValue), "validationMessage": .string(validity().message)] }
         }
     }
 
@@ -463,7 +469,7 @@ struct AWCNativeTimePicker: View {
             Text(headline).font(AWCNativeFonts.label(size: m.headlineSize, weight: m.headlineWeight)).tracking(0.5).lineLimit(1)
                 .foregroundStyle(hook("headline-color", "on-surface-variant"))
                 .frame(height: 16, alignment: .leading).frame(maxWidth: .infinity, alignment: .leading)
-                .awcInspect(nodeID: node.id, part: "headline", name: "headline") { _ in [:] }
+                .awcInspect(nodeID: node.id, part: "headline", name: "headline") { _ in ["text": .string(headline)] }
                 .padding(.bottom, m.headlineSpacing)
             timeBody(m, isInput: isInput, horizontal: horizontal)
             footer(m, isInput: isInput)
@@ -566,6 +572,8 @@ struct AWCNativeTimePicker: View {
         // type="text" inputmode="numeric" role="spinbutton": the vertical arrows reach `command` (bumpFocusedInput).
         c.centered = true; c.rtl = false; c.enabled = !disabled; c.type = "text"; c.inputMode = "numeric"; c.autocomplete = "off"; c.spellcheck = false
         c.accessibilityLabel = label; c.invalid = error; c.role = "spinbutton"
+        // md-text-field reports the vertical arrows only when asked (n3, 2026-10-31: `navigationKeys`).
+        c.navigationKeys = true
         c.accessibilityValue = error ? nil : text
         return c
     }
@@ -601,7 +609,7 @@ struct AWCNativeTimePicker: View {
         .overlay { RoundedRectangle(cornerRadius: r, style: .circular).strokeBorder(outline, lineWidth: w) }
         .frame(width: groupWidth, height: groupHeight)
         .accessibilityElement(children: .contain).accessibilityLabel(labels.period)
-        .awcInspect(nodeID: node.id, part: "period-toggle", name: "period-toggle") { _ in ["horizontal": .bool(horizontal)] }
+        .awcInspect(nodeID: node.id, part: "period-toggle", name: "period-toggle") { _ in ["horizontal": .bool(horizontal), "label": .string(labels.period)] }
     }
     private var rtModeIsDial: Bool { rt.mode == .dial }
     @ViewBuilder private func periodButton(_ p: String, _ m: AWCTimePickerMetrics, horizontal: Bool, corners: (Double, Double, Double, Double)) -> some View {
@@ -663,7 +671,9 @@ struct AWCNativeTimePicker: View {
     }
     private func dialGesture(_ size: Double) -> some Gesture {
         DragGesture(minimumDistance: 0, coordinateSpace: .local)
-            .onChanged { v in guard !disabled else { return }; rt.dragging = true; dialPointer(v.location, size: size) }
+            // The press (pointerdown) writes the hand's rotation in the source's input handler: its transition starts in the frame
+            // the press arrived in (TimePickerModel `inputAt`); drag moves and the release do not.
+            .onChanged { v in guard !disabled else { return }; if !rt.dragging { rt.inputAt = CACurrentMediaTime() * 1000 }; rt.dragging = true; dialPointer(v.location, size: size) }
             .onEnded { _ in dialReleased() }
     }
     @ViewBuilder private func dialFace(_ m: AWCTimePickerMetrics, angle: Double, lengthRatio: Double) -> some View {
@@ -731,7 +741,7 @@ struct AWCNativeTimePicker: View {
                           properties: ["variant": "standard", "size": "sm", "icon": .string(isInput ? "schedule" : "keyboard"),
                                        "aria-label": .string(isInput ? labels.toggleDial : labels.toggleInput)]),
                   { e in if e.name == "mdClick" { toggleMode() } })
-                .awcInspect(nodeID: node.id, part: "toggle-mode", name: "toggle-mode") { _ in [:] }
+                .awcInspect(nodeID: node.id, part: "toggle-mode", name: "toggle-mode") { _ in ["label": .string(isInput ? labels.toggleDial : labels.toggleInput)] }
             Spacer(minLength: 0)
             HStack(spacing: m.actionsGap) {
                 child(AWCNode(id: node.id + "-cancel", tag: "md-button", properties: ["variant": "text", "size": "sm"], children: [.text(labels.cancel)]),

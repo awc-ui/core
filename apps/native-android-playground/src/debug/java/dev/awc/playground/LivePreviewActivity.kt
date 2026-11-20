@@ -81,8 +81,24 @@ import dev.awc.nativeui.AWCCardAppearance
 import dev.awc.nativeui.AWCCardAppearanceScope
 import dev.awc.nativeui.AWCAvatarAppearance
 import dev.awc.nativeui.AWCAvatarAppearanceScope
+import dev.awc.nativeui.AWCSearchAppearance
+import dev.awc.nativeui.AWCSearchAppearanceScope
+import dev.awc.nativeui.AWCSearchController
+import dev.awc.nativeui.AWCSearchControllerScope
+import dev.awc.nativeui.AWCTransferListAppearance
+import dev.awc.nativeui.AWCTransferListAppearanceScope
+import dev.awc.nativeui.AWCTransferListController
+import dev.awc.nativeui.AWCTransferListControllerScope
 import dev.awc.nativeui.AWCOrgChartAppearance
 import dev.awc.nativeui.AWCOrgChartAppearanceScope
+import dev.awc.nativeui.AWCMultiSelectAppearance
+import dev.awc.nativeui.AWCMultiSelectAppearanceScope
+import dev.awc.nativeui.AWCMultiSelectController
+import dev.awc.nativeui.AWCMultiSelectControllerScope
+import dev.awc.nativeui.AWCSelectAppearance
+import dev.awc.nativeui.AWCSelectAppearanceScope
+import dev.awc.nativeui.AWCSelectController
+import dev.awc.nativeui.AWCSelectControllerScope
 import dev.awc.nativeui.AWCTextFieldAppearance
 import dev.awc.nativeui.AWCTextFieldAppearanceScope
 import dev.awc.nativeui.AWCTextFieldController
@@ -92,10 +108,17 @@ import dev.awc.nativeui.AWCRatingController
 import dev.awc.nativeui.AWCTextFieldControllerScope
 import dev.awc.nativeui.AWCColorPickerController
 import dev.awc.nativeui.AWCTimePickerController
+import dev.awc.nativeui.AWCDatePickerController
+import dev.awc.nativeui.AWCDatePickerAppearance
 import dev.awc.nativeui.AWCNumberFieldAppearance
 import dev.awc.nativeui.AWCNumberFieldAppearanceScope
 import dev.awc.nativeui.AWCNumberFieldController
 import dev.awc.nativeui.AWCNumberFieldControllerScope
+import dev.awc.nativeui.AWCAutocompleteAppearance
+import dev.awc.nativeui.AWCAutocompleteAppearanceScope
+import dev.awc.nativeui.AWCAutocompleteController
+import dev.awc.nativeui.AWCAutocompleteControllerScope
+import dev.awc.nativeui.AWCMenuScope
 import dev.awc.nativeui.AWCOTPFieldAppearance
 import dev.awc.nativeui.AWCOTPFieldAppearanceScope
 import dev.awc.nativeui.AWCOTPFieldController
@@ -225,7 +248,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * input is dispatched to this activity's views, never to the Android system.
  */
 class LivePreviewActivity : ComponentActivity() {
-    private data class Configuration(val tag: String, val properties: Map<String, AWCValue>, val dark: Boolean, val width: Double, val scenario: String, val themeTokens: Map<String, String>, val direction: LayoutDirection, val text: String?, val slots: Map<String, AWCValue>, val buttonAppearanceDefaults: AWCButtonAppearance, val buttonAppearance: AWCButtonAppearance, val iconButtonAppearance: AWCIconButtonAppearance, val buttonGroupAppearance: AWCButtonGroupAppearance, val buttonGroupSelection: List<Boolean>, val fabAppearance: AWCFabAppearance, val dividerAppearance: AWCDividerAppearance, val fabMenuAppearance:AWCFabMenuAppearance, val fabMenuItemAppearance:AWCFabMenuItemAppearance, val badgeAppearance:AWCBadgeAppearance, val statusDotAppearance:AWCStatusDotAppearance, val segmentedDefaults:AWCSegmentedButtonAppearance, val segmentedAppearance:AWCSegmentedButtonAppearance, val segmentedContext:LiveSegmentedContext, val splitButtonAppearance:AWCSplitButtonAppearance,val loadingIndicatorAppearance:AWCLoadingIndicatorAppearance,val meterAppearance:AWCMeterAppearance,val progressAppearance:AWCProgressIndicatorAppearance,val skeletonAppearance:AWCSkeletonAppearance,val snackbarAppearance:AWCSnackbarAppearance,val snackbarHeight:Double,val tooltipAppearance:AWCTooltipAppearance=AWCTooltipAppearance(),val accordionAppearance:AWCAccordionAppearance=AWCAccordionAppearance(),val accordionItemAppearance:AWCAccordionItemAppearance=AWCAccordionItemAppearance(),val cardAppearance:AWCCardAppearance=AWCCardAppearance(),val listAppearance:AWCListAppearance=AWCListAppearance(),val listItemAppearance:AWCListItemAppearance=AWCListItemAppearance(),val dialogAppearance:AWCDialogAppearance=AWCDialogAppearance(),val bottomSheetAppearance:AWCBottomSheetAppearance=AWCBottomSheetAppearance(),val sideSheetAppearance:AWCSideSheetAppearance=AWCSideSheetAppearance(),val avatarAppearance:AWCAvatarAppearance=AWCAvatarAppearance(),val switchAppearance:AWCSwitchAppearance=AWCSwitchAppearance(),val checkboxAppearance:AWCCheckboxAppearance=AWCCheckboxAppearance(),val radioAppearance:AWCRadioAppearance=AWCRadioAppearance(),val chipAppearance:AWCChipHookAppearance=AWCChipHookAppearance(),val rippleAppearance:AWCRippleAppearance=AWCRippleAppearance(),val orgChartAppearance:AWCOrgChartAppearance=AWCOrgChartAppearance(),val breadcrumbsAppearance:AWCBreadcrumbsAppearance=AWCBreadcrumbsAppearance(),val tabsAppearance:AWCTabsAppearance=AWCTabsAppearance(),val tabAppearance:AWCTabAppearance=AWCTabAppearance(),val navigationBarAppearance:AWCNavigationBarAppearance=AWCNavigationBarAppearance(),val navigationTabAppearance:AWCNavigationTabAppearance=AWCNavigationTabAppearance(),val textFieldAppearance:AWCTextFieldAppearance=AWCTextFieldAppearance(),val numberFieldAppearance:AWCNumberFieldAppearance=AWCNumberFieldAppearance(),val otpFieldAppearance:AWCOTPFieldAppearance=AWCOTPFieldAppearance(),val menuAppearanceDefaults:AWCMenuAppearance=AWCMenuAppearance(),val menuAppearance:AWCMenuAppearance=AWCMenuAppearance())
+    private data class Configuration(val tag: String, val properties: Map<String, AWCValue>, val dark: Boolean, val width: Double, val scenario: String, val themeTokens: Map<String, String>, val direction: LayoutDirection, val text: String?, val slots: Map<String, AWCValue>, val buttonAppearanceDefaults: AWCButtonAppearance, val buttonAppearance: AWCButtonAppearance, val iconButtonAppearance: AWCIconButtonAppearance, val buttonGroupAppearance: AWCButtonGroupAppearance, val buttonGroupSelection: List<Boolean>, val fabAppearance: AWCFabAppearance, val dividerAppearance: AWCDividerAppearance, val fabMenuAppearance:AWCFabMenuAppearance, val fabMenuItemAppearance:AWCFabMenuItemAppearance, val badgeAppearance:AWCBadgeAppearance, val statusDotAppearance:AWCStatusDotAppearance, val segmentedDefaults:AWCSegmentedButtonAppearance, val segmentedAppearance:AWCSegmentedButtonAppearance, val segmentedContext:LiveSegmentedContext, val splitButtonAppearance:AWCSplitButtonAppearance,val loadingIndicatorAppearance:AWCLoadingIndicatorAppearance,val meterAppearance:AWCMeterAppearance,val progressAppearance:AWCProgressIndicatorAppearance,val skeletonAppearance:AWCSkeletonAppearance,val snackbarAppearance:AWCSnackbarAppearance,val snackbarHeight:Double,val tooltipAppearance:AWCTooltipAppearance=AWCTooltipAppearance(),val accordionAppearance:AWCAccordionAppearance=AWCAccordionAppearance(),val accordionItemAppearance:AWCAccordionItemAppearance=AWCAccordionItemAppearance(),val cardAppearance:AWCCardAppearance=AWCCardAppearance(),val listAppearance:AWCListAppearance=AWCListAppearance(),val listItemAppearance:AWCListItemAppearance=AWCListItemAppearance(),val dialogAppearance:AWCDialogAppearance=AWCDialogAppearance(),val bottomSheetAppearance:AWCBottomSheetAppearance=AWCBottomSheetAppearance(),val sideSheetAppearance:AWCSideSheetAppearance=AWCSideSheetAppearance(),val avatarAppearance:AWCAvatarAppearance=AWCAvatarAppearance(),val switchAppearance:AWCSwitchAppearance=AWCSwitchAppearance(),val checkboxAppearance:AWCCheckboxAppearance=AWCCheckboxAppearance(),val radioAppearance:AWCRadioAppearance=AWCRadioAppearance(),val chipAppearance:AWCChipHookAppearance=AWCChipHookAppearance(),val rippleAppearance:AWCRippleAppearance=AWCRippleAppearance(),val searchAppearance:AWCSearchAppearance=AWCSearchAppearance(),val transferListAppearance:AWCTransferListAppearance=AWCTransferListAppearance(),val orgChartAppearance:AWCOrgChartAppearance=AWCOrgChartAppearance(),val breadcrumbsAppearance:AWCBreadcrumbsAppearance=AWCBreadcrumbsAppearance(),val tabsAppearance:AWCTabsAppearance=AWCTabsAppearance(),val tabAppearance:AWCTabAppearance=AWCTabAppearance(),val navigationBarAppearance:AWCNavigationBarAppearance=AWCNavigationBarAppearance(),val navigationTabAppearance:AWCNavigationTabAppearance=AWCNavigationTabAppearance(),val textFieldAppearance:AWCTextFieldAppearance=AWCTextFieldAppearance(),val selectAppearance:AWCSelectAppearance=AWCSelectAppearance(),val multiSelectAppearance:AWCMultiSelectAppearance=AWCMultiSelectAppearance(),val numberFieldAppearance:AWCNumberFieldAppearance=AWCNumberFieldAppearance(),val autocompleteAppearance:AWCAutocompleteAppearance=AWCAutocompleteAppearance(),val otpFieldAppearance:AWCOTPFieldAppearance=AWCOTPFieldAppearance(),val menuAppearanceDefaults:AWCMenuAppearance=AWCMenuAppearance(),val menuAppearance:AWCMenuAppearance=AWCMenuAppearance())
     private val main = Handler(Looper.getMainLooper())
     private var configuration by mutableStateOf<Configuration?>(null)
     // Snapshot state: an update whose properties equal the current ones still recomposes, draws its revision and ACKs (gate-7 R4-17).
@@ -274,18 +297,25 @@ class LivePreviewActivity : ComponentActivity() {
     private val tooltipController=AWCTooltipController()
     private val accordionItemController=AWCAccordionItemController()
     private val listController=AWCListController()
+    private val transferListController=AWCTransferListController()
     private val listItemController=AWCListItemController()
     private val selectionController=AWCSelectionControlController()
     private val rippleController=AWCRippleController()
+    private val searchController=AWCSearchController()
     private val breadcrumbsController=AWCBreadcrumbsController()
     private val tabsController=AWCTabsController()
     private val navigationBarController=AWCNavigationBarController()
     private val navigationTabController=AWCNavigationTabController()
     private val textFieldController=AWCTextFieldController()
+    private val selectController=AWCSelectController()
+    private val multiSelectController=AWCMultiSelectController()
     private val colorPickerController=AWCColorPickerController()
     private val timePickerController=AWCTimePickerController()
+    private val datePickerController=AWCDatePickerController()
+    private var datePickerAppearance=AWCDatePickerAppearance()
     private var pickerAppearances=LivePreviewPickerAppearances()
     private val numberFieldController=AWCNumberFieldController()
+    private val autocompleteController=AWCAutocompleteController()
     private val otpFieldController=AWCOTPFieldController()
     private val stepperController=AWCStepperController()
     private var stepperOptions=AWCStepperAppearance()
@@ -402,7 +432,7 @@ class LivePreviewActivity : ComponentActivity() {
         // Methods and native timers mutate the source open property. Reflect
         // that actual value into the retained host baseline so a later explicit
         // {open:true} is a real edge after hide(), not an ignored stale value.
-        if(tag in setOf("md-snackbar","md-tooltip","md-dialog","md-bottom-sheet","md-side-sheet","md-time-picker","md-color-picker") && name in setOf("mdOpen","mdClose")) {
+        if(tag in setOf("md-snackbar","md-tooltip","md-dialog","md-bottom-sheet","md-side-sheet","md-time-picker","md-color-picker","md-date-picker","md-search") && name in setOf("mdOpen","mdClose")) {
             configuration?.let { config->
                 val open=name=="mdOpen"
                 if(config.properties["open"]!=open) configuration=config.copy(properties=config.properties+("open" to open))
@@ -429,11 +459,37 @@ class LivePreviewActivity : ComponentActivity() {
             recorded.put("activation", activation).put("defaultPrevented", action.defaultPrevented)
                 .put("propagationPath", JSONArray(action.path))
             if(tag in setOf("md-fab-menu","md-segmented-button","md-segmented-button-set")) recorded.put("tag",action.tag).put("nodeID",action.targetID)
+            if(tag=="md-button-group" && action.tag!="md-button-group") recorded.put("tag",action.tag).put("nodeID",action.targetID)
         }
         events.addLast(recorded)
     }
 
     private fun drainEvents(): JSONArray = JSONArray().also { result -> while (events.isNotEmpty()) result.put(events.removeFirst()) }
+
+    /** Gate-7 R1-15 (d2 host robustness): a retained update, method or input can take effect a frame or more after the
+     * draw that answered it (an effect keyed on the new properties, an animation whose first frame equals the frame
+     * before it). Wait until three display frames have run without submitting a draw (nothing more to draw), or, while
+     * draws keep coming (motion), until three have been submitted; at most 300 ms. Frames and draws are counted, not
+     * milliseconds: a slow frame under load is neither taken for quiet nor waited out. The capture that follows waits for
+     * the last submitted draw to commit, so the frame shows the command. Stream-mode inputs do not wait. */
+    private fun settleDraws() {
+        val start=SystemClock.uptimeMillis()
+        val settled=CompletableFuture<Unit>()
+        main.post {
+            val choreographer=android.view.Choreographer.getInstance()
+            val first=submittedDraw
+            var seen=first;var idle=0
+            choreographer.postFrameCallback(object:android.view.Choreographer.FrameCallback {
+                // Posted from the frame callback, the check runs after that frame's traversal: `submittedDraw` includes its draw.
+                override fun doFrame(frameTimeNanos:Long) { main.post {
+                    if(submittedDraw==seen) idle++ else { idle=0;seen=submittedDraw }
+                    if(destroyed.get() || idle>=3 || submittedDraw-first>=3 || SystemClock.uptimeMillis()-start>=300) settled.complete(Unit)
+                    else choreographer.postFrameCallback(this)
+                } }
+            })
+        }
+        try { settled.get(400,TimeUnit.MILLISECONDS) } catch(_:java.util.concurrent.TimeoutException) {}
+    }
 
     private fun <T> onMain(block: () -> T): T {
         check(Looper.myLooper() != Looper.getMainLooper()) { "HTTP work must remain off the Android UI thread." }
@@ -472,7 +528,7 @@ class LivePreviewActivity : ComponentActivity() {
         if(name=="resize") {
             val applied=onMain {
                 val config=requireConfigured()
-                require(config.tag in setOf("md-snackbar","md-tooltip","md-dialog","md-bottom-sheet","md-side-sheet","md-time-picker","md-color-picker")) { "Retained viewport resize requires a native viewport component." }
+                require(config.tag in setOf("md-snackbar","md-tooltip","md-dialog","md-bottom-sheet","md-side-sheet","md-time-picker","md-color-picker","md-date-picker","md-search")) { "Retained viewport resize requires a native viewport component." }
                 val (width,height)=parseLivePreviewSnackbarResize(request)
                 check(pendingResize==null) { "A viewport resize is already pending." }
                 if(width==config.width && height==config.snackbarHeight) CompletableFuture.completedFuture(Unit)
@@ -514,9 +570,12 @@ class LivePreviewActivity : ComponentActivity() {
                     "md-accordion","md-accordion-item"->parseLivePreviewAccordionUpdate(request,config.tag)
                     "md-card"->parseLivePreviewCardUpdate(request)
                     "md-avatar"->parseLivePreviewAvatarUpdate(request)
+                    "md-transfer-list"->parseLivePreviewTransferListUpdate(request)
                     "md-organization-chart"->parseLivePreviewOrgChartUpdate(request)
                     "md-switch","md-checkbox","md-radio","md-chip"->parseLivePreviewSelectionUpdate(config.tag,request)
                     "md-ripple"->parseLivePreviewRippleUpdate(request)
+                    "md-search"->parseLivePreviewSearchUpdate(request)
+                    "md-divider"->parseLivePreviewDividerUpdate(request) // gate-7 r3-03
                     "md-breadcrumbs","md-breadcrumb-item"->parseLivePreviewBreadcrumbsUpdate(request,config.tag)
                     "md-tabs","md-tab","md-tab-panels","md-tab-panel"->parseLivePreviewTabsUpdate(request,config.tag)
                     "md-navigation-bar","md-navigation-tab"->parseLivePreviewNavigationUpdate(request,config.tag)
@@ -525,9 +584,12 @@ class LivePreviewActivity : ComponentActivity() {
                     in livePreviewTableUpdateTags->parseLivePreviewTableUpdate(config.tag,request)
                     in livePreviewSRTags->parseLivePreviewSRUpdate(config.tag,request)
                     in livePreviewStepperTags->parseLivePreviewStepperUpdate(config.tag,request)
+                    "md-date-picker"->parseLivePreviewDatePickerUpdate(request)
                     "md-color-picker","md-time-picker"->parseLivePreviewPickerUpdate(config.tag,request)
                     "md-text-field"->parseLivePreviewTextFieldUpdate(request)
+                    "md-select","md-multi-select"->parseLivePreviewSelectUpdate(request,config.tag)
                     "md-number-field"->parseLivePreviewNumberFieldUpdate(request)
+                    "md-autocomplete"->parseLivePreviewAutocompleteUpdate(request)
                     "md-otp-field"->parseLivePreviewOTPFieldUpdate(request)
                     "md-list","md-list-item"->parseLivePreviewListUpdate(request,config.tag)
                     "md-dialog","md-bottom-sheet","md-side-sheet"->parseLivePreviewModalUpdate(request,config.tag)
@@ -548,10 +610,12 @@ class LivePreviewActivity : ComponentActivity() {
                 }
             }
             applied.get(5,TimeUnit.SECONDS)
+            settleDraws()
             return onMain { JSONObject().put("ack",true).put("events",drainEvents()) }
         }
         if (name == "frame") { onMain { requireConfigured() }; return frame() }
         if(name=="method-results" || name=="method" && request.has("callId")) return onMain {
+            val accepting=name=="method"
             val calls=when(requireConfigured().tag) {
                 "md-fab-menu"->methodCalls
                 "md-snackbar"->snackbarMethodCalls
@@ -563,8 +627,8 @@ class LivePreviewActivity : ComponentActivity() {
             JSONObject().put("ack",true).put("events",drainEvents()).also {
                 if(name=="method-results") it.put("methodResults",calls.results(request))
                 else it.put("methodCall",calls.accept(request))
-            }
-        }
+            } to accepting
+        }.let { (reply,accepted)-> if(accepted) settleDraws(); reply }
         val (reply, streaming) = onMain {
             requireConfigured()
             val notice = when (name) {
@@ -593,11 +657,20 @@ class LivePreviewActivity : ComponentActivity() {
                 } else if(requireConfigured().tag=="md-otp-field") {
                     listMethodResult=invokeLivePreviewOTPFieldMethod(request,otpFieldController)
                     null
+                } else if(requireConfigured().tag=="md-autocomplete") {
+                    listMethodResult=invokeLivePreviewAutocompleteMethod(request,autocompleteController)
+                    null
                 } else if(requireConfigured().tag=="md-number-field") {
                     listMethodResult=invokeLivePreviewNumberFieldMethod(request,numberFieldController)
                     null
+                } else if(requireConfigured().tag=="md-date-picker") {
+                    listMethodResult=invokeLivePreviewDatePickerMethod(request,datePickerController)
+                    null
                 } else if(requireConfigured().tag in setOf("md-color-picker","md-time-picker")) {
                     listMethodResult=invokeLivePreviewPickerMethod(requireConfigured().tag,request,colorPickerController,timePickerController)
+                    null
+                } else if(requireConfigured().tag in livePreviewSelectTags) {
+                    listMethodResult=invokeLivePreviewSelectMethod(requireConfigured().tag,request,selectController,multiSelectController)
                     null
                 } else if(requireConfigured().tag=="md-text-field") {
                     listMethodResult=invokeLivePreviewTextFieldMethod(request,textFieldController)
@@ -613,6 +686,12 @@ class LivePreviewActivity : ComponentActivity() {
                     null
                 } else if(requireConfigured().tag in setOf("md-menu","md-sub-menu-item")) {
                     listMethodResult=invokeLivePreviewMenuMethod(requireConfigured().tag,request,menuState)
+                    null
+                } else if(requireConfigured().tag=="md-transfer-list") {
+                    listMethodResult=invokeLivePreviewTransferListMethod(request,transferListController)
+                    null
+                } else if(requireConfigured().tag=="md-search") {
+                    listMethodResult=invokeLivePreviewSearchMethod(request,searchController)
                     null
                 } else if(requireConfigured().tag=="md-ripple") {
                     listMethodResult=invokeLivePreviewRippleMethod(request,rippleController)
@@ -644,6 +723,7 @@ class LivePreviewActivity : ComponentActivity() {
                 listMethodResult?.let { result-> it.put("result",result) };listMethodResult=null } to (stream != null)
         }
         if (name == "stream" || streaming) return reply
+        settleDraws()
         val rendered = frame()
         val combined = reply.getJSONArray("events")
         val later = rendered.getJSONArray("events")
@@ -716,12 +796,13 @@ class LivePreviewActivity : ComponentActivity() {
             (0 until items.length()).map { items.getBoolean(it) }
         } else listOf(true,false,false)
         pickerAppearances=parseLivePreviewPickerAppearances(request,tag)
+        datePickerAppearance=parseLivePreviewDatePickerAppearance(request,tag)
         inspectionCollector.clear()
         committedInspection = null
         committedSplitButtonChecked=null
         val recipe=livePreviewMenuRecipe(tag) ?: if(tag=="md-fab-menu") mapOf("anchor" to "demo-fab-anchor","placement" to "down") else if(tag=="md-segmented-button") mapOf("label" to "Day","value" to "day","selected" to true) else emptyMap()
         // A shared example (`children`, LivePreviewNode.kt) carries complete properties: the host's own sample fixture stays out.
-        configuration = Configuration(tag, AWCNativeCatalog.defaults[tag].orEmpty() + (if(request.has("children")) emptyMap() else fixture(tag)) + recipe + properties, dark, width, scenario, themeTokens, if(direction == "rtl") LayoutDirection.Rtl else LayoutDirection.Ltr, text, slots, appearanceDefaults, appearance, iconAppearance, groupAppearance, groupSelection, fabAppearance, dividerAppearance,menuAppearance,itemAppearance,badgeAppearance,statusDotAppearance,segmentedDefaults,segmentedAppearance,segmentedContext,splitButtonAppearance,loadingAppearance,meterAppearance,progressAppearance,skeletonAppearance,snackbarAppearance,snackbarHeight,tooltipAppearance,accordionAppearance=if(tag=="md-accordion") parseLivePreviewAccordionAppearance(request,"accordionAppearanceDefaults").merged(parseLivePreviewAccordionAppearance(request,"accordionAppearance")) else AWCAccordionAppearance(),accordionItemAppearance=if(tag=="md-accordion-item") parseLivePreviewAccordionItemAppearance(request,"accordionItemAppearanceDefaults").merged(parseLivePreviewAccordionItemAppearance(request,"accordionItemAppearance")) else AWCAccordionItemAppearance(),cardAppearance=if(tag=="md-card") parseLivePreviewCardAppearance(request,"cardAppearanceDefaults").merge(parseLivePreviewCardAppearance(request,"cardAppearance")) else AWCCardAppearance(),listAppearance=if(tag=="md-list") parseLivePreviewListAppearance(request,"listAppearanceDefaults").merge(parseLivePreviewListAppearance(request,"listAppearance")) else AWCListAppearance(),listItemAppearance=if(tag in setOf("md-list","md-list-item")) parseLivePreviewListItemAppearance(request,"listItemAppearanceDefaults").merge(parseLivePreviewListItemAppearance(request,"listItemAppearance")) else AWCListItemAppearance(),dialogAppearance=if(tag=="md-dialog") parseLivePreviewDialogAppearance(request,"dialogAppearanceDefaults").merge(parseLivePreviewDialogAppearance(request,"dialogAppearance")) else AWCDialogAppearance(),bottomSheetAppearance=if(tag=="md-bottom-sheet") parseLivePreviewBottomSheetAppearance(request,"bottomSheetAppearanceDefaults").merge(parseLivePreviewBottomSheetAppearance(request,"bottomSheetAppearance")) else AWCBottomSheetAppearance(),sideSheetAppearance=if(tag=="md-side-sheet") parseLivePreviewSideSheetAppearance(request,"sideSheetAppearanceDefaults").merge(parseLivePreviewSideSheetAppearance(request,"sideSheetAppearance")) else AWCSideSheetAppearance(),avatarAppearance=if(tag=="md-avatar") parseLivePreviewAvatarAppearance(request,"avatarAppearanceDefaults").merge(parseLivePreviewAvatarAppearance(request,"avatarAppearance")) else AWCAvatarAppearance(),switchAppearance=if(tag=="md-switch") parseLivePreviewSwitchAppearance(request) else AWCSwitchAppearance(),checkboxAppearance=if(tag=="md-checkbox") parseLivePreviewCheckboxAppearance(request) else AWCCheckboxAppearance(),radioAppearance=if(tag=="md-radio") parseLivePreviewRadioAppearance(request) else AWCRadioAppearance(),chipAppearance=if(tag=="md-chip") parseLivePreviewChipAppearance(request) else AWCChipHookAppearance(),rippleAppearance=if(tag=="md-ripple") parseLivePreviewRippleAppearance(request) else AWCRippleAppearance(),orgChartAppearance=if(tag=="md-organization-chart") parseLivePreviewOrgChartAppearance(request) else AWCOrgChartAppearance(),breadcrumbsAppearance=if(tag in setOf("md-breadcrumbs","md-breadcrumb-item")) parseLivePreviewBreadcrumbsAppearance(request,tag) else AWCBreadcrumbsAppearance(),tabsAppearance=if(tag=="md-tabs") parseLivePreviewTabsAppearance(request) else AWCTabsAppearance(),tabAppearance=if(tag=="md-tab") parseLivePreviewTabAppearance(request) else AWCTabAppearance(),navigationBarAppearance=if(tag=="md-navigation-bar") parseLivePreviewNavigationBarAppearance(request) else AWCNavigationBarAppearance(),navigationTabAppearance=if(tag=="md-navigation-tab") parseLivePreviewNavigationTabAppearance(request) else AWCNavigationTabAppearance(),textFieldAppearance=if(tag=="md-text-field") parseLivePreviewTextFieldAppearance(request) else AWCTextFieldAppearance(),numberFieldAppearance=if(tag=="md-number-field") parseLivePreviewNumberFieldAppearance(request) else AWCNumberFieldAppearance(),otpFieldAppearance=if(tag=="md-otp-field") parseLivePreviewOTPFieldAppearance(request) else AWCOTPFieldAppearance(),menuAppearanceDefaults=if(tag=="md-menu") parseLivePreviewMenuAppearance(request,"menuAppearanceDefaults") else AWCMenuAppearance(),menuAppearance=if(tag=="md-menu") parseLivePreviewMenuAppearance(request,"menuAppearance") else AWCMenuAppearance())
+        configuration = Configuration(tag, AWCNativeCatalog.defaults[tag].orEmpty() + (if(request.has("children")) emptyMap() else fixture(tag)) + recipe + properties, dark, width, scenario, themeTokens, if(direction == "rtl") LayoutDirection.Rtl else LayoutDirection.Ltr, text, slots, appearanceDefaults, appearance, iconAppearance, groupAppearance, groupSelection, fabAppearance, dividerAppearance,menuAppearance,itemAppearance,badgeAppearance,statusDotAppearance,segmentedDefaults,segmentedAppearance,segmentedContext,splitButtonAppearance,loadingAppearance,meterAppearance,progressAppearance,skeletonAppearance,snackbarAppearance,snackbarHeight,tooltipAppearance,accordionAppearance=if(tag=="md-accordion") parseLivePreviewAccordionAppearance(request,"accordionAppearanceDefaults").merged(parseLivePreviewAccordionAppearance(request,"accordionAppearance")) else AWCAccordionAppearance(),accordionItemAppearance=if(tag=="md-accordion-item") parseLivePreviewAccordionItemAppearance(request,"accordionItemAppearanceDefaults").merged(parseLivePreviewAccordionItemAppearance(request,"accordionItemAppearance")) else AWCAccordionItemAppearance(),cardAppearance=if(tag=="md-card") parseLivePreviewCardAppearance(request,"cardAppearanceDefaults").merge(parseLivePreviewCardAppearance(request,"cardAppearance")) else AWCCardAppearance(),listAppearance=if(tag=="md-list") parseLivePreviewListAppearance(request,"listAppearanceDefaults").merge(parseLivePreviewListAppearance(request,"listAppearance")) else AWCListAppearance(),listItemAppearance=if(tag in setOf("md-list","md-list-item")) parseLivePreviewListItemAppearance(request,"listItemAppearanceDefaults").merge(parseLivePreviewListItemAppearance(request,"listItemAppearance")) else AWCListItemAppearance(),dialogAppearance=if(tag=="md-dialog") parseLivePreviewDialogAppearance(request,"dialogAppearanceDefaults").merge(parseLivePreviewDialogAppearance(request,"dialogAppearance")) else AWCDialogAppearance(),bottomSheetAppearance=if(tag=="md-bottom-sheet") parseLivePreviewBottomSheetAppearance(request,"bottomSheetAppearanceDefaults").merge(parseLivePreviewBottomSheetAppearance(request,"bottomSheetAppearance")) else AWCBottomSheetAppearance(),sideSheetAppearance=if(tag=="md-side-sheet") parseLivePreviewSideSheetAppearance(request,"sideSheetAppearanceDefaults").merge(parseLivePreviewSideSheetAppearance(request,"sideSheetAppearance")) else AWCSideSheetAppearance(),avatarAppearance=if(tag=="md-avatar") parseLivePreviewAvatarAppearance(request,"avatarAppearanceDefaults").merge(parseLivePreviewAvatarAppearance(request,"avatarAppearance")) else AWCAvatarAppearance(),switchAppearance=if(tag=="md-switch") parseLivePreviewSwitchAppearance(request) else AWCSwitchAppearance(),checkboxAppearance=if(tag=="md-checkbox") parseLivePreviewCheckboxAppearance(request) else AWCCheckboxAppearance(),radioAppearance=if(tag=="md-radio") parseLivePreviewRadioAppearance(request) else AWCRadioAppearance(),chipAppearance=if(tag=="md-chip") parseLivePreviewChipAppearance(request) else AWCChipHookAppearance(),rippleAppearance=if(tag=="md-ripple") parseLivePreviewRippleAppearance(request) else AWCRippleAppearance(),searchAppearance=if(tag=="md-search") parseLivePreviewSearchAppearance(request) else AWCSearchAppearance(),transferListAppearance=if(tag=="md-transfer-list") parseLivePreviewTransferListAppearance(request) else AWCTransferListAppearance(),orgChartAppearance=if(tag=="md-organization-chart") parseLivePreviewOrgChartAppearance(request) else AWCOrgChartAppearance(),breadcrumbsAppearance=if(tag in setOf("md-breadcrumbs","md-breadcrumb-item")) parseLivePreviewBreadcrumbsAppearance(request,tag) else AWCBreadcrumbsAppearance(),tabsAppearance=if(tag=="md-tabs") parseLivePreviewTabsAppearance(request) else AWCTabsAppearance(),tabAppearance=if(tag=="md-tab") parseLivePreviewTabAppearance(request) else AWCTabAppearance(),navigationBarAppearance=if(tag=="md-navigation-bar") parseLivePreviewNavigationBarAppearance(request) else AWCNavigationBarAppearance(),navigationTabAppearance=if(tag=="md-navigation-tab") parseLivePreviewNavigationTabAppearance(request) else AWCNavigationTabAppearance(),textFieldAppearance=if(tag=="md-text-field") parseLivePreviewTextFieldAppearance(request) else AWCTextFieldAppearance(),selectAppearance=if(tag=="md-select") parseLivePreviewSelectAppearance(request) else AWCSelectAppearance(),multiSelectAppearance=if(tag=="md-multi-select") parseLivePreviewMultiSelectAppearance(request) else AWCMultiSelectAppearance(),numberFieldAppearance=if(tag=="md-number-field") parseLivePreviewNumberFieldAppearance(request) else AWCNumberFieldAppearance(),autocompleteAppearance=if(tag=="md-autocomplete") parseLivePreviewAutocompleteAppearance(request) else AWCAutocompleteAppearance(),otpFieldAppearance=if(tag=="md-otp-field") parseLivePreviewOTPFieldAppearance(request) else AWCOTPFieldAppearance(),menuAppearanceDefaults=if(tag=="md-menu") parseLivePreviewMenuAppearance(request,"menuAppearanceDefaults") else AWCMenuAppearance(),menuAppearance=if(tag=="md-menu") parseLivePreviewMenuAppearance(request,"menuAppearance") else AWCMenuAppearance())
         createSurface(width)
         container.setBackgroundColor(themeTokens["--md-sys-color-surface"]?.let { css -> Color.parseColor(if(css.length==9) "#"+css.takeLast(2)+css.substring(1,7) else css) } ?: if (dark) 0xFF141414.toInt() else Color.WHITE)
     }
@@ -760,7 +841,7 @@ class LivePreviewActivity : ComponentActivity() {
                               }) {
                                 val previewDotColor = MaterialTheme.colorScheme.primary.copy(alpha=.18f)
                                 AWCFabMenuScope {
-                                AWCPreviewScope(Modifier.fillMaxWidth().heightIn(min = if(config.tag in setOf("md-snackbar","md-tooltip","md-dialog","md-bottom-sheet","md-side-sheet","md-time-picker","md-color-picker")) 0.dp else 100.dp, max = nativeSurface.maxLogicalHeight.dp)
+                                AWCPreviewScope(Modifier.fillMaxWidth().heightIn(min = if(config.tag in setOf("md-snackbar","md-tooltip","md-dialog","md-bottom-sheet","md-side-sheet","md-time-picker","md-color-picker","md-date-picker","md-search")) 0.dp else 100.dp, max = nativeSurface.maxLogicalHeight.dp)
                                     .background(if (config.themeTokens.isEmpty()) androidx.compose.ui.graphics.Color(if (config.dark) 0xFF141414 else 0xFFFFFFFF) else MaterialTheme.colorScheme.surface)
                                     .drawBehind {
                                         val step=24.dp.toPx()
@@ -777,7 +858,7 @@ class LivePreviewActivity : ComponentActivity() {
                                             x+=step
                                         }
                                     }) {
-                                    Box(Modifier.fillMaxWidth().heightIn(min=if(config.tag in setOf("md-snackbar","md-tooltip","md-dialog","md-bottom-sheet","md-side-sheet","md-time-picker","md-color-picker")) 0.dp else 100.dp).padding(if(config.tag in setOf("md-snackbar","md-tooltip","md-dialog","md-bottom-sheet","md-side-sheet","md-time-picker","md-color-picker")) 0.dp else 32.dp), contentAlignment = Alignment.Center) {
+                                    Box(Modifier.fillMaxWidth().heightIn(min=if(config.tag in setOf("md-snackbar","md-tooltip","md-dialog","md-bottom-sheet","md-side-sheet","md-time-picker","md-color-picker","md-date-picker","md-search")) 0.dp else 100.dp).padding(if(config.tag in setOf("md-snackbar","md-tooltip","md-dialog","md-bottom-sheet","md-side-sheet","md-time-picker","md-color-picker","md-date-picker","md-search")) 0.dp else 32.dp), contentAlignment = Alignment.Center) {
                                         if (config.scenario == "button-behavior") AWCButtonBehaviorDemo(config.properties, ::recordEvent)
                                         else if (config.scenario == "navigation-events") AWCButtonNavigationDemo(config.properties, ::recordEvent)
                                         else if (config.scenario == "focus-accessibility") AWCButtonAccessibilityDemo(config.properties, ::recordEvent)
@@ -1010,12 +1091,29 @@ class LivePreviewActivity : ComponentActivity() {
                                                 }
                                             } }
                                         }
+                                        // md-autocomplete's suggestions present in the preview's menu layer (anchored below the field).
+                                        else if(config.tag=="md-autocomplete") AWCAutocompleteAppearanceScope(config.autocompleteAppearance) {
+                                            AWCAutocompleteControllerScope(autocompleteController) { AWCMenuScope(menuState,Modifier.fillMaxWidth().heightIn(min=320.dp)) {
+                                                AWCInspectionScope(inspectionCollector) {
+                                                    AWCComponent(config.tag,previewSlotProperties(config.tag,config.properties,config.slots),onEvent=::recordEvent) { slot ->
+                                                        LivePreviewSampleSlot(config.tag,slot,config.scenario,config.text,slots=config.slots,onEvent=::recordEvent)
+                                                    }
+                                                }
+                                            } }
+                                        }
                                         else if(config.tag=="md-number-field") AWCNumberFieldAppearanceScope(config.numberFieldAppearance) {
                                             AWCNumberFieldControllerScope(numberFieldController) { AWCInspectionScope(inspectionCollector) {
                                                 AWCComponent(config.tag,previewSlotProperties(config.tag,config.properties,config.slots),onEvent=::recordEvent) { slot ->
                                                     LivePreviewSampleSlot(config.tag,slot,config.scenario,config.text,slots=config.slots,onEvent=::recordEvent)
                                                 }
                                             } }
+                                        }
+                                        else if(config.tag=="md-date-picker") LivePreviewDatePicker(config.width,config.snackbarHeight,datePickerAppearance,datePickerController) {
+                                            AWCInspectionScope(inspectionCollector) {
+                                                AWCComponent(config.tag,previewSlotProperties(config.tag,config.properties,config.slots),onEvent=::recordEvent) { slot ->
+                                                    LivePreviewSampleSlot(config.tag,slot,config.scenario,config.text,slots=config.slots,onEvent=::recordEvent)
+                                                }
+                                            }
                                         }
                                         else if(config.tag in setOf("md-color-picker","md-time-picker")) LivePreviewPicker(config.tag,config.width,config.snackbarHeight,pickerAppearances,colorPickerController,timePickerController) {
                                             AWCInspectionScope(inspectionCollector) {
@@ -1024,6 +1122,13 @@ class LivePreviewActivity : ComponentActivity() {
                                                 }
                                             }
                                         }
+                                        else if(config.tag in livePreviewSelectTags) AWCSelectAppearanceScope(config.selectAppearance) { AWCMultiSelectAppearanceScope(config.multiSelectAppearance) {
+                                            AWCSelectControllerScope(selectController) { AWCMultiSelectControllerScope(multiSelectController) { AWCInspectionScope(inspectionCollector) {
+                                                AWCComponent(config.tag,previewSlotProperties(config.tag,config.properties,config.slots),onEvent=::recordEvent) { slot ->
+                                                    LivePreviewSampleSlot(config.tag,slot,config.scenario,config.text,slots=config.slots,onEvent=::recordEvent)
+                                                }
+                                            } } }
+                                        } }
                                         else if(config.tag=="md-text-field") AWCTextFieldAppearanceScope(config.textFieldAppearance) {
                                             AWCTextFieldControllerScope(textFieldController) { AWCInspectionScope(inspectionCollector) {
                                                 AWCComponent(config.tag,previewSlotProperties(config.tag,config.properties,config.slots),onEvent=::recordEvent) { slot ->
@@ -1054,6 +1159,14 @@ class LivePreviewActivity : ComponentActivity() {
                                                 }
                                             } }
                                         }
+                                        else if(config.tag=="md-search") AWCSearchAppearanceScope(config.searchAppearance) {
+                                            Box(Modifier.requiredSize(config.width.toFloat().dp,config.snackbarHeight.toFloat().dp)) { // searchHostSize
+                                            AWCSearchControllerScope(searchController) { AWCInspectionScope(inspectionCollector) {
+                                                AWCComponent(config.tag,previewSlotProperties(config.tag,config.properties,config.slots),onEvent=::recordEvent) { slot ->
+                                                    LivePreviewSampleSlot(config.tag,slot,config.scenario,config.text,slots=config.slots,onEvent=::recordEvent)
+                                                }
+                                            } } }
+                                        }
                                         else if(config.tag=="md-ripple") AWCRippleAppearanceScope(config.rippleAppearance) {
                                             AWCRippleControllerScope(rippleController) { AWCInspectionScope(inspectionCollector) { AWCRippleExampleSurface(config.properties) } }
                                         }
@@ -1076,6 +1189,16 @@ class LivePreviewActivity : ComponentActivity() {
                                             AWCInspectionScope(inspectionCollector) {
                                                 AWCComponent(config.tag, previewSlotProperties(config.tag, config.properties, config.slots), onEvent = ::recordEvent) { slot ->
                                                     LivePreviewSampleSlot(config.tag,slot,config.scenario,config.text,slots=config.slots,onEvent=::recordEvent)
+                                                }
+                                            }
+                                        }
+                                        else if(config.tag=="md-transfer-list") AWCTransferListAppearanceScope(config.transferListAppearance) {
+                                            // The controller attaches by the authored id (an unnamed list is "transfer-list").
+                                            AWCTransferListControllerScope(transferListController,(config.properties["id"] as? String ?: "").ifEmpty { "transfer-list" }) {
+                                                AWCInspectionScope(inspectionCollector) {
+                                                    AWCComponent(config.tag, previewSlotProperties(config.tag, config.properties, config.slots), onEvent = ::recordEvent) { slot ->
+                                                        LivePreviewSampleSlot(config.tag,slot,config.scenario,config.text,slots=config.slots,onEvent=::recordEvent)
+                                                    }
                                                 }
                                             }
                                         }
@@ -1629,7 +1752,10 @@ internal fun LivePreviewSampleSlot(tag: String, slot: String, scenario: String, 
     LivePreviewNodeOverride.children(tag)?.let { LivePreviewNodeChildren(it, slot, onEvent); return }
     if(tag=="md-button-group" && slot.isEmpty() && scenario.isEmpty()) {
         listOf("Day","Week","Month").forEachIndexed { index,title ->
-            AWCComponent("md-button",mapOf("label" to title,"value" to title.lowercase(),"selected" to buttonGroupSelection[index]),onEvent=onEvent)
+            // Each child is its own action target (segment-N), so its events keep the child identity.
+            AWCActionTargetScope(id="segment-$index") {
+                AWCComponent("md-button",mapOf("label" to title,"value" to title.lowercase(),"selected" to buttonGroupSelection[index]),onEvent=onEvent)
+            }
         }
     }
     else if(tag in setOf("md-icon-button","md-fab","md-fab-menu-item","md-badge","md-segmented-button","md-split-button") && scenario.isEmpty()) {

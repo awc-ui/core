@@ -1,0 +1,285 @@
+{
+ "tag": "md-navigation-rail",
+ "case": "labels-none",
+ "html": "<md-navigation-rail data-ax-node=\"n0\" id=\"example-md-navigation-rail\"><md-navigation-rail-tab data-ax-node=\"n1\"></md-navigation-rail-tab><md-navigation-rail-tab data-ax-node=\"n2\"></md-navigation-rail-tab><md-navigation-rail-tab data-ax-node=\"n3\"></md-navigation-rail-tab></md-navigation-rail>",
+ "props": {
+  "n0": {
+   "activeIndex": 0,
+   "alignment": "top",
+   "density": 0,
+   "disableFocusManagement": false,
+   "expandable": false,
+   "fullHeight": false,
+   "label": "Navigation",
+   "labelVisibility": "none",
+   "modal": false,
+   "orientation": "vertical",
+   "overflowIcon": "more_horiz",
+   "overflowLabel": "More",
+   "toggleLabel": "Toggle navigation",
+   "variant": "standard"
+  },
+  "n1": {
+   "active": true,
+   "icon": "home",
+   "label": "Home"
+  },
+  "n2": {
+   "icon": "favorite",
+   "label": "Saved"
+  },
+  "n3": {
+   "icon": "settings",
+   "label": "Settings"
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   314
+  ],
+  "children": [
+   {
+    "role": "navigation",
+    "name": "Navigation",
+    "ignored": false,
+    "frame": [
+     16,
+     16,
+     80,
+     282
+    ],
+    "children": [
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true
+     },
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true,
+      "children": [
+       {
+        "role": "tablist",
+        "name": "Navigation",
+        "ignored": false,
+        "multiselectable": false,
+        "orientation": "vertical",
+        "frame": [
+         16,
+         60,
+         80,
+         194
+        ],
+        "children": [
+         {
+          "role": "tab",
+          "name": "Home",
+          "ignored": false,
+          "focusable": true,
+          "selected": true,
+          "frame": [
+           16,
+           65,
+           80,
+           56
+          ],
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             }
+            ]
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true,
+              "children": [
+               {
+                "role": "none",
+                "name": "",
+                "ignored": true
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           }
+          ]
+         },
+         {
+          "role": "tab",
+          "name": "Saved",
+          "ignored": false,
+          "focusable": true,
+          "selected": false,
+          "frame": [
+           16,
+           129,
+           80,
+           56
+          ],
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             }
+            ]
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true,
+              "children": [
+               {
+                "role": "none",
+                "name": "",
+                "ignored": true
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           }
+          ]
+         },
+         {
+          "role": "tab",
+          "name": "Settings",
+          "ignored": false,
+          "focusable": true,
+          "selected": false,
+          "frame": [
+           16,
+           193,
+           80,
+           56
+          ],
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             }
+            ]
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true,
+              "children": [
+               {
+                "role": "none",
+                "name": "",
+                "ignored": true
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [
+  {
+   "dom": "md-navigation-rail-tab",
+   "role": "tab",
+   "name": "Home",
+   "frame": [
+    16,
+    65,
+    80,
+    56
+   ],
+   "props": {
+    "focusable": true,
+    "focused": true,
+    "selected": true
+   }
+  }
+ ],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

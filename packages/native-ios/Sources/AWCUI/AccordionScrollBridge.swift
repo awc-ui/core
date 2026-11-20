@@ -93,7 +93,7 @@ final class AWCAccordionScrollFocusView: NSView {
     override func keyDown(with event: NSEvent) {
         guard acceptsFirstResponder else { return }
         if event.keyCode == 48 {
-            if event.modifierFlags.contains(.shift) { window?.selectPreviousKeyView(self) } else { window?.selectNextKeyView(self) }; return
+            AWCDocumentTabOrder.select(from: self, backward: event.modifierFlags.contains(.shift)); return
         }
         guard event.modifierFlags.intersection([.command,.control,.option]).isEmpty else { super.keyDown(with: event); return }
         var current = enclosingScrollView

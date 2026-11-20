@@ -16,6 +16,7 @@ import Observation
     var globalDensity: Double? = nil
     var appearance = AWCNumberFieldAppearance()
     var fieldHooks = AWCTextFieldAppearance()
+    var parts = AWCNumberFieldPartAppearance()
     var measurements: [AWCNativeInspectionNode] = []
 }
 @MainActor let numberFieldPaintController = AWCNumberFieldController()
@@ -27,7 +28,7 @@ struct NumberFieldPaintFixture: View {
             AWCNativeView(node: state.node).frame(width: state.width, alignment: .leading).environment(\.layoutDirection, state.rtl ? .rightToLeft : .leftToRight)
         }
             .environment(\.awcNativeDensity, state.globalDensity ?? 0)
-            .awcNumberFieldAppearance(state.appearance, for: "nf").awcTextFieldAppearance(state.fieldHooks, for: "nf")
+            .awcNumberFieldAppearance(state.appearance, for: "nf").awcTextFieldAppearance(state.fieldHooks, for: "nf").awcNumberFieldPartAppearance(state.parts, for: "nf")
             .awcNumberFieldController(numberFieldPaintController).awcFieldReducedMotion(true)
             .awcTheme(theme)
             .awcNativeInspection(rootID: "nf", coordinateSpace: "awc-native-preview") { if state.epoch == epoch { state.measurements = $0 } }
@@ -116,6 +117,7 @@ struct NFGrid {
         let name = c["name"].string
         state.dark = c["theme"].string == "dark"; state.rtl = c["dir"].string == "rtl"; state.width = c["width"].number ?? 320
         state.globalDensity = c["globalDensity"].number; (state.appearance, state.fieldHooks) = hooks(c["hooks"])
+        state.parts = c["parts"] == .null ? .init() : AWCNumberFieldPartAppearance(values: c["parts"].object)
         var p: [String: AWCValue] = [:]; if case .object(let o) = c["props"] { p = o }
         state.node = AWCNode(id: "nf", tag: "md-number-field", properties: p); state.measurements = []; state.epoch += 1; pump(0.3)
         if c["focus"] == .bool(true) { check(numberFieldPaintController.setFocus(), "\(name) setFocus"); pump(0.3) }
@@ -134,6 +136,10 @@ struct NFGrid {
         near(root.bounds.minX, host["x"].number!, "host x"); near(root.bounds.minY, host["y"].number!, "host y")
         near(root.bounds.width, host["width"].number!, "host width"); near(root.bounds.height, host["height"].number!, "host height")
         rect(m("field"), c["field"], "field")
+        if c["parts"] != .null {   // ::part(field): background and opacity of the inner field box
+            check(colorClose(m("field")?.metrics["background"]?.string, c["field"]["backgroundColor"].string), "\(name) field background \(m("field")?.metrics["background"]?.string ?? "-") vs \(c["field"]["backgroundColor"].string)")
+            near(m("field")?.metrics["opacity"]?.number ?? -1, Double(c["field"]["opacity"].string) ?? c["field"]["opacity"].number ?? 1, "field opacity", 0.001)
+        }
         for k in ["increment", "decrement"] {
             let w = c[k]
             if w == .null { check(m(k) == nil, "\(name) no \(k)"); continue }

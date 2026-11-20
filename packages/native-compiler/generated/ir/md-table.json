@@ -2016,10 +2016,23 @@
         "Methods through AWCTableController (.awcTableController(_, for: id) / AWCTableControllerScope): getSelection returns { count, total, values, all, indeterminate }; pinColumn returns the effective side or nil/null; setColumnVisibility returns the effective visibility. Sorting follows the source contract: mdSortChange, the application reorders its rows.",
         "Typed hooks through AWCTableAppearance (or the raw --md-table-* declarations with .awcTableHooks / AWCTableHooksScope); they inherit down the family like CSS custom properties.",
         "rowOffset / rowCount drive the row index semantics on Android (CollectionInfo / CollectionItemInfo); SwiftUI has no row-index accessibility API (AUDIT exception, decision log).",
-        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion).",
+        "Typed part appearances for the family's ::part() targets (AWCTablePart with the shared AWCPartStyle; .awcTablePartAppearance / AWCTablePartAppearanceScope) for every element of the tag or one node ID; part rules win over the hooks and state rules."
       ],
       "verification": "not-device-verified",
-      "visualParts": [],
+      "visualParts": [
+        "caption",
+        "grid",
+        "header-grid",
+        "hscrollbar",
+        "hscrollbar-thumb",
+        "vscrollbar",
+        "vscrollbar-thumb",
+        "skeleton-row",
+        "loading",
+        "progress",
+        "empty"
+      ],
       "appearance": {
         "api": ".awcTableAppearance(AWCTableAppearance)",
         "fields": [
@@ -2108,10 +2121,23 @@
         "Methods through AWCTableController (.awcTableController(_, for: id) / AWCTableControllerScope): getSelection returns { count, total, values, all, indeterminate }; pinColumn returns the effective side or nil/null; setColumnVisibility returns the effective visibility. Sorting follows the source contract: mdSortChange, the application reorders its rows.",
         "Typed hooks through AWCTableAppearance (or the raw --md-table-* declarations with .awcTableHooks / AWCTableHooksScope); they inherit down the family like CSS custom properties.",
         "rowOffset / rowCount drive the row index semantics on Android (CollectionInfo / CollectionItemInfo); SwiftUI has no row-index accessibility API (AUDIT exception, decision log).",
-        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion).",
+        "Typed part appearances for the family's ::part() targets (AWCTablePart with the shared AWCPartStyle; .awcTablePartAppearance / AWCTablePartAppearanceScope) for every element of the tag or one node ID; part rules win over the hooks and state rules."
       ],
       "verification": "not-device-verified",
-      "visualParts": [],
+      "visualParts": [
+        "caption",
+        "grid",
+        "header-grid",
+        "hscrollbar",
+        "hscrollbar-thumb",
+        "vscrollbar",
+        "vscrollbar-thumb",
+        "skeleton-row",
+        "loading",
+        "progress",
+        "empty"
+      ],
       "appearance": {
         "api": "AWCTableAppearanceScope(AWCTableAppearance)",
         "fields": [

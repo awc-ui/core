@@ -4,6 +4,7 @@ import Observation
 import AppKit
 #elseif canImport(UIKit)
 import UIKit
+import UIKit.UIGestureRecognizerSubclass
 #endif
 
 /// Anchors, open surfaces and dismissal for the md-menu family. Anchored menus present in the nearest
@@ -46,7 +47,7 @@ import UIKit
         let down = downPoint ?? p; downPoint = nil
         for o in clickObservers.values where o.frame.contains(p) && o.frame.contains(down) && !o.exclude.contains(where: { $0.contains(p) || $0.contains(down) }) { o.handler() }
         for id in order { guard let c = controllers[id], c.isOpen, !c.closing, !c.model.persistent, c.openedAt < time - 40 else { continue }
-            if !c.treeContains(p, surfaces: surfaces) { c.close() } }
+            if !c.treeContains(p, surfaces: surfaces) { c.close(requestedAt: time) } }
     }
     /// Escape outside any menu row: the open anchored menus close and focus their anchors.
     @discardableResult func escape() -> Bool {
@@ -87,7 +88,7 @@ extension EnvironmentValues {
 @MainActor public struct AWCMenuHandle {
     let registry: AWCMenuRegistry
     public let id: String
-    private var c: AWCMenuController? { registry.controllers[id] }
+    var c: AWCMenuController? { registry.controllers[id] }
     public var isOpen: Bool { c?.isOpen ?? false }
     public var isClosing: Bool { c?.closing ?? false }
     /// `show({autoFocus})`: opens (and dismisses peers); `autoFocus` nil follows the menu's `auto-focus` property.
@@ -129,6 +130,9 @@ public struct AWCMenuScope<Content: View>: View {
             .coordinateSpace(name: registry.space)
             .onGeometryChange(for: CGSize.self) { $0.size } action: { registry.viewport = $0 }
             .background { AWCMenuNativeHost(registry: registry).allowsHitTesting(false) }
+            #if canImport(UIKit)
+            .modifier(AWCMenuScopeVirtualKeys(registry: registry))
+            #endif
     }
 }
 
@@ -195,23 +199,37 @@ struct AWCMenuNativeHost: NSViewRepresentable {
     static func dismantleNSView(_ view: AWCMenuHostView, coordinator: ()) { view.dispose() }
 }
 #elseif canImport(UIKit)
+/// The document click is timed from the release UIKit delivered (UIEvent.timestamp), not from when the tap action ran.
+final class AWCDeliveredTapRecognizer: UITapGestureRecognizer {
+    var endedAt = 0.0
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent) { endedAt = event.timestamp * 1000; super.touchesEnded(touches, with: event) }
+}
+/// 6-6: records the delivered time (UIEvent.timestamp) of every touch-up in the window. Passive: never recognizes,
+/// cannot be prevented (a SwiftUI drag on a menu row prevents the tap recognizer, so that one misses row releases).
+final class AWCTouchUpRecorder: AWCPassiveTouchRecognizer {
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent) { AWCInputDelivery.lastTouchUpAt = event.timestamp * 1000; finishIfIdle(event) }
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent) { finishIfIdle(event) }
+}
 final class AWCMenuHostView: UIView {
     weak var registry: AWCMenuRegistry?
     private var recognizer: UITapGestureRecognizer?
+    private var recorder: AWCTouchUpRecorder?
     override func point(inside point: CGPoint, with event: UIEvent?) -> Bool { false }
     override func didMoveToWindow() {
         super.didMoveToWindow()
         if let r = recognizer { r.view?.removeGestureRecognizer(r); recognizer = nil }
+        if let u = recorder { u.view?.removeGestureRecognizer(u); recorder = nil }
         guard let window else { return }
-        let r = UITapGestureRecognizer(target: self, action: #selector(tap(_:))); r.cancelsTouchesInView = false; r.delaysTouchesBegan = false
+        let r = AWCDeliveredTapRecognizer(target: self, action: #selector(tap(_:))); r.cancelsTouchesInView = false; r.delaysTouchesBegan = false
         window.addGestureRecognizer(r); recognizer = r
+        let u = AWCTouchUpRecorder(); window.addGestureRecognizer(u); recorder = u
     }
     /// The source's `document` click listener runs after the target's own handler: a tap that opens a menu (and closes its
     /// peers) is seen first by that target, then by the document (deferred to the next turn, as AppKit's mouse-up monitor).
     @objc private func tap(_ r: UITapGestureRecognizer) {
         guard let registry else { return }
         registry.pointerModality = true
-        let p = r.location(in: self), t = CACurrentMediaTime() * 1000
+        let p = r.location(in: self), t = AWCInputDelivery.time((r as? AWCDeliveredTapRecognizer)?.endedAt)
         DispatchQueue.main.async { [weak registry] in registry?.click(at: p, time: t) }
     }
 }

@@ -13,6 +13,8 @@ import dev.awc.nativeui.*
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import androidx.compose.ui.graphics.asAndroidBitmap
+import kotlin.math.abs
 
 /** md-list-item truncation tooltips: the headline / supporting-text md-tooltip is enabled only while the text is
  *  clipped, opens through the shared md-tooltip renderer on hover, and a row that fits opens nothing. */
@@ -53,5 +55,26 @@ class NativeListTooltipTest {
         val failed=checks.filter { !it.first }.map { it.second }
         android.util.Log.i("AWCList","list-tooltips ${checks.size-failed.size}/${checks.size}")
         assertTrue(failed.joinToString("\n"),failed.isEmpty())
+    }
+    /** md-list-item::part(headline-tooltip-popup) is md-tooltip's popup part: a tooltip part appearance reaches the row's popup (r3-14). */
+    @Test fun tooltipAppearanceReachesTheRowPopup() {
+        compose.setContent { CompositionLocalProvider(LocalDensity provides Density(2f,1f)) { AWCTheme(false) { AWCTooltipScope(Modifier.fillMaxSize()) {
+            AWCTooltipPartAppearanceScope(AWCTooltipPartAppearance(backgroundColor="#00897B")) { Box(Modifier.width(240.dp)) {
+                AWCComponent("md-list",mapOf("label" to "Tips","id" to "list")) { slot-> if(slot=="") AWCComponent("md-list-item",mapOf("headline" to long,"id" to "t")) }
+            } }
+        } } } }
+        compose.waitForIdle()
+        val actions=compose.onAllNodes(SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsActions.CustomActions),useUnmergedTree=true)
+            .fetchSemanticsNodes().flatMap { it.config[androidx.compose.ui.semantics.SemanticsActions.CustomActions] }
+        val open=actions.firstOrNull { it.label==long }
+        assertTrue("the clipped headline's md-tooltip is enabled (${actions.map { it.label }})",open!=null)
+        compose.runOnIdle { open?.action?.invoke() };compose.mainClock.advanceTimeBy(600);compose.waitForIdle()
+        Thread.sleep(900);compose.waitForIdle();compose.mainClock.advanceTimeBy(400);compose.waitForIdle()
+        val popup=compose.onNode(isPopup()).captureToImage().asAndroidBitmap()
+        var teal=0;var total=0
+        for(y in 0 until popup.height step 2) for(x in 0 until popup.width step 2) { val p=popup.getPixel(x,y);total++
+            if(abs(((p shr 16) and 255)-0)<=10 && abs(((p shr 8) and 255)-137)<=10 && abs((p and 255)-123)<=10) teal++ }
+        android.util.Log.i("AWCList","list-tooltip-part teal $teal of $total")
+        assertTrue("a tooltip appearance reaches the row's md-tooltip popup ($teal of $total pixels teal)",teal*3>=total)
     }
 }

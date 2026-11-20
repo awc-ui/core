@@ -1,6 +1,6 @@
 {
  "tag": "md-split-button",
- "at": "2026-10-29T11:11:39.666Z",
+ "at": "2026-11-05T01:32:20.078Z",
  "rows": [
   {
    "case": "default",
@@ -15,7 +15,7 @@
      "button:More actions"
     ],
     "contrast": {
-     "measured": 4,
+     "measured": 0,
      "findings": []
     }
    },
@@ -37,7 +37,7 @@
       "button:Publish"
      ],
      "findings": [],
-     "contrastMeasured": 4
+     "contrastMeasured": 0
     },
     "ios": {
      "status": "pass",
@@ -151,7 +151,7 @@
      "button:More actions"
     ],
     "contrast": {
-     "measured": 4,
+     "measured": 0,
      "findings": []
     }
    },
@@ -173,7 +173,7 @@
       "button:Publish"
      ],
      "findings": [],
-     "contrastMeasured": 4
+     "contrastMeasured": 0
     },
     "ios": {
      "status": "pass",
@@ -484,6 +484,16 @@
        "class": "android.view.ViewGroup"
       },
       {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
        "type": "TYPE_VIEW_FOCUSED",
        "via": "window",
        "text": [],
@@ -498,16 +508,6 @@
        "contentDescription": "",
        "changes": 1,
        "class": "android.view.ViewGroup"
-      },
-      {
-       "type": "TYPE_WINDOW_STATE_CHANGED",
-       "via": "system",
-       "text": [
-        "AWC Native"
-       ],
-       "contentDescription": "",
-       "changes": 0,
-       "class": "dev.awc.playground.LivePreviewActivity"
       }
      ]
     }

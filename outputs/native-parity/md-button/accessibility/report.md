@@ -1,6 +1,6 @@
 # md-button — accessibility parity
 
-Generated 2026-10-29T11:11:38.666Z by tools/ax. Web = Chrome AX tree of the same effective node.
+Generated 2026-11-05T01:32:18.241Z by tools/ax. Web = Chrome AX tree of the same effective node.
 
 ## default
 

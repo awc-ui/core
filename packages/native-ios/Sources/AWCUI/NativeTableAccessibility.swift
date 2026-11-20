@@ -56,10 +56,17 @@ enum AWCTableAX {
     /// A polite announcement (the source's aria-live="polite" status text).
     static func announce(_ text: String) {
         guard !text.isEmpty else { return }
-        if #available(iOS 17.0, macOS 14.0, *) {
+        #if os(iOS)
+        // UIKit's announcement with an NSAttributedString: the Swift AttributedString bridge resolves its attribute scopes through
+        // the runtime's protocol-conformance scan on first use (25 ms on the simulator), inside the update of the sort click,
+        // before the reordered rows' first frame (S7-15-01).
+        UIAccessibility.post(notification: .announcement, argument: NSAttributedString(string: text, attributes: [.accessibilitySpeechAnnouncementPriority: UIAccessibilityPriority.low]))
+        #else
+        if #available(macOS 14.0, *) {
             var message = AttributedString(text); message.accessibilitySpeechAnnouncementPriority = .low
             AccessibilityNotification.Announcement(message).post()
         }
+        #endif
     }
 }
 
@@ -69,7 +76,8 @@ extension AWCNode {
 
 /// The element a family part is on each platform. macOS: an AppKit element over the SwiftUI layout (whose own elements are
 /// hidden), so the table is AXTable → AXRow → AXCell with the controls inside each cell, the toolbar AXToolbar, the
-/// pagination a navigation landmark. iOS: a labelled SwiftUI container (UIKit has no table / toolbar / landmark element).
+/// pagination a navigation landmark. iOS: the table a UIKit data table over the hidden SwiftUI layout; toolbar and pagination
+/// labelled SwiftUI containers (UIKit has no toolbar / landmark element).
 struct AWCTableAXRoot: ViewModifier {
     enum Kind { case table, group, toolbar, landmark }
     let kind: Kind, label: String, identifier: String
@@ -87,13 +95,20 @@ struct AWCTableAXRoot: ViewModifier {
                     .allowsHitTesting(false)
             }
         #else
-        if kind == .group { content.accessibilityElement(children: .contain) }
+        if kind == .table {
+            // A UIKit data table over the hidden SwiftUI layout (see AWCTableAXView).
+            content.accessibilityHidden(true).background {
+                AWCTableAXMarker(info: .init(kind: .table, label: label, identifier: identifier, help: hint, ariaRowCount: ariaRowCount, columnCount: columnCount))
+                    .allowsHitTesting(false)
+            }
+        }
+        else if kind == .group { content.accessibilityElement(children: .contain) }
         else { content.accessibilityElement(children: .contain).accessibilityLabel(label).accessibilityHint(hint) }
         #endif
     }
 }
 
-/// A static text (or heading) the macOS family element lists in place of the hidden SwiftUI text; elsewhere a no-op.
+/// A static text (or heading) the family element (macOS; iOS inside a table) lists in place of the hidden SwiftUI text.
 struct AWCTableAXText: ViewModifier {
     let text: String
     var heading = false
@@ -102,7 +117,8 @@ struct AWCTableAXText: ViewModifier {
         // The marker is listed by its family element only (hidden from SwiftUI's tree, which may still show the content around it).
         content.accessibilityHidden(true).background { AWCTableAXMarker(info: .init(kind: heading ? .heading : .text, label: text)).allowsHitTesting(false).accessibilityHidden(true) }
         #else
-        content
+        // iOS: SwiftUI reads the text; inside a table (hidden SwiftUI content) the data table lists the marker instead.
+        content.background { AWCTableAXMarker(info: .init(kind: heading ? .heading : .text, label: text)).allowsHitTesting(false).accessibilityHidden(true) }
         #endif
     }
 }
@@ -126,11 +142,15 @@ final class AWCTableAXView: NSView {
         var rowIndex = -1
         var columnIndex = -1
         var columnSpan = 1
+        /// aria-rowspan: the source reflects `rowspan` to semantics only (no visual span; decision log).
+        var rowSpan = 1
         var ariaRowCount: Int? = nil
         var ariaRowIndex: Int? = nil
         var columnCount = 0
         /// row: the table's id; cell: its row's id (structure by identity, so rows scrolled out of view stay in place).
         var ownerID = ""
+        /// row: the focus surfaces (ids) that are this row's cells, whatever their frames (md-date-picker: a clipped week's days).
+        var memberIDs: [String] = []
     }
     var info = Info(kind: .text)
     weak var axContainer: NSView?
@@ -161,7 +181,7 @@ final class AWCTableAXView: NSView {
     override func isAccessibilitySelected() -> Bool { info.selected == true }
     override func isAccessibilityExpanded() -> Bool { info.expanded == true }
     override func accessibilityIndex() -> Int { info.kind == .row ? Swift.max(0, info.rowIndex) : super.accessibilityIndex() }
-    override func accessibilityRowIndexRange() -> NSRange { info.kind == .cell && info.rowIndex >= 0 ? NSRange(location: info.rowIndex, length: 1) : NSRange(location: NSNotFound, length: 0) }
+    override func accessibilityRowIndexRange() -> NSRange { info.kind == .cell && info.rowIndex >= 0 ? NSRange(location: info.rowIndex, length: info.rowSpan) : NSRange(location: NSNotFound, length: 0) }
     override func accessibilityColumnIndexRange() -> NSRange { info.kind == .cell && info.columnIndex >= 0 ? NSRange(location: info.columnIndex, length: info.columnSpan) : NSRange(location: NSNotFound, length: 0) }
     override func accessibilityRows() -> [Any]? { info.kind == .table ? AWCTableAXTree.children(of: self).filter(AWCTableAXTree.isRow) : nil }
     override func accessibilityRowCount() -> Int { info.kind == .table ? (accessibilityRows()?.count ?? 0) : 0 }
@@ -213,10 +233,14 @@ enum AWCTableAXTree {
                 if let id = f.configuration?.id, let marker = rowMarkers[id] { rowSurface[ObjectIdentifier(marker)] = f; continue }
                 candidates.append(.init(view: f, rank: 3, frame: box(f))); continue
             }
-            if v is NSTextField || v is NSTextView, v.isAccessibilityElement() { candidates.append(.init(view: v, rank: 3, frame: box(v))) }
+            // A text field's element is its cell (AppKit ignores the control); the field editor inside a field is that field.
+            if let field = v as? NSTextField { if field.isAccessibilityElement() || field.cell?.isAccessibilityElement() == true { candidates.append(.init(view: v, rank: 3, frame: box(v))) } }
+            else if let text = v as? NSTextView, !text.isFieldEditor, text.isAccessibilityElement() { candidates.append(.init(view: v, rank: 3, frame: box(v))) }
         }
         let byID = Dictionary(containers.filter { !$0.info.identifier.isEmpty }.map { ($0.info.identifier, $0) }, uniquingKeysWith: { a, _ in a })
+        let memberOwner = Dictionary(containers.flatMap { row in row.info.memberIDs.map { ($0, row) } }, uniquingKeysWith: { a, _ in a })
         func container(of c: Candidate) -> AWCTableAXView? {
+            if let f = c.view as? AWCNativeButtonFocusView, let id = f.configuration?.id, let owner = memberOwner[id] { return owner }
             if let m = c.view as? AWCTableAXView, !m.info.ownerID.isEmpty, let owner = byID[m.info.ownerID], owner !== m, owner.rank < m.rank { return owner }
             let p = NSPoint(x: c.frame.midX, y: c.frame.midY)
             // (A container holds what fits in it: the frozen body's focus surface spans rows, so it belongs to the table.)
@@ -225,10 +249,11 @@ enum AWCTableAXTree {
                 .max { a, b in a.rank != b.rank ? a.rank < b.rank : box(a).width * box(a).height > box(b).width * box(b).height }
         }
         let rtl = parent.userInterfaceLayoutDirection == .rightToLeft
-        let mine = candidates.filter { container(of: $0) === parent }.sorted { a, b in
+        var mine = candidates.filter { container(of: $0) === parent }.sorted { a, b in
             if abs(a.frame.maxY - b.frame.maxY) > 1 { return a.frame.maxY > b.frame.maxY }
             return rtl ? a.frame.maxX > b.frame.maxX : a.frame.minX < b.frame.minX
         }
+        if parent.info.kind == .landmark { mine = inlineOrder(mine, rtl: rtl) }
         // The element that lists these: a row's focus surface when it stands for the row.
         let owner: NSView = rowSurface[ObjectIdentifier(parent)] ?? parent
         return mine.map { c -> Any in
@@ -242,8 +267,20 @@ enum AWCTableAXTree {
             }
             if let v = c.view as? AWCTableAXView { v.axContainer = owner }
             else if let f = c.view as? AWCNativeButtonFocusView { f.awcAccessibilityContainer = owner }
+            else if c.view is NSTextField { c.view.setAccessibilityParent(owner); return NSAccessibility.unignoredDescendant(of: c.view) ?? c.view }
             return c.view
         }
+    }
+    /// A bar's parts sit on one line with different heights (the pagination: a 22 pt field beside 40 pt buttons), so they read
+    /// in inline order line by line — the Web's DOM order — not top edge first. The tallest part of a line sets its band.
+    static func inlineOrder(_ items: [Candidate], rtl: Bool) -> [Candidate] {
+        var lines: [(band: ClosedRange<CGFloat>, items: [Candidate])] = []
+        for c in items.sorted(by: { $0.frame.height > $1.frame.height }) {
+            if let i = lines.firstIndex(where: { $0.band.contains(c.frame.midY) }) { lines[i].items.append(c) }
+            else { lines.append((c.frame.minY...c.frame.maxY, [c])) }
+        }
+        return lines.sorted { $0.band.upperBound > $1.band.upperBound }
+            .flatMap { $0.items.sorted { a, b in rtl ? a.frame.maxX > b.frame.maxX : a.frame.minX < b.frame.minX } }
     }
     /// The table's header cells (columnheader / rowheader), for AXColumnHeaderUIElements.
     static func headerCells(of table: AWCTableAXView) -> [Any] {
@@ -254,6 +291,165 @@ enum AWCTableAXTree {
             else { cells = [] }
             return cells.filter { ($0 as? AWCTableAXView)?.info.header == true }
         }
+    }
+}
+#elseif canImport(UIKit)
+import UIKit
+
+/// iOS: md-table is a UIKit data table (UIAccessibilityContainerDataTable) over the SwiftUI layout, whose own elements are
+/// hidden (as on macOS): a cell is a static-text element at its row / column (header cells are the column headers); a control
+/// inside a cell is its focus surface, placed at that cell (aria-rowindex when the table has row-count); a row's tab stop is its
+/// focus surface at its row. The family's other parts stay labelled SwiftUI containers (UIKit has no toolbar / landmark element).
+final class AWCTableAXView: UIView, UIAccessibilityContainerDataTable {
+    enum Kind { case table, group, toolbar, landmark, row, cell, text, heading }
+    struct Info: Equatable {
+        var kind: Kind
+        var label = ""
+        var identifier = ""
+        var help = ""
+        var rowID = ""
+        var selected: Bool? = nil
+        var expanded: Bool? = nil
+        var header = false
+        var rowIndex = -1
+        var columnIndex = -1
+        var columnSpan = 1
+        var rowSpan = 1
+        var ariaRowCount: Int? = nil
+        var ariaRowIndex: Int? = nil
+        var columnCount = 0
+        var ownerID = ""
+    }
+    var info = Info(kind: .text)
+    /// Text elements of the cells / texts this table lists (stable identity across queries, so VoiceOver keeps its place).
+    var proxies: [ObjectIdentifier: AWCTableAXCellElement] = [:]
+    /// (row, column) → element, rebuilt with the element list.
+    var slots: [[Int]: NSObject] = [:]
+    var headers: [Int: [NSObject]] = [:]
+    var rowTotal = 0
+    override init(frame: CGRect) { super.init(frame: frame); isUserInteractionEnabled = false; backgroundColor = .clear }
+    required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
+    override var isAccessibilityElement: Bool { get { false } set { } }
+    /// Markers other than the table are read through their table only.
+    override var accessibilityElementsHidden: Bool { get { info.kind != .table } set { } }
+    override var accessibilityElements: [Any]? { get { info.kind == .table ? AWCTableAXTree.elements(of: self) : [] } set { } }
+    override var accessibilityContainerType: UIAccessibilityContainerType { get { info.kind == .table ? .dataTable : .none } set { } }
+    override var accessibilityLabel: String? { get { info.kind == .table && !info.label.isEmpty ? info.label : nil } set { } }
+    override var accessibilityHint: String? { get { info.kind == .table && !info.help.isEmpty ? info.help : nil } set { } }
+    override var accessibilityIdentifier: String? { get { info.identifier.isEmpty ? nil : info.identifier } set { } }
+    func accessibilityDataTableCellElement(forRow row: Int, column: Int) -> UIAccessibilityContainerDataTableCell? {
+        _ = AWCTableAXTree.elements(of: self); return slots[[row, column]] as? UIAccessibilityContainerDataTableCell
+    }
+    func accessibilityRowCount() -> Int { _ = AWCTableAXTree.elements(of: self); return Swift.max(rowTotal, info.ariaRowCount ?? 0) }
+    func accessibilityColumnCount() -> Int { info.columnCount }
+    func accessibilityHeaderElements(forColumn column: Int) -> [UIAccessibilityContainerDataTableCell]? {
+        _ = AWCTableAXTree.elements(of: self); return headers[column]?.compactMap { $0 as? UIAccessibilityContainerDataTableCell }
+    }
+    func accessibilityHeaderElements(forRow row: Int) -> [UIAccessibilityContainerDataTableCell]? { nil }
+}
+
+/// A cell's (or a listed text's) element: its text, at its row / column.
+final class AWCTableAXCellElement: UIAccessibilityElement, UIAccessibilityContainerDataTableCell {
+    weak var marker: UIView?
+    var rowRange = NSRange(location: NSNotFound, length: 0), columnRange = NSRange(location: NSNotFound, length: 0)
+    func accessibilityRowRange() -> NSRange { rowRange }
+    func accessibilityColumnRange() -> NSRange { columnRange }
+    override var accessibilityFrame: CGRect {
+        get { marker.map { UIAccessibility.convertToScreenCoordinates($0.bounds, in: $0) } ?? .zero }
+        set { }
+    }
+}
+
+struct AWCTableAXMarker: UIViewRepresentable {
+    let info: AWCTableAXView.Info
+    func makeUIView(context: Context) -> AWCTableAXView { AWCTableAXView() }
+    func updateUIView(_ view: AWCTableAXView, context: Context) {
+        if view.info != info { view.info = info; if info.kind == .table { UIAccessibility.post(notification: .layoutChanged, argument: nil) } }
+    }
+}
+
+/// Assembles the table's elements from the marker views and the focus surfaces in the window.
+enum AWCTableAXTree {
+    static func views(_ v: UIView) -> [UIView] { [v] + v.subviews.flatMap(views) }
+    static func shown(_ v: UIView) -> Bool { var c: UIView? = v; while let x = c { if x.isHidden || x.alpha < 0.01 { return false }; c = x.superview }; return true }
+    static func box(_ v: UIView) -> CGRect { v.convert(v.bounds, to: nil) }
+    static func area(_ r: CGRect) -> CGFloat { r.width * r.height }
+    static func elements(of table: AWCTableAXView) -> [Any] {
+        guard let window = table.window else { return [] }
+        let all = views(window).filter { $0.window != nil && shown($0) }
+        let markers = all.compactMap { $0 as? AWCTableAXView }
+        let tables = markers.filter { $0.info.kind == .table }
+        /// The innermost table holding a frame's centre (nested tables list their own content).
+        func owner(_ r: CGRect) -> AWCTableAXView? {
+            tables.filter { box($0).insetBy(dx: -0.5, dy: -0.5).contains(CGPoint(x: r.midX, y: r.midY)) }.min { area(box($0)) < area(box($1)) }
+        }
+        let cells = markers.filter { $0.info.kind == .cell && owner(box($0)) === table }
+        let texts = markers.filter { ($0.info.kind == .text || $0.info.kind == .heading) && !$0.info.label.isEmpty && owner(box($0)) === table }
+        let controls = all.filter { v in
+            if let f = v as? AWCNativeButtonFocusView { return f.configuration?.inert == false && f.isAccessibilityElement }
+            return (v is UITextField || v is UITextView) && v.isAccessibilityElement
+        }.filter { owner(box($0)) === table }
+        func cell(of r: CGRect) -> AWCTableAXView? {
+            cells.filter { let b = box($0).insetBy(dx: -0.5, dy: -0.5); return b.contains(CGPoint(x: r.midX, y: r.midY)) && b.width + 1 >= r.width && b.height + 1 >= r.height }
+                .min { area(box($0)) < area(box($1)) }
+        }
+        func row(_ i: AWCTableAXView.Info) -> Int { i.ariaRowIndex.map { $0 - 1 } ?? i.rowIndex }
+        var items: [(frame: CGRect, sub: CGFloat, element: NSObject)] = []
+        var slots: [[Int]: NSObject] = [:], headers: [Int: [NSObject]] = [:]
+        var inCell: [ObjectIdentifier: [UIView]] = [:]
+        var live = Set<ObjectIdentifier>()
+        for c in controls {
+            let f = box(c)
+            if let m = cell(of: f) { inCell[ObjectIdentifier(m), default: []].append(c); continue }
+            // A row's tab stop (it spans the row's cells): placed at its row.
+            if let fv = c as? AWCNativeButtonFocusView {
+                let r = cells.first { box($0).minY - 0.5 <= f.midY && f.midY <= box($0).maxY + 0.5 }.map { row($0.info) } ?? -1
+                fv.awcCellOverride = AWCGridCellContext(row: r, column: -1)
+            }
+            items.append((f, f.minX, c))
+        }
+        for m in cells {
+            let i = m.info, r = row(i)
+            if let inside = inCell[ObjectIdentifier(m)], !inside.isEmpty {
+                for c in inside {
+                    if let fv = c as? AWCNativeButtonFocusView { fv.awcCellOverride = AWCGridCellContext(row: r, column: i.columnIndex) }
+                    items.append((box(m), box(c).minX, c))   // in its cell's place (controls sit below the cell's top)
+                }
+                for dr in 0..<Swift.max(1, i.rowSpan) { for dc in 0..<Swift.max(1, i.columnSpan) where slots[[r + dr, i.columnIndex + dc]] == nil { slots[[r + dr, i.columnIndex + dc]] = inside[0] } }
+                if i.header { headers[i.columnIndex, default: []].append(inside[0]) }
+                continue
+            }
+            guard !i.label.isEmpty else { continue }
+            let key = ObjectIdentifier(m); live.insert(key)
+            let e = table.proxies[key] ?? AWCTableAXCellElement(accessibilityContainer: table)
+            table.proxies[key] = e
+            e.marker = m; e.accessibilityLabel = i.label; e.accessibilityTraits = .staticText   // header cells: the table's column headers (no heading trait: not a Web heading)
+            e.accessibilityIdentifier = i.identifier.isEmpty ? nil : i.identifier
+            e.rowRange = r >= 0 ? NSRange(location: r, length: Swift.max(1, i.rowSpan)) : NSRange(location: NSNotFound, length: 0)
+            e.columnRange = i.columnIndex >= 0 ? NSRange(location: i.columnIndex, length: Swift.max(1, i.columnSpan)) : NSRange(location: NSNotFound, length: 0)
+            for dr in 0..<Swift.max(1, i.rowSpan) { for dc in 0..<Swift.max(1, i.columnSpan) { slots[[r + dr, i.columnIndex + dc]] = e } }
+            if i.header { headers[i.columnIndex, default: []].append(e) }
+            items.append((box(m), box(m).minX, e))
+        }
+        for m in texts {
+            let key = ObjectIdentifier(m); live.insert(key)
+            let e = table.proxies[key] ?? AWCTableAXCellElement(accessibilityContainer: table)
+            table.proxies[key] = e
+            e.marker = m; e.accessibilityLabel = m.info.label; e.accessibilityTraits = m.info.kind == .heading ? [.staticText, .header] : .staticText
+            items.append((box(m), box(m).minX, e))
+        }
+        table.proxies = table.proxies.filter { live.contains($0.key) }
+        table.slots = slots; table.headers = headers
+        table.rowTotal = Set(cells.map { row($0.info) }).count
+        let rtl = table.effectiveUserInterfaceLayoutDirection == .rightToLeft
+        return items.sorted { a, b in
+            if abs(a.frame.minY - b.frame.minY) > 1 { return a.frame.minY < b.frame.minY }
+            // Inline order; at the same start the wider box first (a row's tab stop before its first cell).
+            let (sa, sb, ea, eb) = rtl ? (-a.frame.maxX, -b.frame.maxX, -a.frame.minX, -b.frame.minX) : (a.frame.minX, b.frame.minX, a.frame.maxX, b.frame.maxX)
+            if abs(sa - sb) > 0.5 { return sa < sb }
+            if abs(ea - eb) > 0.5 { return ea > eb }
+            return rtl ? a.sub > b.sub : a.sub < b.sub
+        }.map(\.element)
     }
 }
 #endif

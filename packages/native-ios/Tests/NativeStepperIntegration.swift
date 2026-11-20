@@ -105,6 +105,19 @@ func swRect(_ v: Any?) -> AWCStepperRect {
 func swColor(_ s: String) -> AWCStepperRGBA { awcStepperColor(s) ?? (0, 0, 0, 0) }
 func swPx(_ v: Any?) -> Double { awcStepperPx((v as? String) ?? "") ?? 0 }
 
+/// story 5-3: a wrapper part's painted box (background, border width, radius) against the Chrome computed style.
+func stepperBoxDiff(_ L: String, _ w: [String: Any], _ b: AWCStepperBox?, _ rect: AWCStepperRect, _ d: (String) -> Void) {
+    let web = swColor(w["backgroundColor"] as? String ?? ""), mine = b?.background ?? (0, 0, 0, 0)
+    if abs(web.a - mine.a) > 0.002 || (web.a > 0 && (abs(web.r - mine.r) > 0.6 / 255 || abs(web.g - mine.g) > 0.6 / 255 || abs(web.b - mine.b) > 0.6 / 255)) { d("\(L) box bg web \(w["backgroundColor"] ?? "") native \(String(describing: b?.background))") }
+    let bw = swPx(w["borderTopWidth"])
+    if abs(bw - (b?.borderWidth ?? 0)) > 1e-6 { d("\(L) border width web \(bw) native \(b?.borderWidth ?? 0)") }
+    if bw > 0 || web.a > 0 {
+        let lim = Swift.min(rect.width, rect.height) / 2
+        let wr = Swift.min(swPx(w["borderTopLeftRadius"]), lim), nr = Swift.min(b?.radius ?? 0, lim)
+        if abs(wr - nr) > 1e-6 { d("\(L) radius web \(w["borderTopLeftRadius"] ?? "") native \(b?.radius ?? 0)") }
+    }
+}
+
 func stepperTreeDiff(_ tree: [String: Any], _ p: AWCStepperPaint, _ m: AWCStepperModel, ox: Double, oy: Double, _ d: (String) -> Void) {
     func at(_ r: AWCStepperRect) -> AWCStepperRect { r.isEmpty ? r : r.offset(ox, oy) }
     func eqR(_ l: String, _ w: AWCStepperRect, _ mine: AWCStepperRect) {
@@ -125,6 +138,13 @@ func stepperTreeDiff(_ tree: [String: Any], _ p: AWCStepperPaint, _ m: AWCSteppe
     if let r = p.mobileProgress { mine["mobile-progress"] = r }
     if Set(wparts.keys) != Set(mine.keys) { d("host parts web \(wparts.keys.sorted()) native \(mine.keys.sorted())") }
     for (k, w) in wparts { if let r = mine[k] { eqR(k, swRect(w["rect"]), r) } }
+    // ::part backgrounds (transparent unless a part rule sets one).
+    let bgs: [String: AWCStepperRGBA?] = ["list": p.listBackground, "content": p.contentBackground, "nav": p.navBackground, "mobile-nav": p.mobileNavBackground]
+    for (k, w) in wparts { if let c = bgs[k] { eqC("\(k) bg", w["backgroundColor"] as? String ?? "", c ?? (0, 0, 0, 0)) } }
+    if let w = wparts["mobile-progress"], let r = p.mobileProgress { stepperBoxDiff("mobile-progress", w, p.mobileProgressBox, r, d) }
+    if let w = wparts["mobile-progress"], let r = p.mobileProgress { stepperBoxDiff("mobile-progress", w, p.mobileProgressBox, r, d) }
+    if let w = wparts["mobile-progress"], let r = p.mobileProgress { stepperBoxDiff("mobile-progress", w, p.mobileProgressBox, r, d) }
+    if let w = wparts["mobile-progress"], let r = p.mobileProgress { stepperBoxDiff("mobile-progress", w, p.mobileProgressBox, r, d) }
     let live = (tree["live"] as? [[String: Any]] ?? []).map { $0["text"] as? String ?? "" }
     if live != [m.live, m.errorLive] { d("live web \(live) native \([m.live, m.errorLive])") }
     let kids = tree["children"] as? [[String: Any]] ?? []
@@ -152,7 +172,7 @@ func stepperTreeDiff(_ tree: [String: Any], _ p: AWCStepperPaint, _ m: AWCSteppe
             case "connector connector-leading":
                 if (w["display"] as? String) != "none" { d("\(L) display web \(w["display"] ?? "")") }
             case "inner":
-                eqR(L, wr, s.inner)
+                eqR(L, wr, s.inner); stepperBoxDiff(L, w, s.innerBox, s.inner, d)
                 let a = w["attrs"] as? [String: Any] ?? [:]
                 var mineA: [String: String] = [:]
                 if !m.p.readonly {
@@ -166,7 +186,7 @@ func stepperTreeDiff(_ tree: [String: Any], _ p: AWCStepperPaint, _ m: AWCSteppe
                     d("\(L) attr \(key) web \(a[key] ?? "nil") native \(mineA[key] ?? "nil")")
                 }
             case "indicator":
-                eqR(L, wr, s.indicator)
+                eqR(L, wr, s.indicator); stepperBoxDiff(L, w, s.indicatorBox, s.indicator, d)
                 if abs(op - s.indicatorOpacity) > 1e-6 { d("\(L) opacity web \(op) native \(s.indicatorOpacity)") }
                 let bs = w["boxShadow"] as? String ?? "none"
                 if (bs == "none") != (s.focusRing == nil) { d("\(L) ring web \(bs) native \(String(describing: s.focusRing))") }
@@ -200,8 +220,12 @@ func stepperTreeDiff(_ tree: [String: Any], _ p: AWCStepperPaint, _ m: AWCSteppe
                     if abs(spread - h.spread) > 1e-3 { d("\(L) halo spread web \(bs) native \(h.spread)") }
                 }
                 if (w["text"] as? String) != s.number { d("\(L) text web \(w["text"] ?? "nil") native \(s.number ?? "nil")") }
+                // border-radius (computed: px or %), clamped to the box like the painted shape.
+                let rw = w["borderTopLeftRadius"] as? String ?? ""
+                let wrad = Swift.min(rw.hasSuffix("%") ? (Double(rw.dropLast()) ?? 0) / 100 * s.bubbleSize : swPx(rw), s.bubbleSize / 2)
+                if abs(wrad - Swift.min(s.bubbleRadius ?? .infinity, s.bubbleSize / 2)) > 1e-6 { d("\(L) radius web \(rw) native \(String(describing: s.bubbleRadius))") }
             case "text":
-                eqR(L, wr, s.text ?? .zero)
+                eqR(L, wr, s.text ?? .zero); stepperBoxDiff(L, w, s.textBox, s.text ?? .zero, d)
                 if abs(op - s.textOpacity) > 1e-6 { d("\(L) opacity web \(op) native \(s.textOpacity)") }
             case "label", "optional", "description":
                 guard let line = s.lines.first(where: { $0.part == k }) else { d("\(L) missing"); continue }
@@ -211,6 +235,8 @@ func stepperTreeDiff(_ tree: [String: Any], _ p: AWCStepperPaint, _ m: AWCSteppe
                 if abs(swPx(w["fontSize"]) - line.fontSize) > 1e-6 { d("\(L) fontSize web \(w["fontSize"] ?? "") native \(line.fontSize)") }
                 if abs(swPx(w["lineHeight"]) - line.lineHeight) > 1e-6 { d("\(L) lineHeight web \(w["lineHeight"] ?? "") native \(line.lineHeight)") }
                 if (Double(w["fontWeight"] as? String ?? "") ?? 0) != line.weight { d("\(L) fontWeight web \(w["fontWeight"] ?? "") native \(line.weight)") }
+                let wls = (w["letterSpacing"] as? String).flatMap { $0 == "normal" ? 0 : awcStepperPx($0) } ?? 0
+                if abs(wls - line.letterSpacing) > 1e-6 { d("\(L) letterSpacing web \(w["letterSpacing"] ?? "") native \(line.letterSpacing)") }
             case "connector connector-trailing":
                 guard let c = s.connector else { continue }
                 eqR(L, wr, c.rect); eqC("\(L) bg", w["backgroundColor"] as? String ?? "", c.color)
@@ -219,6 +245,7 @@ func stepperTreeDiff(_ tree: [String: Any], _ p: AWCStepperPaint, _ m: AWCSteppe
                 eqR(L, wr, pn.rect)
                 if (w["visibility"] as? String) != (pn.visible ? "visible" : "hidden") { d("\(L) visibility web \(w["visibility"] ?? "") native \(pn.visible)") }
                 if abs(op - pn.opacity) > 1e-6 { d("\(L) opacity web \(op) native \(pn.opacity)") }
+                eqC("\(L) bg", w["backgroundColor"] as? String ?? "", s.panelBackground ?? (0, 0, 0, 0))
                 let gr = w["gridTemplateRows"] as? String ?? ""
                 let gv = gr.hasSuffix("px") ? awcStepperPx(gr) : nil
                 if (gv == nil) != (pn.gridRows == nil) || (gv != nil && abs(gv! - pn.gridRows!) > stepperTol) { d("\(L) gridTemplateRows web \(gr) native \(String(describing: pn.gridRows))") }
@@ -228,6 +255,35 @@ func stepperTreeDiff(_ tree: [String: Any], _ p: AWCStepperPaint, _ m: AWCSteppe
             }
         }
     }
+}
+
+/// gate 7 (typed parts): the case's `::part` rules as data (`data-fa-parts` on the root: {"<tag>": {"<part>": {"<css>": "<value>"}}}).
+func stepperCaseParts(_ html: String) -> ([AWCStepPart: AWCAccordionPartAppearance], [AWCStepperPart: AWCAccordionPartAppearance]) {
+    guard let r = html.range(of: "data-fa-parts='"), let e = html[r.upperBound...].firstIndex(of: "'"),
+          let all = try? JSONSerialization.jsonObject(with: Data(html[r.upperBound..<e].utf8)) as? [String: [String: [String: String]]] else { return ([:], [:]) }
+    func px(_ v: String?) -> Double? { v.flatMap { Double($0.replacingOccurrences(of: "px", with: "").trimmingCharacters(in: .whitespaces)) } }
+    func hex(_ v: String?) -> String? { v.map { $0.trimmingCharacters(in: .whitespaces).uppercased() } }
+    func appearance(_ d: [String: String]) -> AWCAccordionPartAppearance {
+        let radius = px(d["border-radius"]).map { AWCCornerShape(AWCCornerRadius(AWCCornerLength(points: $0))) }
+        // padding: the CSS shorthand of one to four lengths; border: `<width> solid <colour>`.
+        let pv = (d["padding"] ?? "").split(separator: " ").compactMap { px(String($0)) }
+        var pad: AWCAccordionInsets? = nil
+        switch pv.count {
+        case 1: pad = AWCAccordionInsets(top: pv[0], right: pv[0], bottom: pv[0], left: pv[0])
+        case 2: pad = AWCAccordionInsets(top: pv[0], right: pv[1], bottom: pv[0], left: pv[1])
+        case 3: pad = AWCAccordionInsets(top: pv[0], right: pv[1], bottom: pv[2], left: pv[1])
+        case 4: pad = AWCAccordionInsets(top: pv[0], right: pv[1], bottom: pv[2], left: pv[3])
+        default: break
+        }
+        let bt = (d["border"] ?? "").split(separator: " ").map(String.init)
+        let bwidth = bt.first.flatMap { px($0) }, bcolor = bt.last.flatMap { $0.hasPrefix("#") ? hex($0) : nil }
+        return AWCAccordionPartAppearance(color: hex(d["color"]), backgroundColor: hex(d["background-color"]), borderColor: bcolor, borderWidth: bwidth, cornerShape: radius, padding: pad,
+                                          gap: px(d["gap"]), fontSize: px(d["font-size"]), lineHeight: px(d["line-height"]),
+                                          fontWeight: d["font-weight"].flatMap(Double.init), letterSpacing: px(d["letter-spacing"]))
+    }
+    let step = Dictionary(uniqueKeysWithValues: (all["md-step"] ?? [:]).compactMap { k, v in AWCStepPart(rawValue: k).map { ($0, appearance(v)) } })
+    let stepper = Dictionary(uniqueKeysWithValues: (all["md-stepper"] ?? [:]).compactMap { k, v in AWCStepperPart(rawValue: k).map { ($0, appearance(v)) } })
+    return (step, stepper)
 }
 
 func stepperInput(width: Double, dir: String, dark: Bool, density: Double, mk: StepperMarkup) -> AWCStepperLayoutInput {
@@ -240,18 +296,26 @@ func stepperInput(width: Double, dir: String, dark: Bool, density: Double, mk: S
     return input
 }
 
+func stepperStripParts(_ html: String) -> String {
+    html.replacingOccurrences(of: "<style>[^<]*</style>", with: "", options: .regularExpression)
+        .replacingOccurrences(of: "\\s+data-fa-parts='[^']*'", with: "", options: .regularExpression)
+}
+
 final class StepperPaintCase {
     let c: [String: Any]
     init(_ c: [String: Any]) { self.c = c }
     func run() -> [String] {
         var diffs: [String] = []
-        let mk = StepperMarkup(c["html"] as? String ?? "")
+        let mk = StepperMarkup(stepperStripParts(c["html"] as? String ?? ""))
         let m = AWCStepperModel()
         m.sync(mk.props, steps: mk.steps)
         if (c["name"] as? String ?? "").hasPrefix("focus-visible-header") { m.focusVisible = 0 }
-        let input = stepperInput(width: (c["width"] as? NSNumber)?.doubleValue ?? 480, dir: c["dir"] as? String ?? "ltr", dark: (c["theme"] as? String) == "dark",
+        var input = stepperInput(width: (c["width"] as? NSNumber)?.doubleValue ?? 480, dir: c["dir"] as? String ?? "ltr", dark: (c["theme"] as? String) == "dark",
                                  density: (c["density"] as? NSNumber)?.doubleValue ?? 0, mk: mk)
-        let paint = AWCStepperLayout.layout(m, input, measure: awcStepperCoreTextMeasure)
+        (input.stepParts, input.stepperParts) = stepperCaseParts(c["html"] as? String ?? "")
+        // A bare text node in a step's panel (no `.panel` div): Roboto 16px, line-height normal = 19px (the oracle's own box).
+        if (c["name"] as? String ?? "").hasPrefix("slotted-text") { input.defaultContentHeight = 19 }
+        let paint = AWCStepperParts.applied(AWCStepperLayout.layout(m, input, measure: awcStepperCoreTextMeasure), step: input.stepParts, stepper: input.stepperParts)
         let box = swRect(c["box"])
         stepperTreeDiff(c["tree"] as? [String: Any] ?? [:], paint, m, ox: box.x, oy: box.y) { diffs.append($0) }
         return diffs
@@ -459,7 +523,7 @@ final class StepperStateRun {
         var total = 0, passed = 0
         let rungs = StepperWebTokens.checkRungs()
         total += 1; if rungs.isEmpty { passed += 1; print("density rungs: tokens.css = AWCStepperTheme.rungs") } else { rungs.forEach { print("FAIL " + $0) } }
-        for (files, title, required) in [(["web-paint.json", "paint.json"], "paint", true), (["web-paint-extra.json"], "paint (extra)", false)] {
+        for (files, title, required) in [(["web-paint.json", "paint.json"], "paint", true), (["web-paint-extra.json"], "paint (extra)", false), (["web-paint-extra2.json"], "paint (extra2)", false)] {
             guard let root = load(dir, files), let cases = root["cases"] as? [[String: Any]] else {
                 if required { print("missing \(dir)/\(files[0])"); total += 1 }
                 continue
@@ -471,8 +535,12 @@ final class StepperStateRun {
             }
             print("md-stepper \(title): \(ok)/\(cases.count)")
         }
-        for (file, reduced) in [(["web-states.json", "states.json"], false), (["web-states-reduced.json", "states-reduced.json"], true)] {
-            guard let root = load(dir, file), let runs = root["runs"] as? [[String: Any]] else { print("missing \(dir)/\(file[0])"); total += 1; continue }
+        // R6-11: the duration-hook runs (web-states-extra*.json) when the oracle folder has them.
+        for (file, reduced) in [(["web-states.json", "states.json"], false), (["web-states-reduced.json", "states-reduced.json"], true),
+                                (["web-states-extra.json"], false), (["web-states-extra-reduced.json"], true)] {
+            guard let root = load(dir, file), let runs = root["runs"] as? [[String: Any]] else {
+                if file[0].contains("-extra") { continue }
+                print("missing \(dir)/\(file[0])"); total += 1; continue }
             var ok = 0
             for r in runs {
                 let d = StepperStateRun(r, reduced: reduced).run(); total += 1

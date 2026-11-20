@@ -1,8 +1,7 @@
 # Split Button migration checkpoint
 
 Status: the shared contract, dedicated native renderers and generated examples
-have focused verification. Focused Laboratory properties, styles, input and additive-slot checks pass; broader acceptance, iOS execution,
-assistive technology review and the separate final audit remain pending. The final Swift
+have focused verification. Focused Laboratory properties, styles, input and additive-slot checks pass; broader acceptance and assistive technology review are recorded in AUDIT.md. iOS simulator execution (iPhone 17 Pro iOS 26.3, iPhone 16 Pro iOS 18.6, gate 6) passed and the gate-7 verdict is in AUDIT.md. The final Swift
 outlined state-layer inspection correction passed its native rerun.
 
 ## Implemented contract
@@ -33,6 +32,12 @@ border before padding, unlike controls whose strokes overlay layout. Guides appl
 that distinction only to the known measured Split halves. Android reports the
 same rounded physical border that paint and layout use.
 
+An empty or whitespace-only default-slot text child adds no item and no gap, as
+in Web's flex layout: SwiftUI skips text children whose collapsed text is empty
+(gate-7 R1-11; the Laboratory's default recipe sends an empty slot). The shared
+Chrome fixture cases `split-empty-slot` and `split-whitespace-slot` pass in the
+family paint suites on macOS, iOS and Android.
+
 ## Recorded evidence
 
 Workspace artifacts are under `outputs/native-parity/md-split-button`.
@@ -46,7 +51,8 @@ Workspace artifacts are under `outputs/native-parity/md-split-button`.
 | SwiftUI/AppKit | 945 actual checks in the final reviewed run, 68 existing focus checks and 13 live-host checks; outlined state-layer correction passed |
 | Android | 98 unit cases passed; primary 11-method device run had ten passes and one test-locator failure; the corrected pixel method passed separately |
 | Laboratory | Native properties, six styles, independent events and retained checked state verified; Web/Swift/Android additive slot passed; actual24px controls centered in the 100 px capture |
-| iOS / final audit | Pending |
+| iOS simulator | `NativeSplitButtonViewIntegration` 945/945 on iPhone 17 Pro · iOS 26.3, iPad Pro 11-inch · iOS 26.3 and iPhone 16 Pro · iOS 18.6 ([gate 6](#ios-simulator-execution-gate-6)) |
+| Final audit | Gate 7 reviewer r1: [audit](audit/md-split-button.md); open items in `work/audit/DEFECTS.md` (R1-03f, R1-13) |
 
 The [Swift record](../../packages/native-ios/audits/md-split-button.md) and
 [Android record](../../packages/native-android/audits/md-split-button.md) retain

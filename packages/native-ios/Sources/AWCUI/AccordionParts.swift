@@ -176,3 +176,37 @@ struct AWCAccordionBlockStack: Layout {
         }
     }
 }
+
+/// md-accordion's own exported part (`::part(drop-placeholder)`).
+public enum AWCAccordionPart: String, CaseIterable, Sendable, Hashable { case dropPlaceholder = "drop-placeholder" }
+private struct AWCAccordionGroupPartsKey: EnvironmentKey { static let defaultValue: [AWCAccordionPart: AWCAccordionPartAppearance] = [:] }
+private struct AWCAccordionGroupPartTargetsKey: EnvironmentKey { static let defaultValue: [String: [AWCAccordionPart: AWCAccordionPartAppearance]] = [:] }
+extension EnvironmentValues {
+    var awcAccordionParts: [AWCAccordionPart: AWCAccordionPartAppearance] { get { self[AWCAccordionGroupPartsKey.self] } set { self[AWCAccordionGroupPartsKey.self] = newValue } }
+    var awcAccordionPartTargets: [String: [AWCAccordionPart: AWCAccordionPartAppearance]] { get { self[AWCAccordionGroupPartTargetsKey.self] } set { self[AWCAccordionGroupPartTargetsKey.self] = newValue } }
+}
+private struct AWCAccordionGroupPartModifier: ViewModifier {
+    let part: AWCAccordionPart, value: AWCAccordionPartAppearance, id: String?
+    @Environment(\.awcAccordionParts) private var inherited
+    @Environment(\.awcAccordionPartTargets) private var targets
+    @ViewBuilder func body(content: Content) -> some View {
+        if let id {
+            let updated: [String: [AWCAccordionPart: AWCAccordionPartAppearance]] = { var u = targets; u[id, default: [:]][part] = (targets[id]?[part] ?? .init()).merging(value); return u }()
+            content.environment(\.awcAccordionPartTargets, updated)
+        } else {
+            let updated: [AWCAccordionPart: AWCAccordionPartAppearance] = { var u = inherited; u[part] = (inherited[part] ?? .init()).merging(value); return u }()
+            content.environment(\.awcAccordionParts, updated)
+        }
+    }
+}
+public extension View {
+    /// `md-accordion::part(drop-placeholder)`: fill (backgroundColor), dashed outline (borderColor, borderWidth), cornerShape, opacity.
+    func awcAccordionPartAppearance(_ value: AWCAccordionPartAppearance, part: AWCAccordionPart, for id: String? = nil) -> some View {
+        modifier(AWCAccordionGroupPartModifier(part: part, value: value, id: id))
+    }
+}
+/// A part's border box: its declared corner shape, else the source's pill (border-radius: 999px).
+struct AWCAccordionPartShape: Shape {
+    let corners: AWCCornerShape?
+    func path(in rect: CGRect) -> Path { corners.map { AWCNativeCornerShape(corners: $0).path(in: rect) } ?? Capsule().path(in: rect) }
+}

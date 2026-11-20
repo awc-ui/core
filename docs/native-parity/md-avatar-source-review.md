@@ -88,6 +88,15 @@ The Chrome oracles were captured from the private build that contains the fix.
 
 ## CEM drift and open source decisions
 
-- **CEM drift:** the 14 palette hooks (`--md-avatar-palette-{1…7}-container/label`) are documented in the CSS header and implemented, but missing from `custom-elements.json` (11 hooks listed). The native APIs expose them (`paletteContainerColors` / `paletteLabelColors`).
+- **CEM drift (fixed by gate-7 r3-06):** the 14 palette hooks (`--md-avatar-palette-{1…7}-container/label`) were documented in the CSS header and implemented, but missing from `custom-elements.json` (11 hooks listed); the header now lists them individually and the CEM has all 25. The native APIs expose them (`paletteContainerColors` / `paletteLabelColors`).
 - **Open decision (not changed):** `--md-avatar-container-color` and `--md-avatar-label-color` have no effect whenever a name palette applies, which is the default for any named avatar. The palette classes set `--_container-color`/`--_label-color` from the palette hooks. To recolour a named avatar an author must set the palette hook for its bucket or `color-from-name=false`. Native mirrors this.
 - `loading` and `crossorigin` are forwarded to `<img>`. Chrome re-requests a displayed image when `crossorigin` changes (an extra `mdLoad`, recorded in the lifecycle oracle).
+
+## Decisions (autonomous, 2026-10-27, reversible)
+
+- **Name palette vs container/label hooks — kept (source contract).** For a named avatar with `color-from-name` (default) the
+  palette bucket's `--md-avatar-palette-N-container/label` wins over `--md-avatar-container-color`/`--md-avatar-label-color`;
+  native mirrors it. Alternative: let the explicit hooks win over the palette (a source change: drop the palette's
+  `--_container-color`/`--_label-color` assignment when the author set the generic hooks). Revert: none needed; to adopt the
+  alternative, change md-avatar.css test-first and flip both native appearance resolvers (`AWCAvatarAppearance`).
+- **CEM drift — fixed.** The CSS header now lists the 14 palette hooks individually, so the generated docs/CEM list all 25 (gate-7 r3-06).

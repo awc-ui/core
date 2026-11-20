@@ -17,6 +17,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.absolutePadding
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
@@ -124,6 +126,88 @@ val LocalAWCBreadcrumbsReducedMotion = staticCompositionLocalOf<Boolean?> { null
 fun AWCBreadcrumbsAppearanceScope(appearance: AWCBreadcrumbsAppearance, content: @Composable () -> Unit) {
     CompositionLocalProvider(LocalAWCBreadcrumbsAppearance provides LocalAWCBreadcrumbsAppearance.current.merging(appearance.normalized()), content = content)
 }
+/**
+ * `::part()` styling of md-breadcrumb-item: separator (color, font-size), icon / label (color), link (color,
+ * `text-decoration: underline`), static (color, background-color, border width and colour) and state-layer (background-color,
+ * opacity). Part rules come from the outer tree, so they win over the hooks and every internal state rule: a link colour holds on
+ * hover, a static colour / background replaces the current-page and disabled ones, and a state-layer opacity shows in every state
+ * (links only: a static crumb has no state layer), as in Chrome. The underline is drawn in the link colour (the decorating box's
+ * `currentColor`) at the font's underline position under the label and an icon-font glyph. Colours `#RRGGBB(AA)`, lengths in dp;
+ * a border without a colour uses the crumb's colour.
+ */
+@Immutable data class AWCBreadcrumbItemPartAppearance(
+    val separatorColor: String? = null, val separatorFontSize: Double? = null, val iconColor: String? = null, val labelColor: String? = null,
+    val linkColor: String? = null, val linkUnderline: Boolean? = null, val staticColor: String? = null, val staticBackground: String? = null,
+    val staticBorderWidth: Double? = null, val staticBorderColor: String? = null, val stateLayerColor: String? = null, val stateLayerOpacity: Double? = null,
+) {
+    fun merging(o: AWCBreadcrumbItemPartAppearance) = AWCBreadcrumbItemPartAppearance(o.separatorColor ?: separatorColor, o.separatorFontSize ?: separatorFontSize,
+        o.iconColor ?: iconColor, o.labelColor ?: labelColor, o.linkColor ?: linkColor, o.linkUnderline ?: linkUnderline, o.staticColor ?: staticColor,
+        o.staticBackground ?: staticBackground, o.staticBorderWidth ?: staticBorderWidth, o.staticBorderColor ?: staticBorderColor, o.stateLayerColor ?: stateLayerColor,
+        o.stateLayerOpacity ?: stateLayerOpacity)
+    internal val separator get() = awcRippleHex(separatorColor)
+    internal val separatorSize get() = separatorFontSize?.takeIf { it.isFinite() && it > 0 }
+    internal val icon get() = awcRippleHex(iconColor)
+    internal val label get() = awcRippleHex(labelColor)
+    internal val link get() = awcRippleHex(linkColor)
+    internal val static get() = awcRippleHex(staticColor)
+    internal val staticBg get() = awcRippleHex(staticBackground)
+    internal val border get() = staticBorderWidth?.takeIf { it.isFinite() && it >= 0 } ?: 0.0
+    internal val borderInk get() = awcRippleHex(staticBorderColor)
+    internal val layerColor get() = awcRippleHex(stateLayerColor)
+    internal val layerOpacity get() = stateLayerOpacity?.takeIf { it.isFinite() }?.coerceIn(0.0, 1.0)
+    companion object {
+        /** Laboratory names (the fields above). */
+        fun fromValues(v: Map<String, Any?>): AWCBreadcrumbItemPartAppearance {
+            fun n(k: String) = (v[k] as? Number)?.toDouble()
+            fun s(k: String) = v[k] as? String
+            return AWCBreadcrumbItemPartAppearance(s("separatorColor"), n("separatorFontSize"), s("iconColor"), s("labelColor"), s("linkColor"), v["linkUnderline"] as? Boolean,
+                s("staticColor"), s("staticBackground"), n("staticBorderWidth"), s("staticBorderColor"), s("stateLayerColor"), n("stateLayerOpacity"))
+        }
+    }
+}
+/**
+ * `::part()` styling of md-breadcrumbs: list (background-color and the CSS padding shorthand, physical edges), separator (the
+ * overflow item's separator: color, font-size) and overflow-button (background-color in every state, replacing the hover / focus
+ * tint, and the colour of its dots) and overflow (the overflow item's box: background, border, radius and padding with the layout
+ * shift, [AWCPartBox]; gate-7 R6-17).
+ */
+@Immutable data class AWCBreadcrumbsPartAppearance(
+    val listBackground: String? = null, val listPadding: List<Double>? = null, val separatorColor: String? = null, val separatorFontSize: Double? = null,
+    val overflowButtonBackground: String? = null, val overflowButtonColor: String? = null, val overflow: AWCPartBox? = null,
+) {
+    fun merging(o: AWCBreadcrumbsPartAppearance) = AWCBreadcrumbsPartAppearance(o.listBackground ?: listBackground, o.listPadding ?: listPadding,
+        o.separatorColor ?: separatorColor, o.separatorFontSize ?: separatorFontSize, o.overflowButtonBackground ?: overflowButtonBackground, o.overflowButtonColor ?: overflowButtonColor,
+        AWCPartBox.merge(overflow, o.overflow))
+    internal val listBg get() = awcRippleHex(listBackground)
+    /** The list padding shorthand → physical (top, right, bottom, left). */
+    internal val listInsets: List<Double> get() {
+        val p = listPadding?.takeIf { it.size in 1..4 && it.all { v -> v.isFinite() && v >= 0 } } ?: return listOf(0.0, 0.0, 0.0, 0.0)
+        return when (p.size) { 1 -> listOf(p[0], p[0], p[0], p[0]); 2 -> listOf(p[0], p[1], p[0], p[1]); 3 -> listOf(p[0], p[1], p[2], p[1]); else -> p }
+    }
+    internal val separator get() = awcRippleHex(separatorColor)
+    internal val separatorSize get() = separatorFontSize?.takeIf { it.isFinite() && it > 0 }
+    internal val buttonBg get() = awcRippleHex(overflowButtonBackground)
+    internal val buttonInk get() = awcRippleHex(overflowButtonColor)
+    companion object {
+        /** Laboratory names; `listPadding` as one number or a list of one to four numbers, `overflow` as an [AWCPartBox] map. */
+        fun fromValues(v: Map<String, Any?>): AWCBreadcrumbsPartAppearance {
+            val pad = when (val p = v["listPadding"]) { is Number -> listOf(p.toDouble()); is List<*> -> p.mapNotNull { (it as? Number)?.toDouble() }.takeIf { it.isNotEmpty() }; else -> null }
+            return AWCBreadcrumbsPartAppearance(v["listBackground"] as? String, pad, v["separatorColor"] as? String, (v["separatorFontSize"] as? Number)?.toDouble(),
+                v["overflowButtonBackground"] as? String, v["overflowButtonColor"] as? String, AWCPartBox.fromValue(v["overflow"]))
+        }
+    }
+}
+internal val LocalAWCBreadcrumbItemPartAppearance = staticCompositionLocalOf { AWCBreadcrumbItemPartAppearance() }
+internal val LocalAWCBreadcrumbsPartAppearance = staticCompositionLocalOf { AWCBreadcrumbsPartAppearance() }
+/** Applies md-breadcrumb-item `::part()` styling to descendant crumbs. */
+@Composable
+fun AWCBreadcrumbItemPartAppearanceScope(appearance: AWCBreadcrumbItemPartAppearance, content: @Composable () -> Unit) =
+    CompositionLocalProvider(LocalAWCBreadcrumbItemPartAppearance provides LocalAWCBreadcrumbItemPartAppearance.current.merging(appearance), content = content)
+/** Applies md-breadcrumbs `::part()` styling to descendant trails. */
+@Composable
+fun AWCBreadcrumbsPartAppearanceScope(appearance: AWCBreadcrumbsPartAppearance, content: @Composable () -> Unit) =
+    CompositionLocalProvider(LocalAWCBreadcrumbsPartAppearance provides LocalAWCBreadcrumbsPartAppearance.current.merging(appearance), content = content)
+
 /** md-breadcrumbs' methods: expand() and collapse() set the trail state and emit mdExpand (even with maxItems 0, as the source). */
 class AWCBreadcrumbsController {
     internal var setExpanded: ((Boolean) -> Unit)? = null
@@ -181,6 +265,8 @@ internal class BreadcrumbPalette(private val tokens: Map<String, String>, a: AWC
     private fun h(v: String?) = v?.let { awcRippleHex(it) }
     val separator = h(a.separatorColor) ?: t("on-surface-variant", 0xFF49454F)
     val link = h(a.linkColor ?: a.textColor) ?: t("on-surface-variant", 0xFF49454F)
+    /** The trail's text colour (`--md-breadcrumbs-text-color`): the `currentColor` of the overflow item. */
+    val text = h(a.textColor) ?: t("on-surface-variant", 0xFF49454F)
     val current = h(a.currentColor) ?: t("on-secondary-container", 0xFF1D192B)
     val currentBackground = h(a.currentBackground) ?: t("secondary-container", 0xFFE8DEF8)
     val disabled = h(a.disabledColor) ?: t("on-surface", 0xFF1C1B1F).copy(alpha = .61f)
@@ -265,10 +351,12 @@ internal class BreadcrumbMotion {
 private fun rememberBreadcrumbMotion(targets: List<Any>, reduced: Boolean, entrance: Boolean, delay: Double, kind: String = ""): BreadcrumbMotion {
     val m = remember { BreadcrumbMotion() }
     m.reduced = reduced; m.entrance = entrance; m.delay = delay
+    // The source swaps the surface element (<a> / <span>) when a crumb becomes or stops being a link: no transition. Applied while
+    // composing, before the caller reads the tracks, so this composition already presents the new values (gate-7 R6-22: snapped in
+    // the SideEffect, after the read, nothing recomposed the crumb and its label kept the old ink until a later recomposition).
+    if (m.kind != null && m.kind != kind && m.primed) { m.ink.snap(targets[0] as Color); m.layer.snap(targets[1] as Double); m.nudge.snap(targets[2] as Double); m.scale.snap(targets[3] as Double); m.pending = null }
+    m.kind = kind
     SideEffect {
-        // The source swaps the surface element (<a> / <span>) when a crumb becomes or stops being a link: no transition.
-        if (m.kind != null && m.kind != kind && m.primed) { m.ink.snap(targets[0] as Color); m.layer.snap(targets[1] as Double); m.nudge.snap(targets[2] as Double); m.scale.snap(targets[3] as Double); m.pending = null }
-        m.kind = kind
         if (!m.primed || m.pending != null || targets != listOf(m.ink.value, m.layer.value, m.nudge.value, m.scale.value)) {
         if (m.pending != targets) { m.pending = targets; m.version++ }
         if (!m.primed) m.apply(m.frame, fromFrame = false) } }
@@ -305,6 +393,19 @@ private fun breadcrumbAdvance(context: android.content.Context, text: String, si
     return width
 }
 private fun rgba(c: Color) = listOf(c.red.toDouble(), c.green.toDouble(), c.blue.toDouble(), c.alpha.toDouble())
+/**
+ * `text-decoration: underline` propagated from the link: a line in the decorating box's colour [color] (not the text's), at the
+ * font's underline position and thickness below the content's first baseline, snapped to device pixels as Chrome draws it; [out] receives the drawn row (px below the element's top) for the probe.
+ */
+private fun Modifier.breadcrumbUnderline(active: Boolean, color: Color, font: Int, sizeDp: Double, out: IntArray? = null): Modifier = if (!active) this else composed {
+    val density = LocalDensity.current.density; val context = androidx.compose.ui.platform.LocalContext.current
+    val metrics = remember(font, sizeDp, density) { android.graphics.Paint().run { typeface = context.resources.getFont(font); textSize = (sizeDp * density).toFloat()
+        if (android.os.Build.VERSION.SDK_INT >= 29) underlinePosition to underlineThickness else textSize * .1f to textSize / 14f } }
+    val baseline = remember { IntArray(1) { Int.MIN_VALUE } }
+    this.layout { m, c -> val pl = m.measure(c); baseline[0] = pl[androidx.compose.ui.layout.FirstBaseline]; layout(pl.width, pl.height) { pl.placeRelative(0, 0) } }
+        .drawWithContent { drawContent(); val b = baseline[0]; if (b == androidx.compose.ui.layout.AlignmentLine.Unspecified || b == Int.MIN_VALUE) return@drawWithContent
+            val t = max(1f, metrics.second.roundToInt().toFloat()); val y = (b + metrics.first).roundToInt(); out?.set(0, y); drawRect(color, Offset(0f, y.toFloat()), Size(size.width, t)) }
+}
 
 // MARK: trail
 
@@ -349,12 +450,17 @@ internal fun NativeBreadcrumbs(p: Props, emit: EventSink, slot: Slot?) {
     val gap = appearance.gap ?: m.listGap
     SideEffect { probe?.trail = mapOf("label" to label, "expanded" to trail.expanded, "collapsing" to trail.showToggle, "listGap" to gap, "density" to d, "itemCount" to trail.order.size) }
     val context = BreadcrumbsContext(trail, separator, palette, appearance, reduced, rtl)
+    val trailParts = LocalAWCBreadcrumbsPartAppearance.current; val list = trailParts.listInsets
+    SideEffect { probe?.trail = probe?.trail.orEmpty() + mapOf("listPadding" to list, "listBackground" to trailParts.listBg?.let { rgba(it) }) }
     CompositionLocalProvider(LocalBreadcrumbsTrail provides context) {
         // Children are placed in display order (leading crumbs, toggle, tail), which is also the keyboard order.
         Layout(content = {
             slot?.invoke("")
             Box(Modifier.layoutId(BreadcrumbToggleID)) { BreadcrumbToggle(context, m, expandLabel, ::expandFromToggle) }
         }, modifier = Modifier.semantics { isTraversalGroup = true; contentDescription = label }
+            // ::part(list): the background fills the padded list; the CSS padding shorthand is physical (left stays left in RTL).
+            .then(trailParts.listBg?.let { Modifier.drawBehind { drawRect(it) } } ?: Modifier)
+            .absolutePadding(left = list[3].dp, top = list[0].dp, right = list[1].dp, bottom = list[2].dp)
         ) { measurables, constraints ->
             val crumbs = measurables.filter { it.layoutId !== BreadcrumbToggleID }; val toggle = measurables.first { it.layoutId === BreadcrumbToggleID }
             val kids = crumbs.map { it.layoutId as? BreadcrumbChild }
@@ -437,12 +543,19 @@ private fun BreadcrumbCrumb(p: Props, emit: EventSink, slot: Slot?, child: Bread
     val d = LocalAWCNativeDensity.current
     val m = BreadcrumbMetrics(d, LocalAWCDensityRungs.current)
     val a = ctx.appearance; val palette = ctx.palette; val rtl = ctx.rtl
+    val parts = LocalAWCBreadcrumbItemPartAppearance.current
     var hover by remember { mutableStateOf(false) }; var pressed by remember { mutableStateOf(false) }
     var focused by remember { mutableStateOf(false) }; var pointerFocus by remember { mutableStateOf(false) }
     val focusVisible = isLink && focused && !pointerFocus
     val hovered = isLink && hover
-    val ink = if (disabled) palette.disabled else if (current) palette.current else if (hovered) palette.hover else palette.link
-    val layerTarget = if (!isLink) 0.0 else if (focusVisible || (pressed && hovered)) .12 else if (hovered) .08 else 0.0
+    // ::part(link) / ::part(static) colour wins over the hover, current and disabled colours; a part opacity shows in every state.
+    val ink = (if (isLink) parts.link else parts.static) ?: if (disabled) palette.disabled else if (current) palette.current else if (hovered) palette.hover else palette.link
+    val layerTarget = if (!isLink) 0.0 else parts.layerOpacity ?: if (focusVisible || (pressed && hovered)) .12 else if (hovered) .08 else 0.0
+    val sepSize = parts.separatorSize ?: m.separatorSize; val sepInk = parts.separator ?: palette.separator
+    val underline = isLink && parts.linkUnderline == true; val border = if (isLink) 0.0 else parts.border
+    val surfaceBg = if (isLink) null else parts.staticBg ?: if (current) palette.currentBackground else null
+    val layerInk = parts.layerColor ?: palette.stateLayer
+    val labelRow = remember { IntArray(1) { -1 } }; val iconRow = remember { IntArray(1) { -1 } }
     val nudgeTarget = if (hovered && !ctx.reduced) (if (rtl) -2.0 else 2.0) else 0.0
     val delay = (a.stagger ?: 40.0) * min(index, 11)
     val motion = rememberBreadcrumbMotion(listOf(ink, layerTarget, nudgeTarget, 1.0), ctx.reduced, true, delay, if (isLink) "link" else "static")
@@ -460,7 +573,7 @@ private fun BreadcrumbCrumb(p: Props, emit: EventSink, slot: Slot?, child: Bread
     val router = LocalAWCURLRouter.current ?: remember(uri) { AWCURLRouter { r -> if (!java.net.URI(r.url).isAbsolute) false else runCatching { uri.openUri(r.url); true }.getOrDefault(false) } }
     val actionID = remember { java.util.UUID.randomUUID().toString() }
     val label = awcCollapsedWhitespace(child.label.text)
-    val sepPx = remember(ctx.separator, m.separatorSize, density) { breadcrumbAdvance(context, ctx.separator, (m.separatorSize * density).toFloat(), 500, (.1 / m.separatorSize).toFloat(), rtl) }
+    val sepPx = remember(ctx.separator, sepSize, density) { breadcrumbAdvance(context, ctx.separator, (sepSize * density).toFloat(), 500, (.1 / sepSize).toFloat(), rtl) }
     val labelPx = remember(label, m.fontSize, weight, ch, density) { if (label.isEmpty()) null else min(breadcrumbAdvance(context, label, (m.fontSize * density).toFloat(), weight, (.1 / m.fontSize).toFloat(), rtl), (32 * ch * density).toFloat()) }
     val emitNow by rememberUpdatedState(emit)
     fun select(source: String) {
@@ -485,14 +598,17 @@ private fun BreadcrumbCrumb(p: Props, emit: EventSink, slot: Slot?, child: Bread
         "ink" to rgba(ink), "inkNow" to rgba(inkNow), "layer" to layerTarget, "layerNow" to layerNow, "nudgeNow" to nudgeNow, "opacity" to opacity, "slide" to slide,
         "hover" to hovered, "pressed" to (pressed && isLink), "focusRing" to focusVisible, "focused" to focused, "frame" to now, "entranceStart" to motion.entranceStart,
         "separator" to (if (index > 0) ctx.separator else null), "label" to label, "labelPx" to labelPx, "sepPx" to sepPx, "coords" to coords, "fill" to (if (current) 1 else 0), "density" to d,
-        "background" to rgba(if (current) palette.currentBackground else Color.Transparent))) }
+        "background" to rgba(surfaceBg ?: Color.Transparent), "iconColor" to rgba(parts.icon ?: ink), "labelColor" to rgba(parts.label ?: ink), "sepColor" to rgba(sepInk),
+        "sepSize" to sepSize, "underline" to underline, "border" to border, "borderColor" to rgba(if (border > 0) parts.borderInk ?: ink else Color.Transparent), "layerColor" to rgba(layerInk),
+        "underlineLabel" to labelRow, "underlineIcon" to iconRow)) }
     DisposableEffect(probe, key) { onDispose { probe?.crumbs?.remove(key) } }
     val inspection = LocalAWCInspection.current
     Layout(content = {
         if (index > 0) Box(Modifier.height(m.lineHeight.dp).onGloballyPositioned { coords["separator"] = it }.inspectAWCNode(inspection, "separator", "separator").clearAndSetSemantics { hideFromAccessibility() }, contentAlignment = Alignment.Center) {
-            Text(ctx.separator, Modifier.exactWidth(sepPx), style = breadcrumbText(m.separatorSize, null, 500, .1, palette.separator.copy(alpha = palette.separator.alpha * .7f)), maxLines = 1, softWrap = false)
+            Text(ctx.separator, Modifier.exactWidth(sepPx), style = breadcrumbText(sepSize, null, 500, .1, sepInk.copy(alpha = sepInk.alpha * .7f)), maxLines = 1, softWrap = false)
         }
         BreadcrumbSurface(m, a, padding, palette, inkNow, layerNow, nudgeNow, current, isLink, focusVisible, rtl, inspection, onBounds = { coords["surface"] = it },
+            background = surfaceBg, layerInk = layerInk, border = border, borderInk = parts.borderInk ?: inkNow,
             modifier = Modifier
                 .semantics(mergeDescendants = true) {
                     if (isLink) { role = Role.Button; onClick(label) { select("accessibility"); true } } else if (disabled) disabled()
@@ -523,14 +639,16 @@ private fun BreadcrumbCrumb(p: Props, emit: EventSink, slot: Slot?, child: Bread
                 }) {
             if (p.str("icon").isNotBlank()) Box(Modifier.size(18.dp).clearAndSetSemantics { hideFromAccessibility() }, contentAlignment = Alignment.Center) {
                 val fs = with(LocalDensity.current) { m.glyphSize.dp.toSp() }
-                Text(p.str("icon"), Modifier.wrapContentSize(unbounded = true), color = inkNow, fontFamily = breadcrumbSymbolFamily(if (current) 1 else 0, if (current) 600 else 500),
+                Text(p.str("icon"), Modifier.wrapContentSize(unbounded = true).breadcrumbUnderline(underline, inkNow, R.font.awc_material_symbols, m.glyphSize, iconRow), color = parts.icon ?: inkNow, fontFamily = breadcrumbSymbolFamily(if (current) 1 else 0, if (current) 600 else 500),
                     fontWeight = FontWeight(if (current) 600 else 500), fontSize = fs, lineHeight = fs, letterSpacing = 0.sp, maxLines = 1, softWrap = false,
                     style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false), fontFeatureSettings = "liga"))
             }
-            BreadcrumbIconSlot { CompositionLocalProvider(LocalContentColor provides inkNow) { slot?.invoke("icon") } }
+            BreadcrumbIconSlot { CompositionLocalProvider(LocalContentColor provides (parts.icon ?: inkNow)) { slot?.invoke("icon") } }
             // The crumb's merged node carries the name (contentDescription); the label text itself adds nothing (no "Home Home").
-            Box(Modifier.height(m.lineHeight.dp).onGloballyPositioned { coords["label"] = it }.inspectAWCNode(inspection, "label", "label").breadcrumbCap((32 * ch).dp).exactWidth(labelPx).clearAndSetSemantics { }, contentAlignment = Alignment.CenterStart) {
-                CompositionLocalProvider(LocalContentColor provides inkNow, LocalTextStyle provides breadcrumbText(m.fontSize, m.lineHeight, weight, .1, inkNow),
+            val labelInk = parts.label ?: inkNow
+            Box(Modifier.height(m.lineHeight.dp).onGloballyPositioned { coords["label"] = it }.inspectAWCNode(inspection, "label", "label").breadcrumbCap((32 * ch).dp).exactWidth(labelPx)
+                .breadcrumbUnderline(underline, inkNow, R.font.awc_roboto_medium, m.fontSize, labelRow).clearAndSetSemantics { }, contentAlignment = Alignment.CenterStart) {
+                CompositionLocalProvider(LocalContentColor provides labelInk, LocalTextStyle provides breadcrumbText(m.fontSize, m.lineHeight, weight, .1, labelInk),
                     LocalAWCSlotTextRegistry provides child.label, LocalAWCSlotTextNoWrap provides true, LocalAWCSlotTextOverflow provides TextOverflow.Ellipsis) { slot?.invoke("") }
             }
         }
@@ -570,6 +688,7 @@ private fun BreadcrumbIconSlot(content: @Composable () -> Unit) {
 @Composable
 private fun BreadcrumbSurface(m: BreadcrumbMetrics, a: AWCBreadcrumbsAppearance, padding: List<Double>, palette: BreadcrumbPalette, ink: Color, layer: Double, nudge: Double,
                               current: Boolean, isLink: Boolean, focusVisible: Boolean, rtl: Boolean, inspection: AWCInspectionContext?, onBounds: (androidx.compose.ui.layout.LayoutCoordinates) -> Unit,
+                              background: Color?, layerInk: Color, border: Double, borderInk: Color,
                               modifier: Modifier, content: @Composable () -> Unit) {
     val density = LocalDensity.current.density
     val shape = RoundedCornerShape(50)
@@ -584,11 +703,15 @@ private fun BreadcrumbSurface(m: BreadcrumbMetrics, a: AWCBreadcrumbsAppearance,
         }
         .clip(shape)
         .drawBehind {
-            if (current) drawRect(palette.currentBackground)
-            if (isLink && layer > 0) drawRect(palette.stateLayer.copy(alpha = palette.stateLayer.alpha * layer.toFloat()))
+            if (background != null) drawRect(background)
+            if (isLink && layer > 0) drawRect(layerInk.copy(alpha = layerInk.alpha * layer.toFloat()))
+            // ::part(static) border: inside the pill, over the background (the padding below keeps the content clear of it).
+            if (border > 0) { val w = (border * density).toFloat()
+                drawRoundRect(borderInk, Offset(w / 2, w / 2), Size(size.width - w, size.height - w), CornerRadius((size.height - w) / 2), style = Stroke(w)) }
         }
         .awcRipple(disabled = !isLink, cornerRadius = 9999.dp, contentColor = ink)
         .then(modifier)
+        .padding(border.dp)
         .padding(start = (if (rtl) padding[1] else padding[3]).dp, top = padding[0].dp, end = (if (rtl) padding[3] else padding[1]).dp, bottom = padding[2].dp)
     ) { ms, c ->
         val pls = ms.map { it.measure(Constraints(maxWidth = c.maxWidth)) }.filter { it.width > 0 }
@@ -604,6 +727,8 @@ private fun BreadcrumbToggle(ctx: BreadcrumbsContext, m: BreadcrumbMetrics, expa
     val trail = ctx.trail
     if (!trail.showToggle) return
     val palette = ctx.palette
+    val parts = LocalAWCBreadcrumbsPartAppearance.current
+    val sepSize = parts.separatorSize ?: m.separatorSize; val sepInk = parts.separator ?: palette.separator; val dots = parts.buttonInk ?: palette.toggle
     var hover by remember { mutableStateOf(false) }; var pressed by remember { mutableStateOf(false) }
     var focused by remember { mutableStateOf(false) }; var pointerFocus by remember { mutableStateOf(false) }
     val focusVisible = focused && !pointerFocus
@@ -615,14 +740,16 @@ private fun BreadcrumbToggle(ctx: BreadcrumbsContext, m: BreadcrumbMetrics, expa
     val probe = LocalAWCBreadcrumbsProbe.current
     val coords = remember { java.util.concurrent.ConcurrentHashMap<String, androidx.compose.ui.layout.LayoutCoordinates>() }
     SideEffect { probe?.toggle = mapOf("layer" to layerTarget, "layerNow" to layer, "scale" to scaleTarget, "scaleNow" to scale, "focusRing" to focusVisible, "focused" to focused,
-        "hover" to hover, "pressed" to pressed, "label" to expandLabel, "frame" to now, "coords" to coords) }
+        "hover" to hover, "pressed" to pressed, "label" to expandLabel, "frame" to now, "coords" to coords, "color" to rgba(dots),
+        "background" to rgba(parts.buttonBg ?: palette.toggle.copy(alpha = palette.toggle.alpha * layerTarget.toFloat())), "sepColor" to rgba(sepInk), "sepSize" to sepSize,
+        "box" to parts.overflow?.probe(palette.text)?.mapValues { (_, v) -> if (v is Color) rgba(v) else v }) }
     DisposableEffect(probe) { onDispose { probe?.toggle = null } }
     val inspection = LocalAWCInspection.current
     Layout(content = {
         if (trail.before > 0) Box(Modifier.clearAndSetSemantics { hideFromAccessibility() }, contentAlignment = Alignment.Center) {
             val context = androidx.compose.ui.platform.LocalContext.current
-            val px = remember(ctx.separator, m.separatorSize, density) { breadcrumbAdvance(context, ctx.separator, (m.separatorSize * density).toFloat(), 400, 0f, ctx.rtl) }
-            Text(ctx.separator, Modifier.exactWidth(px), style = breadcrumbText(m.separatorSize, null, 400, 0.0, palette.separator), maxLines = 1, softWrap = false)
+            val px = remember(ctx.separator, sepSize, density) { breadcrumbAdvance(context, ctx.separator, (sepSize * density).toFloat(), 400, 0f, ctx.rtl) }
+            Text(ctx.separator, Modifier.exactWidth(px), style = breadcrumbText(sepSize, null, 400, 0.0, sepInk), maxLines = 1, softWrap = false)
         }
         Canvas(Modifier
             .onGloballyPositioned { coords["button"] = it }
@@ -652,12 +779,15 @@ private fun BreadcrumbToggle(ctx: BreadcrumbsContext, m: BreadcrumbMetrics, expa
                 }
             }) {
             val r = size.width / 2
-            drawCircle(palette.toggle.copy(alpha = palette.toggle.alpha * layer.toFloat()), r)
+            // ::part(overflow-button) background-color replaces the hover / focus tint in every state.
+            drawCircle(parts.buttonBg ?: palette.toggle.copy(alpha = palette.toggle.alpha * layer.toFloat()), r)
             val k = 20.dp.toPx() / 24f; val ox = (size.width - 20.dp.toPx()) / 2; val oy = (size.height - 20.dp.toPx()) / 2
-            for (x in listOf(6f, 12f, 18f)) drawCircle(palette.toggle, 1.6f * k, Offset(ox + x * k, oy + 12f * k))
+            for (x in listOf(6f, 12f, 18f)) drawCircle(dots, 1.6f * k, Offset(ox + x * k, oy + 12f * k))
             if (focusVisible) { val o = 3.5f * density; drawCircle(palette.focusRing, r + o, style = Stroke(3f * density)) }
         }
-    }) { ms, c ->
+    // ::part(overflow) box (gate-7 R6-17): border + padding (physical edges) around the separator and the toggle; the list row grows
+    // with it and the items after it shift.
+    }, modifier = Modifier.onGloballyPositioned { coords["overflow"] = it }.awcPartBox(parts.overflow, palette.text)) { ms, c ->
         val pls = ms.map { it.measure(Constraints()) }
         val gapPx = (m.toggleGap * density).roundToInt()
         val w = pls.sumOf { it.width } + gapPx * (pls.size - 1).coerceAtLeast(0); val h = pls.maxOfOrNull { it.height } ?: 0

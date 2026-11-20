@@ -232,7 +232,8 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
     val paddingBlock = (appearance.paddingBlock?.toFloat() ?: 0f) + outlineWidth
     val groupAppearance=if(direct) LocalAWCButtonGroupAppearance.current else null
     val connectedFloor=if(direct && group?.props?.str("variant")=="connected" && group.props.str("size") in listOf("xs","sm")) 48f else 0f
-    val minimumWidth = max(connectedFloor,max(appearance.minWidth?.toFloat() ?: metrics.minimumWidth, paddingInline * 2))
+    // Connected XS/SM: the group's 48px floor replaces the button's own minimum (the outer ::slotted rule wins over :host).
+    val minimumWidth = if(connectedFloor>0f) max(connectedFloor, paddingInline * 2) else max(appearance.minWidth?.toFloat() ?: metrics.minimumWidth, paddingInline * 2)
     val maximumWidth = appearance.maxWidth?.toFloat()?.coerceAtLeast(minimumWidth) ?: Float.POSITIVE_INFINITY
     val minimumHeight = max(groupAppearance?.maxHeight?.toFloat() ?: appearance.minHeight?.toFloat() ?: metrics.height, paddingBlock * 2)
     if(direct) group!!.childSizing[identity]=ButtonGroupSizing(minimumWidth,paddingInline*2,minimumHeight,appearance.height?.toFloat()?.coerceAtLeast(minimumHeight)?.coerceAtMost(groupAppearance?.maxHeight?.toFloat()?.coerceAtLeast(minimumHeight) ?: Float.POSITIVE_INFINITY))
@@ -379,6 +380,8 @@ private data class NativeWave(val press: PressInteraction.Press, val start: Long
                     if(!enabled) disabled()
                     p.str("aria-label").takeIf { it.isNotEmpty() }?.let { contentDescription=it }   // Web aria-label replaces the content name
                     if(p.bool("toggle") || group != null || role == "gridcell") this.selected=selected
+                    // story 1-5 a11y: a disclosure md-button that asks for it (md-date-picker's month / year toggles, Web aria-expanded) states it as TalkBack's expand / collapse action.
+                    if(p.bool("exposeExpanded")) { if(p.str("aria-expanded") == "true") collapse { click(); true } else expand { click(); true } }
                     if(role == "gridcell") {
                         val cell = gridCell ?: AWCGridCell(0, 0)
                         collectionItemInfo = CollectionItemInfo(cell.row, cell.rowSpan, cell.column, cell.columnSpan)

@@ -1,0 +1,142 @@
+{
+ "tag": "md-step",
+ "at": "2026-11-05T01:33:54.830Z",
+ "rows": [
+  {
+   "case": "standalone",
+   "web": {
+    "elements": [
+     "button:Step 1 of 0: Workspace, current"
+    ],
+    "texts": [
+     "Choose a project name"
+    ],
+    "focus": [
+     "button:Step 1 of 0: Workspace, current"
+    ],
+    "contrast": {
+     "measured": 4,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Step 1 of 0: Workspace, current"
+     ],
+     "texts": [
+      "Choose a project name"
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Step 1 of 0: Workspace, current",
+      "button:Step 1 of 0: Workspace, current"
+     ],
+     "findings": [],
+     "contrastMeasured": 3
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "button:Step 1 of 0: Workspace, current"
+     ],
+     "texts": [],
+     "focus": [
+      "button:Step 1 of 0: Workspace, current",
+      "∅"
+     ],
+     "findings": [
+      {
+       "kind": "text-missing",
+       "detail": "text not exposed on ios: \"Choose a project name\"",
+       "status": "expected",
+       "reason": "Decision 9: md-step.css `@media (max-width: 599px)` hides a horizontal row's supporting captions; natively the rule follows the screen width, and the iPhone / phone emulator screens are narrower than 600 (the Web capture runs at desktop width). The captions are not painted there, so they are not exposed."
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 1,
+     "webElements": 1,
+     "nativeElements": 1,
+     "elements": [
+      "alert:",
+      "button:Step 1 of 0: Workspace, current"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "button:Step 1 of 0: Workspace, current",
+      "button:Step 1 of 0: Workspace, current"
+     ],
+     "findings": [
+      {
+       "kind": "text-missing",
+       "detail": "text not exposed on android: \"Choose a project name\"",
+       "status": "expected",
+       "reason": "Decision 9: md-step.css `@media (max-width: 599px)` hides a horizontal row's supporting captions; natively the rule follows the screen width, and the iPhone / phone emulator screens are narrower than 600 (the Web capture runs at desktop width). The captions are not painted there, so they are not exposed."
+      }
+     ],
+     "contrastMeasured": 2,
+     "atf": {
+      "elements": 10,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

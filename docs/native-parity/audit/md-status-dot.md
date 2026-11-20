@@ -1,67 +1,74 @@
 # `md-status-dot` — gate 7 independent audit
 
-**Verdict: FAIL (gate 5: default palette not compared; gate 3: no in-place property updates)**
+**Verdict (re-check 2026-11-05): PASS**
 
-All re-runs pass. Colours have been compared only under the recorded mixed Laboratory palette (R2-D5), and Laboratory edits restart the session, so the source's 200 ms state colour transition cannot be seen (R2-D6).
+R2-D5 (default palette) and R2-D6 (in-place updates and state colour transition) are verified fixed. Every suite passes on macOS, all three iOS runtimes and Android, and no exceptions are needed.
 
-Reviewer: gate-7 reviewer r2, 2026-10-31. Independent of the implementing forks; no product code, tests or fixtures were changed.
+Reviewer: gate-7 reviewer r2. First audit 2026-10-31, re-check 2026-11-05 after fork d2 marked R2-D1…D9 fixed. Independent of the
+implementing forks; no product code, tests or fixtures were changed (diagnostics ran on r2-only copies in `work/audit/r2/diag`).
 
-Snapshot: `work/audit/r2-tree`, an rsync of the canonical tree taken 2026-10-31 00:12 UTC by job `r2-001-snapshot`
-(42 install jobs present, latest `fx-072-install-orgchart-apk`), build products excluded and rebuilt privately.
-Runtimes: macOS 15.6.1 (24G90) arm64, Swift 6.1.2; iOS simulators iPhone 17 Pro iOS 26.3.1 (`AWC-r2`), iPad Pro 11-inch (M5)
-iOS 26.3.1 (`AWC-r2-ipad`), iPhone 16 Pro iOS 18.6 (`AWC-r2-ios18`); Android 16 / API 36 emulator `emulator-5564` (AwcNative6);
-Chrome 153.0.8010.36 for tools/ax Web captures. Raw outputs: [`work/audit/r2/runs`](../../../../audit/r2/runs); job logs: [`claude-runner/done/r2-*`](../../../../claude-runner/done).
+Re-check snapshot: `work/audit/r2-tree2`, an rsync of the canonical tree taken 2026-11-05 19:43 UTC by job `r2-021-snapshot2` (77 install
+jobs present, latest `di-032-install-key-repeat`; no git commands), build products rebuilt privately. Runtimes: macOS 15.6.1 arm64, Swift 6.1.2;
+iOS simulators iPhone 17 Pro iOS 26.3.1 (`AWC-r2`), iPad Pro 11-inch (M5) iOS 26.3.1 (`AWC-r2-ipad`), iPhone 16 Pro iOS 18.6 (`AWC-r2-ios18`);
+Android 16 / API 36 emulator `emulator-5564`; Chrome 153.0.8010.36 for tools/ax Web captures. Timing-sensitive suites ran through
+`tools/slot.sh timing 4`; every simulator was shut down on job exit. Raw outputs: [`work/audit/r2/runs2`](../../../../audit/r2/runs2) (first audit:
+[`runs`](../../../../audit/r2/runs)); job logs: [`claude-runner/done/r2-*`](../../../../claude-runner/done) and `work/audit/r2/runs2/<job>.log`.
 
-Evidence freshness: the component's recorded manifests were produced on earlier trees. Their source hashes still match the
-component's own TSX/CSS, but shared native files (for example `AWCNativeView.swift`, `Theme.swift`, `AWCComponent.kt`) changed
-afterwards, so every count below was re-run on the snapshot. No `checkpoint.json` exists for this component; the per-suite
-manifests (`*-evidence.json`, `examples/verification.json`, platform audits) play that role.
+Component sources (TSX/CSS) are unchanged since the first audit (same hashes) and the catalog matches them. Regenerated public
+examples are byte-identical to the recorded ones.
 
 ## Gates
 
 | Gate | Result | Basis |
 |---|---|---|
-| 1 Source contract | PASS | 7 properties (state 6 values, size 3 values, inline, shape, live, label, density), 8 hooks, no events/methods/slots/parts: complete in SwiftUI (`NativeStatusDot.swift`, `StatusDotAppearance.swift`), Compose, Laboratory (`status-dot-appearance.js`; source-derived enum controls) and tests |
-| 2 Implementation | PASS | Logical-corner/rim anchoring, inline mode, exterior pulse halo with two eased intervals, state colour transition (Swift L169-195, Kotlin L127-132) |
-| 3 Laboratory | **FAIL** | Sessions open on both platforms, but there is no retained update: every edit restarts the session, so the source's 200 ms state colour transition (`md-status-dot.css` L75-81) and the running live pulse cannot be seen across an edit (R2-D6). Examples 11+11 compile |
-| 4 Behaviour | PASS | Web 36/36; Swift 1,687 contracts; Android 5 unit + 4 device methods |
-| 5 Visual | **FAIL** | 200 fixtures match, but only with the recorded Laboratory token maps injected (`NativeStatusDotViewIntegration.swift` L87). outline, surface and on-surface-variant are overridden there, and the "dark" map holds light values (tertiary #4b6178, primary-container #225344) (R2-D5) |
-| 6 Runtime + AX | PASS | macOS, three iOS runtimes, Android; tools/ax 3 cases, 0 open |
-| 7 Final audit | FAIL | R2-D5, R2-D6 |
+| 1 Source contract | PASS | 7 properties, 8 hooks, no events/methods/slots/parts: complete |
+| 2 Implementation | PASS | Anchoring, inline, pulse, 200 ms state colour transition |
+| 3 Laboratory | PASS | Retained updates; the state colour transition passes through intermediate colours across an update (SwiftUI host; Android `statusDotColourTransitionsAcrossARetainedUpdate`); invalid patches are rejected; 11+11 examples compile |
+| 4 Behaviour | PASS | Web 36/36; Swift 1,687 contracts; Android 5 unit + 5 device methods |
+| 5 Visual | PASS | Fresh default palette (100 configurations per theme, library tokens, `state.tokens = [:]`): Swift 1,997 actual checks, Android `all200PristineDefaultPaletteCasesMatchWithoutTokenInjection` |
+| 6 Runtime + AX | PASS | macOS, three iOS runtimes, Android; tools/ax 3 cases, 0 open on macOS, iOS and Android |
+| 7 Final audit | PASS | — |
+
+## Re-check of the 2026-10-31 findings
+
+- **R2-D5 — VERIFIED.** `StatusDotWebDefault-{light,dark}.json` carry the library maps (49/49 colour roles equal `tokens.json`; the old dark map had light values). The default documents are compared without injection on Swift (macOS + iOS ×3) and Android.
+- **R2-D6 — VERIFIED.** Retained updates on both hosts, and the transition is observable across an update.
 
 ## Gate 1 — source contract matrix
 
-Built by `work/audit/r2/tools/contract.py` (TSX `@Prop/@Event/@Method`, `<slot>`, `part=`, CSS `var(--md-…)` versus `packages/native-compiler/generated/catalog.json`; catalog source hash = sha256(TSX + CSS) matches today's source) and `tools/matrix.mjs` (each row located in the SwiftUI sources, Compose sources, Laboratory module and Swift/Android/Studio tests), followed by manual inspection of every zero cell. Result: 15/15 rows complete (the source declares no parts).
+Re-run of `work/audit/r2/tools/contract.py` and `tools/matrix.mjs` on `r2-tree2`: the catalog's source hash (sha256 of TSX + CSS) matches, and all 15 contract rows have a SwiftUI and a Compose implementation, Laboratory exposure and tests (zero cells were checked by hand).
 
-## Re-run counts (claimed → r2)
+## Re-run counts (2026-11-05)
 
-| Suite | Claimed | r2 result | Job |
+| Suite | Recorded / first audit | r2 re-check | Job |
 |---|---|---|---|
-| Web spec + axe | 36 | 36/36 | r2-009 |
-| Swift macOS `test-native-status-dot.sh` | 1,687 contract + 1,001 actual | 1687 + 1001 passed | r2-002 |
-| iOS ×3 runtimes | 1687/1687 ×3 | 1687 + 1001 ×3, 0 FAIL | r2-003, r2-008 |
-| Swift live host `test-live-status-dot.mjs` | 15 | 15/15 | r2-004 |
-| Android device `NativeStatusDotParityTest` + host `statusDotCapturesAnchors…` | 3 + 1 | 3/3 + 1/1 | r2-A001, r2-A002 |
-| Android unit `NativeStatusDotContractTest` | 5 methods (91-test suite) | 5/5 | r2-A001 |
-| Generated examples | 11 + 11 | byte-identical; Swift macOS + iOS-sim typecheck; Kotlin compile | r2-004, r2-A002 |
-| Studio tests | 165 | component 59/59 (incl. status-dot), shared 173/173 | r2-010 |
-| tools/ax | pass ×3 | pass ×3, 0 open | r2-006, r2-A003 |
+| Web spec + axe | 36 | 36/36 | r2-A023 |
+| Swift macOS `test-native-status-dot.sh` | 1687 + 1001 (10-31) | 1687 + 1997 (incl. default palette) | r2-022 |
+| iOS ×3 runtimes | 1687 + 1001 ×3 | 1687 + 1997 ×3, 0 FAIL | r2-025 |
+| Swift live hosts | 15 / — | 15/15, communication updates 42/42 | r2-024 |
+| Android device: Parity (4), host, communication host | 3 + 1 | 4/4 + 1/1 + 5/5 | r2-A021 |
+| Android unit | 5 | 5/5 | r2-A021 |
+| Examples | 11 + 11 | Swift macOS + iOS-sim typecheck, Kotlin compile | r2-024, r2-025, r2-A021 |
+| tools/ax | 0 open | 0 open on all three native platforms (Android in 2 batched runs) | r2-026, r2-A026 |
 
 ## Gate 3 — Laboratory
 
-`../../../../audit/r2/runs/lab/lab-probe.json`: sessions open on both platforms with the recipe (state online, label). The retained update is rejected (400); the restart with `state: busy` opens 200. A Web author toggling `state` sees a 200 ms colour transition, while the native preview shows a fresh mount (R2-D6). There are no methods.
+Sessions open on both platforms; the retained `update` returns 200 and a new frame revision on SwiftUI and Compose (`../../../../audit/r2/runs2/lab/lab-probe.json`, r2-A022). There are no methods.
 
 ## Gate 6 — runtime and accessibility
 
-tools/ax `../../../../audit/r2/runs/ax/md-status-dot/report.md`: online/inline/live, 0 open on all platforms; the label is accessibility-only and live status is polite.
+tools/ax: [`../../../../audit/r2/runs2/ax2/md-status-dot/report.md`](../../../../audit/r2/runs2/ax2/md-status-dot/report.md) — 3 cases, captured with Chrome 153 (Web), the macOS host, the iOS 26.3 probe on AWC-r2 (r2-026) and Android (r2-A026, two full batches): 0 open findings.
 
 ## Exception decisions
 
-No proposed exceptions. The extreme-length bound shared with the other renderers is covered by E3 in md-meter/md-progress-indicator/md-skeleton (not exercised by this component's record).
+None needed.
 
 ## Findings
 
 Defect records: [`work/audit/DEFECTS.md`](../../../../audit/DEFECTS.md), section "Gate 7 reviewer r2".
 
-- **R2-D5 (blocking, gate 5):** fresh default light/dark palette comparison missing.
-- **R2-D6 (blocking, gate 3):** no retained in-place property updates (state transition not observable).
+None open.
+
+## History
+
+2026-10-31: FAIL (gates 3, 5: R2-D5, R2-D6). 2026-11-05: both verified fixed → PASS.

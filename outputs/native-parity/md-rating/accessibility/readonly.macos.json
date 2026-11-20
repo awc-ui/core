@@ -1,0 +1,142 @@
+{
+ "tag": "md-rating",
+ "case": "readonly",
+ "request": {
+  "tag": "md-rating",
+  "properties": {
+   "value": 4,
+   "readonly": true,
+   "ratingLabel": "Average rating"
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "actions": [
+        "AXIncrement",
+        "AXDecrement"
+       ],
+       "description": "Average rating: 4 Stars",
+       "enabled": true,
+       "focused": false,
+       "frame": [
+        208,
+        36,
+        224,
+        28
+       ],
+       "identifier": "example-md-rating",
+       "orientation": "AXHorizontalOrientation",
+       "role": "AXImage",
+       "roleDescription": "image"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      100
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    100
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [],
+  "id": "example-md-rating",
+  "properties": {
+   "defaultValue": 0,
+   "density": 0,
+   "disabled": false,
+   "emptyIcon": "star",
+   "hover": "preview",
+   "icon": "star",
+   "max": 5,
+   "name": "",
+   "outlineEmpty": true,
+   "precision": 0.5,
+   "ratingLabel": "Average rating",
+   "readonly": true,
+   "showValueLabel": true,
+   "size": "md",
+   "softDisabled": false,
+   "value": 4
+  },
+  "tag": "md-rating"
+ },
+ "focus": [
+  {
+   "keyboardFocus": null,
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": null,
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 28,
+     "width": 224.125,
+     "x": 207.9375,
+     "y": 36
+    },
+    "id": "component",
+    "metrics": {
+     "activeColor": "#625B71",
+     "focused": false,
+     "height": 28,
+     "itemSize": 28,
+     "items": 5,
+     "value": 4,
+     "valueLabel": "4 Stars",
+     "width": 224.125
+    },
+    "name": "md-rating"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

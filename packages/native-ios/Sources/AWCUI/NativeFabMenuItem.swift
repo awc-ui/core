@@ -21,6 +21,7 @@ private struct AWCFabMenuItemStyle:ButtonStyle {
     let id:String,metrics:AWCNativeFabMenuItemMetrics,appearance:AWCFabMenuItemAppearance,theme:AWCTheme
     let disabled:Bool,focused:Bool,nativePressed:Bool,activation:Int
     let pointerPressed:()->Void
+    var hardDisabled:Bool=false,inertPress:()->Void={}
     func makeBody(configuration:Configuration)->some View {AWCFabMenuItemSurface(style:self,configuration:configuration)}
 }
 private struct AWCFabMenuItemSurface:View {
@@ -31,10 +32,14 @@ private struct AWCFabMenuItemSurface:View {
     @State private var localDown=false
     @Environment(\.awcNativePointerState) private var pointer
     @Environment(\.awcTouchPress) private var touchPress
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
+    @Environment(\.awcReducedMotion) private var reducedOverride
+    private var reduceMotion: Bool { reducedOverride ?? systemReduceMotion }
     @Environment(\.layoutDirection) private var direction
     private var tokens:[String:String] {style.theme.tokens.isEmpty ? AWCGeneratedTokens.light:style.theme.tokens}
     private func color(_ role:String)->Color {Color(awcHex:tokens["--md-sys-color-"+role] ?? "#000000")}
+    /// The primary pointer is held inside this item (from the shared pointer state, else the local observer).
+    private var pointerHeld:Bool { if let pointer {return pointer.isPointerDown && (pointer.pressLocation.map{frame.contains($0)} ?? false)}; return localDown }
     var body:some View {
         let m=style.metrics,a=style.appearance,pressed=configuration.awcPressed(touchPress) && !style.disabled
         let hover=pointer.map{$0.location.map(frame.contains) ?? false} ?? hovered
@@ -43,6 +48,7 @@ private struct AWCFabMenuItemSurface:View {
         let alpha=style.disabled ? 0:pressed ? awcFabMenuToken(tokens,"--md-sys-state-pressed-state-layer-opacity",0.12):style.focused ? awcFabMenuToken(tokens,"--md-sys-state-focus-state-layer-opacity",0.12):hover ? awcFabMenuToken(tokens,"--md-sys-state-hover-state-layer-opacity",0.08):0
         let shape=RoundedRectangle(cornerRadius:m.radius,style:.circular)
         let motion:Animation?=reduceMotion ? nil:.timingCurve(0.2,0,0,1,duration:0.28)
+        let held:Bool=pointerHeld,rawPressed:Bool=configuration.awcPressed(touchPress)
         let origin=pointer.flatMap{$0.isPointerDown ? $0.pressLocation.map{CGPoint(x:$0.x-frame.minX,y:$0.y-frame.minY)}:nil} ?? (localDown ? localOrigin:nil)
         configuration.label
             .foregroundStyle(ink)
@@ -59,12 +65,23 @@ private struct AWCFabMenuItemSurface:View {
             .awcObservePointerOrigin(enabled:pointer == nil){origin,down in localOrigin=origin;localDown=down}
             .onHover{hovered=$0}
             .onChange(of:pressed){_,down in if down {style.pointerPressed()}}
+            .modifier(AWCFabMenuItemDisabledPress(style:style,pressed:rawPressed,held:held))
             .awcInspect(nodeID:style.id,name:"md-fab-menu-item"){_ in
                 ["padding":[0,.number(Double(direction == .rightToLeft ? m.start:m.end)),0,.number(Double(direction == .rightToLeft ? m.end:m.start))],
                  "border":[0,0,0,0],"margin":[0,0,0,0],"gap":["row":0,"column":.number(Double(m.gap))],
                  "typography":["size":.number(Double(m.fontSize)),"lineHeight":.number(Double(m.lineHeight)),"weight":.number(AWCNativeFonts.resolvedLabelWeight(m.weight)),"spacing":.number(Double(m.tracking)),"family":.string(AWCNativeFonts.labelFamily(regular:m.weight<500)),"unit":"pt"],
                  "direction":.string(direction == .rightToLeft ? "rtl":"ltr"),"display":"SwiftUI menu item"]
             }
+    }
+}
+/// A soft-disabled item takes focus on press; a press on a hard-disabled item (its Button is disabled, so only the held pointer
+/// sees it) blurs the focused element, as Chrome's mousedown on a non-focusable target. A separate modifier keeps the item
+/// body within the type checker's budget.
+private struct AWCFabMenuItemDisabledPress:ViewModifier {
+    let style:AWCFabMenuItemStyle,pressed:Bool,held:Bool
+    func body(content:Content)->some View {
+        content.onChange(of:pressed){_,down in if down && style.disabled && !style.hardDisabled {style.pointerPressed()}}
+            .onChange(of:held){_,down in if down && style.hardDisabled {style.inertPress()}}
     }
 }
 private struct AWCFabMenuIconColor:ViewModifier {
@@ -82,7 +99,7 @@ extension AWCNativeView {
             var policy=local.merging(["roleOverride":"menuitem","groupTabindex":.number(fabMenuSession?.activeID==node.id ? 0:-1),"_menuRoving":true]){_,new in new}
             let _ = policy["selected"].map{_ in policy.removeValue(forKey:"selected")}
             AWCNativeActionControl(style:{focused,pressed,activation,pointer in
-                AWCFabMenuItemStyle(id:node.id,metrics:m,appearance:appearance,theme:theme,disabled:disabled,focused:focused || b("rovingFocusVisible") || fabMenuSession?.rovingID==node.id,nativePressed:pressed,activation:activation,pointerPressed:pointer)
+                AWCFabMenuItemStyle(id:node.id,metrics:m,appearance:appearance,theme:theme,disabled:disabled,focused:focused || b("rovingFocusVisible") || fabMenuSession?.rovingID==node.id,nativePressed:pressed,activation:activation,pointerPressed:pointer,hardDisabled:b("disabled"),inertPress:{fabMenuSession?.blurFocus()})
             },policy:.init(properties:policy),id:node.id,accessibleLabel:local["aria-label"]?.string ?? local["ariaLabel"]?.string ?? label,action:{source in
                 guard !disabled else{return}
                 var event=AWCEvent(name:"mdClick",tag:node.tag,nodeID:node.id,detail:.null)

@@ -9,8 +9,12 @@ import Observation
 // frame's cell borders inside Chrome's ±2-frame envelope (the 100 ms border-colour transition on blur and hover).
 #if canImport(AppKit)
 final class OTPKeyWindow: NSWindow { override var canBecomeKey: Bool { true }; override var canBecomeMain: Bool { true } }
+/// SwiftUI receives a synthesized press while the test process is not the active application (another process activated):
+/// NSWindow.sendEvent hands an inactive app's first click only to views that accept first mouse (fi, 2026-10-31).
+final class OTPAcceptingHost: NSHostingView<OTPStatesFixture> { override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true } }
 #else
 typealias OTPKeyWindow = NSWindow
+typealias OTPAcceptingHost = NSHostingView<OTPStatesFixture>
 #endif
 @Observable final class OTPStatesState {
     var node = AWCNode(id: "otp", tag: "md-otp-field")
@@ -73,12 +77,25 @@ struct OTPStatesFixture: View {
         }
         while let e = NSApp.nextEvent(matching: .any, until: .distantPast, inMode: .default, dequeue: true) { NSApp.sendEvent(e) }
     }
+    /// The keys of one step in one turn: all are queued first, then dispatched in order (one run-loop turn, as Chrome's one task).
+    static func keys(_ list: [(String, UInt16)]) {
+        for (chars, code) in list { for type in [NSEvent.EventType.keyDown, .keyUp] {
+            NSApp.postEvent(NSEvent.keyEvent(with: type, location: .zero, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber,
+                                             context: nil, characters: chars, charactersIgnoringModifiers: chars, isARepeat: false, keyCode: code)!, atStart: false) } }
+        while let e = NSApp.nextEvent(matching: .any, until: .distantPast, inMode: .default, dequeue: true) { NSApp.sendEvent(e) }
+    }
     static func special(_ scalar: Int, _ code: UInt16, _ flags: NSEvent.ModifierFlags = []) { key(String(UnicodeScalar(UInt32(scalar))!), code, flags.union([.function, .numericPad])) }
     static var cadence: [Double] = []
     /// The cell Chrome's mouse pointer rests over after the run's last click (its border shows hover once it is not focused).
     static var pointerCell: Int?
-    /// iOS: Chrome border frames of the pointer-rested cell, not comparable on touch (no hover), per run.
-    static var hoverSkipped = 0
+    /// Chrome's mouse comes to rest over cell `k` with the click. macOS: the host pointer state follows the click. iOS: a touch
+    /// never hovers, so the iPadOS pointer rests there through the runtime's pointer-hover entry (`.onContinuousHover`'s).
+    static func restPointer(_ k: Int) {
+        pointerCell = k
+        #if !canImport(AppKit)
+        AWCOTPFieldRuntime.mounted.object(forKey: "otp")?.pointerHover(k, true)
+        #endif
+    }
     static let codes: [Character: (UInt16, Bool)] = ["1": (18, false), "2": (19, false), "3": (20, false), "4": (21, false), "6": (22, false), "5": (23, false), "9": (25, false),
                                                      "7": (26, false), "8": (28, false), "0": (29, false), "x": (7, false), "a": (0, false), "b": (11, false), "!": (18, true)]
     static func type(_ text: String) {
@@ -97,26 +114,33 @@ struct OTPStatesFixture: View {
         NSApp.postEvent(ev(.leftMouseUp), atStart: false); NSApp.sendEvent(ev(.leftMouseDown)); pump(0.01)
         otpPointer.update(phase: .up, location: p)
     }
-    /// The text system's paste (Edit ▸ Paste / ⌘V) with `text` on the clipboard; the clipboard is restored afterwards.
+    /// The text system's paste (Edit ▸ Paste / ⌘V) of `text` from a pasteboard of the suite's own: the input's paste handler reads
+    /// AWCFieldPasteboard, so the system clipboard is never written, read or waited on (di, 2026-11-04: reading the general
+    /// pasteboard blocked on the pasteboard server in some iOS runs).
     static func paste(_ text: String) {
         #if canImport(AppKit)
-        let board = NSPasteboard.general, saved = board.string(forType: .string)
-        board.clearContents(); board.setString(text, forType: .string)
-        NSApp.sendAction(#selector(NSText.paste(_:)), to: nil, from: nil)
-        board.clearContents(); if let saved { board.setString(saved, forType: .string) }
+        let board = NSPasteboard(name: NSPasteboard.Name("dev.awc.n3.otp-states"))
+        board.clearContents(); board.setString(text, forType: .string); AWCFieldPasteboard.board = board
+        // To the focused cell's field editor itself: a nil-target action needs a key window, which a locked screen never gives.
+        NSApp.sendAction(#selector(NSText.paste(_:)), to: window.firstResponder, from: nil)
+        board.clearContents(); board.releaseGlobally(); AWCFieldPasteboard.board = .general
         #else
-        let board = UIPasteboard.general, saved = board.string
-        board.string = text
+        let name = UIPasteboard.Name("dev.awc.n3.otp-states")
+        // The previous step's board is removed here, before this step's input, not after the paste: the pasteboard-server round
+        // trip of the removal held the main thread for tens of ms between the input and the first frame drawn (S71-03, 9-6-230).
+        UIPasteboard.remove(withName: name)
+        let board = UIPasteboard(name: name, create: true)!
+        board.string = text; AWCFieldPasteboard.board = board
         UIApplication.shared.sendAction(#selector(UIResponderStandardEditActions.paste(_:)), to: nil, from: nil, for: nil)
-        board.string = saved ?? ""
+        AWCFieldPasteboard.board = .general
         #endif
     }
     static func centre(_ part: String) -> CGPoint? { state.measurements.first { $0.name == part }.map { CGPoint(x: $0.bounds.midX, y: $0.bounds.midY) } }
     static func act(_ run: String, _ label: String) {
         switch label {
-        case "click-cell-3-lands-first-empty": if let c = centre("cell-3") { click(c); pointerCell = 3 }
+        case "click-cell-3-lands-first-empty": if let c = centre("cell-3") { click(c); restPointer(3) }
         // Chrome focuses with a click on cell 0 (the pointer then rests there: cell 0 shows hover once focus moves on).
-        case "focus": if let c = centre("cell-0") { click(c); pointerCell = 0 }
+        case "focus": if let c = centre("cell-0") { click(c); restPointer(0) }
         case "type-12": type("12")
         case "type-x-rejected": type("x")
         case "type-3456-complete": type("3456")
@@ -126,8 +150,18 @@ struct OTPStatesFixture: View {
         case "Home": special(0xF729, 115)
         case "End": special(0xF72B, 119)
         case "Backspace-filled": key("\u{7F}", 51)
-        case "Backspace-x3": for _ in 0..<3 { key("\u{7F}", 51); pump(0.002) }
-        case "Delete-at-0": special(0xF729, 115); pump(0.016); special(0xF728, 117)
+        case "Backspace-x3":
+            #if canImport(AppKit)
+            keys([("\u{7F}", 51), ("\u{7F}", 51), ("\u{7F}", 51)])   // Chrome's script dispatches the three keys in one task
+            #else
+            for _ in 0..<3 { key("\u{7F}", 51); pump(0.002) }   // keyBurst([51,51,51]) tried in 9-6-123: worse (6/96 frames), see story
+            #endif
+        case "Delete-at-0":
+            #if canImport(AppKit)
+            special(0xF729, 115); pump(0.016); special(0xF728, 117)
+            #else
+            special(0xF729, 115); pump(0.016); special(0xF728, 117)   // keyBurst([115,117]) tried in 9-6-123: Delete did not apply
+            #endif
         // Page focus navigation: Tab moves to the next cell (every cell is a Tab stop).
         case "Tab-out-commits": key("\t", 48)
         case "paste-12-34-56x": paste(" 12-34 56x")
@@ -161,21 +195,16 @@ struct OTPStatesFixture: View {
         let v = Array(h.dropFirst()); func c(_ i: Int) -> Double { Double(Int(String(v[i..<(i + 2)]), radix: 16) ?? 0) }
         return [c(0), c(2), c(4), v.count >= 8 ? c(6) : 255]
     }
-    /// iOS has no hover on touch: Chrome's mouse-hover border (on-surface) is the resting outline there.
-    static func expectedBorder(_ bc: String, _ bw: Double) -> [Double] {
-        var c = rgb(bc)
-        #if !canImport(AppKit)
-        if bw == 1, c[0...2] == [28, 27, 31] { c = [121, 116, 126, 255] } else if bw == 1, c[0...2] == [230, 225, 229] { c = [147, 143, 153, 255] }
-        #endif
-        return c
-    }
-    static func envelope(_ t: Double, _ value: (Sample) -> [Double]?) -> ([Double], [Double])? {
-        var window = samples.filter { $0.t >= t - 40 && $0.t <= t + 34 }
+    static func expectedBorder(_ bc: String, _ bw: Double) -> [Double] { rgb(bc) }
+    /// The native frames within ±2 frames of `t` (later edge extended by `spread`: the keys Chrome applied together reached UIKit
+    /// that far apart, so the in-between states of those arrivals count).
+    static func envelope(_ t: Double, spread: Double = 0, _ value: (Sample) -> [Double]?) -> ([Double], [Double])? {
+        var window = samples.filter { $0.t >= t - 40 && $0.t <= t + spread + 34 }
         #if !canImport(AppKit)
         // A frame UIKit did not draw (its text-input session set-up holds the main thread when focus moves): the screen
         // keeps the last drawn frame until the next one, so the frames around such a gap (> 34 ms) bound what was shown.
         if let before = samples.last(where: { $0.t < t - 40 }), (window.first?.t ?? .infinity) - before.t > 34 { window.insert(before, at: 0) }
-        if let after = samples.first(where: { $0.t > t + 34 }), after.t - (window.last?.t ?? -.infinity) > 34 { window.append(after) }
+        if let after = samples.first(where: { $0.t > t + spread + 34 }), after.t - (window.last?.t ?? -.infinity) > 34 { window.append(after) }
         #endif
         let vs = window.compactMap(value)
         guard let first = vs.first else { return nil }
@@ -191,34 +220,66 @@ struct OTPStatesFixture: View {
         state.node = AWCNode(id: "otp", tag: "md-otp-field", properties: parsed.props)
         otpPointer.update(phase: .leave); _ = window.makeFirstResponder(nil)
         state.measurements = []; state.epoch += 1; samples = []; pump(0.4)
-        otpEvents = []; pointerCell = nil; hoverSkipped = 0
-        let t0 = otpClock()
+        otpEvents = []; pointerCell = nil
+        var t0 = otpClock()
         for (i, p) in r["phases"].array.enumerated() {
             let label = p["label"].string
             let next = i + 1 < r["phases"].array.count ? r["phases"].array[i + 1]["t"].number! : (p["t"].number! + 300)
             let prevStart = phaseStart
             phaseStart = t0 + p["t"].number!
             let carried = samples.map { Sample(t: $0.t + prevStart - phaseStart, m: $0.m) }.filter { $0.t >= -45 && $0.t < 0 }
+            // The earlier phases' frames are re-timed once (carried) and never kept under their old times: before 9-6-124 the frames
+            // an earlier phase had kept in [-45, 0) stayed in the buffer with their old times, so every phase's window held stale
+            // frames of other phases (S71-03: Backspace-x3's frame before a drawing gap was one with cell 5 unfocused).
+            samples = carried
             let wait = phaseStart - otpClock(); if wait > 0 { pump(wait / 1000) }
-            samples = carried + samples.filter { $0.t >= -45 && $0.t < 0 }
+            samples = samples.filter { $0.t >= -45 && $0.t < 0 }
             // Chrome's keystroke times in this phase: its input / invalid-input events (one per key).
             cadence = r["events"].array.filter { ["mdInput", "mdInvalidInput"].contains($0["name"].string) && $0["t"].number! >= p["t"].number! && $0["t"].number! < next }.map { $0["t"].number! - p["t"].number! - 2 }
             if !label.hasPrefix("type") && !label.hasPrefix("overtype") { cadence = [] }
             maxLate = max(maxLate, otpClock() - phaseStart)
+            let e0 = otpEvents.count
+            #if !canImport(AppKit)
+            AWCShimTouch.keyArrivals = []
+            #endif
             act(name, label)
             let remaining = next - (otpClock() - t0); pump(max(0.05, remaining / 1000))
+            #if canImport(AppKit)
+            func anchored(_ t: Double) -> (t: Double, spread: Double) { (t, 0) }
+            #else
+            // iOS: a hardware key reaches a UIKit text input through the keyboard one or more run-loop turns after the HID key-down
+            // (5–70 ms; di, 2026-11-04), so each keystroke's frames are timed from its arrival, the field's own input event, rather
+            // than from Chrome's schedule: Chrome's frame at t after its k-th input is compared at t + (native k − Chrome k).
+            let inputNames = ["mdInput", "mdInvalidInput"]
+            let webInputs = r["events"].array.filter { inputNames.contains($0["name"].string) && $0["t"].number! >= p["t"].number! && $0["t"].number! < next }.map { $0["t"].number! - p["t"].number! }
+            func arrived() -> [Double] { otpEvents[e0...].filter { inputNames.contains($0.name) }.map { $0.t - phaseStart } }
+            var waited = 0.0   // keys still on their way through the keyboard at the phase's end (bounded)
+            while arrived().count < webInputs.count && waited < 400 { pump(0.01); waited += 10 }
+            let nativeInputs = arrived()
+            // Keys with no input event (Home, End, Delete, arrows): Chrome dispatches the keys of one step in one task, so they are timed
+            // from their HID arrival at UIKit (harness time, 9-6; the simulator's HID delivery is not product time).
+            let keyOnly = (["Home", "End", "ArrowLeft"].contains(label) && webInputs.isEmpty) || (label == "Delete-at-0" && AWCShimTouch.keyArrivals.count >= 2)
+            let shifts: [(at: Double, late: Double)] = keyOnly ? AWCShimTouch.keyArrivals.map { (0, max(0, $0 - phaseStart)) }
+                : webInputs.count == nativeInputs.count ? zip(webInputs, nativeInputs).map { ($0, max(0, $1 - $0)) } : []
+            // The phase's end state once its last key arrived; the following phases keep their own timelines (start that much later).
+            if let last = shifts.last, last.late > 0 { let wait = t0 + next + last.late - otpClock(); if wait > 0 { pump(wait / 1000) } }
+            let over = otpClock() - (t0 + next); if over > 0 { t0 += over }
+            // Keys Chrome applied together (one dispatch, e.g. Backspace ×3) arrive over several turns: compared from the first
+            // arrival, with the frames up to the last one counted.
+            func anchored(_ t: Double) -> (t: Double, spread: Double) {
+                guard let at = shifts.last(where: { $0.at <= t + 1 })?.at else { return (t, 0) }
+                let group = shifts.filter { abs($0.at - at) <= 1 }.map(\.late), lo = group.min() ?? 0
+                return (t + lo, (group.max() ?? lo) - lo)
+            }
+            #endif
             // Motion: every cell's border colour in each Chrome frame inside the native envelope.
             var motion = 0, motionBad = 0
             for s in p["samples"].array {
                 let t = s["t"].number!
                 for (k, c) in s["cells"].array.enumerated() {
-                    #if !canImport(AppKit)
-                    // Touch has no hover: the frames of the cell under Chrome's resting mouse pointer (hover tint and its
-                    // transitions) have no iOS counterpart; reported as unsupported, not compared.
-                    if k == pointerCell, c["bw"].number! == 1 { hoverSkipped += 1; continue }
-                    #endif
                     let want = expectedBorder(c["bc"].string, c["bw"].number!)
-                    guard let env = envelope(t, { hexRGBA($0.m["cell-\(k)"]?.metrics["border"]?.string) }) else { continue }
+                    let a = anchored(t)
+                    guard let env = envelope(a.t, spread: a.spread, { hexRGBA($0.m["cell-\(k)"]?.metrics["borderColor"]?.string) }) else { continue }
                     motion += 1
                     if (0..<3).contains(where: { want[$0] < env.0[$0] - 3 || want[$0] > env.1[$0] + 3 }) {
                         motionBad += 1; if motionBad <= 3 { print("  \(name) \(label) t=\(t) cell \(k) border \(want) not in \(env)") }
@@ -228,13 +289,30 @@ struct OTPStatesFixture: View {
             check(motionBad == 0, "\(name) \(label) motion: \(motionBad)/\(motion) frames outside the envelope")
             if motionBad > 0 {
                 // The native frames of a failing phase: time, focused cell, value and every cell's border.
+                #if !canImport(AppKit)
+                print("    diag \(name) \(label) web inputs \(webInputs) native \(nativeInputs) shifts \(shifts.map(\.late))")
+                let badCells = Set(p["samples"].array.flatMap { s -> [Int] in s["cells"].array.enumerated().compactMap { (k, c) -> Int? in
+                    let a = anchored(s["t"].number!); let w = expectedBorder(c["bc"].string, c["bw"].number!)
+                    guard let env = envelope(a.t, spread: a.spread, { hexRGBA($0.m["cell-\(k)"]?.metrics["borderColor"]?.string) }) else { return nil }
+                    return (0..<3).contains(where: { w[$0] < env.0[$0] - 3 || w[$0] > env.1[$0] + 3 }) ? k : nil } })
+                for k in badCells.sorted().prefix(2) {
+                    print("    diag cell \(k) chrome (t anchored want-R env-R): " + p["samples"].array.filter { $0["t"].number! <= 260 }.map { s -> String in
+                        let a = anchored(s["t"].number!); let w = expectedBorder(s["cells"].array[k]["bc"].string, s["cells"].array[k]["bw"].number!)
+                        let env = envelope(a.t, spread: a.spread, { hexRGBA($0.m["cell-\(k)"]?.metrics["borderColor"]?.string) })
+                        return "\(Int(s["t"].number!)):\(Int(a.t))/\(Int(w[0]))/\(Int(env?.0[0] ?? -1))-\(Int(env?.1[0] ?? -1))" }.joined(separator: " "))
+                    print("    diag cell \(k) native (t R): " + samples.filter { $0.t >= -20 && $0.t <= 260 }.map { f in "\(Int(f.t)):\(hexRGBA(f.m["cell-\(k)"]?.metrics["borderColor"]?.string).map { Int($0[0]) } ?? -1)" }.joined(separator: " "))
+                }
+                #endif
+                #if canImport(AppKit)
+                for k in [3, 4, 5] { print("    diagmac cell \(k) native (t:R/B): " + samples.filter { $0.t >= -45 && $0.t <= 130 }.map { f in "\(Int(f.t)):\(hexRGBA(f.m["cell-\(k)"]?.metrics["borderColor"]?.string).map { "\(Int($0[0]))/\(Int($0[2]))" } ?? "-")" }.joined(separator: " ")) }
+                #endif
                 for f in samples.filter({ $0.t >= -20 && $0.t <= 200 }).prefix(16) {
                     let h = f.m["md-otp-field"]
-                    let borders = (0..<12).compactMap { f.m["cell-\($0)"]?.metrics["border"]?.string }.joined(separator: " ")
+                    let borders = (0..<12).compactMap { f.m["cell-\($0)"]?.metrics["borderColor"]?.string }.joined(separator: " ")
                     print("    native t=\(Int(f.t)) focus=\(h?.metrics["focusedIndex"]?.number.map { Int($0) } ?? -1) value=\(h?.metrics["value"]?.string ?? "-") \(borders)")
                 }
             }
-            report.append(["run": name, "phase": label, "frames": motion, "outside": motionBad, "hoverFramesUnsupportedOnTouch": hoverSkipped])
+            report.append(["run": name, "phase": label, "frames": motion, "outside": motionBad])
             guard let lastS = p["samples"].array.last, let fin = samples.last?.m else { continue }
             let h = fin["md-otp-field"]
             check(h?.metrics["value"]?.string == lastS["value"].string, "\(name) \(label) value \(h?.metrics["value"]?.string ?? "-") vs \(lastS["value"].string)")
@@ -244,8 +322,8 @@ struct OTPStatesFixture: View {
                 let cell = fin["cell-\(k)"]
                 check(cell?.metrics["text"]?.string == c["v"].string, "\(name) \(label) cell \(k) text \(cell?.metrics["text"]?.string ?? "-") vs \(c["v"].string)")
                 check(cell?.metrics["borderWidth"]?.number == c["bw"].number, "\(name) \(label) cell \(k) border width \(String(describing: cell?.metrics["borderWidth"])) vs \(c["bw"])")
-                let want = expectedBorder(c["bc"].string, c["bw"].number!), got = hexRGBA(cell?.metrics["border"]?.string) ?? [-99, -99, -99, 0]
-                check((0..<3).allSatisfy { abs(want[$0] - got[$0]) <= 3 }, "\(name) \(label) cell \(k) border \(cell?.metrics["border"]?.string ?? "-") vs \(c["bc"].string)")
+                let want = expectedBorder(c["bc"].string, c["bw"].number!), got = hexRGBA(cell?.metrics["borderColor"]?.string) ?? [-99, -99, -99, 0]
+                check((0..<3).allSatisfy { abs(want[$0] - got[$0]) <= 3 }, "\(name) \(label) cell \(k) border \(cell?.metrics["borderColor"]?.string ?? "-") vs \(c["bc"].string)")
             }
         }
         // Teardown: Chrome's next run replaces the field, which blurs it (a pending change commits). The page's last run is not replaced.
@@ -261,7 +339,7 @@ struct OTPStatesFixture: View {
     }
     static func main() {
         _ = NSApplication.shared; NSApp.setActivationPolicy(.accessory)
-        host = NSHostingView(rootView: OTPStatesFixture(state: state))
+        host = OTPAcceptingHost(rootView: OTPStatesFixture(state: state))
         window = OTPKeyWindow(contentRect: .init(x: -20000, y: -20000, width: 560, height: 320), styleMask: [.borderless], backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false; window.colorSpace = .sRGB; window.contentView = host; window.orderFrontRegardless()
         #if canImport(AppKit)

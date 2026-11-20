@@ -8,7 +8,7 @@ import kotlin.math.*
 
 internal fun parseLivePreviewSnackbarHeight(request:JSONObject,tag:String,width:Double):Double {
     if(!request.has("height")) return 240.0.coerceAtMost(min(2000.0,floor(2_000_000/width)))
-    require(tag in setOf("md-snackbar","md-tooltip","md-dialog","md-bottom-sheet","md-side-sheet","md-time-picker","md-color-picker")) { "Configured height requires a native viewport component." }
+    require(tag in setOf("md-snackbar","md-tooltip","md-dialog","md-bottom-sheet","md-side-sheet","md-time-picker","md-color-picker","md-date-picker","md-search")) { "Configured height requires a native viewport component." }
     val raw=request.get("height")
     require(raw is Number && raw.toDouble().isFinite() && raw.toDouble()>0) { "Native height must be finite and positive." }
     return floor(raw.toDouble().coerceIn(1.0,min(2000.0,floor(2_000_000/width)))+.5)

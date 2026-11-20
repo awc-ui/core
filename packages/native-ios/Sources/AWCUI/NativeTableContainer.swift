@@ -19,6 +19,8 @@ struct AWCNativeTableContainer: View {
     let onEvent: (AWCEvent) -> Void
     @State private var link = AWCTableContainerLink()
     @Environment(\.awcTableForcedColors) private var forcedColors
+    @Environment(\.awcTableParts) private var partRules
+    @Environment(\.awcTablePartTargets) private var partTargets
     @State private var offset: CGPoint = .zero
     @State private var viewport: CGSize = .zero
     @Environment(\.layoutDirection) private var direction
@@ -58,11 +60,16 @@ struct AWCNativeTableContainer: View {
         let frozen = main.contains { $0.tag == "md-table" && ($0.properties["frozenHeader"]?.bool ?? false) }
         let context = AWCTableContainerContext(surface: surface, bodyMaxHeight: frozen ? maxHeight : nil, vibrant: b("vibrant"), hasBottomBar: !bottom.isEmpty, inContainer: true)
         let corners = AWCCornerShape.points(radius)
+        // ::part(top) / ::part(scroll) / ::part(bottom): the three regions' boxes (a region without content renders nothing).
+        let part = { (p: AWCTablePart) in AWCTablePartStyle.resolve(p, node.id, partRules, partTargets, forced: forcedColors) }
         VStack(spacing: 0) {
-            ForEach(top) { AWCNativeView(node: $0, onEvent: onEvent) }
-            if frozen { ForEach(main) { AWCNativeView(node: $0, onEvent: onEvent) } }
-            else { scrollport(main) }
-            ForEach(bottom) { AWCNativeView(node: $0, onEvent: onEvent) }
+            if !top.isEmpty { VStack(alignment: .leading, spacing: 0) { ForEach(top) { regionContent($0) } }.frame(maxWidth: .infinity, alignment: .leading).awcTablePartBox(part(.containerTop)) }
+            Group {
+                if frozen { VStack(spacing: 0) { ForEach(main) { AWCNativeView(node: $0, onEvent: onEvent) } } }
+                else { scrollport(main) }
+            }
+            .awcTablePartBox(part(.containerScroll))
+            if !bottom.isEmpty { VStack(alignment: .leading, spacing: 0) { ForEach(bottom) { regionContent($0) } }.frame(maxWidth: .infinity, alignment: .leading).awcTablePartBox(part(.containerBottom)) }
         }
         .padding(outlineWidth)
         .frame(maxWidth: .infinity, alignment: .topLeading)
@@ -78,6 +85,11 @@ struct AWCNativeTableContainer: View {
         .onPreferenceChange(AWCTableSelectionCountKey.self) { count in if let count { link.selectionCount = count } }
         .awcInspect(nodeID: node.id, name: "md-table-container") { _ in ["variant": .string(variant), "radius": .number(radius), "scrollX": .number(Double(offset.x)), "scrollY": .number(Double(offset.y))] }
     }
+    /// Authored top / bottom region content: elements of the family render natively; plain authored HTML (div / span …
+    /// with the inline style subset) goes through the family's slot renderer instead of the unsupported-tag view.
+    @ViewBuilder func regionContent(_ child: AWCNode) -> some View {
+        AWCTableSlotContent(node: child, theme: theme, color: palette.color("on-surface"), metrics: AWCTableMetrics(density: nil, inheritedScale: 0), onEvent: onEvent)
+    }
     @ViewBuilder func scrollport(_ main: [AWCNode]) -> some View {
         let vertical = maxHeight != nil
         // A horizontal-only scrollport takes its content's height (it grows and shrinks with the rows directly); a capped
@@ -92,6 +104,15 @@ struct AWCNativeTableContainer: View {
         ScrollView(vertical ? [.horizontal, .vertical] : .horizontal, showsIndicators: true) {
             VStack(spacing: 0) { ForEach(main) { AWCNativeView(node: $0, onEvent: onEvent) } }
                 .environment(\.awcTableScroll, .init(offset: offset, viewport: viewport == .zero ? nil : viewport, fill: viewport.width > 0 ? Double(viewport.width) : nil))
+                #if canImport(UIKit)
+                // ArrowLeft / ArrowRight a focused control leaves unused scroll the container 40 px (the browser's default action on
+                // a scroll container; macOS: the scroll bridge's key monitor).
+                .environment(\.awcUnhandledArrow, { name in
+                    let c = scrollController ?? ownScroller
+                    guard let p = c.position(), p.maxX > 0.5 else { return false }
+                    let physical = name == "ArrowRight" ? 40.0 : -40.0
+                    c.animate(x: p.x + (direction == .rightToLeft ? -physical : physical), y: nil); return true })
+                #endif
                 .onGeometryChange(for: CGRect.self) { $0.frame(in: .named("awc-table-scroll")) } action: { frame in
                     let physicalX = -Double(frame.minX), maxX = Swift.max(0, Double(frame.width - viewport.width))
                     let logicalX = direction == .rightToLeft ? maxX - physicalX : physicalX
@@ -134,6 +155,8 @@ struct AWCNativeTableToolbar: View {
     @Environment(\.accessibilityReduceMotion) private var systemReduced
     @Environment(\.awcTableReducedMotion) private var reducedOverride
     @Environment(\.awcTableForcedColors) private var forcedColors
+    @Environment(\.awcTableParts) private var partRules
+    @Environment(\.awcTablePartTargets) private var partTargets
     @Environment(\.awcTableMotionRecorder) private var motion
     @Environment(\.awcTableVars) private var inheritedVars
     func s(_ k: String, _ f: String = "") -> String { node.properties[k]?.string ?? f }
@@ -156,13 +179,16 @@ struct AWCNativeTableToolbar: View {
                            : hookColor("--md-table-toolbar-bg").map { AWCTableColor.color($0, "#00000000") } ?? Color.clear
         let leading = node.children.filter { $0.slot == "leading" }
         let actions = node.children.filter { $0.slot == (selection ? "selection-actions" : "actions") }
+        let part = { (p: AWCTablePart) in AWCTablePartStyle.resolve(p, node.id, partRules, partTargets, forced: forcedColors) }
+        let hl = part(.toolbarHeadline), st = part(.toolbarSupportingText), sc = part(.toolbarSelectionCaption)
         HStack(spacing: gap) {
-            if selection { Color.clear.frame(width: 0, height: 0) }   // the empty leading part still takes a flex gap
-            else if !leading.isEmpty { HStack(spacing: 8) { ForEach(leading) { AWCNativeView(node: $0, onEvent: onEvent) } } }
+            if selection { Color.clear.frame(width: 0, height: 0).awcTablePartBox(part(.toolbarLeading)) }   // the empty leading part still takes a flex gap
+            else if !leading.isEmpty { HStack(spacing: 8) { ForEach(leading) { AWCNativeView(node: $0, onEvent: onEvent) } }.awcTablePartBox(part(.toolbarLeading)) }
             Group {
                 if selection {
                     AWCTableText(text: awcTableSelectedLabel(s("labelSelected", "%count% selected"), count: count),
-                                 size: Swift.max(13, 16 + scale * 0.5), lineHeight: Swift.max(18, 24 + scale), weight: 500, tracking: 0, color: fg)
+                                 size: sc.size(over: Swift.max(13, 16 + scale * 0.5)), lineHeight: Swift.max(18, 24 + scale), weight: sc.weight(over: 500), tracking: sc.letterSpacing ?? 0, color: sc.color(over: fg))
+                        .awcTablePartBox(sc)
                         .modifier(AWCTableAXText(text: awcTableSelectedLabel(s("labelSelected", "%count% selected"), count: count)))
                         .transition(reduced ? .identity : .opacity.combined(with: .offset(x: -8)))
                 } else {
@@ -173,26 +199,30 @@ struct AWCNativeTableToolbar: View {
                         if !s("headline").isEmpty {
                             let size = compact ? 16 : Swift.max(16, 22 + scale), line = compact ? 24 : Swift.max(22, 28 + scale)
                             Group {
-                                if headlineSlot.isEmpty { AWCTableText(text: s("headline"), size: size, lineHeight: line, weight: 400, tracking: 0, color: fg) }
-                                else { ForEach(headlineSlot) { AWCTableSlotContent(node: $0, theme: theme, color: fg, metrics: slotMetrics, weight: 400, tracking: 0, size: size, lineHeight: line, onEvent: onEvent) } }
+                                if headlineSlot.isEmpty { AWCTableText(text: s("headline"), size: hl.size(over: size), lineHeight: line, weight: hl.weight(over: 400), tracking: hl.letterSpacing ?? 0, color: hl.color(over: fg)) }
+                                else { ForEach(headlineSlot) { AWCTableSlotContent(node: $0, theme: theme, color: hl.color(over: fg), metrics: slotMetrics, weight: hl.weight(over: 400), tracking: hl.letterSpacing ?? 0, size: hl.size(over: size), lineHeight: line, onEvent: onEvent) } }
                             }
+                            .awcTablePartBox(hl)
                             .accessibilityAddTraits(.isHeader)
                             .modifier(AWCTableAXText(text: headlineSlot.isEmpty ? s("headline") : awcCollapsedInlineText(headlineSlot.map(\.authoredTextContent).joined(separator: " ")), heading: true))
                         }
                         if !s("supportingText").isEmpty {
                             Group {
-                                if supportingSlot.isEmpty { AWCTableText(text: s("supportingText"), size: 14, lineHeight: 20, weight: 400, tracking: 0.25, color: palette.color("on-surface-variant")) }
-                                else { ForEach(supportingSlot) { AWCTableSlotContent(node: $0, theme: theme, color: palette.color("on-surface-variant"), metrics: slotMetrics, weight: 400, tracking: 0.25, size: 14, lineHeight: 20, onEvent: onEvent) } }
+                                if supportingSlot.isEmpty { AWCTableText(text: s("supportingText"), size: st.size(over: 14), lineHeight: 20, weight: st.weight(over: 400), tracking: st.letterSpacing ?? 0.25, color: st.color(over: palette.color("on-surface-variant"))) }
+                                else { ForEach(supportingSlot) { AWCTableSlotContent(node: $0, theme: theme, color: st.color(over: palette.color("on-surface-variant")), metrics: slotMetrics, weight: st.weight(over: 400), tracking: st.letterSpacing ?? 0.25, size: st.size(over: 14), lineHeight: 20, onEvent: onEvent) } }
                             }
+                            .awcTablePartBox(st)
                             .modifier(AWCTableAXText(text: supportingSlot.isEmpty ? s("supportingText") : awcCollapsedInlineText(supportingSlot.map(\.authoredTextContent).joined(separator: " "))))
                         }
-                        if s("headline").isEmpty && s("supportingText").isEmpty { ForEach(node.children.filter { $0.slot == "title-area" }) { AWCNativeView(node: $0, onEvent: onEvent) } }
+                        if s("headline").isEmpty && s("supportingText").isEmpty { ForEach(node.children.filter { $0.slot == "title-area" }) { AWCTableSlotContent(node: $0, theme: theme, color: fg, metrics: slotMetrics, onEvent: onEvent) } }
                     }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .awcTablePartBox(part(.toolbarMain))
             HStack(spacing: Swift.max(0, 4 + scale)) { ForEach(actions) { AWCNativeView(node: $0, onEvent: onEvent) } }
                 .awcIconButtonAppearance(.init(iconSize: Swift.max(18, 24 + scale), width: Swift.max(32, 40 + scale * 4), height: Swift.max(32, 40 + scale * 4)))
+                .awcTablePartBox(part(.toolbarActions))
         }
         .foregroundStyle(fg)
         .frame(minHeight: minH)
@@ -220,6 +250,8 @@ struct AWCNativeTablePagination: View {
     @Environment(\.awcNativeDensity) private var inheritedDensity
     @Environment(\.layoutDirection) private var direction
     @Environment(\.awcTableForcedColors) private var forcedColors
+    @Environment(\.awcTableParts) private var partRules
+    @Environment(\.awcTablePartTargets) private var partTargets
     @Environment(\.awcTablePaginationControllers) private var controllers
     @Environment(\.awcTableVars) private var inheritedVars
     @State private var handle = AWCTablePaginationHandle()
@@ -263,8 +295,11 @@ struct AWCNativeTablePagination: View {
         let select = AWCNode(id: node.id + "-rpp", tag: "md-select", properties: [
             "options": .array(options.map { ["value": .string(String($0.value)), "label": .string($0.label)] }), "value": .string(String(m.rowsPerPage)),
             "density": .number(selectDensity), "disabled": .bool(disabled), "placement": "top-start", "ariaLabel": .string(s("labelRowsPerPage", "Rows per page:"))])
+        let part = { (p: AWCTablePart) in AWCTablePartStyle.resolve(p, node.id, partRules, partTargets, forced: forcedColors) }
+        let dp = part(.paginationDisplay)
         HStack(spacing: compact ? 12 : Swift.max(12, 24 + scale * 3)) {
-            AWCTableText(text: m.display(s("labelDisplayedRows", "%from%–%to% of %count%")), size: size, lineHeight: line, weight: 400, tracking: 0.4, color: fg)
+            AWCTableText(text: m.display(s("labelDisplayedRows", "%from%–%to% of %count%")), size: dp.size(over: size), lineHeight: line, weight: dp.weight(over: 400), tracking: dp.letterSpacing ?? 0.4, color: dp.color(over: fg))
+                .awcTablePartBox(dp)
                 .modifier(AWCTableAXText(text: m.display(s("labelDisplayedRows", "%from%–%to% of %count%"))))
                 .frame(maxWidth: .infinity, alignment: .leading)
             HStack(spacing: Swift.max(4, 8 + scale)) {
@@ -276,9 +311,11 @@ struct AWCNativeTablePagination: View {
                     if event.name == "mdChange", let n = Int(event.detail.string.isEmpty ? event.detail["value"].string : event.detail.string) { setRows(n) }
                 }
                 .frame(width: selectWidth, height: 56 + selectDensity * 4)
+                .awcTablePartBox(part(.paginationRppSelect))
                 .awcInspect(nodeID: node.id, part: "rpp", name: "rpp-select")
             }
             .fixedSize()
+            .awcTablePartBox(part(.paginationRpp))
             HStack(spacing: Swift.max(0, 4 + scale)) {
                 if b("showFirstLast") { navButton("first_page", s("labelFirstPage", "First page"), disabled || m.clampedPage == 0) { go(0) } }
                 navButton("chevron_left", s("labelPreviousPage", "Previous page"), disabled || m.clampedPage == 0) { go(m.clampedPage - 1) }
@@ -286,6 +323,7 @@ struct AWCNativeTablePagination: View {
                 if b("showFirstLast") { navButton("last_page", s("labelLastPage", "Last page"), disabled || m.clampedPage >= m.lastPage) { go(m.lastPage) } }
                 ForEach(node.children.filter { $0.slot == "actions" }) { AWCNativeView(node: $0, onEvent: onEvent) }
             }
+            .awcTablePartBox(part(.paginationNav))
             .awcIconButtonAppearance(.init(iconSize: Swift.max(18, 24 + scale), width: Swift.max(32, 40 + scale * 4), height: Swift.max(32, 40 + scale * 4)))
             #if canImport(AppKit)
             .accessibilityHidden(true)   // listed by the landmark through their focus surfaces
@@ -303,7 +341,7 @@ struct AWCNativeTablePagination: View {
             if old["rowsPerPage"] != new["rowsPerPage"] { rowsPerPage = nil }
         }
         // role="navigation" (aria-label); the range text is aria-live="polite".
-        .modifier(AWCTableAXRoot(kind: .landmark, label: s("label", "Pagination"), identifier: node.id, hideContent: false))
+        .modifier(AWCTableAXRoot(kind: .landmark, label: s("label", "Pagination"), identifier: node.id))
         .onChange(of: m.display(s("labelDisplayedRows", "%from%–%to% of %count%"))) { _, text in AWCTableAX.announce(text) }
         .awcInspect(nodeID: node.id, name: "md-table-pagination") { _ in ["page": .number(Double(m.clampedPage)), "rowsPerPage": .number(Double(m.rowsPerPage)), "lastPage": .number(Double(m.lastPage)), "display": .string(m.display(s("labelDisplayedRows", "%from%–%to% of %count%"))),
              "firstDisabled": .bool(disabled || m.clampedPage == 0), "prevDisabled": .bool(disabled || m.clampedPage == 0),
@@ -316,5 +354,13 @@ struct AWCNativeTablePagination: View {
             if event.name == "mdClick" { action() }
         }
             .scaleEffect(x: direction == .rightToLeft ? -1 : 1, y: 1)
+            // ::part(first-button) … ::part(last-button): the icon button hosts.
+            // (the host's default corners are the icon button's full round container shape)
+            .awcTablePartBox({ () -> AWCTablePartStyle in
+                var st = AWCTablePartStyle.resolve(["first_page": .paginationFirstButton, "chevron_left": .paginationPrevButton, "chevron_right": .paginationNextButton,
+                                                    "last_page": .paginationLastButton][icon] ?? .paginationNextButton, node.id, partRules, partTargets, forced: forcedColors)
+                if st.cornerRadius == nil { st.cornerRadius = 999 }
+                return st
+            }())
     }
 }

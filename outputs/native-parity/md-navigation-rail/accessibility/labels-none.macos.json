@@ -1,0 +1,683 @@
+{
+ "tag": "md-navigation-rail",
+ "case": "labels-none",
+ "request": {
+  "tag": "md-navigation-rail",
+  "properties": {
+   "labelVisibility": "none",
+   "activeIndex": 0
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "children": [
+          {
+           "actions": [
+            "AXPress"
+           ],
+           "description": "Home",
+           "disclosing": false,
+           "disclosureLevel": 0,
+           "enabled": true,
+           "expanded": false,
+           "focused": false,
+           "frame": [
+            280,
+            81,
+            80,
+            56
+           ],
+           "identifier": "example-md-navigation-rail",
+           "index": 0,
+           "invalid": "false",
+           "required": false,
+           "role": "AXRadioButton",
+           "roleDescription": "tab",
+           "selected": true,
+           "subrole": "AXTabButton",
+           "value": true
+          },
+          {
+           "actions": [
+            "AXPress"
+           ],
+           "description": "Saved",
+           "disclosing": false,
+           "disclosureLevel": 0,
+           "enabled": true,
+           "expanded": false,
+           "focused": false,
+           "frame": [
+            280,
+            145,
+            80,
+            56
+           ],
+           "identifier": "example-md-navigation-rail",
+           "index": 0,
+           "invalid": "false",
+           "required": false,
+           "role": "AXRadioButton",
+           "roleDescription": "tab",
+           "selected": false,
+           "subrole": "AXTabButton",
+           "value": false
+          },
+          {
+           "actions": [
+            "AXPress"
+           ],
+           "description": "Settings",
+           "disclosing": false,
+           "disclosureLevel": 0,
+           "enabled": true,
+           "expanded": false,
+           "focused": false,
+           "frame": [
+            280,
+            209,
+            80,
+            56
+           ],
+           "identifier": "example-md-navigation-rail",
+           "index": 0,
+           "invalid": "false",
+           "required": false,
+           "role": "AXRadioButton",
+           "roleDescription": "tab",
+           "selected": false,
+           "subrole": "AXTabButton",
+           "value": false
+          }
+         ],
+         "description": "Navigation",
+         "focused": false,
+         "frame": [
+          280,
+          32,
+          80,
+          282
+         ],
+         "identifier": "example-md-navigation-rail.tablist",
+         "role": "AXTabGroup",
+         "roleDescription": "tab group"
+        }
+       ],
+       "description": "Navigation",
+       "focused": false,
+       "frame": [
+        280,
+        32,
+        80,
+        282
+       ],
+       "identifier": "example-md-navigation-rail",
+       "role": "AXGroup",
+       "roleDescription": "group",
+       "subrole": "AXLandmarkNavigation"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      346
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    346
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [
+   {
+    "children": [],
+    "id": "4F933A87-619D-49B4-80F9-4AACEF4F45B0",
+    "properties": {
+     "active": true,
+     "icon": "home",
+     "label": "Home"
+    },
+    "tag": "md-navigation-rail-tab"
+   },
+   {
+    "children": [],
+    "id": "CE6D27D4-736B-4660-9C42-22803A2A9FD0",
+    "properties": {
+     "icon": "favorite",
+     "label": "Saved"
+    },
+    "tag": "md-navigation-rail-tab"
+   },
+   {
+    "children": [],
+    "id": "4272CECE-056A-48B9-A410-D890D48795B5",
+    "properties": {
+     "icon": "settings",
+     "label": "Settings"
+    },
+    "tag": "md-navigation-rail-tab"
+   }
+  ],
+  "id": "example-md-navigation-rail",
+  "properties": {
+   "activeIndex": 0,
+   "alignment": "top",
+   "density": 0,
+   "disableFocusManagement": false,
+   "expandable": false,
+   "fullHeight": false,
+   "label": "Navigation",
+   "labelVisibility": "none",
+   "modal": false,
+   "orientation": "vertical",
+   "overflowIcon": "more_horiz",
+   "overflowLabel": "More",
+   "toggleLabel": "Toggle navigation",
+   "variant": "standard"
+  },
+  "tag": "md-navigation-rail"
+ },
+ "focus": [
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Home",
+    "frame": [
+     280,
+     81,
+     80,
+     56
+    ],
+    "identifier": "4F933A87-619D-49B4-80F9-4AACEF4F45B0",
+    "role": "AXRadioButton",
+    "subrole": "AXTabButton"
+   },
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 282,
+     "width": 80,
+     "x": 280,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "activeIndex": 0,
+     "background": [
+      1,
+      0.9843137860298157,
+      0.9960784316062927,
+      1
+     ],
+     "container": [
+      0,
+      0,
+      80,
+      282
+     ],
+     "count": 3,
+     "density": 0,
+     "horizontal": false,
+     "host": [
+      0,
+      0,
+      80,
+      282
+     ],
+     "label": "Navigation",
+     "modal": false,
+     "overflowCount": 0,
+     "paddingInline": 0,
+     "reduced": false,
+     "scrim": 0,
+     "variant": "standard",
+     "width": 80
+    },
+    "name": "md-navigation-rail"
+   },
+   {
+    "bounds": {
+     "height": 282,
+     "width": 80,
+     "x": 280,
+     "y": 32
+    },
+    "id": "component.container",
+    "metrics": {
+     "background": [
+      1,
+      0.9843137860298157,
+      0.9960784316062927,
+      1
+     ],
+     "radius": 0,
+     "shadow": 0
+    },
+    "name": "container",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 194,
+     "width": 80,
+     "x": 280,
+     "y": 76
+    },
+    "id": "component.destinations",
+    "name": "destinations",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 56,
+     "width": 80,
+     "x": 280,
+     "y": 81
+    },
+    "id": "component.tab-0",
+    "metrics": {
+     "active": true,
+     "animating": false,
+     "ariaDisabled": false,
+     "childSelected": false,
+     "color": [
+      0.11764705926179886,
+      0.09803920239210129,
+      0.16862747073173523,
+      1
+     ],
+     "disabled": false,
+     "expanded": false,
+     "focusVisible": false,
+     "focused": false,
+     "haspopup": false,
+     "hover": false,
+     "indicatorColor": [
+      0.9098039269447327,
+      0.8705882430076599,
+      0.9725490212440491,
+      1
+     ],
+     "layerColor": [
+      0.11764705926179886,
+      0.09803920239210129,
+      0.16862747073173523,
+      1
+     ],
+     "layerOpacity": 0,
+     "name": "Home",
+     "overflowed": false,
+     "pressed": false,
+     "renderTime": 596012985.0828334,
+     "role": "tab",
+     "tabStop": true
+    },
+    "name": "md-navigation-rail-tab",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 24,
+     "width": 24,
+     "x": 308,
+     "y": 97
+    },
+    "id": "component.tab-0.icon",
+    "metrics": {
+     "color": [
+      0.11764705926179886,
+      0.09803920239210129,
+      0.16862747073173523,
+      1
+     ],
+     "fill": 1,
+     "glyph": "home",
+     "size": 24
+    },
+    "name": "icon",
+    "parentId": "component.tab-0"
+   },
+   {
+    "bounds": {
+     "height": 32,
+     "width": 56,
+     "x": 292,
+     "y": 93
+    },
+    "id": "component.tab-0.icon-wrapper",
+    "name": "icon-wrapper",
+    "parentId": "component.tab-0"
+   },
+   {
+    "bounds": {
+     "height": 32,
+     "width": 56,
+     "x": 292,
+     "y": 93
+    },
+    "id": "component.tab-0.indicator",
+    "metrics": {
+     "color": [
+      0.9098039269447327,
+      0.8705882430076599,
+      0.9725490212440491,
+      1
+     ],
+     "radius": 16
+    },
+    "name": "indicator",
+    "parentId": "component.tab-0"
+   },
+   {
+    "bounds": {
+     "height": 32,
+     "width": 56,
+     "x": 292,
+     "y": 93
+    },
+    "id": "component.tab-0.state-layer",
+    "metrics": {
+     "color": [
+      0.11764705926179886,
+      0.09803920239210129,
+      0.16862747073173523,
+      1
+     ],
+     "opacity": 0
+    },
+    "name": "state-layer",
+    "parentId": "component.tab-0"
+   },
+   {
+    "bounds": {
+     "height": 56,
+     "width": 80,
+     "x": 280,
+     "y": 145
+    },
+    "id": "component.tab-1",
+    "metrics": {
+     "active": false,
+     "animating": false,
+     "ariaDisabled": false,
+     "childSelected": false,
+     "color": [
+      0.2862744927406311,
+      0.2705882489681244,
+      0.30980393290519714,
+      1
+     ],
+     "disabled": false,
+     "expanded": false,
+     "focusVisible": false,
+     "focused": false,
+     "haspopup": false,
+     "hover": false,
+     "indicatorColor": [
+      0.9098039269447327,
+      0.8705882430076599,
+      0.9725490212440491,
+      0
+     ],
+     "layerColor": [
+      0.11764705926179886,
+      0.09803920239210129,
+      0.16862747073173523,
+      1
+     ],
+     "layerOpacity": 0,
+     "name": "Saved",
+     "overflowed": false,
+     "pressed": false,
+     "renderTime": 596012985.0828334,
+     "role": "tab",
+     "tabStop": false
+    },
+    "name": "md-navigation-rail-tab",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 24,
+     "width": 24,
+     "x": 308,
+     "y": 161
+    },
+    "id": "component.tab-1.icon",
+    "metrics": {
+     "color": [
+      0.2862744927406311,
+      0.2705882489681244,
+      0.30980393290519714,
+      1
+     ],
+     "fill": 0,
+     "glyph": "favorite",
+     "size": 24
+    },
+    "name": "icon",
+    "parentId": "component.tab-1"
+   },
+   {
+    "bounds": {
+     "height": 32,
+     "width": 56,
+     "x": 292,
+     "y": 157
+    },
+    "id": "component.tab-1.icon-wrapper",
+    "name": "icon-wrapper",
+    "parentId": "component.tab-1"
+   },
+   {
+    "bounds": {
+     "height": 32,
+     "width": 56,
+     "x": 292,
+     "y": 157
+    },
+    "id": "component.tab-1.indicator",
+    "metrics": {
+     "color": [
+      0.9098039269447327,
+      0.8705882430076599,
+      0.9725490212440491,
+      0
+     ],
+     "radius": 16
+    },
+    "name": "indicator",
+    "parentId": "component.tab-1"
+   },
+   {
+    "bounds": {
+     "height": 32,
+     "width": 56,
+     "x": 292,
+     "y": 157
+    },
+    "id": "component.tab-1.state-layer",
+    "metrics": {
+     "color": [
+      0.11764705926179886,
+      0.09803920239210129,
+      0.16862747073173523,
+      1
+     ],
+     "opacity": 0
+    },
+    "name": "state-layer",
+    "parentId": "component.tab-1"
+   },
+   {
+    "bounds": {
+     "height": 56,
+     "width": 80,
+     "x": 280,
+     "y": 209
+    },
+    "id": "component.tab-2",
+    "metrics": {
+     "active": false,
+     "animating": false,
+     "ariaDisabled": false,
+     "childSelected": false,
+     "color": [
+      0.2862744927406311,
+      0.2705882489681244,
+      0.30980393290519714,
+      1
+     ],
+     "disabled": false,
+     "expanded": false,
+     "focusVisible": false,
+     "focused": false,
+     "haspopup": false,
+     "hover": false,
+     "indicatorColor": [
+      0.9098039269447327,
+      0.8705882430076599,
+      0.9725490212440491,
+      0
+     ],
+     "layerColor": [
+      0.11764705926179886,
+      0.09803920239210129,
+      0.16862747073173523,
+      1
+     ],
+     "layerOpacity": 0,
+     "name": "Settings",
+     "overflowed": false,
+     "pressed": false,
+     "renderTime": 596012985.0828334,
+     "role": "tab",
+     "tabStop": false
+    },
+    "name": "md-navigation-rail-tab",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 24,
+     "width": 24,
+     "x": 308,
+     "y": 225
+    },
+    "id": "component.tab-2.icon",
+    "metrics": {
+     "color": [
+      0.2862744927406311,
+      0.2705882489681244,
+      0.30980393290519714,
+      1
+     ],
+     "fill": 0,
+     "glyph": "settings",
+     "size": 24
+    },
+    "name": "icon",
+    "parentId": "component.tab-2"
+   },
+   {
+    "bounds": {
+     "height": 32,
+     "width": 56,
+     "x": 292,
+     "y": 221
+    },
+    "id": "component.tab-2.icon-wrapper",
+    "name": "icon-wrapper",
+    "parentId": "component.tab-2"
+   },
+   {
+    "bounds": {
+     "height": 32,
+     "width": 56,
+     "x": 292,
+     "y": 221
+    },
+    "id": "component.tab-2.indicator",
+    "metrics": {
+     "color": [
+      0.9098039269447327,
+      0.8705882430076599,
+      0.9725490212440491,
+      0
+     ],
+     "radius": 16
+    },
+    "name": "indicator",
+    "parentId": "component.tab-2"
+   },
+   {
+    "bounds": {
+     "height": 32,
+     "width": 56,
+     "x": 292,
+     "y": 221
+    },
+    "id": "component.tab-2.state-layer",
+    "metrics": {
+     "color": [
+      0.11764705926179886,
+      0.09803920239210129,
+      0.16862747073173523,
+      1
+     ],
+     "opacity": 0
+    },
+    "name": "state-layer",
+    "parentId": "component.tab-2"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

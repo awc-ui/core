@@ -10,6 +10,8 @@ import Observation
     var headingLevel: Int
     var regionRole: String
     var collapsible: Bool
+    /// `hidden` (`display: none`): still a coordinated item, but not rendered or focusable.
+    var hidden = false
     private(set) var index = -1
     private(set) var hasChassisHandle = false
     @ObservationIgnored weak var owner: AWCNativeAccordionState?
@@ -27,7 +29,7 @@ import Observation
     }
     var toggleBlocked: Bool { disabled || (expanded && !collapsible) }
     func toggle() { if !toggleBlocked { setExpanded(!expanded) } }
-    func focusHeader() { if !disabled { requestFocus() } }
+    func focusHeader() { if !disabled && !hidden { requestFocus() } }
     /// A direct property update intentionally bypasses the activation guard,
     /// exactly like assigning the Web item's mutable expanded property.
     func setExpanded(_ value: Bool) {
@@ -124,7 +126,7 @@ private struct AWCNativeAccordionChassisDrag {
     private(set) var initialPresentation: [String: Bool]?
     @ObservationIgnored var emit: (String, AWCValue) -> Void = { _, _ in }
     @ObservationIgnored private var originalOrder: [AWCNativeAccordionItemState] = []
-    @ObservationIgnored private var loaded = false
+    @ObservationIgnored private(set) var loaded = false
     @ObservationIgnored private var connected = false
     @ObservationIgnored private var reorder: AWCNativeAccordionReorder?
     @ObservationIgnored private var chassis: AWCNativeAccordionChassisDrag?

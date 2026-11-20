@@ -1,0 +1,5330 @@
+{
+ "oracle": {
+  "browser": "Chrome/153.0.8010.36",
+  "createdAt": "2026-11-05T06:28:43.270Z",
+  "scale": 2
+ },
+ "cases": [
+  {
+   "name": "divider",
+   "nodes": [
+    {
+     "id": "dv",
+     "tag": "md-divider",
+     "properties": {}
+    },
+    {
+     "id": "dvh",
+     "tag": "md-divider",
+     "properties": {
+      "style": "--md-divider-color:#3366CC"
+     }
+    }
+   ],
+   "probes": [
+    {
+     "node": "dv",
+     "part": "divider",
+     "kind": "point",
+     "at": [
+      100,
+      0.25
+     ],
+     "label": "dv.divider@[100, 0.25]"
+    },
+    {
+     "node": "dvh",
+     "part": "divider",
+     "kind": "point",
+     "at": [
+      100,
+      0.25
+     ],
+     "label": "dvh.divider@[100, 0.25]"
+    }
+   ],
+   "themes": [
+    "light",
+    "dark"
+   ],
+   "forced": [
+    false,
+    true
+   ]
+  },
+  {
+   "name": "avatar",
+   "nodes": [
+    {
+     "id": "av",
+     "tag": "md-avatar",
+     "properties": {
+      "name": "Ada Lovelace"
+     }
+    },
+    {
+     "id": "avn",
+     "tag": "md-avatar",
+     "properties": {
+      "label": "Person",
+      "colorFromName": false,
+      "initials": "P"
+     }
+    }
+   ],
+   "probes": [
+    {
+     "node": "av",
+     "part": null,
+     "kind": "point",
+     "at": [
+      20,
+      5
+     ],
+     "label": "av@[20, 5]"
+    },
+    {
+     "node": "av",
+     "part": null,
+     "kind": "point",
+     "at": [
+      20,
+      0.25
+     ],
+     "label": "av@[20, 0.25]"
+    },
+    {
+     "node": "av",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      8,
+      8,
+      24,
+      24
+     ],
+     "label": "av ink"
+    },
+    {
+     "node": "avn",
+     "part": null,
+     "kind": "point",
+     "at": [
+      20,
+      5
+     ],
+     "label": "avn@[20, 5]"
+    },
+    {
+     "node": "avn",
+     "part": null,
+     "kind": "point",
+     "at": [
+      20,
+      0.25
+     ],
+     "label": "avn@[20, 0.25]"
+    },
+    {
+     "node": "avn",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      8,
+      8,
+      24,
+      24
+     ],
+     "label": "avn ink"
+    }
+   ],
+   "themes": [
+    "light",
+    "dark"
+   ],
+   "forced": [
+    false,
+    true
+   ]
+  },
+  {
+   "name": "card",
+   "nodes": [
+    {
+     "id": "cfilled",
+     "tag": "md-card",
+     "properties": {
+      "variant": "filled",
+      "interactive": true
+     },
+     "children": [
+      {
+       "tag": "#text",
+       "properties": {
+        "text": "Card filled"
+       }
+      }
+     ]
+    },
+    {
+     "id": "coutlined",
+     "tag": "md-card",
+     "properties": {
+      "variant": "outlined",
+      "interactive": true
+     },
+     "children": [
+      {
+       "tag": "#text",
+       "properties": {
+        "text": "Card outlined"
+       }
+      }
+     ]
+    },
+    {
+     "id": "celevated",
+     "tag": "md-card",
+     "properties": {
+      "variant": "elevated",
+      "interactive": true
+     },
+     "children": [
+      {
+       "tag": "#text",
+       "properties": {
+        "text": "Card elevated"
+       }
+      }
+     ]
+    },
+    {
+     "id": "cdis",
+     "tag": "md-card",
+     "properties": {
+      "variant": "outlined",
+      "interactive": true,
+      "disabled": true
+     },
+     "children": [
+      {
+       "tag": "#text",
+       "properties": {
+        "text": "Disabled"
+       }
+      }
+     ]
+    }
+   ],
+   "probes": [
+    {
+     "node": "cfilled",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      20
+     ],
+     "label": "cfilled@[0.25, 20]"
+    },
+    {
+     "node": "cfilled",
+     "part": null,
+     "kind": "point",
+     "at": [
+      1.25,
+      20
+     ],
+     "label": "cfilled@[1.25, 20]"
+    },
+    {
+     "node": "cfilled",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      20
+     ],
+     "label": "cfilled@[8, 20]"
+    },
+    {
+     "node": "cfilled",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      12,
+      12,
+      150,
+      28
+     ],
+     "label": "cfilled ink"
+    },
+    {
+     "node": "coutlined",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      20
+     ],
+     "label": "coutlined@[0.25, 20]"
+    },
+    {
+     "node": "coutlined",
+     "part": null,
+     "kind": "point",
+     "at": [
+      1.25,
+      20
+     ],
+     "label": "coutlined@[1.25, 20]"
+    },
+    {
+     "node": "coutlined",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      20
+     ],
+     "label": "coutlined@[8, 20]"
+    },
+    {
+     "node": "coutlined",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      12,
+      12,
+      150,
+      28
+     ],
+     "label": "coutlined ink"
+    },
+    {
+     "node": "celevated",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      20
+     ],
+     "label": "celevated@[0.25, 20]"
+    },
+    {
+     "node": "celevated",
+     "part": null,
+     "kind": "point",
+     "at": [
+      1.25,
+      20
+     ],
+     "label": "celevated@[1.25, 20]"
+    },
+    {
+     "node": "celevated",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      20
+     ],
+     "label": "celevated@[8, 20]"
+    },
+    {
+     "node": "celevated",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      12,
+      12,
+      150,
+      28
+     ],
+     "label": "celevated ink"
+    },
+    {
+     "node": "cdis",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      20
+     ],
+     "label": "cdis@[0.25, 20]"
+    },
+    {
+     "node": "cdis",
+     "part": null,
+     "kind": "point",
+     "at": [
+      1.25,
+      20
+     ],
+     "label": "cdis@[1.25, 20]"
+    },
+    {
+     "node": "cdis",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      20
+     ],
+     "label": "cdis@[8, 20]"
+    },
+    {
+     "node": "cdis",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      12,
+      12,
+      150,
+      28
+     ],
+     "label": "cdis ink"
+    }
+   ],
+   "themes": [
+    "light",
+    "dark"
+   ],
+   "forced": [
+    false,
+    true
+   ]
+  },
+  {
+   "name": "dialog",
+   "nodes": [
+    {
+     "id": "dg",
+     "tag": "md-dialog",
+     "properties": {
+      "open": true,
+      "headline": "Title",
+      "divider": true
+     },
+     "children": [
+      {
+       "tag": "#text",
+       "properties": {
+        "text": "Body text"
+       }
+      }
+     ]
+    }
+   ],
+   "probes": [
+    {
+     "node": "dg",
+     "part": "container",
+     "kind": "point",
+     "at": [
+      0.5,
+      120
+     ],
+     "label": "dg.container@[0.5, 120]"
+    },
+    {
+     "node": "dg",
+     "part": "container",
+     "kind": "point",
+     "at": [
+      8,
+      120
+     ],
+     "label": "dg.container@[8, 120]"
+    },
+    {
+     "node": "dg",
+     "part": "headline",
+     "kind": "ink",
+     "rect": null,
+     "label": "dg.headline ink"
+    },
+    {
+     "node": "dg",
+     "part": "content",
+     "kind": "ink",
+     "rect": null,
+     "label": "dg.content ink"
+    },
+    {
+     "node": "dg",
+     "part": "divider",
+     "kind": "point",
+     "at": [
+      100,
+      0.25
+     ],
+     "label": "dg.divider@[100, 0.25]"
+    },
+    {
+     "node": "dg",
+     "part": "scrim",
+     "kind": "point",
+     "at": [
+      5,
+      5
+     ],
+     "label": "dg.scrim@[5, 5]"
+    }
+   ],
+   "themes": [
+    "light",
+    "dark"
+   ],
+   "forced": [
+    false,
+    true
+   ]
+  },
+  {
+   "name": "accordion",
+   "nodes": [
+    {
+     "id": "ac",
+     "tag": "md-accordion",
+     "properties": {},
+     "children": [
+      {
+       "id": "ai1",
+       "tag": "md-accordion-item",
+       "properties": {
+        "headline": "One",
+        "expanded": true
+       },
+       "children": [
+        {
+         "tag": "#text",
+         "properties": {
+          "text": "Panel one"
+         }
+        }
+       ]
+      },
+      {
+       "id": "ai2",
+       "tag": "md-accordion-item",
+       "properties": {
+        "headline": "Two"
+       },
+       "children": [
+        {
+         "tag": "#text",
+         "properties": {
+          "text": "Panel two"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "probes": [
+    {
+     "node": "ai1",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      30
+     ],
+     "label": "ai1@[0.25, 30]"
+    },
+    {
+     "node": "ai1",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      32
+     ],
+     "label": "ai1@[8, 32]"
+    },
+    {
+     "node": "ai1",
+     "part": "headline",
+     "kind": "ink",
+     "rect": null,
+     "label": "ai1.headline ink"
+    },
+    {
+     "node": "ai1",
+     "part": "content-inner",
+     "kind": "ink",
+     "rect": null,
+     "label": "ai1.content-inner ink"
+    },
+    {
+     "node": "ai2",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      30
+     ],
+     "label": "ai2@[0.25, 30]"
+    },
+    {
+     "node": "ai2",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      32
+     ],
+     "label": "ai2@[8, 32]"
+    },
+    {
+     "node": "ai2",
+     "part": "headline",
+     "kind": "ink",
+     "rect": null,
+     "label": "ai2.headline ink"
+    }
+   ],
+   "themes": [
+    "light",
+    "dark"
+   ],
+   "forced": [
+    false,
+    true
+   ]
+  },
+  {
+   "name": "accordion-floating",
+   "nodes": [
+    {
+     "id": "acf",
+     "tag": "md-accordion",
+     "properties": {
+      "floating": true,
+      "reorderable": true
+     },
+     "children": [
+      {
+       "id": "af1",
+       "tag": "md-accordion-item",
+       "properties": {
+        "headline": "Float"
+       },
+       "children": [
+        {
+         "tag": "#text",
+         "properties": {
+          "text": "P"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "probes": [
+    {
+     "node": "acf",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      40
+     ],
+     "label": "acf@[0.25, 40]"
+    },
+    {
+     "node": "acf",
+     "part": null,
+     "kind": "point",
+     "at": [
+      6,
+      40
+     ],
+     "label": "acf@[6, 40]"
+    },
+    {
+     "node": "af1",
+     "part": "chassis-handle-bar",
+     "kind": "point",
+     "at": [
+      16,
+      2
+     ],
+     "label": "af1.chassis-handle-bar@[16, 2]"
+    },
+    {
+     "node": "af1",
+     "part": "headline",
+     "kind": "ink",
+     "rect": null,
+     "label": "af1.headline ink"
+    }
+   ],
+   "themes": [
+    "light",
+    "dark"
+   ],
+   "forced": [
+    false,
+    true
+   ]
+  },
+  {
+   "name": "accordion-floating-parts",
+   "css": "md-accordion-item::part(chassis-handle){background-color:#FFCDD2;border-radius:4px} md-accordion-item::part(chassis-handle-bar){background-color:#D81B60;width:24px;height:6px;opacity:1}",
+   "nativeParts": {
+    "md-accordion-item": {
+     "chassis-handle": {
+      "backgroundColor": "#FFCDD2",
+      "cornerRadius": 4
+     },
+     "chassis-handle-bar": {
+      "backgroundColor": "#D81B60",
+      "width": 24,
+      "height": 6,
+      "opacity": 1
+     }
+    }
+   },
+   "sizeParts": [
+    [
+     "af1",
+     "chassis-handle-bar"
+    ],
+    [
+     "af1",
+     "chassis-handle"
+    ]
+   ],
+   "nodes": [
+    {
+     "id": "acf",
+     "tag": "md-accordion",
+     "properties": {
+      "floating": true,
+      "reorderable": true
+     },
+     "children": [
+      {
+       "id": "af1",
+       "tag": "md-accordion-item",
+       "properties": {
+        "headline": "Float"
+       },
+       "children": [
+        {
+         "tag": "#text",
+         "properties": {
+          "text": "P"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "probes": [
+    {
+     "node": "af1",
+     "part": "chassis-handle-bar",
+     "kind": "point",
+     "at": [
+      12,
+      3
+     ],
+     "label": "af1.chassis-handle-bar part fill"
+    },
+    {
+     "node": "af1",
+     "part": "chassis-handle",
+     "kind": "point",
+     "at": [
+      3,
+      8
+     ],
+     "label": "af1.chassis-handle part fill"
+    }
+   ],
+   "themes": [
+    "light",
+    "dark"
+   ],
+   "forced": [
+    false
+   ]
+  }
+ ],
+ "results": [
+  {
+   "name": "divider",
+   "theme": "light",
+   "forced": false,
+   "geometry": {
+    "dv": {
+     "host": [
+      24,
+      24,
+      320,
+      1
+     ],
+     "parts": {
+      "divider": [
+       24,
+       24,
+       320,
+       1
+      ]
+     }
+    },
+    "dvh": {
+     "host": [
+      24,
+      41,
+      320,
+      1
+     ],
+     "parts": {
+      "divider": [
+       24,
+       41,
+       320,
+       1
+      ]
+     }
+    }
+   },
+   "probes": [
+    {
+     "node": "dv",
+     "part": "divider",
+     "kind": "point",
+     "at": [
+      100,
+      0.25
+     ],
+     "label": "dv.divider@[100, 0.25]",
+     "rgb": [
+      202,
+      196,
+      208
+     ]
+    },
+    {
+     "node": "dvh",
+     "part": "divider",
+     "kind": "point",
+     "at": [
+      100,
+      0.25
+     ],
+     "label": "dvh.divider@[100, 0.25]",
+     "rgb": [
+      51,
+      102,
+      204
+     ]
+    }
+   ]
+  },
+  {
+   "name": "divider",
+   "theme": "light",
+   "forced": true,
+   "geometry": {
+    "dv": {
+     "host": [
+      24,
+      24,
+      320,
+      1
+     ],
+     "parts": {
+      "divider": [
+       24,
+       24,
+       320,
+       1
+      ]
+     }
+    },
+    "dvh": {
+     "host": [
+      24,
+      41,
+      320,
+      1
+     ],
+     "parts": {
+      "divider": [
+       24,
+       41,
+       320,
+       1
+      ]
+     }
+    }
+   },
+   "probes": [
+    {
+     "node": "dv",
+     "part": "divider",
+     "kind": "point",
+     "at": [
+      100,
+      0.25
+     ],
+     "label": "dv.divider@[100, 0.25]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    },
+    {
+     "node": "dvh",
+     "part": "divider",
+     "kind": "point",
+     "at": [
+      100,
+      0.25
+     ],
+     "label": "dvh.divider@[100, 0.25]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    }
+   ]
+  },
+  {
+   "name": "divider",
+   "theme": "dark",
+   "forced": false,
+   "geometry": {
+    "dv": {
+     "host": [
+      24,
+      24,
+      320,
+      1
+     ],
+     "parts": {
+      "divider": [
+       24,
+       24,
+       320,
+       1
+      ]
+     }
+    },
+    "dvh": {
+     "host": [
+      24,
+      41,
+      320,
+      1
+     ],
+     "parts": {
+      "divider": [
+       24,
+       41,
+       320,
+       1
+      ]
+     }
+    }
+   },
+   "probes": [
+    {
+     "node": "dv",
+     "part": "divider",
+     "kind": "point",
+     "at": [
+      100,
+      0.25
+     ],
+     "label": "dv.divider@[100, 0.25]",
+     "rgb": [
+      73,
+      69,
+      79
+     ]
+    },
+    {
+     "node": "dvh",
+     "part": "divider",
+     "kind": "point",
+     "at": [
+      100,
+      0.25
+     ],
+     "label": "dvh.divider@[100, 0.25]",
+     "rgb": [
+      51,
+      102,
+      204
+     ]
+    }
+   ]
+  },
+  {
+   "name": "divider",
+   "theme": "dark",
+   "forced": true,
+   "geometry": {
+    "dv": {
+     "host": [
+      24,
+      24,
+      320,
+      1
+     ],
+     "parts": {
+      "divider": [
+       24,
+       24,
+       320,
+       1
+      ]
+     }
+    },
+    "dvh": {
+     "host": [
+      24,
+      41,
+      320,
+      1
+     ],
+     "parts": {
+      "divider": [
+       24,
+       41,
+       320,
+       1
+      ]
+     }
+    }
+   },
+   "probes": [
+    {
+     "node": "dv",
+     "part": "divider",
+     "kind": "point",
+     "at": [
+      100,
+      0.25
+     ],
+     "label": "dv.divider@[100, 0.25]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    },
+    {
+     "node": "dvh",
+     "part": "divider",
+     "kind": "point",
+     "at": [
+      100,
+      0.25
+     ],
+     "label": "dvh.divider@[100, 0.25]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    }
+   ]
+  },
+  {
+   "name": "avatar",
+   "theme": "light",
+   "forced": false,
+   "geometry": {
+    "av": {
+     "host": [
+      24,
+      24,
+      40,
+      40
+     ],
+     "parts": {
+      "initials": [
+       33.56,
+       36,
+       20.86,
+       16
+      ]
+     }
+    },
+    "avn": {
+     "host": [
+      24,
+      80,
+      40,
+      40
+     ],
+     "parts": {
+      "initials": [
+       38.48,
+       92,
+       11.02,
+       16
+      ]
+     }
+    }
+   },
+   "probes": [
+    {
+     "node": "av",
+     "part": null,
+     "kind": "point",
+     "at": [
+      20,
+      5
+     ],
+     "label": "av@[20, 5]",
+     "rgb": [
+      255,
+      216,
+      228
+     ]
+    },
+    {
+     "node": "av",
+     "part": null,
+     "kind": "point",
+     "at": [
+      20,
+      0.25
+     ],
+     "label": "av@[20, 0.25]",
+     "rgb": [
+      255,
+      216,
+      228
+     ]
+    },
+    {
+     "node": "av",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      8,
+      8,
+      24,
+      24
+     ],
+     "label": "av ink",
+     "rgb": [
+      55,
+      11,
+      30
+     ],
+     "background": [
+      255,
+      216,
+      228
+     ]
+    },
+    {
+     "node": "avn",
+     "part": null,
+     "kind": "point",
+     "at": [
+      20,
+      5
+     ],
+     "label": "avn@[20, 5]",
+     "rgb": [
+      230,
+      224,
+      233
+     ]
+    },
+    {
+     "node": "avn",
+     "part": null,
+     "kind": "point",
+     "at": [
+      20,
+      0.25
+     ],
+     "label": "avn@[20, 0.25]",
+     "rgb": [
+      230,
+      224,
+      233
+     ]
+    },
+    {
+     "node": "avn",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      8,
+      8,
+      24,
+      24
+     ],
+     "label": "avn ink",
+     "rgb": [
+      73,
+      69,
+      79
+     ],
+     "background": [
+      230,
+      224,
+      233
+     ]
+    }
+   ]
+  },
+  {
+   "name": "avatar",
+   "theme": "light",
+   "forced": true,
+   "geometry": {
+    "av": {
+     "host": [
+      24,
+      24,
+      40,
+      40
+     ],
+     "parts": {
+      "initials": [
+       33.56,
+       36,
+       20.86,
+       16
+      ]
+     }
+    },
+    "avn": {
+     "host": [
+      24,
+      80,
+      40,
+      40
+     ],
+     "parts": {
+      "initials": [
+       38.48,
+       92,
+       11.02,
+       16
+      ]
+     }
+    }
+   },
+   "probes": [
+    {
+     "node": "av",
+     "part": null,
+     "kind": "point",
+     "at": [
+      20,
+      5
+     ],
+     "label": "av@[20, 5]",
+     "rgb": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "av",
+     "part": null,
+     "kind": "point",
+     "at": [
+      20,
+      0.25
+     ],
+     "label": "av@[20, 0.25]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    },
+    {
+     "node": "av",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      8,
+      8,
+      24,
+      24
+     ],
+     "label": "av ink",
+     "rgb": [
+      255,
+      255,
+      255
+     ],
+     "background": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "avn",
+     "part": null,
+     "kind": "point",
+     "at": [
+      20,
+      5
+     ],
+     "label": "avn@[20, 5]",
+     "rgb": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "avn",
+     "part": null,
+     "kind": "point",
+     "at": [
+      20,
+      0.25
+     ],
+     "label": "avn@[20, 0.25]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    },
+    {
+     "node": "avn",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      8,
+      8,
+      24,
+      24
+     ],
+     "label": "avn ink",
+     "rgb": [
+      255,
+      255,
+      255
+     ],
+     "background": [
+      0,
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "name": "avatar",
+   "theme": "dark",
+   "forced": false,
+   "geometry": {
+    "av": {
+     "host": [
+      24,
+      24,
+      40,
+      40
+     ],
+     "parts": {
+      "initials": [
+       33.56,
+       36,
+       20.86,
+       16
+      ]
+     }
+    },
+    "avn": {
+     "host": [
+      24,
+      80,
+      40,
+      40
+     ],
+     "parts": {
+      "initials": [
+       38.48,
+       92,
+       11.02,
+       16
+      ]
+     }
+    }
+   },
+   "probes": [
+    {
+     "node": "av",
+     "part": null,
+     "kind": "point",
+     "at": [
+      20,
+      5
+     ],
+     "label": "av@[20, 5]",
+     "rgb": [
+      99,
+      59,
+      72
+     ]
+    },
+    {
+     "node": "av",
+     "part": null,
+     "kind": "point",
+     "at": [
+      20,
+      0.25
+     ],
+     "label": "av@[20, 0.25]",
+     "rgb": [
+      99,
+      59,
+      72
+     ]
+    },
+    {
+     "node": "av",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      8,
+      8,
+      24,
+      24
+     ],
+     "label": "av ink",
+     "rgb": [
+      255,
+      216,
+      228
+     ],
+     "background": [
+      99,
+      59,
+      72
+     ]
+    },
+    {
+     "node": "avn",
+     "part": null,
+     "kind": "point",
+     "at": [
+      20,
+      5
+     ],
+     "label": "avn@[20, 5]",
+     "rgb": [
+      54,
+      52,
+      59
+     ]
+    },
+    {
+     "node": "avn",
+     "part": null,
+     "kind": "point",
+     "at": [
+      20,
+      0.25
+     ],
+     "label": "avn@[20, 0.25]",
+     "rgb": [
+      54,
+      52,
+      59
+     ]
+    },
+    {
+     "node": "avn",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      8,
+      8,
+      24,
+      24
+     ],
+     "label": "avn ink",
+     "rgb": [
+      202,
+      196,
+      208
+     ],
+     "background": [
+      54,
+      52,
+      59
+     ]
+    }
+   ]
+  },
+  {
+   "name": "avatar",
+   "theme": "dark",
+   "forced": true,
+   "geometry": {
+    "av": {
+     "host": [
+      24,
+      24,
+      40,
+      40
+     ],
+     "parts": {
+      "initials": [
+       33.56,
+       36,
+       20.86,
+       16
+      ]
+     }
+    },
+    "avn": {
+     "host": [
+      24,
+      80,
+      40,
+      40
+     ],
+     "parts": {
+      "initials": [
+       38.48,
+       92,
+       11.02,
+       16
+      ]
+     }
+    }
+   },
+   "probes": [
+    {
+     "node": "av",
+     "part": null,
+     "kind": "point",
+     "at": [
+      20,
+      5
+     ],
+     "label": "av@[20, 5]",
+     "rgb": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "av",
+     "part": null,
+     "kind": "point",
+     "at": [
+      20,
+      0.25
+     ],
+     "label": "av@[20, 0.25]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    },
+    {
+     "node": "av",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      8,
+      8,
+      24,
+      24
+     ],
+     "label": "av ink",
+     "rgb": [
+      255,
+      255,
+      255
+     ],
+     "background": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "avn",
+     "part": null,
+     "kind": "point",
+     "at": [
+      20,
+      5
+     ],
+     "label": "avn@[20, 5]",
+     "rgb": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "avn",
+     "part": null,
+     "kind": "point",
+     "at": [
+      20,
+      0.25
+     ],
+     "label": "avn@[20, 0.25]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    },
+    {
+     "node": "avn",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      8,
+      8,
+      24,
+      24
+     ],
+     "label": "avn ink",
+     "rgb": [
+      255,
+      255,
+      255
+     ],
+     "background": [
+      0,
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "name": "card",
+   "theme": "light",
+   "forced": false,
+   "geometry": {
+    "cfilled": {
+     "host": [
+      24,
+      24,
+      320,
+      52
+     ],
+     "parts": {
+      "state-layer": [
+       24,
+       24,
+       320,
+       52
+      ]
+     }
+    },
+    "coutlined": {
+     "host": [
+      24,
+      92,
+      320,
+      52
+     ],
+     "parts": {
+      "state-layer": [
+       24,
+       92,
+       320,
+       52
+      ],
+      "outline": [
+       24,
+       92,
+       320,
+       52
+      ]
+     }
+    },
+    "celevated": {
+     "host": [
+      24,
+      160,
+      320,
+      52
+     ],
+     "parts": {
+      "state-layer": [
+       24,
+       160,
+       320,
+       52
+      ]
+     }
+    },
+    "cdis": {
+     "host": [
+      24,
+      228,
+      320,
+      52
+     ],
+     "parts": {
+      "state-layer": [
+       24,
+       228,
+       320,
+       52
+      ],
+      "outline": [
+       24,
+       228,
+       320,
+       52
+      ]
+     }
+    }
+   },
+   "probes": [
+    {
+     "node": "cfilled",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      20
+     ],
+     "label": "cfilled@[0.25, 20]",
+     "rgb": [
+      230,
+      224,
+      233
+     ]
+    },
+    {
+     "node": "cfilled",
+     "part": null,
+     "kind": "point",
+     "at": [
+      1.25,
+      20
+     ],
+     "label": "cfilled@[1.25, 20]",
+     "rgb": [
+      230,
+      224,
+      233
+     ]
+    },
+    {
+     "node": "cfilled",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      20
+     ],
+     "label": "cfilled@[8, 20]",
+     "rgb": [
+      230,
+      224,
+      233
+     ]
+    },
+    {
+     "node": "cfilled",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      12,
+      12,
+      150,
+      28
+     ],
+     "label": "cfilled ink",
+     "rgb": [
+      28,
+      27,
+      31
+     ],
+     "background": [
+      230,
+      224,
+      233
+     ]
+    },
+    {
+     "node": "coutlined",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      20
+     ],
+     "label": "coutlined@[0.25, 20]",
+     "rgb": [
+      202,
+      196,
+      208
+     ]
+    },
+    {
+     "node": "coutlined",
+     "part": null,
+     "kind": "point",
+     "at": [
+      1.25,
+      20
+     ],
+     "label": "coutlined@[1.25, 20]",
+     "rgb": [
+      255,
+      251,
+      254
+     ]
+    },
+    {
+     "node": "coutlined",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      20
+     ],
+     "label": "coutlined@[8, 20]",
+     "rgb": [
+      255,
+      251,
+      254
+     ]
+    },
+    {
+     "node": "coutlined",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      12,
+      12,
+      150,
+      28
+     ],
+     "label": "coutlined ink",
+     "rgb": [
+      28,
+      27,
+      31
+     ],
+     "background": [
+      255,
+      251,
+      254
+     ]
+    },
+    {
+     "node": "celevated",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      20
+     ],
+     "label": "celevated@[0.25, 20]",
+     "rgb": [
+      247,
+      242,
+      250
+     ]
+    },
+    {
+     "node": "celevated",
+     "part": null,
+     "kind": "point",
+     "at": [
+      1.25,
+      20
+     ],
+     "label": "celevated@[1.25, 20]",
+     "rgb": [
+      247,
+      242,
+      250
+     ]
+    },
+    {
+     "node": "celevated",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      20
+     ],
+     "label": "celevated@[8, 20]",
+     "rgb": [
+      247,
+      242,
+      250
+     ]
+    },
+    {
+     "node": "celevated",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      12,
+      12,
+      150,
+      28
+     ],
+     "label": "celevated ink",
+     "rgb": [
+      28,
+      27,
+      31
+     ],
+     "background": [
+      247,
+      242,
+      250
+     ]
+    },
+    {
+     "node": "cdis",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      20
+     ],
+     "label": "cdis@[0.25, 20]",
+     "rgb": [
+      204,
+      200,
+      203
+     ]
+    },
+    {
+     "node": "cdis",
+     "part": null,
+     "kind": "point",
+     "at": [
+      1.25,
+      20
+     ],
+     "label": "cdis@[1.25, 20]",
+     "rgb": [
+      228,
+      224,
+      227
+     ]
+    },
+    {
+     "node": "cdis",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      20
+     ],
+     "label": "cdis@[8, 20]",
+     "rgb": [
+      228,
+      224,
+      227
+     ]
+    },
+    {
+     "node": "cdis",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      12,
+      12,
+      150,
+      28
+     ],
+     "label": "cdis ink",
+     "rgb": [
+      152,
+      149,
+      153
+     ],
+     "background": [
+      228,
+      224,
+      227
+     ]
+    }
+   ]
+  },
+  {
+   "name": "card",
+   "theme": "light",
+   "forced": true,
+   "geometry": {
+    "cfilled": {
+     "host": [
+      24,
+      24,
+      320,
+      54
+     ],
+     "parts": {}
+    },
+    "coutlined": {
+     "host": [
+      24,
+      94,
+      320,
+      54
+     ],
+     "parts": {
+      "outline": [
+       25,
+       95,
+       318,
+       52
+      ]
+     }
+    },
+    "celevated": {
+     "host": [
+      24,
+      164,
+      320,
+      54
+     ],
+     "parts": {}
+    },
+    "cdis": {
+     "host": [
+      24,
+      234,
+      320,
+      54
+     ],
+     "parts": {
+      "outline": [
+       25,
+       235,
+       318,
+       52
+      ]
+     }
+    }
+   },
+   "probes": [
+    {
+     "node": "cfilled",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      20
+     ],
+     "label": "cfilled@[0.25, 20]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    },
+    {
+     "node": "cfilled",
+     "part": null,
+     "kind": "point",
+     "at": [
+      1.25,
+      20
+     ],
+     "label": "cfilled@[1.25, 20]",
+     "rgb": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "cfilled",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      20
+     ],
+     "label": "cfilled@[8, 20]",
+     "rgb": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "cfilled",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      12,
+      12,
+      150,
+      28
+     ],
+     "label": "cfilled ink",
+     "rgb": [
+      255,
+      255,
+      255
+     ],
+     "background": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "coutlined",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      20
+     ],
+     "label": "coutlined@[0.25, 20]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    },
+    {
+     "node": "coutlined",
+     "part": null,
+     "kind": "point",
+     "at": [
+      1.25,
+      20
+     ],
+     "label": "coutlined@[1.25, 20]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    },
+    {
+     "node": "coutlined",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      20
+     ],
+     "label": "coutlined@[8, 20]",
+     "rgb": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "coutlined",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      12,
+      12,
+      150,
+      28
+     ],
+     "label": "coutlined ink",
+     "rgb": [
+      255,
+      255,
+      255
+     ],
+     "background": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "celevated",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      20
+     ],
+     "label": "celevated@[0.25, 20]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    },
+    {
+     "node": "celevated",
+     "part": null,
+     "kind": "point",
+     "at": [
+      1.25,
+      20
+     ],
+     "label": "celevated@[1.25, 20]",
+     "rgb": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "celevated",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      20
+     ],
+     "label": "celevated@[8, 20]",
+     "rgb": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "celevated",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      12,
+      12,
+      150,
+      28
+     ],
+     "label": "celevated ink",
+     "rgb": [
+      255,
+      255,
+      255
+     ],
+     "background": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "cdis",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      20
+     ],
+     "label": "cdis@[0.25, 20]",
+     "rgb": [
+      63,
+      242,
+      63
+     ]
+    },
+    {
+     "node": "cdis",
+     "part": null,
+     "kind": "point",
+     "at": [
+      1.25,
+      20
+     ],
+     "label": "cdis@[1.25, 20]",
+     "rgb": [
+      3,
+      3,
+      4
+     ]
+    },
+    {
+     "node": "cdis",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      20
+     ],
+     "label": "cdis@[8, 20]",
+     "rgb": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "cdis",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      12,
+      12,
+      150,
+      28
+     ],
+     "label": "cdis ink",
+     "rgb": [
+      63,
+      242,
+      63
+     ],
+     "background": [
+      0,
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "name": "card",
+   "theme": "dark",
+   "forced": false,
+   "geometry": {
+    "cfilled": {
+     "host": [
+      24,
+      24,
+      320,
+      52
+     ],
+     "parts": {
+      "state-layer": [
+       24,
+       24,
+       320,
+       52
+      ]
+     }
+    },
+    "coutlined": {
+     "host": [
+      24,
+      92,
+      320,
+      52
+     ],
+     "parts": {
+      "state-layer": [
+       24,
+       92,
+       320,
+       52
+      ],
+      "outline": [
+       24,
+       92,
+       320,
+       52
+      ]
+     }
+    },
+    "celevated": {
+     "host": [
+      24,
+      160,
+      320,
+      52
+     ],
+     "parts": {
+      "state-layer": [
+       24,
+       160,
+       320,
+       52
+      ]
+     }
+    },
+    "cdis": {
+     "host": [
+      24,
+      228,
+      320,
+      52
+     ],
+     "parts": {
+      "state-layer": [
+       24,
+       228,
+       320,
+       52
+      ],
+      "outline": [
+       24,
+       228,
+       320,
+       52
+      ]
+     }
+    }
+   },
+   "probes": [
+    {
+     "node": "cfilled",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      20
+     ],
+     "label": "cfilled@[0.25, 20]",
+     "rgb": [
+      54,
+      52,
+      59
+     ]
+    },
+    {
+     "node": "cfilled",
+     "part": null,
+     "kind": "point",
+     "at": [
+      1.25,
+      20
+     ],
+     "label": "cfilled@[1.25, 20]",
+     "rgb": [
+      54,
+      52,
+      59
+     ]
+    },
+    {
+     "node": "cfilled",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      20
+     ],
+     "label": "cfilled@[8, 20]",
+     "rgb": [
+      54,
+      52,
+      59
+     ]
+    },
+    {
+     "node": "cfilled",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      12,
+      12,
+      150,
+      28
+     ],
+     "label": "cfilled ink",
+     "rgb": [
+      230,
+      225,
+      229
+     ],
+     "background": [
+      54,
+      52,
+      59
+     ]
+    },
+    {
+     "node": "coutlined",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      20
+     ],
+     "label": "coutlined@[0.25, 20]",
+     "rgb": [
+      73,
+      69,
+      79
+     ]
+    },
+    {
+     "node": "coutlined",
+     "part": null,
+     "kind": "point",
+     "at": [
+      1.25,
+      20
+     ],
+     "label": "coutlined@[1.25, 20]",
+     "rgb": [
+      28,
+      27,
+      31
+     ]
+    },
+    {
+     "node": "coutlined",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      20
+     ],
+     "label": "coutlined@[8, 20]",
+     "rgb": [
+      28,
+      27,
+      31
+     ]
+    },
+    {
+     "node": "coutlined",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      12,
+      12,
+      150,
+      28
+     ],
+     "label": "coutlined ink",
+     "rgb": [
+      230,
+      225,
+      229
+     ],
+     "background": [
+      28,
+      27,
+      31
+     ]
+    },
+    {
+     "node": "celevated",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      20
+     ],
+     "label": "celevated@[0.25, 20]",
+     "rgb": [
+      29,
+      27,
+      32
+     ]
+    },
+    {
+     "node": "celevated",
+     "part": null,
+     "kind": "point",
+     "at": [
+      1.25,
+      20
+     ],
+     "label": "celevated@[1.25, 20]",
+     "rgb": [
+      29,
+      27,
+      32
+     ]
+    },
+    {
+     "node": "celevated",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      20
+     ],
+     "label": "celevated@[8, 20]",
+     "rgb": [
+      29,
+      27,
+      32
+     ]
+    },
+    {
+     "node": "celevated",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      12,
+      12,
+      150,
+      28
+     ],
+     "label": "celevated ink",
+     "rgb": [
+      230,
+      225,
+      229
+     ],
+     "background": [
+      29,
+      27,
+      32
+     ]
+    },
+    {
+     "node": "cdis",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      20
+     ],
+     "label": "cdis@[0.25, 20]",
+     "rgb": [
+      73,
+      72,
+      76
+     ]
+    },
+    {
+     "node": "cdis",
+     "part": null,
+     "kind": "point",
+     "at": [
+      1.25,
+      20
+     ],
+     "label": "cdis@[1.25, 20]",
+     "rgb": [
+      52,
+      51,
+      55
+     ]
+    },
+    {
+     "node": "cdis",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      20
+     ],
+     "label": "cdis@[8, 20]",
+     "rgb": [
+      52,
+      51,
+      55
+     ]
+    },
+    {
+     "node": "cdis",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      12,
+      12,
+      150,
+      28
+     ],
+     "label": "cdis ink",
+     "rgb": [
+      120,
+      117,
+      121
+     ],
+     "background": [
+      52,
+      51,
+      55
+     ]
+    }
+   ]
+  },
+  {
+   "name": "card",
+   "theme": "dark",
+   "forced": true,
+   "geometry": {
+    "cfilled": {
+     "host": [
+      24,
+      24,
+      320,
+      54
+     ],
+     "parts": {}
+    },
+    "coutlined": {
+     "host": [
+      24,
+      94,
+      320,
+      54
+     ],
+     "parts": {
+      "outline": [
+       25,
+       95,
+       318,
+       52
+      ]
+     }
+    },
+    "celevated": {
+     "host": [
+      24,
+      164,
+      320,
+      54
+     ],
+     "parts": {}
+    },
+    "cdis": {
+     "host": [
+      24,
+      234,
+      320,
+      54
+     ],
+     "parts": {
+      "outline": [
+       25,
+       235,
+       318,
+       52
+      ]
+     }
+    }
+   },
+   "probes": [
+    {
+     "node": "cfilled",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      20
+     ],
+     "label": "cfilled@[0.25, 20]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    },
+    {
+     "node": "cfilled",
+     "part": null,
+     "kind": "point",
+     "at": [
+      1.25,
+      20
+     ],
+     "label": "cfilled@[1.25, 20]",
+     "rgb": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "cfilled",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      20
+     ],
+     "label": "cfilled@[8, 20]",
+     "rgb": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "cfilled",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      12,
+      12,
+      150,
+      28
+     ],
+     "label": "cfilled ink",
+     "rgb": [
+      255,
+      255,
+      255
+     ],
+     "background": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "coutlined",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      20
+     ],
+     "label": "coutlined@[0.25, 20]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    },
+    {
+     "node": "coutlined",
+     "part": null,
+     "kind": "point",
+     "at": [
+      1.25,
+      20
+     ],
+     "label": "coutlined@[1.25, 20]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    },
+    {
+     "node": "coutlined",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      20
+     ],
+     "label": "coutlined@[8, 20]",
+     "rgb": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "coutlined",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      12,
+      12,
+      150,
+      28
+     ],
+     "label": "coutlined ink",
+     "rgb": [
+      255,
+      255,
+      255
+     ],
+     "background": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "celevated",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      20
+     ],
+     "label": "celevated@[0.25, 20]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    },
+    {
+     "node": "celevated",
+     "part": null,
+     "kind": "point",
+     "at": [
+      1.25,
+      20
+     ],
+     "label": "celevated@[1.25, 20]",
+     "rgb": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "celevated",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      20
+     ],
+     "label": "celevated@[8, 20]",
+     "rgb": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "celevated",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      12,
+      12,
+      150,
+      28
+     ],
+     "label": "celevated ink",
+     "rgb": [
+      255,
+      255,
+      255
+     ],
+     "background": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "cdis",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      20
+     ],
+     "label": "cdis@[0.25, 20]",
+     "rgb": [
+      63,
+      242,
+      63
+     ]
+    },
+    {
+     "node": "cdis",
+     "part": null,
+     "kind": "point",
+     "at": [
+      1.25,
+      20
+     ],
+     "label": "cdis@[1.25, 20]",
+     "rgb": [
+      28,
+      27,
+      27
+     ]
+    },
+    {
+     "node": "cdis",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      20
+     ],
+     "label": "cdis@[8, 20]",
+     "rgb": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "cdis",
+     "part": null,
+     "kind": "ink",
+     "rect": [
+      12,
+      12,
+      150,
+      28
+     ],
+     "label": "cdis ink",
+     "rgb": [
+      63,
+      242,
+      63
+     ],
+     "background": [
+      0,
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "name": "dialog",
+   "theme": "light",
+   "forced": false,
+   "geometry": {
+    "dg": {
+     "host": null,
+     "parts": {
+      "scrim": [
+       0,
+       0,
+       400,
+       600
+      ],
+      "container": [
+       24,
+       201.5,
+       352,
+       197
+      ],
+      "header": [
+       24,
+       201.5,
+       352,
+       56
+      ],
+      "headline": [
+       48,
+       225.5,
+       46.58,
+       32
+      ],
+      "content": [
+       24,
+       257.5,
+       352,
+       52
+      ],
+      "divider": [
+       24,
+       309.5,
+       352,
+       1
+      ],
+      "actions": [
+       24,
+       310.5,
+       352,
+       88
+      ],
+      "cancel-button": [
+       210.53,
+       334.5,
+       75.47,
+       40
+      ],
+      "ok-button": [
+       294,
+       334.5,
+       58,
+       40
+      ]
+     }
+    }
+   },
+   "probes": [
+    {
+     "node": "dg",
+     "part": "container",
+     "kind": "point",
+     "at": [
+      0.5,
+      120
+     ],
+     "label": "dg.container@[0.5, 120]",
+     "rgb": [
+      236,
+      230,
+      240
+     ]
+    },
+    {
+     "node": "dg",
+     "part": "container",
+     "kind": "point",
+     "at": [
+      8,
+      120
+     ],
+     "label": "dg.container@[8, 120]",
+     "rgb": [
+      236,
+      230,
+      240
+     ]
+    },
+    {
+     "node": "dg",
+     "part": "headline",
+     "kind": "ink",
+     "rect": null,
+     "label": "dg.headline ink",
+     "rgb": [
+      28,
+      27,
+      31
+     ],
+     "background": [
+      236,
+      230,
+      240
+     ]
+    },
+    {
+     "node": "dg",
+     "part": "content",
+     "kind": "ink",
+     "rect": null,
+     "label": "dg.content ink",
+     "rgb": [
+      73,
+      69,
+      79
+     ],
+     "background": [
+      236,
+      230,
+      240
+     ]
+    },
+    {
+     "node": "dg",
+     "part": "divider",
+     "kind": "point",
+     "at": [
+      100,
+      0.25
+     ],
+     "label": "dg.divider@[100, 0.25]",
+     "rgb": [
+      202,
+      196,
+      208
+     ]
+    },
+    {
+     "node": "dg",
+     "part": "scrim",
+     "kind": "point",
+     "at": [
+      5,
+      5
+     ],
+     "label": "dg.scrim@[5, 5]",
+     "rgb": [
+      173,
+      170,
+      172
+     ]
+    }
+   ]
+  },
+  {
+   "name": "dialog",
+   "theme": "light",
+   "forced": true,
+   "geometry": {
+    "dg": {
+     "host": null,
+     "parts": {
+      "scrim": [
+       0,
+       0,
+       400,
+       600
+      ],
+      "container": [
+       22,
+       199.5,
+       356,
+       201
+      ],
+      "header": [
+       24,
+       201.5,
+       352,
+       56
+      ],
+      "headline": [
+       48,
+       225.5,
+       46.58,
+       32
+      ],
+      "content": [
+       24,
+       257.5,
+       352,
+       52
+      ],
+      "divider": [
+       24,
+       309.5,
+       352,
+       1
+      ],
+      "actions": [
+       24,
+       310.5,
+       352,
+       88
+      ],
+      "cancel-button": [
+       210.53,
+       334.5,
+       75.47,
+       40
+      ],
+      "ok-button": [
+       294,
+       334.5,
+       58,
+       40
+      ]
+     }
+    }
+   },
+   "probes": [
+    {
+     "node": "dg",
+     "part": "container",
+     "kind": "point",
+     "at": [
+      0.5,
+      120
+     ],
+     "label": "dg.container@[0.5, 120]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    },
+    {
+     "node": "dg",
+     "part": "container",
+     "kind": "point",
+     "at": [
+      8,
+      120
+     ],
+     "label": "dg.container@[8, 120]",
+     "rgb": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "dg",
+     "part": "headline",
+     "kind": "ink",
+     "rect": null,
+     "label": "dg.headline ink",
+     "rgb": [
+      255,
+      255,
+      255
+     ],
+     "background": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "dg",
+     "part": "content",
+     "kind": "ink",
+     "rect": null,
+     "label": "dg.content ink",
+     "rgb": [
+      255,
+      255,
+      255
+     ],
+     "background": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "dg",
+     "part": "divider",
+     "kind": "point",
+     "at": [
+      100,
+      0.25
+     ],
+     "label": "dg.divider@[100, 0.25]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    },
+    {
+     "node": "dg",
+     "part": "scrim",
+     "kind": "point",
+     "at": [
+      5,
+      5
+     ],
+     "label": "dg.scrim@[5, 5]",
+     "rgb": [
+      0,
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "name": "dialog",
+   "theme": "dark",
+   "forced": false,
+   "geometry": {
+    "dg": {
+     "host": null,
+     "parts": {
+      "scrim": [
+       0,
+       0,
+       400,
+       600
+      ],
+      "container": [
+       24,
+       201.5,
+       352,
+       197
+      ],
+      "header": [
+       24,
+       201.5,
+       352,
+       56
+      ],
+      "headline": [
+       48,
+       225.5,
+       46.58,
+       32
+      ],
+      "content": [
+       24,
+       257.5,
+       352,
+       52
+      ],
+      "divider": [
+       24,
+       309.5,
+       352,
+       1
+      ],
+      "actions": [
+       24,
+       310.5,
+       352,
+       88
+      ],
+      "cancel-button": [
+       210.53,
+       334.5,
+       75.47,
+       40
+      ],
+      "ok-button": [
+       294,
+       334.5,
+       58,
+       40
+      ]
+     }
+    }
+   },
+   "probes": [
+    {
+     "node": "dg",
+     "part": "container",
+     "kind": "point",
+     "at": [
+      0.5,
+      120
+     ],
+     "label": "dg.container@[0.5, 120]",
+     "rgb": [
+      43,
+      41,
+      48
+     ]
+    },
+    {
+     "node": "dg",
+     "part": "container",
+     "kind": "point",
+     "at": [
+      8,
+      120
+     ],
+     "label": "dg.container@[8, 120]",
+     "rgb": [
+      43,
+      41,
+      48
+     ]
+    },
+    {
+     "node": "dg",
+     "part": "headline",
+     "kind": "ink",
+     "rect": null,
+     "label": "dg.headline ink",
+     "rgb": [
+      230,
+      225,
+      229
+     ],
+     "background": [
+      43,
+      41,
+      48
+     ]
+    },
+    {
+     "node": "dg",
+     "part": "content",
+     "kind": "ink",
+     "rect": null,
+     "label": "dg.content ink",
+     "rgb": [
+      202,
+      196,
+      208
+     ],
+     "background": [
+      43,
+      41,
+      48
+     ]
+    },
+    {
+     "node": "dg",
+     "part": "divider",
+     "kind": "point",
+     "at": [
+      100,
+      0.25
+     ],
+     "label": "dg.divider@[100, 0.25]",
+     "rgb": [
+      73,
+      69,
+      79
+     ]
+    },
+    {
+     "node": "dg",
+     "part": "scrim",
+     "kind": "point",
+     "at": [
+      5,
+      5
+     ],
+     "label": "dg.scrim@[5, 5]",
+     "rgb": [
+      19,
+      18,
+      21
+     ]
+    }
+   ]
+  },
+  {
+   "name": "dialog",
+   "theme": "dark",
+   "forced": true,
+   "geometry": {
+    "dg": {
+     "host": null,
+     "parts": {
+      "scrim": [
+       0,
+       0,
+       400,
+       600
+      ],
+      "container": [
+       22,
+       199.5,
+       356,
+       201
+      ],
+      "header": [
+       24,
+       201.5,
+       352,
+       56
+      ],
+      "headline": [
+       48,
+       225.5,
+       46.58,
+       32
+      ],
+      "content": [
+       24,
+       257.5,
+       352,
+       52
+      ],
+      "divider": [
+       24,
+       309.5,
+       352,
+       1
+      ],
+      "actions": [
+       24,
+       310.5,
+       352,
+       88
+      ],
+      "cancel-button": [
+       210.53,
+       334.5,
+       75.47,
+       40
+      ],
+      "ok-button": [
+       294,
+       334.5,
+       58,
+       40
+      ]
+     }
+    }
+   },
+   "probes": [
+    {
+     "node": "dg",
+     "part": "container",
+     "kind": "point",
+     "at": [
+      0.5,
+      120
+     ],
+     "label": "dg.container@[0.5, 120]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    },
+    {
+     "node": "dg",
+     "part": "container",
+     "kind": "point",
+     "at": [
+      8,
+      120
+     ],
+     "label": "dg.container@[8, 120]",
+     "rgb": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "dg",
+     "part": "headline",
+     "kind": "ink",
+     "rect": null,
+     "label": "dg.headline ink",
+     "rgb": [
+      255,
+      255,
+      255
+     ],
+     "background": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "dg",
+     "part": "content",
+     "kind": "ink",
+     "rect": null,
+     "label": "dg.content ink",
+     "rgb": [
+      255,
+      255,
+      255
+     ],
+     "background": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "dg",
+     "part": "divider",
+     "kind": "point",
+     "at": [
+      100,
+      0.25
+     ],
+     "label": "dg.divider@[100, 0.25]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    },
+    {
+     "node": "dg",
+     "part": "scrim",
+     "kind": "point",
+     "at": [
+      5,
+      5
+     ],
+     "label": "dg.scrim@[5, 5]",
+     "rgb": [
+      0,
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "name": "accordion",
+   "theme": "light",
+   "forced": false,
+   "geometry": {
+    "ac": {
+     "host": [
+      24,
+      24,
+      320,
+      196
+     ],
+     "parts": {}
+    },
+    "ai1": {
+     "host": [
+      24,
+      24,
+      320,
+      124
+     ],
+     "parts": {
+      "heading": [
+       24,
+       24,
+       320,
+       64
+      ],
+      "header": [
+       24,
+       24,
+       320,
+       64
+      ],
+      "state-layer": [
+       24,
+       24,
+       320,
+       64
+      ],
+      "headline": [
+       48,
+       44,
+       232,
+       24
+      ],
+      "trailing-icon": [
+       296,
+       44,
+       24,
+       24
+      ],
+      "panel": [
+       24,
+       88,
+       320,
+       60
+      ],
+      "content": [
+       24,
+       88,
+       320,
+       60
+      ],
+      "content-inner": [
+       24,
+       88,
+       320,
+       60
+      ]
+     }
+    },
+    "ai2": {
+     "host": [
+      24,
+      156,
+      320,
+      64
+     ],
+     "parts": {
+      "heading": [
+       24,
+       156,
+       320,
+       64
+      ],
+      "header": [
+       24,
+       156,
+       320,
+       64
+      ],
+      "state-layer": [
+       24,
+       156,
+       320,
+       64
+      ],
+      "headline": [
+       48,
+       176,
+       232,
+       24
+      ],
+      "trailing-icon": [
+       296,
+       176,
+       24,
+       24
+      ],
+      "content-inner": [
+       24,
+       220,
+       320,
+       60
+      ]
+     }
+    }
+   },
+   "probes": [
+    {
+     "node": "ai1",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      30
+     ],
+     "label": "ai1@[0.25, 30]",
+     "rgb": [
+      232,
+      222,
+      248
+     ]
+    },
+    {
+     "node": "ai1",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      32
+     ],
+     "label": "ai1@[8, 32]",
+     "rgb": [
+      232,
+      222,
+      248
+     ]
+    },
+    {
+     "node": "ai1",
+     "part": "headline",
+     "kind": "ink",
+     "rect": null,
+     "label": "ai1.headline ink",
+     "rgb": [
+      30,
+      25,
+      43
+     ],
+     "background": [
+      232,
+      222,
+      248
+     ]
+    },
+    {
+     "node": "ai1",
+     "part": "content-inner",
+     "kind": "ink",
+     "rect": null,
+     "label": "ai1.content-inner ink",
+     "rgb": [
+      73,
+      69,
+      79
+     ],
+     "background": [
+      243,
+      237,
+      247
+     ]
+    },
+    {
+     "node": "ai2",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      30
+     ],
+     "label": "ai2@[0.25, 30]",
+     "rgb": [
+      247,
+      242,
+      250
+     ]
+    },
+    {
+     "node": "ai2",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      32
+     ],
+     "label": "ai2@[8, 32]",
+     "rgb": [
+      247,
+      242,
+      250
+     ]
+    },
+    {
+     "node": "ai2",
+     "part": "headline",
+     "kind": "ink",
+     "rect": null,
+     "label": "ai2.headline ink",
+     "rgb": [
+      28,
+      27,
+      31
+     ],
+     "background": [
+      247,
+      242,
+      250
+     ]
+    }
+   ]
+  },
+  {
+   "name": "accordion",
+   "theme": "light",
+   "forced": true,
+   "geometry": {
+    "ac": {
+     "host": [
+      24,
+      24,
+      320,
+      200
+     ],
+     "parts": {}
+    },
+    "ai1": {
+     "host": [
+      24,
+      24,
+      320,
+      126
+     ],
+     "parts": {
+      "heading": [
+       25,
+       25,
+       318,
+       64
+      ],
+      "header": [
+       25,
+       25,
+       318,
+       64
+      ],
+      "headline": [
+       49,
+       45,
+       230,
+       24
+      ],
+      "trailing-icon": [
+       295,
+       45,
+       24,
+       24
+      ],
+      "panel": [
+       25,
+       89,
+       318,
+       60
+      ],
+      "content": [
+       25,
+       89,
+       318,
+       60
+      ],
+      "content-inner": [
+       25,
+       89,
+       318,
+       60
+      ]
+     }
+    },
+    "ai2": {
+     "host": [
+      24,
+      158,
+      320,
+      66
+     ],
+     "parts": {
+      "heading": [
+       25,
+       159,
+       318,
+       64
+      ],
+      "header": [
+       25,
+       159,
+       318,
+       64
+      ],
+      "headline": [
+       49,
+       179,
+       230,
+       24
+      ],
+      "trailing-icon": [
+       295,
+       179,
+       24,
+       24
+      ],
+      "content-inner": [
+       25,
+       223,
+       318,
+       60
+      ]
+     }
+    }
+   },
+   "probes": [
+    {
+     "node": "ai1",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      30
+     ],
+     "label": "ai1@[0.25, 30]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    },
+    {
+     "node": "ai1",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      32
+     ],
+     "label": "ai1@[8, 32]",
+     "rgb": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "ai1",
+     "part": "headline",
+     "kind": "ink",
+     "rect": null,
+     "label": "ai1.headline ink",
+     "rgb": [
+      255,
+      255,
+      255
+     ],
+     "background": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "ai1",
+     "part": "content-inner",
+     "kind": "ink",
+     "rect": null,
+     "label": "ai1.content-inner ink",
+     "rgb": [
+      255,
+      255,
+      255
+     ],
+     "background": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "ai2",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      30
+     ],
+     "label": "ai2@[0.25, 30]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    },
+    {
+     "node": "ai2",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      32
+     ],
+     "label": "ai2@[8, 32]",
+     "rgb": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "ai2",
+     "part": "headline",
+     "kind": "ink",
+     "rect": null,
+     "label": "ai2.headline ink",
+     "rgb": [
+      255,
+      255,
+      255
+     ],
+     "background": [
+      0,
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "name": "accordion",
+   "theme": "dark",
+   "forced": false,
+   "geometry": {
+    "ac": {
+     "host": [
+      24,
+      24,
+      320,
+      196
+     ],
+     "parts": {}
+    },
+    "ai1": {
+     "host": [
+      24,
+      24,
+      320,
+      124
+     ],
+     "parts": {
+      "heading": [
+       24,
+       24,
+       320,
+       64
+      ],
+      "header": [
+       24,
+       24,
+       320,
+       64
+      ],
+      "state-layer": [
+       24,
+       24,
+       320,
+       64
+      ],
+      "headline": [
+       48,
+       44,
+       232,
+       24
+      ],
+      "trailing-icon": [
+       296,
+       44,
+       24,
+       24
+      ],
+      "panel": [
+       24,
+       88,
+       320,
+       60
+      ],
+      "content": [
+       24,
+       88,
+       320,
+       60
+      ],
+      "content-inner": [
+       24,
+       88,
+       320,
+       60
+      ]
+     }
+    },
+    "ai2": {
+     "host": [
+      24,
+      156,
+      320,
+      64
+     ],
+     "parts": {
+      "heading": [
+       24,
+       156,
+       320,
+       64
+      ],
+      "header": [
+       24,
+       156,
+       320,
+       64
+      ],
+      "state-layer": [
+       24,
+       156,
+       320,
+       64
+      ],
+      "headline": [
+       48,
+       176,
+       232,
+       24
+      ],
+      "trailing-icon": [
+       296,
+       176,
+       24,
+       24
+      ],
+      "content-inner": [
+       24,
+       220,
+       320,
+       60
+      ]
+     }
+    }
+   },
+   "probes": [
+    {
+     "node": "ai1",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      30
+     ],
+     "label": "ai1@[0.25, 30]",
+     "rgb": [
+      74,
+      68,
+      88
+     ]
+    },
+    {
+     "node": "ai1",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      32
+     ],
+     "label": "ai1@[8, 32]",
+     "rgb": [
+      74,
+      68,
+      88
+     ]
+    },
+    {
+     "node": "ai1",
+     "part": "headline",
+     "kind": "ink",
+     "rect": null,
+     "label": "ai1.headline ink",
+     "rgb": [
+      232,
+      222,
+      248
+     ],
+     "background": [
+      74,
+      68,
+      88
+     ]
+    },
+    {
+     "node": "ai1",
+     "part": "content-inner",
+     "kind": "ink",
+     "rect": null,
+     "label": "ai1.content-inner ink",
+     "rgb": [
+      202,
+      196,
+      208
+     ],
+     "background": [
+      33,
+      31,
+      38
+     ]
+    },
+    {
+     "node": "ai2",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      30
+     ],
+     "label": "ai2@[0.25, 30]",
+     "rgb": [
+      29,
+      27,
+      32
+     ]
+    },
+    {
+     "node": "ai2",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      32
+     ],
+     "label": "ai2@[8, 32]",
+     "rgb": [
+      29,
+      27,
+      32
+     ]
+    },
+    {
+     "node": "ai2",
+     "part": "headline",
+     "kind": "ink",
+     "rect": null,
+     "label": "ai2.headline ink",
+     "rgb": [
+      230,
+      225,
+      229
+     ],
+     "background": [
+      29,
+      27,
+      32
+     ]
+    }
+   ]
+  },
+  {
+   "name": "accordion",
+   "theme": "dark",
+   "forced": true,
+   "geometry": {
+    "ac": {
+     "host": [
+      24,
+      24,
+      320,
+      200
+     ],
+     "parts": {}
+    },
+    "ai1": {
+     "host": [
+      24,
+      24,
+      320,
+      126
+     ],
+     "parts": {
+      "heading": [
+       25,
+       25,
+       318,
+       64
+      ],
+      "header": [
+       25,
+       25,
+       318,
+       64
+      ],
+      "headline": [
+       49,
+       45,
+       230,
+       24
+      ],
+      "trailing-icon": [
+       295,
+       45,
+       24,
+       24
+      ],
+      "panel": [
+       25,
+       89,
+       318,
+       60
+      ],
+      "content": [
+       25,
+       89,
+       318,
+       60
+      ],
+      "content-inner": [
+       25,
+       89,
+       318,
+       60
+      ]
+     }
+    },
+    "ai2": {
+     "host": [
+      24,
+      158,
+      320,
+      66
+     ],
+     "parts": {
+      "heading": [
+       25,
+       159,
+       318,
+       64
+      ],
+      "header": [
+       25,
+       159,
+       318,
+       64
+      ],
+      "headline": [
+       49,
+       179,
+       230,
+       24
+      ],
+      "trailing-icon": [
+       295,
+       179,
+       24,
+       24
+      ],
+      "content-inner": [
+       25,
+       223,
+       318,
+       60
+      ]
+     }
+    }
+   },
+   "probes": [
+    {
+     "node": "ai1",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      30
+     ],
+     "label": "ai1@[0.25, 30]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    },
+    {
+     "node": "ai1",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      32
+     ],
+     "label": "ai1@[8, 32]",
+     "rgb": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "ai1",
+     "part": "headline",
+     "kind": "ink",
+     "rect": null,
+     "label": "ai1.headline ink",
+     "rgb": [
+      255,
+      255,
+      255
+     ],
+     "background": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "ai1",
+     "part": "content-inner",
+     "kind": "ink",
+     "rect": null,
+     "label": "ai1.content-inner ink",
+     "rgb": [
+      255,
+      255,
+      255
+     ],
+     "background": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "ai2",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      30
+     ],
+     "label": "ai2@[0.25, 30]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    },
+    {
+     "node": "ai2",
+     "part": null,
+     "kind": "point",
+     "at": [
+      8,
+      32
+     ],
+     "label": "ai2@[8, 32]",
+     "rgb": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "ai2",
+     "part": "headline",
+     "kind": "ink",
+     "rect": null,
+     "label": "ai2.headline ink",
+     "rgb": [
+      255,
+      255,
+      255
+     ],
+     "background": [
+      0,
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "name": "accordion-floating",
+   "theme": "light",
+   "forced": false,
+   "geometry": {
+    "acf": {
+     "host": [
+      24,
+      24,
+      360,
+      64
+     ],
+     "parts": {}
+    },
+    "af1": {
+     "host": [
+      24,
+      24,
+      360,
+      64
+     ],
+     "parts": {
+      "chassis-handle": [
+       178,
+       28,
+       52,
+       16
+      ],
+      "chassis-handle-bar": [
+       188,
+       34,
+       32,
+       4
+      ],
+      "heading": [
+       24,
+       24,
+       360,
+       64
+      ],
+      "header": [
+       24,
+       24,
+       360,
+       64
+      ],
+      "state-layer": [
+       24,
+       24,
+       360,
+       64
+      ],
+      "drag-handle": [
+       48,
+       44,
+       24,
+       24
+      ],
+      "headline": [
+       84,
+       44,
+       236,
+       24
+      ],
+      "trailing-icon": [
+       336,
+       44,
+       24,
+       24
+      ],
+      "content-inner": [
+       24,
+       88,
+       360,
+       60
+      ]
+     }
+    }
+   },
+   "probes": [
+    {
+     "node": "acf",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      40
+     ],
+     "label": "acf@[0.25, 40]",
+     "rgb": [
+      247,
+      242,
+      250
+     ]
+    },
+    {
+     "node": "acf",
+     "part": null,
+     "kind": "point",
+     "at": [
+      6,
+      40
+     ],
+     "label": "acf@[6, 40]",
+     "rgb": [
+      247,
+      242,
+      250
+     ]
+    },
+    {
+     "node": "af1",
+     "part": "chassis-handle-bar",
+     "kind": "point",
+     "at": [
+      16,
+      2
+     ],
+     "label": "af1.chassis-handle-bar@[16, 2]",
+     "rgb": [
+      169,
+      164,
+      173
+     ]
+    },
+    {
+     "node": "af1",
+     "part": "headline",
+     "kind": "ink",
+     "rect": null,
+     "label": "af1.headline ink",
+     "rgb": [
+      28,
+      27,
+      31
+     ],
+     "background": [
+      247,
+      242,
+      250
+     ]
+    }
+   ]
+  },
+  {
+   "name": "accordion-floating",
+   "theme": "light",
+   "forced": true,
+   "geometry": {
+    "acf": {
+     "host": [
+      24,
+      24,
+      360,
+      68
+     ],
+     "parts": {}
+    },
+    "af1": {
+     "host": [
+      25,
+      25,
+      358,
+      66
+     ],
+     "parts": {
+      "chassis-handle": [
+       178,
+       30,
+       52,
+       16
+      ],
+      "chassis-handle-bar": [
+       188,
+       36,
+       32,
+       4
+      ],
+      "heading": [
+       26,
+       26,
+       356,
+       64
+      ],
+      "header": [
+       26,
+       26,
+       356,
+       64
+      ],
+      "drag-handle": [
+       50,
+       46,
+       24,
+       24
+      ],
+      "headline": [
+       86,
+       46,
+       232,
+       24
+      ],
+      "trailing-icon": [
+       334,
+       46,
+       24,
+       24
+      ],
+      "content-inner": [
+       26,
+       90,
+       356,
+       60
+      ]
+     }
+    }
+   },
+   "probes": [
+    {
+     "node": "acf",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      40
+     ],
+     "label": "acf@[0.25, 40]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    },
+    {
+     "node": "acf",
+     "part": null,
+     "kind": "point",
+     "at": [
+      6,
+      40
+     ],
+     "label": "acf@[6, 40]",
+     "rgb": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "af1",
+     "part": "chassis-handle-bar",
+     "kind": "point",
+     "at": [
+      16,
+      2
+     ],
+     "label": "af1.chassis-handle-bar@[16, 2]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    },
+    {
+     "node": "af1",
+     "part": "headline",
+     "kind": "ink",
+     "rect": null,
+     "label": "af1.headline ink",
+     "rgb": [
+      255,
+      255,
+      255
+     ],
+     "background": [
+      0,
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "name": "accordion-floating",
+   "theme": "dark",
+   "forced": false,
+   "geometry": {
+    "acf": {
+     "host": [
+      24,
+      24,
+      360,
+      64
+     ],
+     "parts": {}
+    },
+    "af1": {
+     "host": [
+      24,
+      24,
+      360,
+      64
+     ],
+     "parts": {
+      "chassis-handle": [
+       178,
+       28,
+       52,
+       16
+      ],
+      "chassis-handle-bar": [
+       188,
+       34,
+       32,
+       4
+      ],
+      "heading": [
+       24,
+       24,
+       360,
+       64
+      ],
+      "header": [
+       24,
+       24,
+       360,
+       64
+      ],
+      "state-layer": [
+       24,
+       24,
+       360,
+       64
+      ],
+      "drag-handle": [
+       48,
+       44,
+       24,
+       24
+      ],
+      "headline": [
+       84,
+       44,
+       236,
+       24
+      ],
+      "trailing-icon": [
+       336,
+       44,
+       24,
+       24
+      ],
+      "content-inner": [
+       24,
+       88,
+       360,
+       60
+      ]
+     }
+    }
+   },
+   "probes": [
+    {
+     "node": "acf",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      40
+     ],
+     "label": "acf@[0.25, 40]",
+     "rgb": [
+      29,
+      27,
+      32
+     ]
+    },
+    {
+     "node": "acf",
+     "part": null,
+     "kind": "point",
+     "at": [
+      6,
+      40
+     ],
+     "label": "acf@[6, 40]",
+     "rgb": [
+      29,
+      27,
+      32
+     ]
+    },
+    {
+     "node": "af1",
+     "part": "chassis-handle-bar",
+     "kind": "point",
+     "at": [
+      16,
+      2
+     ],
+     "label": "af1.chassis-handle-bar@[16, 2]",
+     "rgb": [
+      107,
+      103,
+      111
+     ]
+    },
+    {
+     "node": "af1",
+     "part": "headline",
+     "kind": "ink",
+     "rect": null,
+     "label": "af1.headline ink",
+     "rgb": [
+      230,
+      225,
+      229
+     ],
+     "background": [
+      29,
+      27,
+      32
+     ]
+    }
+   ]
+  },
+  {
+   "name": "accordion-floating",
+   "theme": "dark",
+   "forced": true,
+   "geometry": {
+    "acf": {
+     "host": [
+      24,
+      24,
+      360,
+      68
+     ],
+     "parts": {}
+    },
+    "af1": {
+     "host": [
+      25,
+      25,
+      358,
+      66
+     ],
+     "parts": {
+      "chassis-handle": [
+       178,
+       30,
+       52,
+       16
+      ],
+      "chassis-handle-bar": [
+       188,
+       36,
+       32,
+       4
+      ],
+      "heading": [
+       26,
+       26,
+       356,
+       64
+      ],
+      "header": [
+       26,
+       26,
+       356,
+       64
+      ],
+      "drag-handle": [
+       50,
+       46,
+       24,
+       24
+      ],
+      "headline": [
+       86,
+       46,
+       232,
+       24
+      ],
+      "trailing-icon": [
+       334,
+       46,
+       24,
+       24
+      ],
+      "content-inner": [
+       26,
+       90,
+       356,
+       60
+      ]
+     }
+    }
+   },
+   "probes": [
+    {
+     "node": "acf",
+     "part": null,
+     "kind": "point",
+     "at": [
+      0.25,
+      40
+     ],
+     "label": "acf@[0.25, 40]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    },
+    {
+     "node": "acf",
+     "part": null,
+     "kind": "point",
+     "at": [
+      6,
+      40
+     ],
+     "label": "acf@[6, 40]",
+     "rgb": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "node": "af1",
+     "part": "chassis-handle-bar",
+     "kind": "point",
+     "at": [
+      16,
+      2
+     ],
+     "label": "af1.chassis-handle-bar@[16, 2]",
+     "rgb": [
+      255,
+      255,
+      255
+     ]
+    },
+    {
+     "node": "af1",
+     "part": "headline",
+     "kind": "ink",
+     "rect": null,
+     "label": "af1.headline ink",
+     "rgb": [
+      255,
+      255,
+      255
+     ],
+     "background": [
+      0,
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "name": "accordion-floating-parts",
+   "theme": "light",
+   "forced": false,
+   "geometry": {
+    "acf": {
+     "host": [
+      24,
+      24,
+      360,
+      64
+     ],
+     "parts": {}
+    },
+    "af1": {
+     "host": [
+      24,
+      24,
+      360,
+      64
+     ],
+     "parts": {
+      "chassis-handle": [
+       178,
+       28,
+       52,
+       16
+      ],
+      "chassis-handle-bar": [
+       192,
+       33,
+       24,
+       6
+      ],
+      "heading": [
+       24,
+       24,
+       360,
+       64
+      ],
+      "header": [
+       24,
+       24,
+       360,
+       64
+      ],
+      "state-layer": [
+       24,
+       24,
+       360,
+       64
+      ],
+      "drag-handle": [
+       48,
+       44,
+       24,
+       24
+      ],
+      "headline": [
+       84,
+       44,
+       236,
+       24
+      ],
+      "trailing-icon": [
+       336,
+       44,
+       24,
+       24
+      ],
+      "content-inner": [
+       24,
+       88,
+       360,
+       60
+      ]
+     }
+    }
+   },
+   "probes": [
+    {
+     "node": "af1",
+     "part": "chassis-handle-bar",
+     "kind": "point",
+     "at": [
+      12,
+      3
+     ],
+     "label": "af1.chassis-handle-bar part fill",
+     "rgb": [
+      216,
+      27,
+      96
+     ]
+    },
+    {
+     "node": "af1",
+     "part": "chassis-handle",
+     "kind": "point",
+     "at": [
+      3,
+      8
+     ],
+     "label": "af1.chassis-handle part fill",
+     "rgb": [
+      255,
+      205,
+      210
+     ]
+    }
+   ]
+  },
+  {
+   "name": "accordion-floating-parts",
+   "theme": "dark",
+   "forced": false,
+   "geometry": {
+    "acf": {
+     "host": [
+      24,
+      24,
+      360,
+      64
+     ],
+     "parts": {}
+    },
+    "af1": {
+     "host": [
+      24,
+      24,
+      360,
+      64
+     ],
+     "parts": {
+      "chassis-handle": [
+       178,
+       28,
+       52,
+       16
+      ],
+      "chassis-handle-bar": [
+       192,
+       33,
+       24,
+       6
+      ],
+      "heading": [
+       24,
+       24,
+       360,
+       64
+      ],
+      "header": [
+       24,
+       24,
+       360,
+       64
+      ],
+      "state-layer": [
+       24,
+       24,
+       360,
+       64
+      ],
+      "drag-handle": [
+       48,
+       44,
+       24,
+       24
+      ],
+      "headline": [
+       84,
+       44,
+       236,
+       24
+      ],
+      "trailing-icon": [
+       336,
+       44,
+       24,
+       24
+      ],
+      "content-inner": [
+       24,
+       88,
+       360,
+       60
+      ]
+     }
+    }
+   },
+   "probes": [
+    {
+     "node": "af1",
+     "part": "chassis-handle-bar",
+     "kind": "point",
+     "at": [
+      12,
+      3
+     ],
+     "label": "af1.chassis-handle-bar part fill",
+     "rgb": [
+      216,
+      27,
+      96
+     ]
+    },
+    {
+     "node": "af1",
+     "part": "chassis-handle",
+     "kind": "point",
+     "at": [
+      3,
+      8
+     ],
+     "label": "af1.chassis-handle part fill",
+     "rgb": [
+      255,
+      205,
+      210
+     ]
+    }
+   ]
+  }
+ ]
+}

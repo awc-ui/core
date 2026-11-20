@@ -66,14 +66,17 @@ The mixed modal stack (13 runs with dialogs and both sheets) passes on both plat
 ## Laboratory (gate 3)
 
 Installed with md-dialog and md-side-sheet; the shared details and results are in
-[md-dialog.md](md-dialog.md#laboratory-gate-3). For this component: nine hooks (the corner value as `sheetShape`, applied to detached sheets; widths as affine lengths) and nine parts; methods `show`, `close` and `whenClosed`; `mdBack` from the back control; the live hosts present it in the preview viewport through `AWCModalScope`.
+[md-dialog.md](md-dialog.md#laboratory-gate-3). For this component: nine hooks (the corner value as `sheetShape`, applied to detached sheets; widths as affine lengths) and nine parts; methods `show`, `close` and `whenClosed`; `mdBack` from the back control; the live hosts present it in the preview viewport through `AWCModalScope`, in the recipe's page order: the launcher, then the component (a standard sheet is inline below the launcher and is read and tabbed after it, as on Web; Android fix-ax-a3, SwiftUI host and iOS tools/ax probe gate-7 R4-25).
 
 ## Platform differences and open decisions
 
-- **Standard-variant Tab order.** A standard sheet does not trap Tab.
-  - Traversal is the host's key-view loop.
-  - On macOS it is geometric, not DOM order, so the Swift test checks that Tab reaches the same controls as Chrome.
+- **Standard-variant Tab order.** A standard sheet does not trap Tab: traversal continues through the page in DOM order,
+  as in Chrome. The motion tests send real Tab keys and check Chrome's focus after every step.
+  - SwiftUI (macOS and iOS): `AWCModalScope` numbers the AWC focus views of its content in source order, and Tab /
+    Shift+Tab follow that order instead of the geometric key-view loop (`NativeDocumentOrder.swift`, gate-7 R4-05).
   - On Android the order is the composition order, which matches Chrome's order exactly.
+  - The SwiftUI Laboratory host sends a standard sheet's Tab like a keyboard, so AppKit follows the same document order as
+    UIKit (previously the host used the window's geometric key-view loop; gate-7 R4-25).
 - **Hidden with focus inside.**
   - A standard sheet hidden with focus inside moves focus to the document, as in Chrome.
   - On Android this uses the scope's document focus target, so keyboard mode does not move focus to a default control.

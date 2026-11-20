@@ -41,7 +41,8 @@ internal fun NativeDivider(properties: Map<String, AWCValue>) {
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val direction = if (rtl) "rtl" else "ltr"
     val inspection = LocalAWCInspection.current
-    val color = appearance.color?.let { Color(0xFF000000L or it.drop(1).toLong(16)) }
+    // forced-colors: `.md-divider__line { background-color: CanvasText }`.
+    val color = awcForcedColors()?.let { awcColor(it.canvasText, Color.White) } ?: appearance.color?.let { Color(0xFF000000L or it.drop(1).toLong(16)) }
         ?: MaterialTheme.colorScheme.outlineVariant
     val minimumLength = LocalTextStyle.current.fontSize.takeIf { it.isSp } ?: 16.sp
     val density = LocalDensity.current.density.toDouble()

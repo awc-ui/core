@@ -1,6 +1,6 @@
 # md-sparkline — accessibility parity
 
-Generated 2026-10-30T02:47:33.325Z by tools/ax. Web = Chrome AX tree of the same effective node.
+Generated 2026-11-05T01:32:20.056Z by tools/ax. Web = Chrome AX tree of the same effective node.
 
 ## default
 

@@ -7,9 +7,10 @@ import {validateNativeInspection} from '../../native-playground/native-inspectio
 let schemaFrames=0;
 process.on('exit',code=>{if(code===0)console.log(`${schemaFrames} frames passed the Laboratory inspection schema.`);});
 
-// Actual SwiftUI live host for n5's navigation components (md-toolbar): typed hooks (defaults + local values), retained
-// property updates with the source types, setFocus() through AWCToolbarController, and the lifecycle (a new session binds
-// a fresh controller; nothing is retained from the previous one).
+// Actual SwiftUI live host for n5's navigation components (md-toolbar, md-navigation-rail, md-navigation-rail-tab, md-app-bar): typed
+// hooks (defaults + local values), retained property updates with the source types, the methods through their
+// controllers (setFocus(); expand / collapse / toggle / focusTab, clearSubmenuSelection), and the lifecycle (a new session
+// binds a fresh controller; nothing is retained from the previous one).
 const binary=process.env.AWC_NATIVE_LIVE_RENDERER ?? fileURLToPath(new URL('../.build/arm64-apple-macosx/debug/AWCLivePreview',import.meta.url));
 let checks=0;
 const check=(value,message)=>{checks++;assert.ok(value,message);};
@@ -86,4 +87,56 @@ try{
   check(metric(f,'md-toolbar','label')==='Edit'&&metric(f,'md-toolbar','orientation')==='horizontal'&&(metric(f,'md-toolbar','members')??[]).length===4,'a new session renders its own configuration.');
   m=await method('setFocus');check(!m.error,`setFocus after remount: ${m.error}`);
   console.log(`md-toolbar live host: ${checks} checks passed`);
+  // ---- md-navigation-rail: the Laboratory recipe (Home active, Saved, Settings) ----
+  const before=checks;
+  f=await configure('md-navigation-rail',{properties:{},navigationRailAppearanceDefaults:{containerColor:'#E0F2F1',containerWidth:96},navigationRailAppearance:{containerColor:'#FFF3E0'},
+    navigationRailTabAppearance:{indicatorColor:'#FFCC80'}});
+  check(!f.error,`rail configure: ${f.error}`);await wait(300);f=await frame();
+  check(metric(f,'md-navigation-rail','count')===3&&metric(f,'md-navigation-rail','activeIndex')===0,`three destinations, Home active (${metric(f,'md-navigation-rail','count')} ${metric(f,'md-navigation-rail','activeIndex')}).`);
+  check(color(metric(f,'md-navigation-rail','background'),'#FFF3E0'),`the local container colour wins over the default (${JSON.stringify(metric(f,'md-navigation-rail','background'))}).`);
+  check(metric(f,'md-navigation-rail','width')===96,`the default collapsed width applies where no local value is set (${metric(f,'md-navigation-rail','width')}).`);
+  check(color(metric(f,'indicator','color'),'#FFCC80'),`the destination hook passes down (${JSON.stringify(metric(f,'indicator','color'))}).`);
+  for(const [name,variant,width] of [['expand','expanded',220],['collapse','standard',96],['toggle','expanded',220]]){
+    m=await method(name);check(!m.error,`${name}: ${m.error}`);await wait(450);f=await frame();
+    check(metric(f,'md-navigation-rail','variant')===variant&&metric(f,'md-navigation-rail','width')===width,`${name}() → ${variant} ${width} (${metric(f,'md-navigation-rail','variant')} ${metric(f,'md-navigation-rail','width')}).`);
+  }
+  m=await method('focusTab',[1]);check(!m.error,`focusTab: ${m.error}`);
+  for(const [name,args] of [['focusTab',[]],['focusTab',[1.5]],['expand',[1]],['setFocus',[]]]){m=await method(name,args);check(Boolean(m.error),`rejected: ${name}(${JSON.stringify(args)}).`);}
+  u=await update({orientation:'horizontal'});check(!u.error,`orientation: ${u.error}`);await wait(200);f=await frame();
+  check(metric(f,'md-navigation-rail','horizontal')===true,`a horizontal bar (${metric(f,'md-navigation-rail','horizontal')}).`);
+  u=await update({orientation:'vertical',variant:'standard',labelVisibility:'none',density:-2,activeIndex:2});check(!u.error,`rail updates: ${u.error}`);await wait(450);f=await frame();
+  check(metric(f,'md-navigation-rail','density')===-2&&metric(f,'md-navigation-rail','activeIndex')===2&&metric(f,'md-navigation-rail','variant')==='standard',
+    `density, selection and variant updates (${metric(f,'md-navigation-rail','density')} ${metric(f,'md-navigation-rail','activeIndex')} ${metric(f,'md-navigation-rail','variant')}).`);
+  for(const bad of [{variant:'mini'},{alignment:'center'},{density:-5},{orientation:'diagonal'},{modal:'yes'},{bogus:1}]){u=await update(bad);check(Boolean(u.error),`rejected: ${JSON.stringify(bad)}.`);}
+  // ---- md-navigation-rail-tab: a destination alone (Home, active) ----
+  f=await configure('md-navigation-rail-tab',{properties:{label:'Home',icon:'home',active:true},navigationRailTabAppearance:{indicatorColor:'#B2DFDB'}});check(!f.error,`tab configure: ${f.error}`);
+  await wait(300);f=await frame();
+  check(nodes(f,'md-navigation-rail-tab').length===1&&metric(f,'md-navigation-rail-tab','active')===true,'a single active destination.');
+  check(color(metric(f,'indicator','color'),'#B2DFDB'),`the destination hook (${JSON.stringify(metric(f,'indicator','color'))}).`);
+  m=await method('clearSubmenuSelection');check(!m.error,`clearSubmenuSelection: ${m.error}`);
+  m=await method('clearSubmenuSelection',[0]);check(Boolean(m.error),'clearSubmenuSelection rejects arguments.');
+  u=await update({label:'Inbox',badgeValue:'3'});check(!u.error,`tab update: ${u.error}`);
+  u=await update({active:1});check(Boolean(u.error),'rejected: active 1.');
+  console.log(`md-navigation-rail live host: ${checks-before} checks passed`);
+  // ---- md-app-bar: the Laboratory recipe (Your workspace, the menu leading icon, a trailing Search action) ----
+  const beforeBar=checks;
+  const box=(frame,name)=>(frame.inspection?.nodes??[]).find(item=>item.name===name&&item.bounds)?.bounds;
+  f=await configure('md-app-bar',{properties:{headline:'Your workspace',leadingIcon:'menu',leadingIconLabel:'Open navigation'},
+    appBarAppearanceDefaults:{containerColor:'#E0F2F1',rowHeight:72},appBarAppearance:{containerColor:'#FFF3E0',headlineColor:'#BF360C'}});
+  check(!f.error,`app-bar configure: ${f.error}`);await wait(300);f=await frame();
+  check(metric(f,'md-app-bar','variant')==='small'&&metric(f,'md-app-bar','role')==='banner',`a small bar (${metric(f,'md-app-bar','variant')} ${metric(f,'md-app-bar','role')}).`);
+  check(color(metric(f,'md-app-bar','fill'),'#FFF3E0'),`the local container colour wins over the default (${metric(f,'md-app-bar','fill')}).`);
+  check(Math.abs((box(f,'row')?.height??0)-72)<0.6,`the default row height applies where no local value is set (${box(f,'row')?.height}).`);
+  check(Boolean(box(f,'title')),'the headline renders.');
+  u=await update({variant:'medium',subtitle:'12 unread'});check(!u.error,`variant: ${u.error}`);await wait(250);f=await frame();
+  check(metric(f,'md-app-bar','variant')==='medium'&&Boolean(box(f,'expanded')),`a medium bar with its expanded block (${metric(f,'md-app-bar','variant')}).`);
+  u=await update({scrolled:true});check(!u.error,`scrolled: ${u.error}`);await wait(300);f=await frame();
+  check(metric(f,'md-app-bar','scrolled')===true&&!color(metric(f,'md-app-bar','fill'),'#FFF3E0'),`scrolled takes the scrolled container colour (${metric(f,'md-app-bar','fill')}).`);
+  u=await update({variant:'search',searchPlaceholder:'Search mail',searchDisabled:true,titleAlignment:'center',density:-2});check(!u.error,`search updates: ${u.error}`);await wait(250);f=await frame();
+  check(metric(f,'md-app-bar','variant')==='search'&&Boolean(box(f,'search')),`a search bar (${metric(f,'md-app-bar','variant')}).`);
+  check(metric(f,'search','opacity')===0.38,`a disabled search (${metric(f,'search','opacity')}).`);
+  for(const bad of [{variant:'tiny'},{titleAlignment:'end'},{density:-5},{scrolled:'yes'},{bogus:1}]){u=await update(bad);check(Boolean(u.error),`rejected: ${JSON.stringify(bad)}.`);}
+  f=await configure('md-app-bar',{properties:{headline:'Fresh'},appBarAppearance:{rowHeight:56}});check(!f.error,`app-bar reconfigure: ${f.error}`);await wait(300);f=await frame();
+  check(metric(f,'md-app-bar','variant')==='small'&&Math.abs((box(f,'row')?.height??0)-56)<0.6,`a new session renders its own configuration (${metric(f,'md-app-bar','variant')} ${box(f,'row')?.height}).`);
+  console.log(`md-app-bar live host: ${checks-beforeBar} checks passed`);
 }finally{live?.close();}

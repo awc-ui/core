@@ -7,7 +7,7 @@
  "windows": [
   {
    "type": 1,
-   "display": 56,
+   "display": 458,
    "title": "",
    "root": {
     "class": "android.widget.FrameLayout",
@@ -106,7 +106,7 @@
                  1280,
                  776
                 ],
-                "virtualId": 131,
+                "virtualId": 319,
                 "children": [
                  {
                   "class": "android.view.View",
@@ -131,7 +131,7 @@
                    1152,
                    648
                   ],
-                  "virtualId": 139,
+                  "virtualId": 327,
                   "children": [
                    {
                     "class": "android.view.View",
@@ -182,7 +182,7 @@
                      1088,
                      584
                     ],
-                    "virtualId": 142,
+                    "virtualId": 330,
                     "children": [
                      {
                       "class": "android.view.View",
@@ -193,7 +193,7 @@
                        1088,
                        584
                       ],
-                      "virtualId": 143
+                      "virtualId": 331
                      }
                     ]
                    },
@@ -233,7 +233,7 @@
                      154,
                      96
                     ],
-                    "virtualId": 144
+                    "virtualId": 332
                    },
                    {
                     "class": "android.widget.Button",
@@ -271,7 +271,7 @@
                      106,
                      96
                     ],
-                    "virtualId": 147
+                    "virtualId": 335
                    },
                    {
                     "class": "android.widget.TextView",
@@ -297,7 +297,7 @@
                      2,
                      2
                     ],
-                    "virtualId": 151
+                    "virtualId": 339
                    }
                   ]
                  }
@@ -384,7 +384,7 @@
     1088,
     584
    ],
-   "virtualId": 142
+   "virtualId": 330
   },
   {
    "class": "android.widget.Button",
@@ -423,7 +423,7 @@
     154,
     96
    ],
-   "virtualId": 144
+   "virtualId": 332
   }
  ],
  "events": [
@@ -444,12 +444,14 @@
    "class": "android.view.ViewGroup"
   },
   {
-   "type": "TYPE_WINDOW_CONTENT_CHANGED",
-   "via": "window",
-   "text": [],
+   "type": "TYPE_WINDOW_STATE_CHANGED",
+   "via": "system",
+   "text": [
+    "AWC Native"
+   ],
    "contentDescription": "",
-   "changes": 1,
-   "class": "android.view.ViewGroup"
+   "changes": 0,
+   "class": "dev.awc.playground.LivePreviewActivity"
   },
   {
    "type": "TYPE_VIEW_FOCUSED",
@@ -457,6 +459,14 @@
    "text": [],
    "contentDescription": "",
    "changes": 0,
+   "class": "android.view.ViewGroup"
+  },
+  {
+   "type": "TYPE_WINDOW_CONTENT_CHANGED",
+   "via": "window",
+   "text": [],
+   "contentDescription": "",
+   "changes": 1,
    "class": "android.view.ViewGroup"
   }
  ]

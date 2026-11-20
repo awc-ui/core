@@ -70,6 +70,8 @@ import kotlin.math.roundToInt
     var pending=false
     val panel=NativeListRegistry()
     var toggle:()->Unit={}
+    /** Emits an event targeted at this row's host (the parent of an expanded-content child re-emits as mdItemSelect). */
+    var itemEvent:(String,AWCValue)->Unit={_,_->}
     var setExpanded:((Boolean?)->Unit)?=null
     var activateByKey:()->Unit={}
     val id get()=props.str("id")
@@ -210,11 +212,15 @@ import kotlin.math.roundToInt
         if(selectionMode=="single-select") { siblings.forEach { if(it!==child) it.selected=false };child.selected=true } else child.selected=!child.selected
         send("mdSelect",mapOf("index" to index,"childIndex" to siblings.indexOf(child).coerceAtLeast(0),"expanded" to parent.expanded,"value" to child.label,
             "selected" to child.selected,"item" to child.id))
+        // The parent row re-emits the child's selection as mdItemSelect (source: md-list-item handleChildItemClick).
+        parent.itemEvent("mdItemSelect",mapOf("index" to siblings.indexOf(child).coerceAtLeast(0),"value" to child.label,"selected" to child.selected,"item" to child.id))
     }
     fun move(key:String,from:NativeListRow):Boolean {
         val rows=focusableRows;if(rows.isEmpty()) return false
-        val at=rows.indexOf(from).coerceAtLeast(0)
-        val target=when(key) { "ArrowDown"->rows[(at+1)%rows.size];"ArrowUp"->rows[(at-1+rows.size)%rows.size];"Home"->rows[0];"End"->rows[rows.size-1];else->return false }
+        // md-list handleKeyDown: from a row that is not a stop (an expandable-only row's caret) ArrowDown goes to the first stop
+        // and ArrowUp to the last.
+        val at=rows.indexOf(from)
+        val target=when(key) { "ArrowDown"->rows[(at+1)%rows.size];"ArrowUp"->rows[if(at>0) at-1 else rows.size-1];"Home"->rows[0];"End"->rows[rows.size-1];else->return false }
         focus(target,true);return true
     }
     fun focus(row:NativeListRow,visible:Boolean) { activate(row);row.focus(visible) }
@@ -230,6 +236,18 @@ import kotlin.math.roundToInt
 }
 internal class NativeListPanelScope(val parent:NativeListRow,val parentContext:NativeListItemContext?,val owner:NativeListOwner?,val onChildClick:(NativeListRow)->Unit,
                                     val inspection:AWCInspectionContext?=null)
+/** The row's host key handler and focus-within tracking, handed to its caret (the caret sits in the row's shadow tree). */
+internal class NativeListCaretHost(val key:(androidx.compose.ui.input.key.KeyEvent)->Boolean,val focus:(Boolean)->Unit)
+/** Focus inside one list item (row and caret). The source host's `focus` fires only when focus enters the item from outside:
+ *  a move between the row and its caret is not an entry, so a blur stays pending until the main looper's next turn. */
+internal class NativeListFocusWithin {
+    private var row=false;private var caret=false;private var pending=false
+    private val main=android.os.Handler(android.os.Looper.getMainLooper())
+    fun set(isRow:Boolean,focused:Boolean,entered:()->Unit) {
+        if(focused) { val inside=row || caret || pending;if(isRow) row=true else caret=true;if(!inside) entered() }
+        else { if(isRow) row=false else caret=false;pending=true;main.post { pending=false } }
+    }
+}
 internal val LocalNativeListOwner=staticCompositionLocalOf<NativeListOwner?> { null }
 internal val LocalNativeListPanel=staticCompositionLocalOf<NativeListPanelScope?> { null }
 internal val LocalNativeListRung=staticCompositionLocalOf<Double?> { null }
@@ -266,7 +284,9 @@ internal data class NativeListModel(val p:Props) {
     val inspection=LocalAWCListInspection.current
     val scale=LocalAWCNativeDensity.current
     val local=model.density
-    val rung=when { local!=null && local<=-2->local;local==null && scale<=-2->scale;else->LocalNativeListRung.current ?: 0.0 }
+    // Spacing tokens come from the nearest rung that defines them (−1 only redefines row height): the hybrid "local −1 inside
+    // inherited −4" takes −4's insets and gaps while density-scale metrics use −1 (r3-15).
+    val rung=when { local!=null && local<=-2->local;else->LocalNativeListRung.current ?: LocalAWCDensityRungs.current.firstOrNull { it<=-2 } ?: 0.0 }
     SideEffect { owner.props=p;owner.emit=onEvent;owner.inspection=inspection }
     val segmented=model.listStyle=="segmented"
     val padBlock=a.paddingBlock ?: if(segmented) 0.0 else if(rung<=-3) 4.0 else 8.0
@@ -277,7 +297,9 @@ internal data class NativeListModel(val p:Props) {
     val order=owner.registry.order
     val role=model.role(order.any { it.expandable })
     val id=p.str("id").ifEmpty { "list" }
-    SideEffect { inspection?.lists?.set(id,mapOf("padding" to listOf(padBlock,padInline),"gap" to gap,"role" to role,"active" to (owner.effectiveActive?.id ?: ""),
+    // The source sets aria-labelledby={labelledby} and aria-label={label}: resolved IDREFs win, else label.
+    val name=awcLabelledByName(mapOf("aria-labelledby" to model.p.str("labelledby")),LocalAWCLabelTexts.current).ifEmpty { model.label }
+    SideEffect { inspection?.lists?.set(id,mapOf("padding" to listOf(padBlock,padInline),"gap" to gap,"role" to role,"name" to name,"active" to (owner.effectiveActive?.id ?: ""),
         "selection" to order.filter { it.selected }.map { it.id })) }
     val listContext=LocalAWCInspection.current
     val phTrack=remember { AWCCSSValueTrack(0.0) { a,b,t-> a+(b-a)*t } }
@@ -311,7 +333,7 @@ internal data class NativeListModel(val p:Props) {
                 clipPath(Path().apply { addOutline(o) }) { drawOutline(o,outline.copy(alpha=outline.alpha*alpha),style=Stroke(w*2,pathEffect=PathEffect.dashPathEffect(floatArrayOf(w*3,w*3)))) } }
             inspection?.lists?.set("$id.placeholder",mapOf("top" to top/density,"height" to p.second/density)) }
         .padding(horizontal=padInline.dp,vertical=padBlock.dp)
-        .semantics { if(model.label.isNotEmpty()) contentDescription=model.label;if(role=="listbox") selectableGroup()
+        .semantics { if(name.isNotEmpty()) contentDescription=name;if(role=="listbox") selectableGroup()
             collectionInfo=CollectionInfo(order.size,1) }) { measurables,constraints->
         val gapPx=(gap*density).roundToInt()
         val placeables=measurables.map { it.measure(constraints.copy(minHeight=0,maxHeight=Constraints.Infinity)) }
@@ -401,7 +423,7 @@ private data class ListTargets(val corners:List<Double>,val layer:Double,val act
     val rtl=LocalLayoutDirection.current==LayoutDirection.Rtl
     val scale=LocalAWCNativeDensity.current
     val listRung=LocalNativeListRung.current
-    val rung=if((model.density ?: 0.0)<=-2) model.density!! else listRung ?: (if(scale<=-2) scale else 0.0)
+    val rung=if((model.density ?: 0.0)<=-2) model.density!! else listRung ?: LocalAWCDensityRungs.current.firstOrNull { it<=-2 } ?: 0.0
     val morph=LocalAWCListShapeMorph.current
     val reduced=LocalAWCListReducedMotion.current ?: !android.animation.ValueAnimator.areAnimatorsEnabled()
     val listInspection=LocalAWCListInspection.current
@@ -417,7 +439,7 @@ private data class ListTargets(val corners:List<Double>,val layer:Double,val act
     val expanded=model.expandable && row.expanded
     val style=NativeListItemStyle(model,ctx,inline,inherited,tokens,rtl,scale,rung,row.selected,expanded,overlineText.hasEntries,supportingText.hasEntries,slots.video,morph)
     val headlineLabel=model.headline.ifEmpty { awcCollapsedWhitespace(defaultText.text) }
-    SideEffect { row.focusable=style.focusable && !model.hidden;row.expandable=model.expandable;row.hidden=model.hidden;row.label=headlineLabel }
+    SideEffect { row.focusable=style.rovingFocusable && !model.hidden;row.expandable=model.expandable;row.hidden=model.hidden;row.label=headlineLabel }
     var hovered by remember { mutableStateOf(false) }
     var held by remember { mutableStateOf(false) }
     var keyPressed by remember { mutableStateOf(false) }
@@ -506,9 +528,12 @@ private data class ListTargets(val corners:List<Double>,val layer:Double,val act
         if(!style.interactive || style.disabledClass) return
         if(panelScope!=null) { emitItem("mdClick",mapOf("item" to model.id));panelScope.onChildClick(row);return }
         if(model.expandable) { toggleExpanded();emitItem("mdClick",mapOf("item" to model.id));return }
+        // mdItemClick's detail is built before the list handles it: `selected` is the value before the click.
+        val itemIndex=owner?.rows?.indexOf(row)?.coerceAtLeast(0) ?: 0;val wasSelected=row.selected
         emitItem("mdClick",mapOf("item" to model.id))
         if(model.type=="link" && (model.href.startsWith("https://") || model.href.startsWith("http://"))) runCatching { uri.openUri(model.href) }
         owner?.itemClicked(row)
+        emitItem("mdItemClick",mapOf("index" to itemIndex,"selected" to wasSelected))
     }
     fun keyboardActivate() {
         if(!style.interactive || style.disabledClass) return
@@ -516,6 +541,7 @@ private data class ListTargets(val corners:List<Double>,val layer:Double,val act
         click()
     }
     val itemControllers=LocalAWCListItemControllers.current
+    SideEffect { row.itemEvent={ n,d-> emitItem(n,d) } }
     SideEffect { row.toggle={ if(model.expandable && !style.disabledClass) toggleExpanded() };row.activateByKey={ keyboardActivate() }
         row.setExpanded={ v-> if(model.expandable && !style.disabledClass) row.expanded=v ?: !row.expanded }
         itemControllers[model.id]?.row=row }
@@ -541,31 +567,46 @@ private data class ListTargets(val corners:List<Double>,val layer:Double,val act
         if(style.hasPrimaryAction || menuRow) role=Role.Button
         collectionItemInfo=CollectionItemInfo(max(0,index),1,0,1)
         // The keyboard (roving) focus is reported to accessibility services, as Web reports the focused option.
-        if(style.focusable) focused=rowFocused
+        if(style.rovingFocusable) focused=rowFocused
     }
-    val focusModifier=if(style.focusable) Modifier
-        .onKeyEvent { e-> if(e.type!=KeyEventType.KeyDown || !row.focused) return@onKeyEvent false
-            row.showFocus=true;noteInput(e.nativeKeyEvent.eventTime,key=true)
+    val focusWithin=remember { NativeListFocusWithin() }
+    /** Source handleFocus: focus entering a row hosted directly by a list (not an expanded-content child) asks for roving activation. */
+    // md-list answers by making a roving row its active row (mdActivate first); the row's own focus has activated it already.
+    fun requestActivation(caret:Boolean=false) { if(owner!=null && panelScope==null && style.interactive) { if(caret && style.rovingFocusable) owner?.activate(row);emitItem("mdRequestActivation",null) } }
+    /** md-list-item handleKeyDown (the host's handler, for the row and for its caret) and md-list's roving keys. */
+    fun hostKey(e:androidx.compose.ui.input.key.KeyEvent,caret:Boolean):Boolean {
+            noteInput(e.nativeKeyEvent.eventTime,key=true)
             val key=when(e.key) { Key.DirectionDown->"ArrowDown";Key.DirectionUp->"ArrowUp";Key.MoveHome->"Home";Key.MoveEnd->"End";Key.DirectionRight->"ArrowRight";Key.DirectionLeft->"ArrowLeft"
                 Key.Enter,Key.NumPadEnter->"Enter";Key.Spacebar->" ";else->"" }
-            if(e.isAltPressed && (key=="ArrowUp" || key=="ArrowDown") && style.reorderable) return@onKeyEvent owner?.keyReorder(row,key=="ArrowUp") ?: false
-            if(e.isAltPressed || e.isCtrlPressed || e.isMetaPressed) return@onKeyEvent false
-            when {
+            if(e.isAltPressed && (key=="ArrowUp" || key=="ArrowDown") && style.reorderable) return owner?.keyReorder(row,key=="ArrowUp") ?: false
+            if(e.isAltPressed || e.isCtrlPressed || e.isMetaPressed) return false
+            return when {
+                // The caret: md-icon-button activates, then the host's handler clicks the host (Chrome: mdExpand, mdExpand, mdClick).
+                caret && (key=="Enter" || key==" ")->{ if(style.interactive && !style.disabledClass) { toggleExpanded();keyboardActivate() };true }
                 key=="Enter" || key==" "->{ keyboardActivate();true }
                 model.expandable && !style.disabledClass && key=="ArrowRight" && !expanded->{ toggleExpanded();true }
                 model.expandable && !style.disabledClass && key=="ArrowLeft" && expanded->{ toggleExpanded();true }
                 key=="ArrowRight" || key=="ArrowLeft"->true
                 owner!=null && owner.move(key,row)->true
+                caret && owner!=null && key in setOf("ArrowDown","ArrowUp","Home","End")->true
                 owner!=null && e.utf16CodePoint>0->owner.typeaheadKey(e.utf16CodePoint.toChar(),row,e.nativeKeyEvent.eventTime)
                 else->false }
-        }
+    }
+    val focusModifier=if(style.rovingFocusable) Modifier
+        .onKeyEvent { e-> if(e.type!=KeyEventType.KeyDown || !row.focused) return@onKeyEvent false
+            row.showFocus=true;hostKey(e,false) }
         .focusRequester(row.requester)
         .focusProperties { canFocus=!model.disabled && (tabbable || row.focused || row.pending) }
         .onFocusChanged { s-> if(row.focused!=s.isFocused) { row.focused=s.isFocused
-            if(s.isFocused) { if(!row.pending) row.showFocus=true;row.pending=false;owner?.activate(row) } } }
+            // Focus entering the item (not a move from its caret) asks the list for roving activation.
+            focusWithin.set(true,s.isFocused) { requestActivation() }
+            if(s.isFocused) { if(!row.pending) row.showFocus=true;row.pending=false
+                owner?.activate(row) } } }
         .focusTarget() else Modifier
     // Inspection at the frame the row renders: written after each composition (tracks.frame is read in
-    // composition, so a running transition recomposes every frame) and again when the row draws.
+    // composition, so a running transition recomposes every frame). Not written again from the draw pass:
+    // the draw runs on the real-time view clock, so under load it sometimes overwrote the composed value
+    // with the next frame's before a virtual-clock fixture read it (story 9-2, s7-8-02).
     val dragDeltaNow=if(dragged) owner!!.dragDelta else 0f
     val inspectRow={ t:Double-> listInspection?.rows?.set(model.id,mapOf("frame" to t,"radius" to tracks.corners.map { it.presented(t) },"layerOpacity" to (if(style.layerVisible) tracks.layer.presented(t) else -1.0),
                 "background" to style.containerColor,"labelColor" to style.labelColor,"leadingIconColor" to style.leadingIconColor(states),"trailingIconColor" to style.trailingIconColor(states),
@@ -576,7 +617,9 @@ private data class ListTargets(val corners:List<Double>,val layer:Double,val act
                 "displayOffset" to (if(panelScope==null && owner!=null) owner.displayOffset(row) else 0f)/densityPx,
                 "lift" to tracks.lift.presented(t),"dragged" to dragged,"handleOpacity" to tracks.handle[0].presented(t),"handleScale" to tracks.handle[2].presented(t),
                 "headlineTooltip" to truncation.headline,"supportingTooltip" to truncation.supporting)) }
-    SideEffect { inspectRow(tracks.frame) }
+    // Read in composition (not only in the SideEffect): a focused row (ring) skips the other reads of `tracks.frame`.
+    val composedFrame=tracks.frame
+    SideEffect { inspectRow(composedFrame) }
     // MARK: layout
     val elevation=remember(a.draggedContainerElevation,tokens) { a.draggedContainerElevation?.map { it.resolved() } ?: NativeShadowLayer.parse(tokens["--md-sys-elevation-4"]) }
     val liftShape=shapeOf(Double.MAX_VALUE)
@@ -592,7 +635,6 @@ private data class ListTargets(val corners:List<Double>,val layer:Double,val act
             drawOutline(outline,container)
             if(ring) { val inset=3.dp.toPx()
                 clipPath(Path().apply { addOutline(outline) }) { drawOutline(outline,ringColor,style=Stroke(inset*2)) } }
-            inspectRow(t)
         }
         .graphicsLayer { shape=shapeOf(tracks.frame);clip=true }
         .then(itemSemantics)) {
@@ -600,6 +642,7 @@ private data class ListTargets(val corners:List<Double>,val layer:Double,val act
         val pad=style.padding;val three=style.lines==3
         val centerLeading=model.hasAvatar
         Box(Modifier.fillMaxWidth()
+            .then(parts[AWCListItemPart.Row]?.opacity?.let { o-> Modifier.graphicsLayer { alpha=o.toFloat() } } ?: Modifier)
             .then(focusModifier)
             .onGloballyPositioned { geometry.row=it }
             // `.md-list-item__row:hover` drives the layer: hovering the expanded panel does not.
@@ -652,10 +695,13 @@ private data class ListTargets(val corners:List<Double>,val layer:Double,val act
                 interactions.tryEmit(if(up!=null) PressInteraction.Release(press) else PressInteraction.Cancel(press))
                 if(up!=null) latestClick.value()
             } }
+            .then(parts[AWCListItemPart.Row]?.backgroundColor?.let { Modifier.background(statusDotColor(it),RectangleShape) } ?: Modifier)
             // Source paint order: the row's in-flow content, then the positioned md-ripple and state layer, then the
             // positioned image-wrap and caret host above them (the layer leaves the image and the open caret uncovered).
             .drawWithContent { drawContent()
-                if(style.layerVisible) { val o=tracks.layer.presented(tracks.frame);if(o>0) {
+                // ::part(state-layer) opacity replaces the state opacity (the element exists on interactive rows).
+                val po=parts[AWCListItemPart.StateLayer]?.opacity
+                if(style.layerVisible || (style.interactive && po!=null)) { val o=po ?: tracks.layer.presented(tracks.frame);if(o>0) {
                     val holes=Path().apply { geometry.image?.let { addRoundRect(RoundRect(it,CornerRadius((style.imageShape*density).toFloat()))) }
                         if(model.expandable && expanded) geometry.caret?.let { addOval(it) } }
                     clipPath(holes,ClipOp.Difference) { drawRect(layerColor.copy(alpha=layerColor.alpha*o.toFloat())) } } } }
@@ -663,11 +709,16 @@ private data class ListTargets(val corners:List<Double>,val layer:Double,val act
             .then(nativeSourceRipple(interactions,statusDotColor(style.labelColor),style.interactive && !style.disabledClass && !dragged))
             .then(parts[AWCListItemPart.Row]?.let { pr-> if(pr.borderColor!=null && (pr.borderWidth ?: 0.0)>0) Modifier.drawBehind {
                 val w=(pr.borderWidth!!*density).toFloat();drawRect(statusDotColor(pr.borderColor),Offset(w/2,w/2),Size(size.width-w,size.height-w),style=Stroke(w)) } else null } ?: Modifier)
+            // md-list-item.css row cursor: interactive pointer; text rows outside selection/expansion default; [soft-disabled]
+            // default; otherwise the row inherits the host (`--disabled` default).
+            .awcCursor(awcCursorCascade(AWCCursorRule(style.interactive,3,1,AWCCursorStyle.Pointer),
+                AWCCursorRule(model.type=="text" && !style.participates && !model.expandable,5,2,AWCCursorStyle.Default),
+                AWCCursorRule(model.softDisabled,3,5,AWCCursorStyle.Default)).takeUnless { model.disabled && !model.softDisabled })
             .then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"row","row",AWCInspectionMetrics(padding=AWCInspectionInsets(pad.top,pad.end,pad.bottom,pad.start),gap=AWCInspectionGap(style.gap,style.gap))) else Modifier)) {
             CompositionLocalProvider(LocalNativeListRowGeometry provides geometry) {
             NativeListRowLayout(style.gap,pad,style.minHeight,three,centerLeading) {
                 if(style.hasPrimaryAction) {
-                    NativeListRowLayout(style.gap,NativeListItemStyle.Padding(0.0,0.0,0.0,0.0),0.0,three,centerLeading,Modifier.layoutId("content").then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"primary","primary") else Modifier)) {
+                    NativeListRowLayout(style.gap,NativeListItemStyle.Padding(0.0,0.0,0.0,0.0),0.0,three,centerLeading,Modifier.layoutId("content").then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"primary","primary") else Modifier).listPartPaint(parts[AWCListItemPart.Primary])) {
                         Leading(style,states,model,a,parts,inspect,content,slots,expanded)
                         Content(style,model,a,parts,inspect,content,overlineText,supportingText,defaultText,Modifier.layoutId("content"),truncation)
                     }
@@ -675,7 +726,7 @@ private data class ListTargets(val corners:List<Double>,val layer:Double,val act
                     Leading(style,states,model,a,parts,inspect,content,slots,expanded)
                     Content(style,model,a,parts,inspect,content,overlineText,supportingText,defaultText,Modifier.layoutId("content"),truncation)
                 }
-                Trailing(style,states,model,a,parts,inspect,content,tracks,expanded,geometry) { if(!style.disabledClass) toggleExpanded() }
+                Trailing(style,states,model,a,parts,inspect,content,tracks,expanded,geometry,NativeListCaretHost({ e-> hostKey(e,true) },{ f-> focusWithin.set(false,f) { requestActivation(true) } })) { if(!style.disabledClass) toggleExpanded() }
             }
             }
         }
@@ -737,43 +788,76 @@ private fun NativeListRowGeometry.place(c:LayoutCoordinates):androidx.compose.ui
     }
 }
 
+/** md-list-item `::part()` paint declarations (md-list.md "Parts"): `backgroundColor` fills the part's box in its corner shape,
+ *  `cornerShape` also clips the parts the source clips, `opacity` fades the part with its content (`fades=false` where the
+ *  part's own opacity track applies it). Text and glyph parts take `color` where they draw. */
+internal fun Modifier.listPartPaint(v:AWCAccordionPartAppearance?,clips:Boolean=false,fades:Boolean=true):Modifier {
+    if(v==null) return this
+    val shape:androidx.compose.ui.graphics.Shape=v.cornerShape ?: RectangleShape
+    return this.then(if(fades) v.opacity?.let { o-> Modifier.graphicsLayer { alpha=o.toFloat() } } ?: Modifier else Modifier)
+        .then(if(clips && v.cornerShape!=null) Modifier.clip(shape) else Modifier)
+        .then(v.backgroundColor?.let { Modifier.background(statusDotColor(it),shape) } ?: Modifier)
+}
+/** A `data:` source that does not decode to an image fails at once (Chrome: the `<img>` `error` event). */
+internal fun listImageUndecodable(source:String):Boolean=source.startsWith("data:") && runCatching {
+    val b=android.util.Base64.decode(source.substringAfter(','),android.util.Base64.DEFAULT);android.graphics.BitmapFactory.decodeByteArray(b,0,b.size) }.getOrNull()==null
 @Composable private fun Leading(s:NativeListItemStyle,st:NativeListItemStates,model:NativeListItemModel,a:AWCListItemAppearance,parts:Map<AWCListItemPart,AWCAccordionPartAppearance>,
                                 inspect:AWCInspectionContext?,content:Slot?,slots:NativeListItemSlots,expanded:Boolean) {
     val ink=statusDotColor(parts[AWCListItemPart.LeadingIcon]?.color ?: s.leadingIconColor(st))
-    val leadingInspect=if(inspect!=null) Modifier.inspectAWCNode(inspect,"leading","leading") else Modifier
+    val leadingInspect=(if(inspect!=null) Modifier.inspectAWCNode(inspect,"leading","leading") else Modifier).listPartPaint(parts[AWCListItemPart.Leading])
     Box(Modifier.layoutId("leading")) {
         when {
-            model.hasAvatar->Box(Modifier.widthIn(min=24.dp).then(leadingInspect)) { Avatar(s,model,a,inspect) }
-            model.leadingImage.isNotEmpty()->Box(Modifier.widthIn(min=24.dp).then(leadingInspect)) { ListItemImage(s,model,a,inspect) }
+            model.hasAvatar->Box(Modifier.widthIn(min=24.dp).then(leadingInspect)) { Avatar(s,model,a,parts,inspect) }
+            model.leadingImage.isNotEmpty()->Box(Modifier.widthIn(min=24.dp).then(leadingInspect)) { ListItemImage(s,model,a,parts,inspect) }
             model.leadingIcon.isNotEmpty()->Box(Modifier.widthIn(min=24.dp).then(leadingInspect),contentAlignment=Alignment.Center) {
-                ListSymbol(model.leadingIcon,s.leadingIconSize,ink,if(expanded) 1.0 else 0.0,modifier=if(inspect!=null) Modifier.inspectAWCNode(inspect,"leading-icon","leading-icon") else Modifier) }
+                ListSymbol(model.leadingIcon,s.leadingIconSize,ink,if(expanded) 1.0 else 0.0,modifier=(if(inspect!=null) Modifier.inspectAWCNode(inspect,"leading-icon","leading-icon") else Modifier).listPartPaint(parts[AWCListItemPart.LeadingIcon])) }
             else->Box(Modifier.then(leadingInspect)) {
                 CompositionLocalProvider(LocalNativeListItemSlots provides slots,LocalNativeListItemResolved provides a,androidx.compose.material3.LocalContentColor provides ink) { Row { content?.invoke("leading") } } }
         }
     }
 }
-@Composable private fun Avatar(s:NativeListItemStyle,model:NativeListItemModel,a:AWCListItemAppearance,inspect:AWCInspectionContext?) {
-    val size=a.leadingAvatarSize ?: 40.0;val shape=AWCCornerShape.uniform(minOf(a.leadingAvatarShape ?: 9999.0,size/2))
+@Composable private fun Avatar(s:NativeListItemStyle,model:NativeListItemModel,a:AWCListItemAppearance,parts:Map<AWCListItemPart,AWCAccordionPartAppearance>,inspect:AWCInspectionContext?) {
+    val size=a.leadingAvatarSize ?: 40.0;val pa=parts[AWCListItemPart.Avatar]
+    // ::part(avatar) is md-avatar's host: its background and corner shape (which clips, overflow hidden) win over the avatar tokens.
+    val shape:androidx.compose.ui.graphics.Shape=pa?.cornerShape ?: AWCCornerShape.uniform(minOf(a.leadingAvatarShape ?: 9999.0,size/2))
     val label=statusDotColor(a.leadingAvatarLabelColor ?: s.color("on-primary-container","#21005D"))
     val initials=if(model.leadingAvatarLabel.isNotEmpty()) model.leadingAvatarLabel.take(2).uppercase() else {
         val words=model.leadingAvatarName.split(" ").filter { it.isNotEmpty() }
         if(words.size>1) (words.first().take(1)+words.last().take(1)).uppercase() else (words.firstOrNull()?.take(1) ?: "").uppercase() }
-    Box(Modifier.size(size.dp).clip(shape).background(statusDotColor(a.leadingAvatarColor ?: s.color("primary-container","#EADDFF")),RectangleShape)
+    // md-avatar's modes: the image, else (none or a failed one) the initials, else the person icon. A decoded image has no
+    // container fill (md-avatar--mode-image).
+    val undecodable=remember(model.leadingAvatar) { listImageUndecodable(model.leadingAvatar) }
+    val showsImage=model.leadingAvatar.isNotEmpty() && !undecodable
+    val fill=pa?.backgroundColor ?: if(showsImage && model.leadingAvatar.startsWith("data:")) "#00000000" else a.leadingAvatarColor ?: s.color("primary-container","#EADDFF")
+    Box(Modifier.size(size.dp).then(pa?.opacity?.let { o-> Modifier.graphicsLayer { alpha=o.toFloat() } } ?: Modifier).clip(shape).background(statusDotColor(fill),RectangleShape)
         .then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"avatar","avatar") else Modifier),contentAlignment=Alignment.Center) {
-        if(model.leadingAvatar.isNotEmpty()) ListImage(model.leadingAvatar,Modifier.fillMaxSize())
-        else BasicText(initials,style=listTextStyle(16.0,16.0,500,.15,label),maxLines=1,softWrap=false)
+        when {
+            showsImage->ListImage(model.leadingAvatar,Modifier.fillMaxSize().listPartPaint(parts[AWCListItemPart.AvatarImage]))
+            initials.isNotEmpty()->BasicText(initials,Modifier.listPartPaint(parts[AWCListItemPart.AvatarInitials]),
+                style=listTextStyle(16.0,16.0,500,.15,parts[AWCListItemPart.AvatarInitials]?.color?.let(::statusDotColor) ?: label),maxLines=1,softWrap=false)
+            else->ListSymbol("person",size*.6,parts[AWCListItemPart.AvatarIcon]?.color?.let(::statusDotColor) ?: label,modifier=Modifier.listPartPaint(parts[AWCListItemPart.AvatarIcon]))
+        }
     }
 }
-@Composable private fun ListItemImage(s:NativeListItemStyle,model:NativeListItemModel,a:AWCListItemAppearance,inspect:AWCInspectionContext?) {
+@Composable private fun ListItemImage(s:NativeListItemStyle,model:NativeListItemModel,a:AWCListItemAppearance,parts:Map<AWCListItemPart,AWCAccordionPartAppearance>,inspect:AWCInspectionContext?) {
     val w=a.leadingImageWidth ?: 56.0;val h=a.leadingImageHeight ?: 56.0;val icon=a.leadingImageSelectionIconSize ?: 24.0
     val rowGeometry=LocalNativeListRowGeometry.current
+    // ::part(image-wrap) clips (overflow hidden) in its corner shape; the scrim holds the circle, which holds the check.
+    val pw=parts[AWCListItemPart.ImageWrap];val wrapShape:androidx.compose.ui.graphics.Shape=pw?.cornerShape ?: AWCCornerShape.uniform(s.imageShape)
+    val ind=parts[AWCListItemPart.ImageSelectionIndicator];val circle=parts[AWCListItemPart.ImageSelectionCircle];val check=parts[AWCListItemPart.ImageSelectionCheck]
+    fun alpha(o:Double?)=o?.let { v-> Modifier.graphicsLayer { alpha=v.toFloat() } } ?: Modifier
     Box(Modifier.size(w.dp,h.dp).onGloballyPositioned { c-> rowGeometry?.let { g-> g.image=g.place(c) } }
-        .clip(AWCCornerShape.uniform(s.imageShape)).then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"image","image") else Modifier),contentAlignment=Alignment.Center) {
-        ListImage(model.leadingImage,Modifier.fillMaxSize())
+        .then(alpha(pw?.opacity)).clip(wrapShape).then(pw?.backgroundColor?.let { Modifier.background(statusDotColor(it),RectangleShape) } ?: Modifier)
+        .then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"image","image") else Modifier),contentAlignment=Alignment.Center) {
+        ListImage(model.leadingImage,Modifier.fillMaxSize().then(alpha(parts[AWCListItemPart.Image]?.opacity)))
         if(s.selectedClass) {
-            Box(Modifier.fillMaxSize().background(statusDotColor(a.leadingImageSelectionScrimColor ?: NativeListItemStyle.mix(s.color("scrim","#000000"),.32)),RectangleShape))
-            Box(Modifier.size(icon.dp).clip(CircleShape).background(statusDotColor(a.leadingImageSelectionCircleColor ?: NativeListItemStyle.mix(s.color("on-surface","#1D1B20"),.6)),RectangleShape))
-            ListSymbol("check",icon*.667,statusDotColor(a.leadingImageSelectionIconColor ?: s.color("surface","#FEF7FF")),1.0)
+            Box(Modifier.fillMaxSize().then(alpha(ind?.opacity))
+                .background(statusDotColor(ind?.backgroundColor ?: a.leadingImageSelectionScrimColor ?: NativeListItemStyle.mix(s.color("scrim","#000000"),.32)),RectangleShape),contentAlignment=Alignment.Center) {
+                Box(Modifier.size(icon.dp).then(alpha(circle?.opacity)).clip(circle?.cornerShape ?: CircleShape)
+                    .background(statusDotColor(circle?.backgroundColor ?: a.leadingImageSelectionCircleColor ?: NativeListItemStyle.mix(s.color("on-surface","#1D1B20"),.6)),RectangleShape),contentAlignment=Alignment.Center) {
+                    ListSymbol("check",icon*.667,statusDotColor(check?.color ?: a.leadingImageSelectionIconColor ?: s.color("surface","#FEF7FF")),1.0,modifier=alpha(check?.opacity))
+                }
+            }
         }
     }
 }
@@ -789,41 +873,40 @@ private fun NativeListRowGeometry.place(c:LayoutCoordinates):androidx.compose.ui
         CompositionLocalProvider(LocalTextStyle provides style,androidx.compose.material3.LocalContentColor provides (style.color),LocalAWCSlotTextRegistry provides registry,
             LocalAWCSlotTextNoWrap provides (lines==1)) { content?.invoke(name) }
     }
-    Column(modifier.then(ins("content"))) {
-        if(model.overline.isNotEmpty()) ListText(model.overline.uppercase(),overlineStyle,Modifier.fillMaxWidth().then(ins("overline")))
-        else Box(Modifier.fillMaxWidth().then(if(overline.hasEntries) ins("overline") else Modifier)) { slot("overline",overlineStyle,overline,1) }
-        Box(Modifier.fillMaxWidth().then(ins("headline"))) {
+    Column(modifier.then(ins("content")).listPartPaint(parts[AWCListItemPart.Content])) {
+        if(model.overline.isNotEmpty()) ListText(model.overline.uppercase(),overlineStyle,Modifier.fillMaxWidth().then(ins("overline")).listPartPaint(parts[AWCListItemPart.Overline]))
+        else Box(Modifier.fillMaxWidth().then(if(overline.hasEntries) ins("overline").listPartPaint(parts[AWCListItemPart.Overline]) else Modifier)) { slot("overline",overlineStyle,overline,1) }
+        Box(Modifier.fillMaxWidth().then(ins("headline")).listPartPaint(parts[AWCListItemPart.Headline])) {
             if(model.headline.isNotEmpty()) ListTruncationTooltip(model.headline,truncation?.headline==true) {
                 ListText(model.headline,headlineStyle,Modifier.fillMaxWidth()) { o-> if(truncation!=null && truncation.headline!=o) truncation.headline=o } }
             else { slot("headline",headlineStyle,null,1);slot("",headlineStyle,defaultText,1) }
         }
         val lines=if(s.lines==3) 2 else 1
-        if(model.supportingText.isNotEmpty()) Box(Modifier.fillMaxWidth().then(ins("supporting-text"))) { ListTruncationTooltip(model.supportingText,truncation?.supporting==true) {
+        if(model.supportingText.isNotEmpty()) Box(Modifier.fillMaxWidth().then(ins("supporting-text")).listPartPaint(parts[AWCListItemPart.SupportingText])) { ListTruncationTooltip(model.supportingText,truncation?.supporting==true) {
             ListText(model.supportingText,supportingStyle,Modifier.fillMaxWidth(),lines) { o-> if(truncation!=null && truncation.supporting!=o) truncation.supporting=o } } }
-        else Box(Modifier.fillMaxWidth().then(if(supporting.hasEntries) ins("supporting-text") else Modifier)) { slot("supporting-text",supportingStyle,supporting,lines) }
+        else Box(Modifier.fillMaxWidth().then(if(supporting.hasEntries) ins("supporting-text").listPartPaint(parts[AWCListItemPart.SupportingText]) else Modifier)) { slot("supporting-text",supportingStyle,supporting,lines) }
     }
 }
 @Composable private fun Trailing(s:NativeListItemStyle,st:NativeListItemStates,model:NativeListItemModel,a:AWCListItemAppearance,parts:Map<AWCListItemPart,AWCAccordionPartAppearance>,
-                                 inspect:AWCInspectionContext?,content:Slot?,tracks:NativeListTracks,expanded:Boolean,geometry:NativeListRowGeometry,toggle:()->Unit) {
+                                 inspect:AWCInspectionContext?,content:Slot?,tracks:NativeListTracks,expanded:Boolean,geometry:NativeListRowGeometry,caretHost:NativeListCaretHost?=null,toggle:()->Unit) {
     @Composable fun ins(part:String)=if(inspect!=null) Modifier.inspectAWCNode(inspect,part,part) else Modifier
     val ink=statusDotColor(parts[AWCListItemPart.TrailingIcon]?.color ?: s.trailingIconColor(st))
     val trailingStyle=listTextStyle(11.0,16.0,500,0.0,statusDotColor(parts[AWCListItemPart.TrailingSupportingText]?.color ?: s.trailingTextColor),a.trailingSupportingTextFont)
-    val bg=parts[AWCListItemPart.Trailing]?.backgroundColor
     val items:@Composable ()->Unit={
         CompositionLocalProvider(LocalTextStyle provides trailingStyle,androidx.compose.material3.LocalContentColor provides ink,LocalAWCSlotTextNoWrap provides true) {
             Box { Row(verticalAlignment=Alignment.CenterVertically) { content?.invoke("trailing") } }
             Box { content?.invoke("trailing-supporting-text") }
         }
-        if(model.trailingSupportingText.isNotEmpty()) NativeSourceText(model.trailingSupportingText,trailingStyle,ins("trailing-supporting-text"),wrap=false)
-        if(model.trailingIcon.isNotEmpty()) ListSymbol(model.trailingIcon,s.trailingIconSize,ink,modifier=Modifier.layoutId("auto").then(ins("trailing-icon")))
-        if(model.expandable) CaretButton(s,a,tracks,expanded,inspect,toggle)
+        if(model.trailingSupportingText.isNotEmpty()) NativeSourceText(model.trailingSupportingText,trailingStyle,ins("trailing-supporting-text").listPartPaint(parts[AWCListItemPart.TrailingSupportingText]),wrap=false)
+        if(model.trailingIcon.isNotEmpty()) ListSymbol(model.trailingIcon,s.trailingIconSize,ink,modifier=Modifier.layoutId("auto").then(ins("trailing-icon")).listPartPaint(parts[AWCListItemPart.TrailingIcon]))
+        if(model.expandable) CaretButton(s,a,tracks,expanded,inspect,caretHost,parts,toggle)
         if(s.reorderable) { val base=statusDotColor(parts[AWCListItemPart.DragHandle]?.color ?: s.trailingIconColor(st));val hover=statusDotColor(s.onSurface)
             val ink=if(parts[AWCListItemPart.DragHandle]?.color!=null) base else androidx.compose.ui.graphics.lerp(base,hover,tracks.handle[1].presented(Double.MAX_VALUE).toFloat())
             ListSymbol("drag_indicator",24.0,ink,glyphSize=22.0,
                 modifier=Modifier.onGloballyPositioned { c-> geometry.row?.takeIf { it.isAttached }?.let { geometry.handle=it.localBoundingBoxOf(c) } }
-                    .graphicsLayer { val t=tracks.frame;alpha=tracks.handle[0].presented(t).toFloat();scaleX=tracks.handle[2].presented(t).toFloat();scaleY=scaleX }.then(ins("drag-handle"))) }
+                    .graphicsLayer { val t=tracks.frame;alpha=(parts[AWCListItemPart.DragHandle]?.opacity ?: tracks.handle[0].presented(t)).toFloat();scaleX=tracks.handle[2].presented(t).toFloat();scaleY=scaleX }.awcCursor(if(st.dragged) AWCCursorStyle.Grabbing else AWCCursorStyle.Grab).then(ins("drag-handle")).listPartPaint(parts[AWCListItemPart.DragHandle],fades=false)) }
     }
-    val mod=Modifier.layoutId("trailing").then(if(bg!=null) Modifier.background(statusDotColor(bg),RectangleShape) else Modifier).then(ins("trailing"))
+    val mod=Modifier.layoutId("trailing").listPartPaint(parts[AWCListItemPart.Trailing]).then(ins("trailing"))
     if(s.lines==3) NativeListTrailingColumn(mod,items)
     else Layout(items,mod) { measurables,_->
         val ps=measurables.map { it.measure(Constraints()) }.filter { it.width>0 || it.height>0 }
@@ -831,7 +914,7 @@ private fun NativeListRowGeometry.place(c:LayoutCoordinates):androidx.compose.ui
         layout(w,h) { var x=0;ps.forEach { p-> p.placeRelative(x,(h-p.height)/2);x+=p.width+gap } }
     }
 }
-@Composable private fun CaretButton(s:NativeListItemStyle,a:AWCListItemAppearance,tracks:NativeListTracks,open:Boolean,inspect:AWCInspectionContext?,toggle:()->Unit) {
+@Composable private fun CaretButton(s:NativeListItemStyle,a:AWCListItemAppearance,tracks:NativeListTracks,open:Boolean,inspect:AWCInspectionContext?,host:NativeListCaretHost?,parts:Map<AWCListItemPart,AWCAccordionPartAppearance>,toggle:()->Unit) {
     val size=a.expandButtonSize ?: 32.0;val chevron=a.expandChevronSize ?: 24.0
     val ink=statusDotColor(if(open) s.color("on-primary","#FFFFFF") else s.chevronColor)
     val fill=statusDotColor(s.color("primary","#6750A4"))
@@ -841,27 +924,32 @@ private fun NativeListRowGeometry.place(c:LayoutCoordinates):androidx.compose.ui
     val rowGeometry=LocalNativeListRowGeometry.current
     val ringColor=statusDotColor(s.color("secondary","#625B71"));val inkColor=ink
     Box(Modifier.layout { m,c-> val p=m.measure(c);layout(p.width-(4*density).roundToInt(),p.height) { p.placeRelative(0,0) } }) {
-        Box(Modifier.size(size.dp).then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"expand-button","expand-button") else Modifier)
+        Box(Modifier.size(size.dp).then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"expand-button","expand-button") else Modifier).listPartPaint(parts[AWCListItemPart.ExpandButton])
             .onGloballyPositioned { c-> rowGeometry?.let { g-> g.caret=g.place(c) } }
-            .onFocusChanged { f-> focused=f.isFocused;if(f.isFocused) keyFocus=owner?.inputIsKey==true }
+            .onFocusChanged { f-> if(focused!=f.isFocused) host?.focus?.invoke(f.isFocused);focused=f.isFocused;if(f.isFocused) keyFocus=owner?.inputIsKey==true }
             .pointerInput(Unit) { val box=this.size;awaitPointerEventScope { while(true) { val e=awaitPointerEvent()
                 val c=e.changes.firstOrNull() ?: continue;if(c.type!=androidx.compose.ui.input.pointer.PointerType.Mouse && e.type!=PointerEventType.Exit) continue
                 val p=c.position;val inside=e.type!=PointerEventType.Exit && p.x>=0 && p.y>=0 && p.x<box.width && p.y<box.height;if(hover!=inside) hover=inside } } }
             .drawBehind { if(open) drawCircle(fill)
                 // md-icon-button's own state layer (ink): pressed 0.10, focus-visible 0.12, hover 0.08.
-                val layer=if(s.disabledClass) 0f else if(pressing) .1f else if(focused && keyFocus) .12f else if(hover) .08f else 0f
-                if(layer>0) drawCircle(inkColor.copy(alpha=layer))
+                // ::part(expand-button-state-layer): its opacity replaces the state opacity.
+                val psl=parts[AWCListItemPart.ExpandButtonStateLayer]
+                val layer=psl?.opacity?.toFloat() ?: if(s.disabledClass) 0f else if(pressing) .1f else if(focused && keyFocus) .12f else if(hover) .08f else 0f
+                if(layer>0) { val c=psl?.backgroundColor?.let(::statusDotColor) ?: inkColor;drawCircle(c.copy(alpha=c.alpha*layer)) }
                 // md-icon-button :focus-visible: a 3px secondary outline offset by 2px.
                 if(focused && keyFocus) {
                     drawCircle(ringColor,radius=this.size.minDimension/2+3.5.dp.toPx(),style=androidx.compose.ui.graphics.drawscope.Stroke(3.dp.toPx())) } }
             .pointerInput(s.disabledClass) { awaitEachGesture { val d=awaitFirstDown();d.consume();pressing=true
                 val up=waitForUpOrCancellation();pressing=false;if(up!=null) { up.consume();toggle() } } }
-            .onKeyEvent { e-> if(e.type==KeyEventType.KeyDown && (e.key==Key.Enter || e.key==Key.NumPadEnter || e.key==Key.Spacebar) && !s.disabledClass) {
+            .onKeyEvent { e-> if(e.type!=KeyEventType.KeyDown) false
+                // The caret sits in the row's shadow tree: the host's key handler and the list's roving take its keys.
+                else if(host!=null) { owner?.let { it.inputTime=e.nativeKeyEvent.eventTime.toDouble();it.inputIsKey=true };host.key(e) }
+                else if((e.key==Key.Enter || e.key==Key.NumPadEnter || e.key==Key.Spacebar) && !s.disabledClass) {
                 owner?.let { it.inputTime=e.nativeKeyEvent.eventTime.toDouble();it.inputIsKey=true };toggle();true } else false }
             .focusProperties { canFocus=!s.model.disabled }.focusTarget()
-            .semantics { role=Role.Button;contentDescription=if(open) "Collapse" else "Expand" },
+            .semantics { role=Role.Button;contentDescription=if(open) "Collapse" else "Expand";this.focused=focused },
             contentAlignment=Alignment.Center) {
-            Box(Modifier.graphicsLayer { rotationZ=(180*tracks.caret.presented(tracks.frame)).toFloat() }) { ListSymbol("expand_more",chevron,ink) }
+            Box(Modifier.graphicsLayer { rotationZ=(180*tracks.caret.presented(tracks.frame)).toFloat() }) { ListSymbol("expand_more",chevron,parts[AWCListItemPart.ExpandButtonIcon]?.color?.let(::statusDotColor) ?: ink,modifier=Modifier.listPartPaint(parts[AWCListItemPart.ExpandButtonIcon])) }
         }
     }
 }
@@ -872,13 +960,17 @@ private fun NativeListRowGeometry.place(c:LayoutCoordinates):androidx.compose.ui
     val scope=remember(row,ctx,owner,inspect) { NativeListPanelScope(row,ctx,owner,{ child-> owner?.childClicked(row,child) },inspect) }
     Layout(content={
         Column(Modifier.graphicsLayer { translationY=(-8*(1-tracks.inner.presented(tracks.frame))*density).toFloat() }
+            .listPartPaint(parts[AWCListItemPart.ExpandedPanelInner],clips=true)
             .padding(start=start.dp,end=end.dp,top=block.dp,bottom=block.dp)) {
             CompositionLocalProvider(LocalNativeListPanel provides scope) { content?.invoke("expanded-content") }
         }
-    },modifier=Modifier.fillMaxWidth().clipToBounds().graphicsLayer { alpha=tracks.panel.presented(tracks.frame).toFloat() }
+    },modifier=Modifier.fillMaxWidth().clipToBounds().graphicsLayer { alpha=(tracks.panel.presented(tracks.frame)*(parts[AWCListItemPart.ExpandedPanel]?.opacity ?: 1.0)).toFloat() }
         .then(if(bg!=null) Modifier.background(statusDotColor(bg),RectangleShape) else Modifier)
         .then(if(inspect!=null) Modifier.inspectAWCNode(inspect,"expanded-panel","expanded-panel",allowZeroSize=true) else Modifier)
-        .semantics { if(!expanded) hideFromAccessibility() }) { measurables,constraints->
+        .semantics { if(!expanded) hideFromAccessibility() }
+        // Collapsed content is retained for the transition: focus traversal does not enter it (the source hides it with
+        // `visibility`, gate-7 r3-26).
+        .then(if(expanded) Modifier else Modifier.focusProperties { canFocus=false })) { measurables,constraints->
         val p=measurables.single().measure(constraints.copy(minHeight=0,maxHeight=Constraints.Infinity))
         val f=tracks.panel.presented(tracks.frame)
         // The source's 0fr grid row cannot shrink the panel below its block padding (the padding is the grid

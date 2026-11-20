@@ -418,6 +418,48 @@ describe('md-fab-menu', () => {
       expect(anchor.style.getPropertyValue('--md-fab-container-color')).toBe('');
       expect(anchor.style.getPropertyValue('--md-fab-icon-color')).toBe('');
     });
+
+    // R1-05: the menu overrides the anchor's colours while open and puts the anchor's own inline values back on close.
+    it('keeps an authored inline FAB colour across open/close cycles', async () => {
+      const page = await createMenu(`
+        <md-fab-menu anchor="fab-anchor" variant="primary">
+          <md-fab-menu-item icon="edit" label="Edit"></md-fab-menu-item>
+        </md-fab-menu>
+      `);
+      const anchor = setupAnchor(page);
+      anchor.style.setProperty('--md-fab-container-color', '#123456');
+
+      for (let cycle = 0; cycle < 2; cycle++) {
+        page.root!.open = true;
+        await page.waitForChanges();
+        expect(anchor.style.getPropertyValue('--md-fab-container-color')).toBe('var(--md-sys-color-primary)');
+        expect(anchor.style.getPropertyValue('--md-fab-icon-color')).toBe('var(--md-sys-color-on-primary)');
+
+        page.root!.open = false;
+        await page.waitForChanges();
+        expect(anchor.style.getPropertyValue('--md-fab-container-color')).toBe('#123456');
+        expect(anchor.style.getPropertyValue('--md-fab-icon-color')).toBe('');
+      }
+    });
+
+    it('restores an authored inline FAB colour when an open menu is removed', async () => {
+      const page = await createMenu(`
+        <md-fab-menu anchor="fab-anchor" variant="tertiary">
+          <md-fab-menu-item icon="edit" label="Edit"></md-fab-menu-item>
+        </md-fab-menu>
+      `);
+      const anchor = setupAnchor(page);
+      anchor.style.setProperty('--md-fab-icon-color', 'rgb(1, 2, 3)');
+
+      page.root!.open = true;
+      await page.waitForChanges();
+      expect(anchor.style.getPropertyValue('--md-fab-icon-color')).toBe('var(--md-sys-color-on-tertiary)');
+
+      page.root!.remove();
+      await page.waitForChanges();
+      expect(anchor.style.getPropertyValue('--md-fab-icon-color')).toBe('rgb(1, 2, 3)');
+      expect(anchor.style.getPropertyValue('--md-fab-container-color')).toBe('');
+    });
   });
 
   /* ── Placement ── */

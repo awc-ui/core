@@ -61,6 +61,8 @@ struct AWCListItemStyle {
     var hasPrimaryAction: Bool { !participates && !reorderable && !(["menu", "menubar"].contains(ctx?.containerRole ?? "")) && (model.type == "button" || model.type == "link") }
     var expandableOnly: Bool { model.expandable && !participates && model.type == "text" }
     var focusable: Bool { (interactive && !expandableOnly) || reorderable }
+    /// A stop of its list's roving focus (md-list isItemFocusable): in a selection list an expandable-only row is one too.
+    var rovingFocusable: Bool { inList && !(ctx?.inPanel ?? false) ? !model.disabled && (inSelection || reorderable || model.type != "text") : focusable }
     var onSurface: String { color("on-surface", "#1C1B1F") }
     var disabledInk: String { Self.mix(onSurface, 0.38) }
     var selectedLabel: String { a.selectedLabelTextColor ?? color("on-secondary-container", "#4A4458") }
@@ -249,6 +251,18 @@ struct AWCListGlyph: View {
 /// Decoded `data:` image (oracle swatches) or a remote image.
 struct AWCListImage: View {
     let source: String
+    /// The image failed to load (the `<img>` `error` event).
+    var onFailure: (() -> Void)? = nil
+    /// A `data:` source that does not decode to an image fails at once (Chrome: `error`).
+    static func undecodable(_ source: String) -> Bool {
+        guard source.hasPrefix("data:") else { return false }
+        guard let comma = source.firstIndex(of: ","), let data = Data(base64Encoded: String(source[source.index(after: comma)...])) else { return true }
+        #if canImport(AppKit)
+        return NSImage(data: data) == nil
+        #else
+        return UIImage(data: data) == nil
+        #endif
+    }
     var body: some View {
         if source.hasPrefix("data:"), let comma = source.firstIndex(of: ","), let data = Data(base64Encoded: String(source[source.index(after: comma)...])) {
             #if canImport(AppKit)
@@ -257,7 +271,11 @@ struct AWCListImage: View {
             if let image = UIImage(data: data) { Image(uiImage: image).resizable().interpolation(.none).aspectRatio(contentMode: .fill) } else { Color.clear }
             #endif
         } else if let url = URL(string: source) {
-            AsyncImage(url: url) { $0.resizable().aspectRatio(contentMode: .fill) } placeholder: { Color.clear }
+            AsyncImage(url: url) { phase in
+                if let image = phase.image { image.resizable().aspectRatio(contentMode: .fill) }
+                else if phase.error != nil { Color.clear.onAppear { onFailure?() } }
+                else { Color.clear }
+            }
         }
     }
 }

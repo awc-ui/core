@@ -144,3 +144,38 @@ struct AWCElevationShadow: View, Animatable {
         AWCNativeBoxShadow(corners: corners, layers: layers(lo), toLayers: lo == hi ? nil : layers(hi), fraction: level - Double(lo), placement: .outer)
     }
 }
+
+// 6-6: the md-menu surface shadow. On iOS a live blurred Canvas under the animated open makes the render server miss the vsync
+// after the first open frame (KNOWN-CAUSES row 33); the same AWCNativeBoxShadow is rendered once per size into a cached bitmap.
+#if os(iOS)
+typealias AWCMenuSurfaceBoxShadow = AWCRasterBoxShadow
+@MainActor enum AWCRasterBoxShadowCache { static var images: [String: CGImage] = [:] }
+struct AWCRasterBoxShadow: View {
+    let corners: AWCCornerShape, layers: [AWCBoxShadow]
+    var placement: AWCNativeBoxShadow.Placement = .all
+    @Environment(\.displayScale) private var scale
+    @Environment(\.layoutDirection) private var direction
+    var body: some View {
+        GeometryReader { geometry in
+            let base = AWCNativeBoxShadow(corners: corners, layers: layers, placement: placement)
+            let extent = base.paint.reduce(24.0) { max($0, abs($1.0.x)+abs($1.0.y)+abs($1.0.spread)+$1.0.blur*2+2) }
+            let w = geometry.size.width, h = geometry.size.height
+            if w > 0, h > 0, let image = Self.image(base, w, h, extent, scale, direction) {
+                Image(decorative: image, scale: scale).frame(width: w+extent*2, height: h+extent*2).offset(x: -extent, y: -extent)
+            }
+        }.allowsHitTesting(false).accessibilityHidden(true)
+    }
+    @MainActor static func image(_ base: AWCNativeBoxShadow, _ w: CGFloat, _ h: CGFloat, _ e: CGFloat, _ scale: CGFloat, _ direction: LayoutDirection) -> CGImage? {
+        let key = "\(w)x\(h)@\(scale)|\(direction)|\(base.corners)|\(base.layers)|\(base.placement)"
+        if let hit = AWCRasterBoxShadowCache.images[key] { return hit }
+        let renderer = ImageRenderer(content: base.frame(width: w, height: h).padding(e).environment(\.layoutDirection, direction))
+        renderer.scale = scale; renderer.proposedSize = ProposedViewSize(width: w+e*2, height: h+e*2)
+        guard let image = renderer.cgImage else { return nil }
+        if AWCRasterBoxShadowCache.images.count >= 32 { AWCRasterBoxShadowCache.images.removeAll() }
+        AWCRasterBoxShadowCache.images[key] = image
+        return image
+    }
+}
+#else
+typealias AWCMenuSurfaceBoxShadow = AWCNativeBoxShadow
+#endif

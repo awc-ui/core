@@ -104,8 +104,9 @@ test('item methods, pointer drags and the support gate use the released contract
     for (const [component, key] of [[group, 'properties'], [group, 'events'], [item, 'properties'], [item, 'events'], [item, 'methods'], [item, 'slots'], [group, 'slots']]) {
       assert.deepEqual([...component.support[platform][key]].sort(), component[key].map(member => member.name).sort(), `${platform} ${component.tag} ${key}`);
     }
-    assert.deepEqual(item.support[platform].visualParts, ['heading', 'header', 'state-layer', 'drag-handle', 'leading-icon', 'headline', 'supporting-text', 'trailing-icon', 'panel', 'content', 'content-inner']);
-    assert.match(group.support[platform].notes.join(' '), /zIndex orders a panel only among siblings/);
+    assert.deepEqual(item.support[platform].visualParts, ['heading', 'header', 'state-layer', 'drag-handle', 'leading-icon', 'headline', 'supporting-text', 'trailing-icon', 'panel', 'content', 'content-inner', 'chassis-handle', 'chassis-handle-bar']);
+    assert.deepEqual(group.support[platform].visualParts, ['drop-placeholder']);
+    assert.match(group.support[platform].notes.join(' '), /lifts the AWC hosts above it/);
     for (const method of ['toggle', 'focusHeader']) {
       assert.equal(nativeMethodSupported('md-accordion-item', method, item.support[platform]), true);
       assert.equal(nativeMethodSupported('md-accordion-item', method, { ...item.support[platform], methods: [] }), false);
@@ -188,8 +189,9 @@ test('native API examples use the verified viewport, controller, typed parts and
       assert.equal(example.status, 'native-equivalent', part);
       assert.match(example.code, platform === 'swift' ? /\.awcAccordionItemPartAppearance\(\.init\(/ : /AWCAccordionItemPartAppearanceScope\(AWCAccordionItemPart\.[A-Z]/, part);
     }
-    for (const part of ['chassis-handle', 'chassis-handle-bar']) assert.match(nativeApiExample(item, 'cssPart', part, platform).code, /chassisHandleColor/);
-    assert.match(nativeApiExample(group, 'cssPart', 'drop-placeholder', platform).code, /dropPlaceholderColor/);
+    // The floating grip and the drop placeholder take typed part declarations (gate-7 r3-18).
+    for (const part of ['chassis-handle', 'chassis-handle-bar']) assert.match(nativeApiExample(item, 'cssPart', part, platform).code, platform === 'swift' ? /part: \.chassisHandle/ : /AWCAccordionItemPart\.ChassisHandle/);
+    assert.match(nativeApiExample(group, 'cssPart', 'drop-placeholder', platform).code, platform === 'swift' ? /\.awcAccordionPartAppearance\(\.init\([^)]*\), part: \.dropPlaceholder\)/ : /AWCAccordionPartAppearanceScope\(AWCAccordionPart\.DropPlaceholder, AWCAccordionPartAppearance\(/);
     for (const slot of ['', 'leading-icon', 'headline', 'trailing-icon']) assert.ok(nativeApiExample(item, 'slot', slot, platform).code, `slot ${slot}`);
   }
 });

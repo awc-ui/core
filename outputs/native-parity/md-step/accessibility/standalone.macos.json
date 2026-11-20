@@ -1,0 +1,240 @@
+{
+ "tag": "md-step",
+ "case": "standalone",
+ "request": {
+  "tag": "md-step",
+  "properties": {},
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Step 1 of 0: Workspace, current",
+         "enabled": true,
+         "expanded": false,
+         "focused": false,
+         "frame": [
+          250.5,
+          32,
+          139,
+          96
+         ],
+         "identifier": "example-md-step",
+         "index": 0,
+         "invalid": "false",
+         "required": false,
+         "role": "AXButton",
+         "roleDescription": "button",
+         "selected": false
+        },
+        {
+         "enabled": true,
+         "frame": [
+          258.421875,
+          112,
+          123.5,
+          14
+         ],
+         "role": "AXStaticText",
+         "roleDescription": "text",
+         "value": "Choose a project name"
+        }
+       ],
+       "description": "",
+       "enabled": true,
+       "focused": false,
+       "frame": [
+        32,
+        32,
+        576,
+        156
+       ],
+       "identifier": "example-md-step",
+       "role": "AXGroup",
+       "roleDescription": "group"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      220
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    220
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [
+   {
+    "children": [],
+    "id": "example-md-text-field",
+    "properties": {
+     "appearFocused": false,
+     "autoCapitalize": "",
+     "autocomplete": "",
+     "chipsWrap": false,
+     "clearable": "internal",
+     "debounce": 0,
+     "density": 0,
+     "disabled": false,
+     "enterKeyHint": "",
+     "error": false,
+     "errorText": "",
+     "focusBorderWidth": 3,
+     "formatOn": "blur",
+     "hidePasswordLabel": "Hide password",
+     "inputAriaAutocomplete": "",
+     "inputExpanded": false,
+     "inputMode": "",
+     "inputRole": "",
+     "label": "Project name",
+     "multiline": false,
+     "name": "",
+     "passwordToggle": false,
+     "pattern": "",
+     "placeholder": "e.g. AWC Native",
+     "prefixText": "",
+     "readOnly": false,
+     "required": false,
+     "reserveSupportingSpace": false,
+     "restrict": "",
+     "showPasswordLabel": "Show password",
+     "speechLang": "",
+     "speechToText": false,
+     "spellcheck": true,
+     "suffixText": "",
+     "supportingText": "A name your team will recognize",
+     "throttle": 0,
+     "type": "text",
+     "value": "",
+     "variant": "filled"
+    },
+    "tag": "md-text-field"
+   }
+  ],
+  "id": "example-md-step",
+  "properties": {
+   "active": true,
+   "completed": false,
+   "completedIcon": "check",
+   "density": 0,
+   "description": "Choose a project name",
+   "disabled": false,
+   "editable": false,
+   "error": false,
+   "errorIcon": "priority_high",
+   "errorText": "",
+   "hideActions": false,
+   "icon": "",
+   "label": "Workspace",
+   "optional": false
+  },
+  "tag": "md-step"
+ },
+ "focus": [
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Step 1 of 0: Workspace, current",
+    "frame": [
+     250.5,
+     32,
+     139,
+     96
+    ],
+    "identifier": "example-md-step",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Step 1 of 0: Workspace, current",
+    "frame": [
+     250.5,
+     32,
+     139,
+     96
+    ],
+    "identifier": "example-md-step",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 156,
+     "width": 576,
+     "x": 32,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "active": 0,
+     "activeColor": "#6750A4",
+     "completed": [
+      false
+     ],
+     "errorLive": "",
+     "height": 156,
+     "indicatorSize": 32,
+     "live": "",
+     "panelMode": "shared",
+     "steps": 1,
+     "width": 576
+    },
+    "name": "md-step"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

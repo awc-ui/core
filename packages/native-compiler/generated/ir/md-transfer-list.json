@@ -466,7 +466,7 @@
     "attributes": [
       {
         "name": "class",
-        "value": "{\n          'md-transfer-list': true,\n          'md-transfer-list--disabled': this.disabled,\n        }"
+        "value": "{\n          'md-transfer-list': true,\n          'md-transfer-list--disabled': this.disabled,\n          // Keyed on the prop, not the reflected attribute (see the column rule in the CSS).\n          'md-transfer-list--searchable': this.searchable,\n        }"
       },
       {
         "name": "role",
@@ -521,7 +521,7 @@
     "styleUrl": "md-transfer-list.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "72e3d8bdb711318f890576d7fec1f4e4b59fea3dfc4e7e3c1017d840bfb87826"
+    "sha256": "d0277a5a772ad57d82307e8d918a95cc947b44738bea09451c91ca6deca559f1"
   },
   "styles": [
     {
@@ -834,7 +834,7 @@
       ]
     },
     {
-      "selector": ":host([searchable]) .md-transfer-list__column",
+      "selector": ":host(.md-transfer-list--searchable) .md-transfer-list__column",
       "context": null,
       "declarations": [
         {
@@ -1616,88 +1616,172 @@
         "sourceSearchPlaceholder",
         "targetSearchPlaceholder",
         "showSelectAll",
-        "emptyText",
-        "singleStepOnly",
-        "moveRightLabel",
-        "moveLeftLabel",
-        "moveAllRightLabel",
-        "moveAllLeftLabel",
-        "disabled"
-      ],
-      "events": [
-        "mdChange",
-        "mdMove"
-      ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
         "searchIcon",
         "moveRightIcon",
         "moveLeftIcon",
         "moveAllRightIcon",
         "moveAllLeftIcon",
         "emptyIcon",
+        "emptyText",
         "countTemplate",
         "density",
+        "disabled",
+        "singleStepOnly",
+        "moveRightLabel",
+        "moveLeftLabel",
+        "moveAllRightLabel",
+        "moveAllLeftLabel",
         "selectAllLabel"
       ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "events": [
+        "mdChange",
+        "mdMove"
+      ],
+      "methods": [
         "moveSelectedRight",
         "moveSelectedLeft"
       ],
+      "slots": [],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native dual-list transfer supports disabled options, checked selection, select-all, per-side search and directional moves."
+        "Dedicated native transfer list: all 24 properties (items as an array or its JSON string, controlled value, titles, searchable with placeholders and icon, select-all with its label template, the four movers' icons and labels, the empty state's icon and text, the count template, density, disabled, single-step-only), both events (mdChange string[], mdMove {direction, moved, target}) and both methods (moveSelectedRight/moveSelectedLeft through AWCTransferListController), with the twenty --md-transfer-list-* hooks as a typed appearance API (item padding as the CSS padding shorthand's physical sides). The host attributes full-width/full-height are read as the fullWidth/fullHeight properties, as on md-card.",
+        "Layout is the source's CSS grid: 1fr auto 1fr with the gap, a minmax(0, 1fr) row that is the host's block size, searchable columns at the definite 360px cap (or the height hook; 100% with full-height) overflowing a shorter row, the others stretched up to the cap, the movers stretched to the row; the stacked layout at a viewport of 640 or less with rotated movers; RTL mirrors the movers. The count pill uses Roboto advances with the 0.4px letter spacing.",
+        "Interaction as in the source: a row click or Space/Enter toggles its check (checks per side in check order, dropped when a controlled value or items change takes the item away), select-all of the visible enabled rows, per-side search over label and description, movers on the visible enabled checked rows; a press focuses the row without the ring (Chrome's :focus-visible), keys show it; the row checkbox is inert (out of the focus order, presses go to the row); a disabled list keeps its scroll region focusable.",
+        "Motion: row backgrounds transition 100 ms ease in premultiplied Oklab (CSS colour interpolation), starting at the frame the change renders; the md-ripple wave paints under the row's checkbox; reduced motion removes the transition.",
+        "Typed ::part() targets (AWCTransferListPartAppearance, one AWCTransferListPartStyle per part): column and, per side, column-source / column-target (background, border colour, corner radius; a side's values over column's), header (background, the divider under it), header-title (background), count (background, text colour, corner radius), search (background of the field's padded box), list (background), item (background, which replaces the hover / checked / focus layers as a ::part() declaration does; corner radius of the row, its focus ring and ripple), empty (background, text and icon colour), empty-icon (colour, size, opacity), controls (background). Part values come from the outer tree, so they win over the hooks and every state rule. Verified against Chrome 153's ::part() cases (web-oracle/parts.json)."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "column",
+        "column-source",
+        "column-target",
+        "header",
+        "header-title",
+        "count",
+        "search",
+        "list",
+        "item",
+        "empty",
+        "empty-icon",
+        "controls"
+      ],
+      "appearance": {
+        "api": ".awcTransferListAppearance(AWCTransferListAppearance)",
+        "fields": [
+          "width",
+          "minWidth",
+          "maxWidth",
+          "height",
+          "minHeight",
+          "maxHeight",
+          "columnMinWidth",
+          "columnMaxBlock",
+          "containerShape",
+          "containerColor",
+          "headerColor",
+          "headerTextColor",
+          "itemInset",
+          "itemPadding",
+          "itemGap",
+          "dividerColor",
+          "controlsGap",
+          "emptyIconSize",
+          "controlSize",
+          "controlIconSize"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "disabled",
-        "emptyText",
         "items",
-        "moveAllLeftLabel",
-        "moveAllRightLabel",
-        "moveLeftLabel",
-        "moveRightLabel",
-        "searchable",
-        "showSelectAll",
-        "singleStepOnly",
-        "sourceSearchPlaceholder",
+        "value",
         "sourceTitle",
-        "targetSearchPlaceholder",
         "targetTitle",
-        "value"
-      ],
-      "events": [
-        "mdChange",
-        "mdMove"
-      ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
+        "searchable",
+        "sourceSearchPlaceholder",
+        "targetSearchPlaceholder",
+        "showSelectAll",
         "searchIcon",
         "moveRightIcon",
         "moveLeftIcon",
         "moveAllRightIcon",
         "moveAllLeftIcon",
         "emptyIcon",
+        "emptyText",
         "countTemplate",
         "density",
+        "disabled",
+        "singleStepOnly",
+        "moveRightLabel",
+        "moveLeftLabel",
+        "moveAllRightLabel",
+        "moveAllLeftLabel",
         "selectAllLabel"
       ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "events": [
+        "mdChange",
+        "mdMove"
+      ],
+      "methods": [
         "moveSelectedRight",
         "moveSelectedLeft"
       ],
+      "slots": [],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native transfer list: all 24 properties (items as an array or its JSON string, controlled value, titles, searchable with placeholders and icon, select-all with its label template, the four movers' icons and labels, the empty state's icon and text, the count template, density, disabled, single-step-only), both events (mdChange string[], mdMove {direction, moved, target}) and both methods (moveSelectedRight/moveSelectedLeft through AWCTransferListController), with the twenty --md-transfer-list-* hooks as a typed appearance API (item padding as the CSS padding shorthand's physical sides). The host attributes full-width/full-height are read as the fullWidth/fullHeight properties, as on md-card.",
+        "Layout is the source's CSS grid: 1fr auto 1fr with the gap, a minmax(0, 1fr) row that is the host's block size, searchable columns at the definite 360px cap (or the height hook; 100% with full-height) overflowing a shorter row, the others stretched up to the cap, the movers stretched to the row; the stacked layout at a viewport of 640 or less with rotated movers; RTL mirrors the movers. The count pill uses Roboto advances with the 0.4px letter spacing.",
+        "Interaction as in the source: a row click or Space/Enter toggles its check (checks per side in check order, dropped when a controlled value or items change takes the item away), select-all of the visible enabled rows, per-side search over label and description, movers on the visible enabled checked rows; a press focuses the row without the ring (Chrome's :focus-visible), keys show it; the row checkbox is inert (out of the focus order, presses go to the row); a disabled list keeps its scroll region focusable.",
+        "Motion: row backgrounds transition 100 ms ease in premultiplied Oklab (CSS colour interpolation), starting at the frame the change renders; the md-ripple wave paints under the row's checkbox; reduced motion removes the transition.",
+        "Typed ::part() targets (AWCTransferListPartAppearance, one AWCTransferListPartStyle per part): column and, per side, column-source / column-target (background, border colour, corner radius; a side's values over column's), header (background, the divider under it), header-title (background), count (background, text colour, corner radius), search (background of the field's padded box), list (background), item (background, which replaces the hover / checked / focus layers as a ::part() declaration does; corner radius of the row, its focus ring and ripple), empty (background, text and icon colour), empty-icon (colour, size, opacity), controls (background). Part values come from the outer tree, so they win over the hooks and every state rule. Verified against Chrome 153's ::part() cases (web-oracle/parts.json)."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "column",
+        "column-source",
+        "column-target",
+        "header",
+        "header-title",
+        "count",
+        "search",
+        "list",
+        "item",
+        "empty",
+        "empty-icon",
+        "controls"
+      ],
+      "appearance": {
+        "api": "AWCTransferListAppearanceScope(AWCTransferListAppearance)",
+        "fields": [
+          "width",
+          "minWidth",
+          "maxWidth",
+          "height",
+          "minHeight",
+          "maxHeight",
+          "columnMinWidth",
+          "columnMaxBlock",
+          "containerShape",
+          "containerColor",
+          "headerColor",
+          "headerTextColor",
+          "itemInset",
+          "itemPadding",
+          "itemGap",
+          "dividerColor",
+          "controlsGap",
+          "emptyIconSize",
+          "controlSize",
+          "controlIconSize"
+        ]
+      }
     }
   }
 }

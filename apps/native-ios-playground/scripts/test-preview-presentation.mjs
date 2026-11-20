@@ -47,36 +47,70 @@ try {
   const options = [{ label: 'London', value: 'london' }, { label: 'Paris', value: 'paris' }];
   for (const tag of ['md-select', 'md-autocomplete', 'md-multi-select']) {
     const opened = await create(tag, { open: true, filterable: true, showSelectAll: false, options, value: tag === 'md-multi-select' ? [] : '' });
-    const chosen = await click(opened, 160, 174);
+    // The first option row: below the filter header for the selects (y 174); md-autocomplete has no header, its first row follows the field.
+    const box = (opened.inspection?.nodes ?? []).find(n => n.id?.endsWith('.container') && n.bounds)?.bounds;
+    if (tag === 'md-autocomplete') assert.ok(box, 'md-autocomplete: the field container is inspected');
+    const chosen = await click(opened, 160, tag === 'md-autocomplete' ? box.y + box.height + 24 : 174);
     assert.deepEqual(detail(chosen, 'mdChange'), tag === 'md-multi-select' ? ['london'] : 'london', `${tag}: clicking captured native row updates value`);
     if (tag === 'md-multi-select') {
       const done = await click(chosen, 550, 70);
       assert.deepEqual(names(done), ['mdClose'], 'Done remains visible and actionable inside the captured view');
+    } else if (tag === 'md-autocomplete') {
+      await delay(600);
+      const after = await renderer.frame(opened.sessionId);
+      assert.ok([...names(chosen), ...names(after)].includes('mdClose'), 'md-autocomplete: picking a row closes the suggestions');
     } else assert.ok(names(chosen).includes('mdClose'));
     await close(opened);
   }
 
-  const date = await create('md-date-picker', { open: true, value: '2026-10-13', min: '2026-10-10', max: '2026-10-20' });
-  assert.deepEqual(names(await click(date, 248, 264)), [], 'Out-of-range day is disabled');
-  const selected = await click(date, 320, 340);
+  // The date picker's dialog (header, calendar grid, actions) needs more than the 240 px default capture height; like the
+  // time and colour pickers it is created in a 640 px viewport. Targets below come from the inspected parts.
+  const dpPart = (f, id) => (f.inspection?.nodes ?? []).find(n => n.id?.endsWith(`.${id}`) && n.bounds)?.bounds;
+  const date = await create('md-date-picker', { open: true, value: '2026-10-13', min: '2026-10-10', max: '2026-10-20' }, { height: 640 });
+  assert.equal(date.logicalHeight, 640, 'md-date-picker: the configured viewport is the captured surface');
+  await delay(700);
+  const dpShown = await renderer.frame(date.sessionId);
+  const dpCentre = id => { const b = dpPart(dpShown, id); assert.ok(b, `md-date-picker: ${id} is inspected`); return [b.x + b.width / 2, b.y + b.height / 2]; };
+  assert.deepEqual(names(await click(dpShown, ...dpCentre('day-2026-10-09'))), [], 'Out-of-range day is disabled');
+  const selected = await click(dpShown, ...dpCentre('day-2026-10-15'));
   const selectedDate = detail(selected, 'mdSelected')?.value;
   assert.match(selectedDate || '', /^2026-10-1[0-9]$/);
   assert.notEqual(selectedDate, '2026-10-13');
-  const committedDate = await click(selected, 540, 515);
+  await delay(300);
+  const okButton = dpPart(await renderer.frame(date.sessionId), 'ok-button');
+  assert.ok(okButton, 'md-date-picker: the OK button is inspected');
+  assert.ok(okButton.y + okButton.height <= date.logicalHeight && okButton.x + okButton.width <= date.logicalWidth, 'md-date-picker: the OK button lies inside the captured frame');
+  const committedDate = await click(selected, okButton.x + okButton.width / 2, okButton.y + okButton.height / 2);
   assert.equal(detail(committedDate, 'mdChange')?.value, selectedDate);
-  assert.ok(names(committedDate).includes('mdClose'));
+  // mdClose follows the dialog's exit motion (as md-autocomplete, KNOWN-CAUSES row 15): read it from a later frame too.
+  await delay(600);
+  const afterDate = await renderer.frame(date.sessionId);
+  assert.ok([...names(committedDate), ...names(afterDate)].includes('mdClose'), 'md-date-picker: committing closes the dialog');
   await close(date);
 
-  const time = await create('md-time-picker', { open: true, value: '10:30' });
-  const editedTime = await click(time, 139, 342);
+  // md-time-picker / md-color-picker have dedicated renderers (fi, 2026-11): the time picker's dialog presents in the overlay
+  // viewport (as md-dialog) and the colour picker's panel sits 24 px in; targets come from the inspected parts.
+  const part = (f, id) => (f.inspection?.nodes ?? []).find(n => n.id?.endsWith(`.${id}`) && n.bounds)?.bounds;
+  const centre = b => [b.x + b.width / 2, b.y + b.height / 2];
+  const time = await create('md-time-picker', { open: true, value: '10:30', variant: 'dial' }, { height: 640 });
+  await delay(700);
+  const timeShown = await renderer.frame(time.sessionId);
+  const eleven = part(timeShown, 'dial-number-11');
+  assert.ok(eleven, 'md-time-picker: the dial number 11 is inspected');
+  const editedTime = await click(timeShown, ...centre(eleven));
   assert.equal(detail(editedTime, 'mdInput')?.value, '11:30');
-  const committedTime = await click(editedTime, 540, 434);
+  await delay(300);
+  const confirm = part(await renderer.frame(time.sessionId), 'confirm-button');
+  assert.ok(confirm, 'md-time-picker: the confirm button is inspected');
+  const committedTime = await click(editedTime, ...centre(confirm));
   assert.equal(detail(committedTime, 'mdChange')?.hours, 11);
   assert.equal(detail(committedTime, 'mdChange')?.minutes, 30);
   await close(time);
 
-  const color = await create('md-color-picker', { value: '#6750A4' });
-  const changedColor = await click(color, 450, 78);
+  const color = await create('md-color-picker', { value: '#6750A4' }, { height: 640 });
+  const plate = part(color, 'plate');
+  assert.ok(plate, 'md-color-picker: the plate is inspected');
+  const changedColor = await click(color, plate.x + plate.width * 0.8, plate.y + plate.height * 0.2);
   assert.deepEqual(names(changedColor), ['mdInput', 'mdChange']);
   assert.match(detail(changedColor, 'mdChange')?.value || '', /^#[0-9A-F]{6}$/);
   assert.notEqual(detail(changedColor, 'mdChange')?.value, '#6750A4');

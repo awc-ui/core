@@ -92,6 +92,7 @@ unfold keyframes against Chrome's samples one Chrome frame either side (its own 
 phase and payload. Time is Chrome's: inputs are injected at the oracle's send times on Chrome's 60 Hz frame grid (Swift virtual
 clock; Android test clock scaled 16.667/16), a press at the frame Chrome's samples show `:active` taking effect; a group Chrome
 first samples one frame into its unfold was painted at 0% in the frame before.
+On the iOS simulator the release of a click reaches the card's gesture a few milliseconds to a frame later (longer on iPad), and the gesture's `onEnded` stamps the click's frame (`pointerCommitAt`): the states test therefore pumps 0.1 s of real time after each release before the frame clock moves (story 4-3: the iPad `click-*` per-frame checks 1-2 frames off in 8-19 of 1262 checks per run -- 4 of 4 runs -- became 1253/1253 in 4 of 4 runs; the frame clock and the product are unchanged, a harness race, not a product defect).
 
 ## Laboratory (gate 3)
 

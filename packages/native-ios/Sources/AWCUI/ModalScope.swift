@@ -162,6 +162,18 @@ struct AWCModalEntries: PreferenceKey {
     static func reduce(value: inout [AWCModalEntry], nextValue: () -> [AWCModalEntry]) { value.append(contentsOf: nextValue()) }
 }
 
+extension Dictionary where Key == String, Value == AWCValue {
+    /// A boolean property as a writable projection (`$local[awcBool: "open"]`). The modal owners take their `open` state
+    /// this way: a location-based binding is unchanged between updates, while SwiftUI reports `Binding(get:set:)` (closures,
+    /// no identity) as changed on every graph update — the owner's body ran again after each delivery of its entries and
+    /// republished them several times per frame, and a bound preference is delivered once per frame: a dropped removal
+    /// left the closed modal mounted (d2's finding, 2026-11-11).
+    subscript(awcBool key: String) -> Bool {
+        get { self[key]?.bool ?? false }
+        set { self[key] = .bool(newValue) }
+    }
+}
+
 /// Hosts Dialog, Bottom Sheet and Side Sheet in the application's actual viewport (not platform windows): place it
 /// at the content root. Content under an open modal is inert (no hit testing, no keyboard focus, hidden from
 /// assistive technology), Escape and Tab route to the top owner, and the viewport/safe areas feed vw/vh, the
@@ -205,7 +217,10 @@ public struct AWCModalScope<Content: View>: View {
                         .zIndex(session.paintKey(id: entry.id, zIndex: entry.zIndex))
                 }
             }
+            .environment(\.awcStackingNested, true)   // components slotted in a modal join the lift chain (r3-19)
         }
+        // Tab order: the AWC focus views of the content and of the open modals in document (source) order.
+        .modifier(AWCDocumentOrderCollector())
     }
 }
 
@@ -222,6 +237,11 @@ final class AWCModalHostView: NSView {
             guard let self, let session = self.session, event.window === self.window else { return event }
             if event.type != .keyDown { session.lastInputPointer = true; return event }
             session.lastInputPointer = false
+            // Tab from the document (no first responder) enters the content in document order (NativeDocumentOrder.swift).
+            if !session.isActive, event.keyCode == 48, event.modifierFlags.intersection([.control, .option, .command]).isEmpty, let window = self.window,
+               window.firstResponder == nil || window.firstResponder === window {
+                return MainActor.assumeIsolated { AWCDocumentTabOrder.enter(in: window, backward: event.modifierFlags.contains(.shift)) } ? nil : event
+            }
             guard session.isActive else { return event }
             switch event.keyCode {
             case 53: return session.escape() ? nil : event

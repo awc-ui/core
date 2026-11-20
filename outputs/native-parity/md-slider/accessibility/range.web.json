@@ -1,0 +1,306 @@
+{
+ "tag": "md-slider",
+ "case": "range",
+ "html": "<md-slider data-ax-node=\"n0\" id=\"example-md-slider\"></md-slider>",
+ "props": {
+  "n0": {
+   "ariaLabelEnd": "Maximum price",
+   "ariaLabelStart": "Minimum price",
+   "controlled": false,
+   "density": 0,
+   "disabled": false,
+   "fullHeight": false,
+   "icon": "",
+   "insetIcon": false,
+   "labeled": true,
+   "max": 100,
+   "min": 0,
+   "name": "",
+   "nameEnd": "",
+   "nameStart": "",
+   "orientation": "horizontal",
+   "range": true,
+   "size": "xs",
+   "sliderAriaLabel": "Volume",
+   "step": 1,
+   "stops": false,
+   "value": 40,
+   "valueEnd": 60,
+   "valueEndText": "",
+   "valueIndicator": false,
+   "valueStart": 20,
+   "valueStartText": "",
+   "valueText": "",
+   "variant": "standard"
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   272
+  ],
+  "children": [
+   {
+    "role": "generic",
+    "name": "",
+    "ignored": false,
+    "invalid": "false",
+    "frame": [
+     16,
+     16,
+     608,
+     92
+    ],
+    "children": [
+     {
+      "role": "generic",
+      "name": "",
+      "ignored": false,
+      "frame": [
+       16,
+       64,
+       608,
+       44
+      ],
+      "children": [
+       {
+        "role": "generic",
+        "name": "",
+        "ignored": false,
+        "frame": [
+         16,
+         64,
+         608,
+         44
+        ],
+        "children": [
+         {
+          "role": "generic",
+          "name": "",
+          "ignored": false,
+          "frame": [
+           16,
+           78,
+           608,
+           16
+          ],
+          "children": [
+           {
+            "role": "generic",
+            "name": "",
+            "ignored": false,
+            "frame": [
+             16,
+             78,
+             115.59375,
+             16
+            ]
+           },
+           {
+            "role": "generic",
+            "name": "",
+            "ignored": false,
+            "frame": [
+             143.59375,
+             78,
+             231.1875,
+             16
+            ]
+           }
+          ]
+         },
+         {
+          "role": "generic",
+          "name": "",
+          "ignored": false,
+          "frame": [
+           135.59375,
+           64,
+           4,
+           44
+          ],
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "StaticText",
+              "name": "20",
+              "ignored": false,
+              "frame": [
+               130.40625,
+               31,
+               14.359375,
+               14
+              ],
+              "children": [
+               {
+                "role": "InlineTextBox",
+                "name": "20",
+                "ignored": false
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "generic",
+          "name": "",
+          "ignored": false,
+          "frame": [
+           378.796875,
+           64,
+           4,
+           44
+          ],
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "StaticText",
+              "name": "60",
+              "ignored": false,
+              "frame": [
+               373.609375,
+               31,
+               14.359375,
+               14
+              ],
+              "children": [
+               {
+                "role": "InlineTextBox",
+                "name": "60",
+                "ignored": false
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "slider",
+          "name": "Minimum price",
+          "ignored": false,
+          "value": 20,
+          "invalid": "false",
+          "focusable": true,
+          "settable": true,
+          "orientation": "horizontal",
+          "valuemin": 0,
+          "valuemax": 100,
+          "valuetext": "20",
+          "frame": [
+           16,
+           64,
+           608,
+           44
+          ]
+         },
+         {
+          "role": "slider",
+          "name": "Maximum price",
+          "ignored": false,
+          "value": 60,
+          "invalid": "false",
+          "focusable": true,
+          "settable": true,
+          "orientation": "horizontal",
+          "valuemin": 0,
+          "valuemax": 100,
+          "valuetext": "60",
+          "frame": [
+           16,
+           64,
+           608,
+           44
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [
+  {
+   "dom": "input",
+   "role": "slider",
+   "name": "Minimum price",
+   "frame": [
+    16,
+    64,
+    608,
+    44
+   ],
+   "props": {
+    "invalid": "false",
+    "focusable": true,
+    "focused": true,
+    "settable": true,
+    "orientation": "horizontal",
+    "valuemin": 0,
+    "valuemax": 100,
+    "valuetext": "20"
+   }
+  },
+  {
+   "dom": "input",
+   "role": "slider",
+   "name": "Maximum price",
+   "frame": [
+    16,
+    64,
+    608,
+    44
+   ],
+   "props": {
+    "invalid": "false",
+    "focusable": true,
+    "focused": true,
+    "settable": true,
+    "orientation": "horizontal",
+    "valuemin": 0,
+    "valuemax": 100,
+    "valuetext": "60"
+   }
+  },
+  {
+   "outside": "ax-after"
+  }
+ ],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

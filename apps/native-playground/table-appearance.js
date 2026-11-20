@@ -239,3 +239,6 @@ export function tableMethodValue(envelope) {
     || !Array.isArray(values) || values.length !== count || !values.every(item => typeof item === 'string' && bytes(item) <= 4096)) return undefined;
   return { value: { count, total, values: [...values], all, indeterminate } };
 }
+
+/** The md-table family's typed part targets per tag (::part names; AWCTablePart natively, gate-7 r5 R5-07). */
+export const TABLE_PARTS = Object.freeze({"md-table": ["caption", "grid", "header-grid", "hscrollbar", "hscrollbar-thumb", "vscrollbar", "vscrollbar-thumb", "skeleton-row", "loading", "progress", "empty"], "md-table-cell": ["content", "pin"], "md-table-container": ["top", "scroll", "bottom"], "md-table-row": ["expanded"], "md-table-sort-label": ["icon", "label"], "md-table-toolbar": ["main", "leading", "headline", "supporting-text", "selection-caption", "actions"], "md-table-pagination": ["display", "rpp", "rpp-select", "nav", "first-button", "prev-button", "next-button", "last-button"]});

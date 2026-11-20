@@ -42,6 +42,7 @@ struct AWCMenuCarriedEnvironment {
     var appearance: AWCMenuAppearance, reduced: Bool?, theme: AWCTheme?, tokens: [String: String]
     var store: AWCInteractionStore?, dispatcher: AWCEventDispatcher?, pointer: AWCNativePointerState?
     var headers: [String: AnyView] = [:]
+    var parts = AWCMenuPartStyles()   // r4: menu parts
 }
 struct AWCMenuCarry: ViewModifier {
     let env: AWCMenuCarriedEnvironment, controller: AWCMenuController
@@ -51,7 +52,7 @@ struct AWCMenuCarry: ViewModifier {
             .environment(\.awcNativeSpacingRung, env.rung).environment(\.awcMenuAppearance, env.appearance)
             .environment(\.awcMenuReducedMotion, env.reduced).environment(\.awcTheme, env.theme).environment(\.awcThemeTokens, env.tokens)
             .environment(\.awcInteractionStore, env.store).environment(\.awcEventDispatcher, env.dispatcher)
-            .environment(\.awcNativePointerState, env.pointer).environment(\.awcMenuController, controller).environment(\.awcMenuHeaderSlots, env.headers)
+            .environment(\.awcNativePointerState, env.pointer).environment(\.awcMenuController, controller).environment(\.awcMenuHeaderSlots, env.headers).environment(\.awcMenuParts, env.parts)
     }
 }
 
@@ -77,6 +78,7 @@ struct AWCNativeMenu: View {
     @Environment(\.awcEventDispatcher) private var dispatcher
     @Environment(\.awcNativePointerState) private var pointer
     @Environment(\.awcMenuHeaderSlots) private var headers
+    @Environment(\.awcMenuParts) private var parts
     @State private var controller: AWCMenuController
     init(node: AWCNode, properties: [String: AWCValue], theme: AWCTheme, onEvent: @escaping (AWCEvent) -> Void, emit: @escaping (String) -> Void, setOpen: @escaping (Bool) -> Void) {
         self.node = node; self.properties = properties; self.theme = theme; self.onEvent = onEvent; self.emit = emit; self.setOpen = setOpen
@@ -85,7 +87,7 @@ struct AWCNativeMenu: View {
     private var model: AWCMenuModel { AWCMenuModel(properties) }
     private var carried: AWCMenuCarriedEnvironment {
         .init(direction: direction, density: inheritedDensity, denseInset: denseInset, compactSmallGap: compactSmallGap, rung: rung, appearance: appearance,
-              reduced: reducedOverride, theme: envTheme, tokens: envTokens, store: store, dispatcher: dispatcher, pointer: pointer, headers: headers)
+              reduced: reducedOverride, theme: envTheme, tokens: envTokens, store: store, dispatcher: dispatcher, pointer: pointer, headers: headers, parts: parts)
     }
     var body: some View {
         let model = model
@@ -215,7 +217,12 @@ struct AWCMenuMotionSurface: View {
          matchWidth: Double? = nil, measure: Binding<AWCMenuSurfaceMeasure>? = nil, initiallyShown: Bool = false) {
         self.node = node; self.model = model; self.theme = theme; self.controller = controller; self.onEvent = onEvent; self.placement = placement; self.viewport = viewport
         self.matchWidth = matchWidth; self.measure = measure
-        _track = State(initialValue: AWCCSSTransitionTrack(initial: model.quick || initiallyShown ? 1 : 0))
+        var track = AWCCSSTransitionTrack(initial: model.quick || initiallyShown ? 1 : 0)
+        // 6-6: mounted (or remounted) while the open transition runs -> start on that transition (Chrome: clock from the style change).
+        if !model.quick && !initiallyShown && controller.parent == nil && controller.isOpen && !controller.closing && controller.openedAt > 0 {
+            track.set(1, now: controller.openedAt + 2000.0 / 60, duration: 150, curve: [0.05, 0.7, 0.1, 1])
+        }
+        _track = State(initialValue: track)
     }
     private var reduced: Bool { reducedOverride ?? systemReduced }
     private var target: Double { controller.isOpen && !controller.closing ? 1 : 0 }   // lingering = exit still painting
@@ -249,6 +256,7 @@ struct AWCMenuMotionSurface: View {
             return
         }
         let requested = next == 1 ? controller.openedAt : controller.closingAt
+        // 9-27 (S7-6-02): both the open and the close start two frames after their request time; the close request time is the activation plus the 150 ms of the Web source (MenuController.activated), so the start no longer depends on the wake-up jitter of the sleep
         track.set(next, now: (requested > 0 ? requested : now) + 2000.0 / 60, duration: 150, curve: next == 1 ? [0.05, 0.7, 0.1, 1] : [0.3, 0, 0.8, 0.15])
     }
 }
@@ -264,6 +272,8 @@ struct AWCMenuSurface: View {
     @Environment(\.awcNativeSpacingRung) private var inheritedRung
     @Environment(\.layoutDirection) private var direction
     @Environment(\.awcMenuHeaderSlots) private var headerSlots
+    @Environment(\.awcMenuInlineFill) private var inlineFill
+    @Environment(\.awcMenuParts) private var parts
     @Environment(\.awcNativePointerState) private var pointer
     @State private var surfaceHovered = false
     @State private var surfaceFrame: CGRect = .zero
@@ -274,14 +284,17 @@ struct AWCMenuSurface: View {
     var body: some View {
         let sp = AWCMenuSpacing(rung: rung), palette = AWCMenuPalette(tokens: theme.tokens)
         let styled = model.variant != "baseline", cards = model.groupedGapCards
-        let padV = cards ? 0 : sp.insetXS, padH = cards ? 0 : (styled ? sp.insetXS : 0)
-        let radius = styled ? Double(px(theme.tokens["--md-sys-shape-corner-large"]) ?? 16) : Double(px(theme.tokens["--md-sys-shape-corner-small"]) ?? 8)
-        let shape = AWCNativeCornerShape(corners: .points(radius))
+        let padV = cards || inlineFill ? 0 : sp.insetXS, padH = cards || inlineFill ? 0 : (styled ? sp.insetXS : 0)
+        let surfacePart = parts.menu(.surface, id: node.id), viewportPart = parts.menu(.menuViewport, id: node.id), emptyPart = parts.menu(.emptyText, id: node.id)
+        let radius = surfacePart?.cornerRadius ?? (styled ? Double(px(theme.tokens["--md-sys-shape-corner-large"]) ?? 16) : Double(px(theme.tokens["--md-sys-shape-corner-small"]) ?? 8))
+        // Inline fill: square, except the end corners (--md-menu-inline-fill-radius-end).
+        let endRadius = AWCCornerRadius(.points(px(appearance.inlineFillRadiusEnd) ?? 0))
+        let shape = inlineFill ? AWCNativeCornerShape(corners: AWCCornerShape(bottomRight: endRadius, bottomLeft: endRadius)) : AWCNativeCornerShape(corners: .points(radius))
         let vw = viewport.width > 0 ? viewport : CGSize(width: 1200, height: 900)
         let minW = AWCMenuLength(appearance.minWidth)?.resolve(viewport: vw) ?? 112
         let margin = AWCMenuLength(appearance.viewportMargin)?.resolve(viewport: vw) ?? 8
         let maxW = min(AWCMenuLength(appearance.maxWidth)?.resolve(viewport: vw) ?? Double(vw.width), Double(vw.width) - 2 * margin)
-        let capValue = cap ?? AWCMenuSurfacePlacement.defaultCap(model: model, appearance: appearance, viewport: vw, margin: margin)
+        let capValue = inlineFill ? Double.greatestFiniteMagnitude : cap ?? AWCMenuSurfacePlacement.defaultCap(model: model, appearance: appearance, viewport: vw, margin: margin)
         let header = node.children(inSlot: "header")
         let rows = visibleChildren
         let hasSub = node.children.contains { $0.tag == "md-sub-menu-item" } || node.children.contains { $0.tag == "md-menu-item-group" && $0.children.contains { $0.tag == "md-sub-menu-item" } }
@@ -289,19 +302,20 @@ struct AWCMenuSurface: View {
             ForEach(Array(rows.enumerated()), id: \.element.id) { i, child in
                 AWCNativeView(node: child, onEvent: onEvent)
                     .environment(\.awcMenuItemContext, context(i, rows, cards: cards))
-                    .padding(.bottom, model.variant == "baseline" && sectioned(rows) && child.properties["gap"]?.bool == true ? (AWCMenuLength(appearance.sectionGap)?.resolve(viewport: vw) ?? 2) : 0)
+                    .padding(.bottom, model.variant == "baseline" && sectioned(rows) && child.properties["gap"]?.bool == true ? AWCMenuSurfacePlacement.sectionGap(appearance: appearance, viewport: vw) : 0)
                     .awcMenuCardShadow(cards && hasSub && child.tag == "md-menu-item-group")
             }
             if rows.isEmpty || !rows.contains(where: Self.hasVisibleItem), !model.emptyText.isEmpty {
-                Text(model.emptyText).font(AWCNativeFonts.label(size: 14, weight: 400)).modifier(AWCCSSLineBox(size: 14, line: 20))
-                    .foregroundStyle(Color(awcHex: palette.emptyInk)).multilineTextAlignment(.center)
+                Text(model.emptyText).font(AWCNativeFonts.label(size: 14, weight: 400)).tracking(emptyPart?.letterSpacing ?? 0).modifier(AWCCSSLineBox(size: 14, line: 20))
+                    .foregroundStyle(Color(awcHex: emptyPart?.color ?? palette.emptyInk)).multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity).padding(.vertical, sp.insetMD).padding(.horizontal, sp.insetLG)
+                    .modifier(AWCMenuPartBox(part: emptyPart))
                     .awcInspect(nodeID: node.id, part: "empty-text", name: "empty-text")
             }
         }
         VStack(spacing: 0) {
             if let slot = headerSlots[node.id] {
-                slot.frame(maxWidth: .infinity, alignment: .leading)
+                slot.frame(maxWidth: .infinity, alignment: .leading).modifier(AWCMenuVirtualKeysIf(controller: controller))
                     .onGeometryChange(for: Double.self) { Double($0.size.height) } action: { headerHeight = $0 }
             } else if !header.isEmpty {
                 VStack(alignment: .leading, spacing: 0) { ForEach(header) { AWCNativeView(node: $0, onEvent: onEvent) } }
@@ -311,7 +325,9 @@ struct AWCMenuSurface: View {
             AWCMenuViewport(cap: capValue, scrollTop: controller.scrollTop) {
                 column.onGeometryChange(for: Double.self) { Double($0.size.height) } action: { contentHeight = $0 }
             }
+            .frame(maxHeight: inlineFill ? .infinity : nil, alignment: .top)
             .clipped()
+            .modifier(AWCMenuPartBox(part: viewportPart))
             .modifier(AWCMenuScopeFrame(registry: controller.registry) { controller.viewportFrame = $0 })
             .awcInspect(nodeID: node.id, part: "menu-viewport", name: "menu-viewport") { _ in ["scrollTop": .number(controller.scrollTop), "cap": .number(capValue)] }
         }
@@ -319,9 +335,12 @@ struct AWCMenuSurface: View {
         .padding(.vertical, padV).padding(.horizontal, padH)
         .frame(minWidth: (width ?? minWidthOverride).map { CGFloat($0) }, idealWidth: width.map { CGFloat($0) },
                maxWidth: width.map { CGFloat($0) } ?? (minWidthOverride != nil ? CGFloat(Double(vw.width) - 2 * margin) : nil))
-        .background { if !cards { shape.fill(Color(awcHex: palette.surface(model.variant))) } }
-        .background { if !cards { AWCNativeBoxShadow(corners: .points(radius), layers: AWCMenuPalette.surfaceShadow(model.variant), placement: .outer) } }
+        .frame(maxWidth: inlineFill ? .infinity : nil, maxHeight: inlineFill ? .infinity : nil, alignment: .top)
+        .background { if !cards || surfacePart?.background != nil || inlineFill { shape.fill(Color(awcHex: surfacePart?.background ?? (inlineFill ? appearance.inlineSurfaceColor ?? "#00000000" : palette.surface(model.variant)))) } }
+        .modifier(AWCMenuInlineClip(on: inlineFill, shape: shape))
+        .background { if !cards && !inlineFill { AWCMenuSurfaceBoxShadow(corners: .points(radius), layers: AWCMenuPalette.surfaceShadow(model.variant), placement: .outer) } }
         .modifier(AWCMenuDropShadow(on: cards && !hasSub))
+        .modifier(AWCMenuPartBox(part: surfacePart, fill: false))
         .onGeometryChange(for: Double.self) { Double($0.size.width) } action: { w in measure?.wrappedValue.width = w }
         .onChange(of: contentHeight, initial: true) { _, h in measure?.wrappedValue.content = h; if measure == nil { controller.contentHeight = h; controller.viewportHeight = min(h, capValue) } }
         .onChange(of: headerHeight + padV * 2, initial: true) { _, c in measure?.wrappedValue.chrome = c }
@@ -334,10 +353,11 @@ struct AWCMenuSurface: View {
             if let parent = controller.parent, let row = controller.parentRowID { if inside { parent.rows[row]?.openSubmenu(false) } else { parent.rows[row]?.hoverLeave() } }
         }
         .awcInspect(nodeID: node.id, part: "surface", name: "surface") { _ in ["variant": .string(model.variant), "radius": .number(radius)] }
-        .awcInspect(nodeID: node.id, name: "md-menu") { _ in ["open": .bool(controller.isOpen), "role": .string(model.listbox ? "presentation" : "menu")] }
+        .awcInspect(nodeID: node.id, name: "md-menu") { _ in ["open": .bool(controller.isOpen), "role": .string(model.listbox || controller.listboxMode ? "presentation" : "menu"),
+                                                             "activeDescendant": controller.activeDescendant.map { .string($0) } ?? .null] }
         .environment(\.awcMenuController, controller)
         .modifier(AWCMenuDensityModifier(value: model.density))
-        .modifier(AWCMenuContainerAccessibility(listbox: model.listbox, label: model.listbox ? model.listLabel : menuName, id: node.id))
+        .modifier(AWCMenuContainerAccessibility(listbox: model.listbox || controller.listboxMode, label: model.listbox || controller.listboxMode ? model.listLabel : menuName, id: node.id))
     }
     private var visibleChildren: [AWCNode] { node.children.filter { $0.tag.hasPrefix("md-") && $0.slot != "header" && $0.properties["hidden"]?.bool != true } }
     /// The menu is named after its anchor (Web ariaLabelledByElements = [anchor]); a flyout after its submenu row.
@@ -463,6 +483,9 @@ struct AWCNativeMenuRow: View {
     @Environment(\.accessibilityReduceMotion) private var systemReduced
     @Environment(\.awcNativePointerState) private var pointer
     @Environment(\.awcMenuMeasuring) private var measuring
+    @Environment(\.awcMenuParts) private var parts
+    @State private var settleUntil = 0.0
+    private func part(_ name: String) -> AWCMenuPartAppearance? { parts.row(name, id: node.id, sub: model.sub) }
     @State private var focus = AWCButtonFocusHandle()
     @State private var hovered = false
     @State private var pressed = false
@@ -486,7 +509,7 @@ struct AWCNativeMenuRow: View {
     private var metrics: AWCMenuRowMetrics { .init(scale: scale, rung: rung, variant: context.variant, sub: model.sub, hooks: appearance, viewport: registry?.viewport ?? .init(width: 1200, height: 900)) }
     private var hover: Bool { guard !model.disabled else { return false }; return pointer.map { $0.location.map(frame.contains) ?? false } ?? hovered }
     private var active: Bool { guard !model.disabled else { return false }; return pressed || (pointer.map { $0.isPointerDown && hover } ?? false) }
-    private var ring: Bool { focus.isFocusVisible }
+    private var ring: Bool { focus.isFocusVisible || (controller?.virtualRing == node.id && controller?.virtualRing != nil) }
     private var accessibleName: String { model.accessibleName(trailingSlot: !node.children(inSlot: "trailing-icon").isEmpty) }
     private var palette: AWCMenuPalette { .init(tokens: theme.tokens) }
     private struct Targets: Equatable { var layer: Double, corners: [Double], fill: String, ink: String }
@@ -507,8 +530,11 @@ struct AWCNativeMenuRow: View {
         for i in 0..<4 { corners[i].set(next.corners[i], now: now, duration: reduced ? 0 : 300, curve: [0.05, 0.7, 0.1, 1]) }
         fill.set(Color(awcHex: next.fill), now: now, duration: reduced ? 0 : 150, curve: standard)
         ink.set(Color(awcHex: next.ink), now: now, duration: reduced ? 0 : 150, curve: standard)
+        // A paused TimelineView may keep its last content: run it for two frames so instant changes are drawn too.
+        settleUntil = now + 34
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.06) { if CACurrentMediaTime() * 1000 >= settleUntil { settleUntil = 0 } }
     }
-    private func running(_ now: Double) -> Bool { layer.isRunning(now) || corners.contains { $0.isRunning(now) } || fill.isRunning(now) || ink.isRunning(now) }
+    private func running(_ now: Double) -> Bool { now < settleUntil || layer.isRunning(now) || corners.contains { $0.isRunning(now) } || fill.isRunning(now) || ink.isRunning(now) }
     var body: some View {
         if model.hidden { EmptyView() } else {
             let now = CACurrentMediaTime() * 1000
@@ -526,7 +552,7 @@ struct AWCNativeMenuRow: View {
         if model.sub { registry?.setAnchorLabel(node.id, accessibleName) }
         controller.register(node.id, .init(handle: focus, label: model.headline, disabled: model.disabled, sub: model.sub, radioScope: model.type == "radio" ? scope : nil,
                                            deselect: { setSelected(false) }, openSubmenu: { auto in openSub(autoFocus: auto) }, collapse: { collapseSub() },
-                                           hoverLeave: { hoverChanged(false) }, closeSubmenu: { closeSubAnimated() }))
+                                           hoverLeave: { hoverChanged(false) }, closeSubmenu: { closeSubAnimated() }, activate: { click() }, keyActivate: { keyActivate($0) }))
     }
     private func row(_ t: Double) -> some View {
         let m = metrics, c = context, rtl = direction == .rightToLeft
@@ -534,19 +560,20 @@ struct AWCNativeMenuRow: View {
         let shape = AWCNativeCornerShape(corners: radii.physical(rtl: rtl))
         let inkColor = ink.presented(t) ?? Color(awcHex: targets.ink), fillColor = fill.presented(t) ?? .clear
         let second = Color(awcHex: model.selected ? targets.ink : palette.secondaryInk(c.variant, selected: false))
-        let layerOpacity = layer.presented(t)
-        let layerShape: AWCNativeCornerShape = c.useGap && c.inGroup ? AWCNativeCornerShape(corners: .points(max(0, (c.gapCard ? c.groupShape : 12) - 4))) : shape
+        let layerOpacity = part("state-layer")?.opacity ?? layer.presented(t)
+        let layerPart = part("state-layer")
+        let layerShape: AWCNativeCornerShape = layerPart?.cornerRadius.map { AWCNativeCornerShape(corners: .points($0)) } ?? (c.useGap && c.inGroup ? AWCNativeCornerShape(corners: .points(max(0, (c.gapCard ? c.groupShape : 12) - 4))) : shape)
         let bottomPad = model.sub && model.divider ? 8.0 : 0
         return AWCMenuRowLayout(padding: m.paddingInline, gap: m.gap, minHeight: m.height, bottomPad: bottomPad, rtl: rtl) {
             if !model.sub && model.type != "button" && model.checkPosition == "start" { check(m).layoutValue(key: AWCMenuRowRole.self, value: 8) }
-            if let lead = node.children(inSlot: "leading-icon").first { icon(lead, size: m.iconSize, color: model.selected ? inkColor : second, inspect: node.id) }
+            if let lead = node.children(inSlot: "leading-icon").first { icon(lead, size: m.iconSize, color: part("leading-icon")?.color.map { Color(awcHex: $0) } ?? (model.selected ? inkColor : second), inspect: node.id).modifier(AWCMenuPartBox(part: part("leading-icon"))) }
             content(m, second: model.selected ? inkColor : second).layoutValue(key: AWCMenuRowRole.self, value: nil)
-                .layoutValue(key: AWCMenuRowNatural.self, value: max(awcMenuTextWidth(model.headline, size: m.headlineSize, weight: 400),
-                                                                     model.supportingText.isEmpty ? 0 : awcMenuTextWidth(model.supportingText, size: m.supportingSize, weight: 400)))
+                .layoutValue(key: AWCMenuRowNatural.self, value: max(awcMenuTextWidth(model.headline, size: m.headlineSize, weight: 400, spacing: part("headline")?.letterSpacing ?? 0),
+                                                                     model.supportingText.isEmpty ? 0 : awcMenuTextWidth(model.supportingText, size: m.supportingSize, weight: 400, spacing: part("supporting-text")?.letterSpacing ?? 0)))
             if !model.badge.isEmpty { badge.layoutValue(key: AWCMenuRowRole.self, value: model.sub ? 0 : 12).layoutValue(key: AWCMenuRowNatural.self, value: badgeWidth) }
             if !model.sub, let trail = trailing(m, color: model.selected ? inkColor : second) {
                 trail.layoutValue(key: AWCMenuRowRole.self, value: 8)
-                    .layoutValue(key: AWCMenuRowNatural.self, value: node.children(inSlot: "trailing-icon").isEmpty ? awcMenuTextWidth(model.trailingText, size: 11, weight: 400) : nil)
+                    .layoutValue(key: AWCMenuRowNatural.self, value: node.children(inSlot: "trailing-icon").isEmpty ? awcMenuTextWidth(model.trailingText, size: 11, weight: 400, spacing: part("trailing")?.letterSpacing ?? 0) : nil)
             }
             if model.sub { AWCMaterialSymbol("arrow_right", size: m.iconSize).foregroundStyle(model.selected ? inkColor : second)
                 .scaleEffect(x: rtl ? -1 : 1, y: 1).rotationEffect(.degrees(subOpen ? 90 : 0)).animation(reduced ? nil : .timingCurve(0.2, 0, 0, 1, duration: 0.1), value: subOpen) }
@@ -559,7 +586,7 @@ struct AWCNativeMenuRow: View {
                 shape.fill(fillColor)
                 if ring { shape.inset(by: 1.5).stroke(Color(awcHex: palette.focusRing), lineWidth: 3) }
                 if !model.disabled { AWCMenuRipple(pressed: pressed, activation: activation, color: inkColor, origin: pressOrigin, inspectNodeID: node.id).clipShape(shape) }
-                layerShape.fill(Color(awcHex: palette.stateLayer(c.variant))).opacity(layerOpacity)
+                layerShape.fill(Color(awcHex: layerPart?.background ?? palette.stateLayer(c.variant))).modifier(AWCMenuPartBox(part: layerPart, fill: false, applyOpacity: false)).opacity(layerOpacity)
                     .awcInspect(nodeID: node.id, part: "state-layer", name: "state-layer") { _ in ["opacity": .number(layerOpacity), "renderTime": .number(t)] }
             }
         }
@@ -595,35 +622,41 @@ struct AWCNativeMenuRow: View {
     private func content(_ m: AWCMenuRowMetrics, second: Color) -> some View {
         let rtl = direction == .rightToLeft
         return VStack(alignment: rtl ? .trailing : .leading, spacing: 0) {
-            Text(model.headline).font(AWCNativeFonts.label(size: m.headlineSize, weight: 400)).lineLimit(1).truncationMode(.tail)
+            Text(model.headline).font(AWCNativeFonts.label(size: m.headlineSize, weight: 400)).tracking(part("headline")?.letterSpacing ?? 0).lineLimit(1).truncationMode(.tail)
+                .modifier(AWCMenuPartInk(color: part("headline")?.color ?? part("content")?.color))
                 .modifier(AWCCSSLineBox(size: m.headlineSize, line: m.headlineLine))
                 .frame(maxWidth: .infinity, alignment: rtl ? .trailing : .leading)
                 .environment(\.layoutDirection, direction)
+                .modifier(AWCMenuPartBox(part: part("headline")))
                 .awcInspect(nodeID: node.id, part: "headline", name: "headline")
             if !model.supportingText.isEmpty {
-                Text(model.supportingText).font(AWCNativeFonts.label(size: m.supportingSize, weight: 400)).lineLimit(1).truncationMode(.tail)
-                    .modifier(AWCCSSLineBox(size: m.supportingSize, line: m.supportingLine)).foregroundStyle(second)
+                Text(model.supportingText).font(AWCNativeFonts.label(size: m.supportingSize, weight: 400)).tracking(part("supporting-text")?.letterSpacing ?? 0).lineLimit(1).truncationMode(.tail)
+                    .modifier(AWCCSSLineBox(size: m.supportingSize, line: m.supportingLine)).foregroundStyle(part("supporting-text")?.color.map { Color(awcHex: $0) } ?? second)
                     .frame(maxWidth: .infinity, alignment: rtl ? .trailing : .leading)
                     .environment(\.layoutDirection, direction)
+                    .modifier(AWCMenuPartBox(part: part("supporting-text")))
                     .awcInspect(nodeID: node.id, part: "supporting-text", name: "supporting-text")
             }
         }
         .fixedSize(horizontal: false, vertical: true)
+        .modifier(AWCMenuPartBox(part: part("content")))
         .awcInspect(nodeID: node.id, part: "content", name: "content")
     }
-    private var badgeWidth: Double { 16 + awcMenuTextWidth(model.badge.trimmingCharacters(in: .whitespacesAndNewlines), size: 11, weight: 500, spacing: 0.5) }
+    private var badgeWidth: Double { 16 + awcMenuTextWidth(model.badge.trimmingCharacters(in: .whitespacesAndNewlines), size: 11, weight: 500, spacing: part("badge")?.letterSpacing ?? 0.5) }
     private var badge: some View {
-        Text(model.badge.trimmingCharacters(in: .whitespacesAndNewlines)).font(AWCNativeFonts.label(size: 11, weight: 500)).tracking(0.5).lineLimit(1).fixedSize()
+        Text(model.badge.trimmingCharacters(in: .whitespacesAndNewlines)).font(AWCNativeFonts.label(size: 11, weight: 500)).tracking(part("badge")?.letterSpacing ?? 0.5).lineLimit(1).fixedSize()
             .modifier(AWCCSSLineBox(size: 11, line: 16)).frame(width: badgeWidth, height: 20)
-            .foregroundStyle(Color(awcHex: palette.badgeInk)).background(Capsule().fill(Color(awcHex: palette.badgeFill)))
+            .foregroundStyle(Color(awcHex: part("badge")?.color ?? palette.badgeInk))
+            .background(RoundedRectangle(cornerRadius: part("badge")?.cornerRadius ?? 10).fill(Color(awcHex: part("badge")?.background ?? palette.badgeFill)))
+            .modifier(AWCMenuPartBox(part: part("badge"), fill: false))
             .awcInspect(nodeID: node.id, part: "badge", name: "badge")
     }
     private func trailing(_ m: AWCMenuRowMetrics, color: Color) -> AnyView? {
-        if let t = node.children(inSlot: "trailing-icon").first { return AnyView(icon(t, size: m.iconSize, color: color).awcInspect(nodeID: node.id, part: "trailing", name: "trailing")) }
+        if let t = node.children(inSlot: "trailing-icon").first { return AnyView(icon(t, size: m.iconSize, color: part("trailing")?.color.map { Color(awcHex: $0) } ?? color).modifier(AWCMenuPartBox(part: part("trailing"))).awcInspect(nodeID: node.id, part: "trailing", name: "trailing")) }
         guard !model.trailingText.isEmpty else { return nil }
-        return AnyView(Text(model.trailingText).font(AWCNativeFonts.label(size: 11, weight: 400)).lineLimit(1).fixedSize().foregroundStyle(color)
-            .frame(width: awcMenuTextWidth(model.trailingText, size: 11, weight: 400))
-            .awcInspect(nodeID: node.id, part: "trailing", name: "trailing"))
+        return AnyView(Text(model.trailingText).font(AWCNativeFonts.label(size: 11, weight: 400)).tracking(part("trailing")?.letterSpacing ?? 0).lineLimit(1).fixedSize().foregroundStyle(part("trailing")?.color.map { Color(awcHex: $0) } ?? color)
+            .frame(width: awcMenuTextWidth(model.trailingText, size: 11, weight: 400, spacing: part("trailing")?.letterSpacing ?? 0))
+            .modifier(AWCMenuPartBox(part: part("trailing"))).awcInspect(nodeID: node.id, part: "trailing", name: "trailing"))
     }
     // MARK: submenu flyout
     @ViewBuilder private var submenu: some View {
@@ -683,11 +716,22 @@ struct AWCNativeMenuRow: View {
                 if touch.ownsTouch { touch.swiftUIReleased(); return }
                 pressed = false
                 let inside = v.location.x >= 0 && v.location.y >= 0 && v.location.x <= frame.width && v.location.y <= frame.height
-                if inside { click() } }
+                if inside { clickDelivered() } }
+    }
+    /// 6-6: a click from the SwiftUI drag end is timed from the delivered touch-up (KNOWN-CAUSES row 3), as the raw-touch
+    /// router does: a close it requests runs its exit from the release, not from the SwiftUI update after it.
+    private func clickDelivered() {
+        #if os(iOS)
+        AWCInputDelivery.touchEndedAt = AWCInputDelivery.lastTouchUpAt
+        defer { AWCInputDelivery.touchEndedAt = nil }
+        #endif
+        click()
     }
     private func pointerDown(at p: CGPoint) {
         guard !pressed else { return }
-        pressed = true; pressOrigin = p; activation &+= 1; controller?.keyboardModality = false; focus.showFocus = false; _ = focus.requestPointerFocus?()
+        pressed = true; pressOrigin = p; activation &+= 1; controller?.keyboardModality = false; focus.showFocus = false
+        // iOS md-select / md-multi-select: the row takes the logical focus, the UIKit responder stays on the trigger field.
+        if let c = controller, c.logicalRowFocus, c.comboboxID == nil { _ = c.focus(node.id, ring: false) } else { _ = focus.requestPointerFocus?() }
     }
     /// iOS raw touch (see `AWCTouchPressRouter`): press on touch down, click on touch up inside, as Chrome's pointer.
     private var touchHandler: AWCTouchPressHandler {
@@ -724,9 +768,11 @@ struct AWCNativeMenuRow: View {
         return controller?.key(key, from: node.id, shift: shift, modified: modified, rtl: direction == .rightToLeft) ?? false
     }
     private var focusBridge: some View {
-        var policy: [String: AWCValue] = ["disabled": .bool(model.disabled), "roleOverride": .string(["menuitemradio": "radio", "menuitemcheckbox": "checkbox", "option": "option"][model.role] ?? "menuitem"), "_menuRoving": true,
+        var policy: [String: AWCValue] = ["disabled": .bool(model.disabled), "roleOverride": .string(["menuitemradio": "radio", "menuitemcheckbox": "checkbox", "option": "option", "checkbox": "checkbox", "radio": "radio"][model.role] ?? "menuitem"), "_menuRoving": true,
                                           "groupTabindex": .number(controller?.focusedID == node.id ? 0 : -1)]
         if model.type != "button" { policy["selected"] = .bool(model.selected) }
+        // aria-checked="mixed" (an indeterminate, not selected checkbox row: md-multi-select's "Select all").
+        if model.ariaChecked == "mixed" { policy["mixed"] = true }
         return AWCNativeButtonFocusBridge(configuration: .init(id: node.id, label: accessibleName, policy: AWCButtonAccessibilityPolicy(properties: policy), group: nil, cell: nil,
             handle: focus, focusChanged: { f in if f { controller?.didFocus(node.id) } }, activate: { keyActivate("Enter") },
             routeKey: { key, shift, modified in routeKey(key, shift: shift, modified: modified) }, menuExpanded: model.sub ? subOpen : nil, touchPress: touchHandler))
@@ -754,7 +800,7 @@ struct AWCMenuRipple: View {
     }
     var body: some View {
         GeometryReader { geometry in
-            TimelineView(.animation(minimumInterval: 1 / 60, paused: start == nil)) { _ in
+            TimelineView(.animation(minimumInterval: nil, paused: start == nil)) { _ in
                 let now = CACurrentMediaTime() * 1000
                 let (alpha, growth) = Self.wave(now: now, start: start, release: release)
                 let point = waveOrigin ?? CGPoint(x: geometry.size.width / 2, y: geometry.size.height / 2)
@@ -769,13 +815,21 @@ struct AWCMenuRipple: View {
         .allowsHitTesting(false).accessibilityHidden(true)
         .onChange(of: pressed) { _, down in
             let now = CACurrentMediaTime() * 1000
-            if down { token &+= 1; start = now + 2 * Self.frame; release = nil; waveOrigin = origin }
+            if down { token &+= 1; start = now + Self.frame; release = nil; waveOrigin = origin }
             else if start != nil, release == nil { release = now; finish() }
         }
         .onChange(of: activation) { _, _ in
-            // Keyboard activation: a centered wave that releases itself when its grow finishes.
             let now = CACurrentMediaTime() * 1000
-            token &+= 1; start = now + 2 * Self.frame; release = now; waveOrigin = nil; finish()
+            token &+= 1
+            if let origin {
+                // Pointer press (md-ripple onPointerDown): the wave starts at the press point on the next frame and is held until
+                // the release; a press whose release arrived in the same update (`pressed` already false) releases at once.
+                start = now + Self.frame; waveOrigin = origin; release = pressed ? nil : now
+            } else {
+                // Keyboard activation (md-menu-item triggerRipple): a centered wave that releases itself when its grow finishes.
+                start = now + 2 * Self.frame; waveOrigin = nil; release = now
+            }
+            if release != nil { finish() }
         }
     }
     private func finish() {
@@ -938,4 +992,10 @@ extension AWCNativeView {
 struct AWCMenuOptionalInspect: ViewModifier {
     let nodeID: String?, part: String
     func body(content: Content) -> some View { if let nodeID { content.awcInspect(nodeID: nodeID, part: part, name: part) } else { content } }
+}
+
+/// Inline fill clips the surface (overflow: hidden) to its end-rounded shape; other surfaces are not clipped here.
+struct AWCMenuInlineClip: ViewModifier {
+    let on: Bool, shape: AWCNativeCornerShape
+    @ViewBuilder func body(content: Content) -> some View { if on { content.clipShape(shape) } else { content } }
 }

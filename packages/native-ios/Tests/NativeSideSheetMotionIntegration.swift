@@ -91,10 +91,10 @@ struct SideMotionFixture: View {
         NSApp.sendEvent(NSEvent.mouseEvent(with: kind, location: point(p), modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber, context: nil, eventNumber: 1, clickCount: 1, pressure: kind == .leftMouseUp || kind == .mouseMoved ? 0 : 1)!)
     }
     static func click(_ p: CGPoint) { state.pointer.update(phase: .move, location: p); mouse(.mouseMoved, p); state.pointer.update(phase: .down, location: p); mouse(.leftMouseDown, p); mouse(.leftMouseUp, p); state.pointer.update(phase: .up, location: p) }
-    static func key(_ code: UInt16, _ text: String, shift: Bool = false) {
+    static func key(_ code: UInt16, _ text: String, shift: Bool = false, toWindow: Bool = false) {
         for type in [NSEvent.EventType.keyDown, .keyUp] {
             let e = NSEvent.keyEvent(with: type, location: .zero, modifierFlags: shift ? [.shift] : [], timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber, context: nil, characters: text, charactersIgnoringModifiers: text, isARepeat: false, keyCode: code)!
-            if code == 53 || code == 48 { NSApp.sendEvent(e) } else { window.sendEvent(e) }
+            if !toWindow && (code == 53 || code == 48) { NSApp.sendEvent(e) } else { window.sendEvent(e) }
         }
     }
     static func center(_ name: String) -> CGPoint? { state.measurements.first { $0.name == name }.map { CGPoint(x: $0.bounds.midX, y: $0.bounds.midY) } }
@@ -150,22 +150,25 @@ struct SideMotionFixture: View {
             return webEventTimes.filter { $0 >= start && $0 < end }.min() ?? start
         }
         var stepTimes: [Int: Double] = [:], samples: [Sample] = [], focusAtEnd: [Int: String] = [:]
-        var next = 1
+        var next = 1, eventStepTimes: [Int: Double] = [:]
         var standardNow: Bool { (state.variant ?? r["props"]["variant"].string) != "modal" }
-        var tabbedStandard = Set<Int>()
         let end = (phases.last?["t"].number ?? 0) - webT0 + 560
         while now() - t0 < end {
             while next < phases.count && now() - t0 >= stepWeb[next] - webT0 {
                 focusAtEnd[next - 1] = focused()
                 let label = phases[next]["label"].string, step = String(label.split(separator: "-", maxSplits: 1).last ?? "")
                 stepTimes[next] = now()
-                if (step == "tab" || step == "shifttab") && standardNow { tabbedStandard.insert(next) }
+                #if os(iOS)
+                let deliveryMark = AWCShimTouch.deliveredAt.count
+                #endif
                 switch step {
                 case "open": if let p = center("opener") { click(p) }
                 case "escape": key(53, "\u{1b}")
-                // Without an active modal, Tab is the host's key-view loop (AppKit `selectNextKeyView`).
-                case "tab": if standardNow { window.selectNextKeyView(nil) } else { key(48, "\t") }
-                case "shifttab": if standardNow { window.selectPreviousKeyView(nil) } else { key(48, "\t", shift: true) }
+                // Real Tab keys in both variants. An open modal traps them in its key monitor (NSApp.sendEvent); without one
+                // the key goes to the focused control (this window never becomes key, so the application would not deliver
+                // it), which moves through the page and a standard sheet in document order (gate-7 R4-05).
+                case "tab": key(48, "\t", toWindow: standardNow)
+                case "shifttab": key(48, "\t", shift: true, toWindow: standardNow)
                 case "scrim":
                     let c = state.measurements.first { $0.name == "container" }?.bounds ?? .zero
                     click(c.midX > vp[0] / 2 ? CGPoint(x: 12, y: 12) : CGPoint(x: vp[0] - 12, y: 12))
@@ -180,6 +183,14 @@ struct SideMotionFixture: View {
                 case "toModal": state.variant = "modal"
                 default: check(false, "\(name) unknown step \(step)")
                 }
+                #if os(iOS)
+                // iOS harness: a synthesized touch / key reaches the app when UIKit delivers it, one touch phase per frame (a
+                // click's release 2 frames after it is queued, more under load). Chrome times an event from its trusted
+                // input's first event, so the native event delay is timed from the delivery of the step's last input
+                // (gate-7 r3-23, R4-19); the per-frame motion keeps the step's queue time. AWC_MOTION_STEP_ANCHOR=queue: events
+                // from the queue time too, as before.
+                if ProcessInfo.processInfo.environment["AWC_MOTION_STEP_ANCHOR"] != "queue", AWCShimTouch.deliveredAt.count > deliveryMark, let delivered = AWCShimTouch.deliveredAt.last { eventStepTimes[next] = delivered }
+                #endif
                 next += 1
             }
             pump(); samples.append(sample())
@@ -191,18 +202,12 @@ struct SideMotionFixture: View {
         func stepIndex(webT: Double) -> Int { var k = 0; for (i, p) in phases.enumerated() where (p["t"].number ?? 0) <= webT { k = i }; return k }
         for ((n, nt), (_, wt)) in zip(state.events, webEvents) {
             let k = stepIndex(webT: wt)
-            guard let ns = stepTimes[k] else { continue }
+            guard let ns = eventStepTimes[k] ?? stepTimes[k] else { continue }
             let nativeDelay = nt - ns, webDelay = wt - stepWeb[k]
             check(nativeDelay >= -1 && nativeDelay <= webDelay + 40, "\(name) \(n) \(nativeDelay) ms after its step (Chrome \(webDelay))")
         }
-        // Known platform difference: a standard (non-modal) sheet does not trap Tab, so traversal is the host's key-view
-        // loop, ordered geometrically by AppKit rather than in DOM order; the controls reached must be the same.
-        if !tabbedStandard.isEmpty {
-            let want = Set(tabbedStandard.compactMap { expectedID(phases[$0]["focus"]["path"].array.map(\.string), phases[$0]["focus"]["text"].string) })
-            let got = Set(tabbedStandard.compactMap { focusAtEnd[$0] })
-            check(want == got, "\(name) Tab reaches \(got.sorted()) vs Chrome \(want.sorted())")
-        }
-        for (i, p) in phases.enumerated() where !tabbedStandard.contains(i) {
+        // Every phase's focus is Chrome's, Tab steps included: a standard sheet follows document order (gate-7 R4-05).
+        for (i, p) in phases.enumerated() {
             let path = p["focus"]["path"].array.map(\.string)
             if let want = expectedID(path, p["focus"]["text"].string), let got = focusAtEnd[i] {
                 check(got == want || (want == "" && !got.hasPrefix("dut") && !["opener", "after", "save", "cancel"].contains(got)), "\(name) focus after \(p["label"].string): \(got) vs \(path.last ?? "")")

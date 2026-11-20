@@ -135,7 +135,9 @@ private struct AWCNativeIconButtonSurface: View {
     @State private var frame = CGRect.zero
     @State private var localOrigin: CGPoint?
     @State private var localDown = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
+    @Environment(\.awcReducedMotion) private var reducedOverride
+    private var reduceMotion: Bool { reducedOverride ?? systemReduceMotion }
     @Environment(\.isEnabled) private var enabled
     @Environment(\.awcNativePointerState) private var pointer
     @Environment(\.awcTouchPress) private var touchPress
@@ -198,7 +200,7 @@ private struct AWCNativeIconButtonSurface: View {
             .awcObservePointerOrigin(enabled:pointer == nil) { origin, down in localDown=down;localOrigin=origin }
             .onHover { hovered = $0 }
             .onChange(of: configuration.awcPressed(touchPress)) { _, down in if down { groupContext?.press(style.nodeID); if groupContext != nil { style.pointerPressed() } } }
-            .onChange(of: pointerDown) { _, down in if down { style.pointerPressed() } }
+            .onChange(of: configuration.awcPressed(touchPress) && enabled) { _, down in if down { style.pointerPressed() } }
             .awcInspect(nodeID: style.nodeID, name: "md-icon-button") { _ in
                 ["padding": [0, 0, 0, 0], "margin": [0, 0, 0, 0], "border": .array(Array(repeating: .number(Double(m.outlineWidth)), count: 4)),
                  "display": "SwiftUI Button", "direction": .string(direction == .rightToLeft ? "rtl" : "ltr")]
@@ -221,7 +223,9 @@ extension AWCNativeView {
             AWCNativeIconButtonStyle(nodeID: node.id, metrics: metrics, palette: palette, appearance: schemedIconButtonAppearance, theme: theme,
                 properties: nativeActionProperties, hasBadge: slots.hasBadge, focused: focused, nativePressed: pressed, activation: activation, pointerPressed: pointerPressed)
         }, policy: AWCButtonAccessibilityPolicy(properties: accessibilityProperties), id: node.id, accessibleLabel: accessibleLabel,
-            action: { source in _ = activateNativeIconButton(activation: .init(kind: .nativeControl, source: source)) }, direction: s("dir")) {
+            action: { source in _ = activateNativeIconButton(activation: .init(kind: .nativeControl, source: source)) }, direction: s("dir"),
+            // aria-expanded (md-navigation-rail's toggle): the native expanded state of a disclosure button.
+            popup: (local["aria-expanded"]?.string ?? local["ariaExpanded"]?.string).map { AWCNativePopupRelationship(kind: nil, expanded: $0 == "true", target: nil, focusActionLabel: "") }) {
                 nativeIconButtonSlot(slots, size: metrics.iconSize)
         }
         .environment(\.awcNativeDensity, density)

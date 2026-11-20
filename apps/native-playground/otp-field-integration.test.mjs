@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { OTP_FIELD_APPEARANCE_FIELDS, OTP_FIELD_UPDATE_PROPERTIES, otpFieldAppearance, validOTPFieldUpdate } from './otp-field-appearance.js';
+import { OTP_FIELD_APPEARANCE_FIELDS, OTP_FIELD_PARTS, OTP_FIELD_UPDATE_PROPERTIES, otpFieldAppearance, validOTPFieldUpdate } from './otp-field-appearance.js';
 import { componentAppearance } from './component-appearance.js';
 import { nativeThemeOptions } from './native-theme-options.js';
 import { validateRenderRequest } from './native-render.mjs';
@@ -23,6 +23,7 @@ test('the seven hooks cover the IR and both released policies', () => {
     assert.deepEqual(p.appearance.fields, OTP_FIELD_APPEARANCE_FIELDS.map(f => f.name), platform);
     for (const k of ['properties', 'events', 'methods', 'slots']) assert.deepEqual(p[k], ir[k].map(x => x.name ?? x), `${platform} ${k}`);
     assert.deepEqual(p.visualParts, ir.cssParts.map(x => x.name), platform);
+    assert.equal(p.appearance.parts, platform === 'ios' ? '.awcOTPFieldPartAppearance(AWCOTPFieldPartAppearance)' : 'AWCOTPFieldPartAppearanceScope(AWCOTPFieldPartAppearance)');
   }
   const registry = componentAppearance('md-otp-field');
   assert.equal(registry.key, 'otpFieldAppearance'); assert.equal(registry.swiftModifier, 'awcOTPFieldAppearance'); assert.equal(registry.nativeType, 'AWCOTPFieldAppearance');
@@ -66,5 +67,8 @@ test('methods with results and their examples', () => {
   for (const platform of ['swift', 'android']) for (const part of ['cells', 'cell', 'separator', 'supporting-text']) {
     const example = nativeApiExample(component, 'cssPart', part, platform);
     assert.equal(example.status, 'native-equivalent', `${platform} ${part}`);
+    assert.match(example.code, platform === 'swift' ? /\.awcOTPFieldPartAppearance\(\.init\(/ : /AWCOTPFieldPartAppearanceScope\(AWCOTPFieldPartAppearance\(/);
+    for (const field of OTP_FIELD_PARTS[part]) assert.match(example.code, new RegExp(field));
   }
+  assert.deepEqual(Object.keys(OTP_FIELD_PARTS).sort(), ir.cssParts.map(x => x.name).sort());
 });

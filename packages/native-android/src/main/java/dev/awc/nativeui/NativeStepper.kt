@@ -248,6 +248,7 @@ private fun StepperHost(p: Props, onEvent: EventSink, content: Slot?, standalone
     val viewport = LocalConfiguration.current.screenWidthDp.toDouble()
     val reduced = LocalAWCStepperReducedMotion.current ?: rememberAWCAccessibilityAppearance().first
     val settled = LocalAWCStepperSettled.current
+    val stepParts = LocalAWCStepParts.current; val stepperParts = LocalAWCStepperParts.current
     val hostProps = stepperPropsOf(p, standalone)
     val action = LocalAWCAction.current
     val target = LocalAWCActionTarget.current
@@ -301,7 +302,7 @@ private fun StepperHost(p: Props, onEvent: EventSink, content: Slot?, standalone
                 rt.slotCount = ms.size
                 val pls = ms.map { it.measure(c.copy(minWidth = 0, minHeight = 0)) }
                 var y = 0
-                layout(c.maxWidth.takeIf { c.hasBoundedWidth } ?: (pls.maxOfOrNull { it.width } ?: 0), pls.sumOf { it.height }) { pls.forEach { it.place(0, y); y += it.height } }
+                layout(c.maxWidth.takeIf { c.hasBoundedWidth } ?: (pls.maxOfOrNull { it.width } ?: 0), pls.sumOf { it.height }) { pls.forEach { it.placeRelative(0, y); y += it.height } }   // inline start
             }
             if (showNav) {
                 StepperButton(StepperNavBackId, m.p.backLabel, filled = false, enabled = m.backEnabled, loading = false, density = rt.paint.buttonDensity) { moveFocus { m.footerBack() } }
@@ -332,7 +333,8 @@ private fun StepperHost(p: Props, onEvent: EventSink, content: Slot?, standalone
                 if (rt.signature != before) rt.version++     // the composition reads the model (labels, nav state)
             }
             sync()
-            val base = StepperLayoutInput(width = W, rtl = rtl, globalDensity = globalDensity, viewportWidth = viewport, tokens = tokens, hooks = hooks, defaultContentHeight = 0.0)
+            val base = StepperLayoutInput(width = W, rtl = rtl, globalDensity = globalDensity, viewportWidth = viewport, tokens = tokens, hooks = hooks, defaultContentHeight = 0.0,
+                stepParts = stepParts, stepperParts = stepperParts)
             // Panel contents at their widths (known before their heights); then the slot and the nav buttons.
             val contentPl = HashMap<StepChild, Placeable>(); val heights = HashMap<Int, Double>()
             for (mm in measurables) {
@@ -342,12 +344,13 @@ private fun StepperHost(p: Props, onEvent: EventSink, content: Slot?, standalone
                 contentPl[h] = pl; heights[i] = pl.height / d
             }
             if (holders.any { (it.contentCount > 0) != it.lastHasContent }) sync()
-            val slotPl = measurables.firstOrNull { it.layoutId === StepperSlotId }?.measure(Constraints(maxWidth = px(W)))
+            val slotPad = stepperParts[AWCStepperPart.Content]?.padding?.let { it.left + it.right } ?: 0.0     // ::part(content) padding
+            val slotPl = measurables.firstOrNull { it.layoutId === StepperSlotId }?.measure(Constraints(maxWidth = px(maxOf(0.0, W - slotPad))))
             val backPl = measurables.firstOrNull { it.layoutId === StepperNavBackId }?.measure(Constraints())
             val nextPl = measurables.firstOrNull { it.layoutId === StepperNavNextId }?.measure(Constraints())
             val now = rt.now()
-            val paint = StepperLayout.layout(m, base.copy(slotHeight = if (slotPl != null && rt.slotCount > 0) slotPl.height / d else null, contentHeights = heights,
-                buttonWidths = if (backPl != null && nextPl != null) (backPl.width / d) to (nextPl.width / d) else null), fonts.measure, if (settled) null else rt.motion, now, reduced, pointer)
+            val paint = StepperParts.applied(StepperLayout.layout(m, base.copy(slotHeight = if (slotPl != null && rt.slotCount > 0) slotPl.height / d else null, contentHeights = heights,
+                buttonWidths = if (backPl != null && nextPl != null) (backPl.width / d) to (nextPl.width / d) else null), fonts.measure, if (settled) null else rt.motion, now, reduced, pointer), stepParts, stepperParts)
             rt.paint = paint; Snapshot.withoutReadObservation { rt.paintGen++ }   // the chrome draws this pass's layout (unobserved: no remeasure loop)
             if (rt.motion.active(now) && !rt.ticking) rt.ticking = true
             val headerPl = headers.mapIndexed { i, mm -> val r = paint.steps.getOrNull(i)?.inner ?: SRect.ZERO; mm.measure(Constraints.fixed(px(r.width), px(r.height))) }
@@ -374,7 +377,9 @@ private fun StepperHost(p: Props, onEvent: EventSink, content: Slot?, standalone
                     if (pn != null && pn.visible) {
                         // The panel clips its content (the sizer is overflow: hidden while the grid row animates) and fades.
                         fun clipped(pl: Placeable, x: Double, y: Double) {
-                            val outline = StepperClip(((pn.rect.x - x) * d).toFloat(), ((pn.rect.y - y) * d).toFloat(), ((pn.rect.x + pn.rect.width - x) * d).toFloat(), ((pn.rect.y + pn.rect.height - y) * d).toFloat())
+                            val ins = sp.panelInset      // ::part(content) padding: the sizer clips at the content box
+                            val outline = StepperClip(((pn.rect.x + ins.left - x) * d).toFloat(), ((pn.rect.y + ins.top - y) * d).toFloat(),
+                                ((pn.rect.x + pn.rect.width - ins.right - x) * d).toFloat(), ((pn.rect.y + pn.rect.height - ins.bottom - y) * d).toFloat())
                             // The panel's opacity, md-step-content-enter (a lazy panel's mount: fade + slide) and md-step-enter.
                             pl.placeWithLayer(px(x), px(y)) { clip = true; shape = outline; alpha = (pn.opacity * sp.contentOpacity * sp.hostOpacity).toFloat().coerceIn(0f, 1f); translationY = (sp.contentDY * d).toFloat() }
                         }
@@ -383,7 +388,7 @@ private fun StepperHost(p: Props, onEvent: EventSink, content: Slot?, standalone
                         if (a != null) actionPl[h]?.let { clipped(it, a.x, a.y) }
                     }
                 }
-                slotPl?.place(px(paint.content.x), px(paint.content.y))
+                (paint.slot ?: paint.content).let { r -> slotPl?.place(px(r.x), px(r.y)) }
                 paint.navButtons?.let { (b, n) -> backPl?.place(px(b.x), px(b.y)); nextPl?.place(px(n.x), px(n.y)) }
             }
         }
@@ -408,7 +413,7 @@ internal fun NativeStepParts(p: Props, onEvent: EventSink, content: Slot?, child
         child.contentCount = ms.size
         val pls = ms.map { it.measure(c.copy(minWidth = 0, minHeight = 0)) }
         var y = 0
-        layout(if (c.hasBoundedWidth) c.maxWidth else pls.maxOfOrNull { it.width } ?: 0, pls.sumOf { it.height }) { pls.forEach { it.place(0, y); y += it.height } }
+        layout(if (c.hasBoundedWidth) c.maxWidth else pls.maxOfOrNull { it.width } ?: 0, pls.sumOf { it.height }) { pls.forEach { it.placeRelative(0, y); y += it.height } }   // inline start (RTL: right)
     }
     val rt = ctx.rt; val m = rt.model
     @Suppress("UNUSED_VARIABLE") val v = rt.version
@@ -422,7 +427,7 @@ internal fun NativeStepParts(p: Props, onEvent: EventSink, content: Slot?, child
             val f = m.focus
             if (f != before && f is StepperModel.Focus.Header) rt.focusTarget = f.i
         }
-        val gap = StepperTheme(LocalAWCThemeTokens.current).spacing("gap-sm", s, 8.0)
+        val gap = LocalAWCStepParts.current[AWCStepPart.Actions]?.gap ?: StepperTheme(LocalAWCThemeTokens.current).spacing("gap-sm", s, 8.0)
         Layout(content = {
             StepperButton(null, m.p.backLabel, filled = false, enabled = i != 0 && !m.p.loading, loading = false, density = s) { moveFocus { m.stepBack(i) } }
             StepperButton(null, if (m.isLast(i)) m.p.finishLabel else m.p.nextLabel, filled = true, enabled = m.continueEnabled, loading = m.p.loading, density = s) { moveFocus { m.stepNext(i) } }
@@ -430,7 +435,7 @@ internal fun NativeStepParts(p: Props, onEvent: EventSink, content: Slot?, child
             val pls = ms.map { it.measure(Constraints()) }
             val g = (gap * density).roundToInt()
             layout(if (c.hasBoundedWidth) c.maxWidth else pls.sumOf { it.width } + g, pls.maxOfOrNull { it.height } ?: 0) {
-                var x = 0; pls.forEach { it.place(x, 0); x += it.width + g }
+                var x = 0; pls.forEach { it.placeRelative(x, 0); x += it.width + g }   // from the inline start (RTL: Back rightmost)
             }
         }
     }
@@ -565,13 +570,28 @@ private fun DrawScope.drawStepperChrome(p: StepperPaint, m: StepperModel, fonts:
         block()
         drawIntoCanvas { c -> c.nativeCanvas.restore() }
     }
-    fun drawTextLine(t: String, x: Double, top: Double, fs: Double, lh: Double, weight: Double, italic: Boolean, color: SRGBA) {
+    fun drawTextLine(t: String, x: Double, top: Double, fs: Double, lh: Double, weight: Double, italic: Boolean, color: SRGBA, ls: Double = 0.0) {
         text.typeface = fonts.measure.face(weight); text.textSize = (fs * d).toFloat(); text.color = stepperColorOf(color).toArgb()
+        text.letterSpacing = if (fs > 0) (ls / fs).toFloat() else 0f      // CSS letter-spacing (px) as Paint's em units
         text.textSkewX = if (italic) -0.25f else 0f; text.setFontVariationSettings(null)
         val baseline = top + halfLeading(fs, lh) + fs * 1900 / 2048
         drawIntoCanvas { it.nativeCanvas.drawText(t, (x * d).toFloat(), (baseline * d).toFloat(), text) }
     }
     val horizontal = m.p.orientation == "horizontal"
+    // ::part(list / content / nav / mobile-nav) and md-step ::part(content) backgrounds, under everything else.
+    fun bg(rc: SRect?, c: SRGBA?) { if (rc != null && c != null && !rc.isEmpty) { val rr = r(rc); drawRect(stepperColorOf(c), rr.topLeft, rr.size) } }
+    // A wrapper part's box (story 5-3): the background under the border, both following the radius (outer radius at the border edge).
+    fun box(b: StepBox?, rc: SRect) {
+        if (b == null || rc.isEmpty) return
+        val rr = r(rc); val rad = min((b.radius * d).toFloat(), min(rr.width, rr.height) / 2)
+        b.background?.let { drawRoundRect(stepperColorOf(it), rr.topLeft, rr.size, CornerRadius(rad)) }
+        val w = (b.borderWidth * d).toFloat()
+        if (w > 0f) drawRoundRect(stepperColorOf(b.borderColor ?: SRGBA(0.11, 0.106, 0.122, 1.0)), Offset(rr.left + w / 2, rr.top + w / 2), Size(rr.width - w, rr.height - w),
+            CornerRadius(max(0f, rad - w / 2)), style = androidx.compose.ui.graphics.drawscope.Stroke(w))
+    }
+    bg(p.list, p.listBackground); bg(p.content, p.contentBackground); bg(p.nav, p.navBackground); bg(p.mobileNav, p.mobileNavBackground)
+    p.mobileProgress?.let { box(p.mobileProgressBox, it) }
+    for (s in p.steps) { val pn = s.panel; val c = s.panelBackground; if (pn != null && pn.visible && c != null) bg(pn.rect, c.copy(a = c.a * pn.opacity * s.hostOpacity)) }
     for (s in p.steps) {
         if (s.inner.isEmpty) continue
         val c = s.connector ?: continue
@@ -592,26 +612,40 @@ private fun DrawScope.drawStepperChrome(p: StepperPaint, m: StepperModel, fonts:
         if (s.inner.isEmpty) continue
         val ind = r(s.indicator)
         layer(s.hostOpacity) {
+        box(s.innerBox, s.inner)
         s.focusRing?.let { (inner, outer) ->
-            drawCircle(stepperColorOf(outer), ind.width / 2 + (5 * d).toFloat(), ind.center)
-            drawCircle(stepperColorOf(inner), ind.width / 2 + (2 * d).toFloat(), ind.center)
+            // The ring is the indicator's box-shadow: it follows the indicator's border-radius (50% unless a part sets one).
+            val ibr = s.indicatorBox?.radius ?: 0.0
+            fun ring(c: SRGBA, grow: Float) {
+                if (ibr <= 0.0) drawCircle(stepperColorOf(c), ind.width / 2 + grow, ind.center)
+                else drawRoundRect(stepperColorOf(c), Offset(ind.left - grow, ind.top - grow), Size(ind.width + 2 * grow, ind.height + 2 * grow), CornerRadius(min((ibr * d).toFloat() + grow, ind.width / 2 + grow)))
+            }
+            ring(outer, (5 * d).toFloat()); ring(inner, (2 * d).toFloat())
         }
         layer(s.indicatorOpacity) {
-            if (s.stateLayerVisible && s.stateOpacity > 0) drawCircle(stepperColorOf(s.stateColor.copy(a = s.stateColor.a * s.stateOpacity)), ind.width / 2, ind.center)
+            box(s.indicatorBox, s.indicator)      // the indicator's own box fades with it (opacity .38 when disabled)
+            if (s.stateLayerVisible && s.stateOpacity > 0) { val sl = r(s.stateLayer); drawOval(stepperColorOf(s.stateColor.copy(a = s.stateColor.a * s.stateOpacity)), sl.topLeft, sl.size) }
             val b = r(s.bubble)
-            s.halo?.let { (hc, spread) -> if (spread > 0) drawCircle(stepperColorOf(hc), b.width / 2 + (spread * s.scale * d).toFloat(), b.center) }
-            drawCircle(stepperColorOf(s.bubbleColor), b.width / 2, b.center)
+            // ::part(bubble / dot) border-radius (scaled with the bubble; the halo's box-shadow follows it, spread added).
+            val br = s.bubbleRadius
+            fun shape(c: SRGBA, grow: Float) {
+                if (br == null) { drawCircle(stepperColorOf(c), b.width / 2 + grow, b.center); return }
+                val rad = min((br * s.scale * d).toFloat() + grow, b.width / 2 + grow)
+                drawRoundRect(stepperColorOf(c), Offset(b.left - grow, b.top - grow), Size(b.width + 2 * grow, b.height + 2 * grow), CornerRadius(rad))
+            }
+            s.halo?.let { (hc, spread) -> if (spread > 0) shape(hc, (spread * s.scale * d).toFloat()) }
+            shape(s.bubbleColor, 0f)
             val fg = s.bubbleText
             if (fg != null) {
                 val n = s.number; val g = s.glyph
                 if (n != null) {
                     val fs = s.bubbleFontSize * s.scale
-                    text.typeface = fonts.medium; text.textSize = (fs * d).toFloat(); text.color = stepperColorOf(fg).toArgb(); text.textSkewX = 0f; text.setFontVariationSettings(null)
+                    text.typeface = fonts.medium; text.textSize = (fs * d).toFloat(); text.color = stepperColorOf(fg).toArgb(); text.textSkewX = 0f; text.setFontVariationSettings(null); text.letterSpacing = 0f
                     val w = text.measureText(n)
                     drawIntoCanvas { it.nativeCanvas.drawText(n, b.center.x - w / 2, b.center.y + (fs * 1400 / 4096 * d).toFloat(), text) }
                 } else if (g != null && s.glyphScale * s.glyphSize * s.scale > 0.05) {
                     // md-step-glyph-in: the span scales about the bubble centre and fades in.
-                    text.typeface = fonts.symbols; text.textSize = (s.glyphSize * s.scale * s.glyphScale * d).toFloat()
+                    text.typeface = fonts.symbols; text.textSize = (s.glyphSize * s.scale * s.glyphScale * d).toFloat(); text.letterSpacing = 0f
                     text.color = stepperColorOf(fg.copy(a = fg.a * s.glyphOpacity)).toArgb(); text.textSkewX = 0f
                     text.setFontVariationSettings(if (s.glyphFilled) "'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24" else "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24")
                     val bounds = android.graphics.Rect(); text.getTextBounds(g, 0, g.length, bounds)
@@ -620,14 +654,18 @@ private fun DrawScope.drawStepperChrome(p: StepperPaint, m: StepperModel, fonts:
                 }
             }
         }
-        if (s.text != null) layer(s.textOpacity) {
+        val tr = s.text
+        if (tr != null) layer(s.textOpacity) {
+            box(s.textBox, tr)
+            val rtlText = tr.x + tr.width <= s.indicator.x + 0.5      // a vertical step's text column ends before its indicator in RTL
             for (line in s.lines) {
                 val weight = if (line.weight > 500) 700.0 else line.weight
                 for ((k, t) in (line.wrapped.ifEmpty { listOf(line.text) }).withIndex()) {
-                    // Each line centred in a horizontal step's text column, start-aligned in a vertical one.
-                    val w = fonts.measure.width(t, line.fontSize, weight, 0.0)
-                    val x = if (horizontal) line.rect.x + (line.rect.width - w) / 2 else line.rect.x
-                    drawTextLine(t, x, line.rect.y + k * line.lineHeight, line.fontSize, line.lineHeight, weight, line.italic, line.color)
+                    // Each line centred in a horizontal step's text column, start-aligned in a vertical one
+                    // (text-align: start — each line ends at the column's right edge in RTL).
+                    val w = fonts.measure.width(t, line.fontSize, weight, line.letterSpacing)
+                    val x = if (horizontal) line.rect.x + (line.rect.width - w) / 2 else if (rtlText) line.rect.x + line.rect.width - w else line.rect.x
+                    drawTextLine(t, x, line.rect.y + k * line.lineHeight, line.fontSize, line.lineHeight, weight, line.italic, line.color, line.letterSpacing)
                 }
             }
         }

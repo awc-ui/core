@@ -187,11 +187,11 @@ run below). Installers: `work/avatar-lab/lab-patch.py` (idempotent anchored edit
 **Letter spacing on Android.** Compose/Minikin spreads letter spacing around glyphs, and may trim it at line edges. The renderer measures the run with and without spacing, rebuilds the CSS run box (advances plus one spacing per grapheme) and places the glyph origin exactly.
 
 **Image loading.**
-- `loading="lazy"` has no viewport-deferral natively: images load when shown.
+- `loading="lazy"` (the default) defers the request, and mdLoad / mdError, until the avatar comes within Chrome's lazy-load distance (1250 px) of the window; `eager` loads at once (Chrome 153 oracle and `NativeAvatarLazyIntegration` / `NativeAvatarLazyTest`, gate-7 r3-05).
 - `crossorigin` has no CORS semantics natively; only the reload-on-change is reproduced.
 - Percent sizes need a containing block and are not resolved (no oracle case).
 
-**CEM drift.** `custom-elements.json` lists 11 hooks for md-avatar. It is missing the 14 palette hooks `--md-avatar-palette-{1…7}-container/label`, which the CSS documents and implements. The native APIs expose them as `paletteContainerColors`/`paletteLabelColors`.
+**CEM.** `custom-elements.json` lists all 25 md-avatar hooks, the 14 palette hooks `--md-avatar-palette-{1…7}-container/label` included (fixed by gate-7 r3-06). The native APIs expose those as `paletteContainerColors`/`paletteLabelColors`.
 
 **Open source decision (unchanged).** A resolved name palette overrides `--md-avatar-container-color` and `--md-avatar-label-color`. The palette classes take the bucket's palette hooks or tokens, so the two hooks only colour neutral avatars: `color-from-name=false`, or no initials, name or label to seed a bucket. Native mirrors this; Chrome's hook cases record it. Changing it is a source decision (see the source review).
 

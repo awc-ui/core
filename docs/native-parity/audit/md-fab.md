@@ -1,59 +1,40 @@
-# md-fab — gate-7 independent audit
+# md-fab — gate-7 independent audit (re-check 3)
 
-Reviewer: gate-7 reviewer r1, 2026-10-31 ([protocol](../../../../audit/AUDIT-PROTOCOL.md)). Everything below was re-run by r1 on the
-snapshot `work/audit/r1-tree` (canonical tree at 2026-10-31 00:15 UTC after 42 install jobs, latest `fx-072-install-orgchart-apk`; hash
-manifest `work/audit/r1/snap/manifest.sha256`), except the Laboratory probes, which use the running 4177 server (canonical). Job logs:
-`work/claude-runner/done/r1-*.log`; outputs: `work/audit/r1/runs/`; gate-1 matrices: `work/audit/r1/matrix/`; defects:
-[`work/audit/DEFECTS.md`](../../../../audit/DEFECTS.md) (section r1). Mac load average during the runs: 110–940 on 16 cores.
-None of these components has a `checkpoint.json`, so freshness rests on these re-runs (R1-10).
+Reviewer: gate-7 reviewer s7-7 (story 7-7), re-check of 2026-11-15, after the round-3/4 fixes R1-12, R1-13, R1-14, R1-16 and the doc/evidence items R1-09, R1-10
+(installed by main-queue fx-128-install-tick-nil, 2026-11-14). Everything below was re-run by s7-7 on a fresh snapshot `work/audit/s7-7-tree`
+(taken 2026-11-15 11:35 Mac time; latest install fx-128; manifest `work/audit/s7-7/snap/`). Outputs `work/audit/s7-7/` (swift/, ios/, android/, lab/, web/, ax/, examples/, gate1/).
+Jobs: s7-7-001-snapshot, -002-sim, -003-swift, -004-ios, -005-lab-web, -006-ax-mac-ios, -007-gate1, -008-ios18-rerun, a1: s7-7-A001-android, -A003-examples-kotlin, -A004-ax-android.
+Simulators AWC-fi2 (iPhone 17 Pro, iOS 26.3.1) and AWC-fi2-ios18 (iPhone 16 Pro, iOS 18.6); Android emulator-5556. Timing runs through `tools/slot.sh timing 4`.
+Host load: the iOS job started at load average 122 (it fell to 12-19 later), so the runs are, if anything, harsher than the fix jobs'.
 
-## Verdict: FAIL
+## Re-run counts (claimed -> re-run)
+| Suite | Claimed (DEFECTS / checkpoint) | s7-7 re-run |
+|---|---|---|
+| Family paint (Chrome 153 oracles) macOS / iOS 26.3 / Android | 974 | 974/974 / 974/974 / 974/974 |
+| Family states macOS | 27819 (fx-127), 29358 canonical (fx-128, other suites included) | 29186/29186 |
+| Family states Android | 18241 (fx-A084) | 18241/18241; device classes 133/133; unit 195/195 |
+| Family states iOS 26.3 x3 | 26346, 26387, 26279 | 26018, 26659, 26522: all pass (one accepted BRACKET match each, R1-14) |
+| Family states iOS 18.6 x5 | 27276, 27660, 27192 | 27073/27074 (1 FAIL), 27519, 27769, 27876, 26730: all other runs pass |
+| md-button paint / states (shared fixtures) | 1086 / 645 | 1086/1086 macOS and iOS; 646/646 iOS 26.3; Android 712 / 645 |
+| Laboratory 4177 probes (iOS and Android, 9 tags) | retained updates, clicks, methods | all 200; setMenuIcon, show/whenClosed/close fulfilled; split 232.5 |
+| Studio / compiler / Web spec / Web e2e | | 878/878, 12/12, 612/612, all 9 tags pass |
+| Examples (copied Swift / Kotlin) | | Swift typecheck 13/13 files exit 0; Kotlin compile 13 files, 364 cases, BUILD ok |
+| tools/ax macOS+Web+iOS+Android | 0 open | 0 open findings on every tag; reports identical to the installed ones |
+| Checkpoints (R1-10) | regenerated | all six checkpoint.json current against the snapshot (0 differing files) |
 
-Blocking: **R1-03a** (Chrome evidence covers rest paint only — no state, motion or reduced-motion comparison), **R1-04** (no retained
-Laboratory property updates). Non-blocking: R1-09, R1-10.
-
-## Gate 1 — source contract
-
-`md-fab.tsx`/`.css`: 10 properties (optional `extended`), `mdClick`, async `setMenuIcon(string|null)`, `icon` slot, 3 parts, 5 hooks = 21 rows
-([matrix](../../../../audit/r1/matrix/md-fab.md)); all have SwiftUI/Compose implementations, Laboratory exposure (catalog + `fab-appearance.js`,
-Methods panel for `setMenuIcon`) and tests. The DOM `MouseEvent` detail is replaced by a null detail plus separate native activation metadata
-(documented native equivalent, observed in the Laboratory on both hosts). Met.
-
-## Re-run counts (claimed → r1)
-
-| Suite | Claimed | r1 macOS | r1 iOS 26.3 | r1 Android |
-|---|---|---|---|---|
-| Chrome FAB paint (37 + 2 cases inside the md-button paint run) | pass (in 1086 / 712) | **1086/1086** | **1086/1086** | **712/712** |
-| `NativeFabViewIntegration` | 94 (iOS 94×3) | **94/94** | **94/94** | — |
-| ButtonMain (141 FAB contracts inside) | 1073 | **1073/1073** | **1073/1073** | — |
-| Live host `test-live-fab` | pass | **pass** | — | — |
-| Android device | 11 scoped cases | — | — | `NativeFabParityTest` **10/10** + `LivePreviewHostTest#fabHost…` **1/1** |
-| Android unit | 5 FAB contracts | — | — | `NativeFabContractTest` **5/5** |
-| Web | e2e 27 | e2e **27/27** (r1-009) | | |
-
-## Gates 2/5 — against Chrome (R1-03a)
-
-Chrome 153 covers the resting paint (7 variants × raised/lowered × icon/extended, medium/large, dark, disabled, soft-disabled, RTL) and the
-2026-10-20 Chrome 152 snapshot covers 56 geometry cases. There is no Chrome state run (hover elevation 3→4 and lowered 1→2, focus ring and
-focus layer, pressed layer and ripple), no motion run (extended↔collapsed 500 ms overshoot, label 200 ms, `setMenuIcon` 120 ms cross-fade)
-and no reduced-motion run; the native suites check these against values taken from the source, not against Chrome frames.
-
-## Gate 3 — Laboratory
-
-r1-003: sessions open on SwiftUI and Android; a click returns one `mdClick` (detail null, pointer activation metadata); `setMenuIcon(["close"])`
-changes the frame on both and `setMenuIcon([null])` restores Android's original frame exactly (SwiftUI's differs only after the preceding
-click — focus state; `test-live-fab` asserts the clear). r1-010: tertiary/large/no-label via a new session gives 96×96 on both. Retained
-`update` refused (R1-04). Examples: r1 generic 9 + fork generator 10 per platform — Swift typecheck exit 0 (r1-004/005), Kotlin compile
-BUILD SUCCESSFUL (r1-A003); regenerated sources are byte-identical to the 2026-10-20 files, now compiled against today's APIs.
-
-## Gate 6 — runtime and accessibility
-
-tools/ax: 4 cases (extended, icon-only, disabled, soft-disabled), 0 open, 0 accepted, all three native platforms; identical to the installed report.
+## Gate 1 matrix
+Regenerated with r1's extractors (`work/audit/s7-7/gate1/`): identical to r1's round-2 matrix. The only unmatched rows are matcher artefacts already reviewed by r1:
+md-segmented-button `segmentIndex`/`segmentTotal` (set-managed, covered through the set tests) and md-split-button `leading-state-layer`/`trailing-state-layer`
+(built by name concatenation in `NativeSplitButton.swift` line 150 and asserted by `split-button-integration.test.mjs`). No new gap.
 
 ## Exceptions
+None proposed; none accepted.
 
-None proposed. The measured label widths (Web 147.97 vs SwiftUI 148; 164 vs 165 with icon size 40) are text-shaping boundaries.
+## Component evidence
+FAB: `NativeFabViewIntegration` 94/94 (macOS and iOS 26.3), live host script pass; Android `NativeFabParityTest` 10/10; fab-extend-motion and click2 samples (R1-12, R1-13) pass in every family-states run.
 
 ## Findings
+No blocking finding. R1-09 stays PARTIAL (non-blocking): the `Status:` line of this doc still says iOS execution and the final audit remain pending, which the evidence above supersedes.
 
-R1-03a, R1-04 (blocking); R1-09, R1-10. See [DEFECTS.md](../../../../audit/DEFECTS.md).
+## Verdict
+PASS (gate 7, s7-7, 2026-11-15).

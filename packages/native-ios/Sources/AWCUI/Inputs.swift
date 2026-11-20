@@ -98,7 +98,9 @@ extension AWCNativeView {
         // Dedicated renderer (Slider/NativeSliderView.swift): Web geometry, motion, events and per-thumb inputs.
         // Host-authored properties (outside a form): the component's own writes live in its model until the host changes them.
         AWCNativeSliderView(nodeID: node.id, properties: formState == nil ? (AWCComponentCatalog.defaults[node.tag] ?? [:]).merging(node.properties) { _, new in new } : local,
-                            set: { set($0, $1) }, emit: { emit($0, $1) })
+                            set: { set($0, $1) }, emit: { emit($0, $1) },
+                            // R6-04: the inset-icon slot's content, rendered in the inset box instead of the icon glyph.
+                            insetContent: node.children.first(where: { $0.slot == "inset-icon" }).map { AnyView(child($0)) })
     }
     func nativeSlider(_ key: String, lower: Double, upper: Double) -> some View {
         HStack {
@@ -122,7 +124,7 @@ extension AWCNativeView {
             }
             if b("clearable") && !s("value").isEmpty { Button(s("clearLabel", "Clear")) { set("value", ""); emit("mdChange", ["value": "", "date": .null]) } }
             support
-        }.awcPreviewSheet(isPresented: Binding(get: { b("open") }, set: { value in if !value { emit("mdCancel") }; showOverlay(value) })) {
+        }.awcPreviewSheet(isPresented: $local[awcBool: "open"], onChange: { value in if !value { emit("mdCancel") }; emit(value ? "mdOpen" : "mdClose") }) {
             VStack(alignment: .leading, spacing: 20) {
                 Text(s("headline", label)).font(.title2.bold())
                 if previewEnabled {

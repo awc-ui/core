@@ -144,7 +144,7 @@ struct MenuStatesFixture: View {
 struct MenuSample { var t: Double; var menus: [(open: Bool, closing: Bool, opacity: Double, scaleY: Double, rect: CGRect)]; var focus: String; var layers: [Double]; var anchorExpanded: String; var rowExpanded: String?; var selected: [Bool] }
 @main @MainActor enum NativeMenuStatesIntegration {
     static let state = MenuStatesState()
-    static var host: NSHostingView<MenuStatesFixture>!, window: NSWindow!
+    static var host: MenuFirstMouseHost<MenuStatesFixture>!, window: NSWindow!
     static var checks = 0, failures: [String] = [], report: [[String: Any]] = []
     static var events: [(name: String, t: Double, node: String)] = []
     static var shotIndices: [Int] = []
@@ -386,7 +386,7 @@ struct MenuSample { var t: Double; var menus: [(open: Bool, closing: Bool, opaci
     }
     static func main() {
         _ = NSApplication.shared; NSApp.setActivationPolicy(.accessory)
-        host = NSHostingView(rootView: MenuStatesFixture(state: state, onEvent: { e in if e.name.hasPrefix("md") { events.append((e.name, now(), e.nodeID)); if ProcessInfo.processInfo.environment["AWC_MENU_EVENTS"] != nil { print("  event \(e.name) \(e.nodeID) t=\(Int(now()))") } } }))
+        host = MenuFirstMouseHost(rootView: MenuStatesFixture(state: state, onEvent: { e in if e.name.hasPrefix("md") { events.append((e.name, now(), e.nodeID)); if ProcessInfo.processInfo.environment["AWC_MENU_EVENTS"] != nil { print("  event \(e.name) \(e.nodeID) t=\(Int(now()))") } } }))
         window = NSWindow(contentRect: .init(x: -20000, y: -20000, width: 1200, height: 900), styleMask: [.borderless], backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false; window.colorSpace = .sRGB; window.acceptsMouseMovedEvents = true; window.contentView = host; window.orderFrontRegardless(); pump(0.8)
         let fixtures = URL(fileURLWithPath: #filePath).deletingLastPathComponent().appendingPathComponent("Fixtures")
@@ -401,3 +401,10 @@ struct MenuSample { var t: Double; var menus: [(open: Bool, closing: Bool, opaci
         window.close(); if !failures.isEmpty { exit(1) }
     }
 }
+/// With the console locked the test app is never active: AppKit treats every click as the window-activating first click, which
+/// NSHostingView does not pass to SwiftUI gestures (d4, 2026-11-06). Harness only.
+#if canImport(AppKit)
+final class MenuFirstMouseHost<Content: View>: NSHostingView<Content> { override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true } }
+#else
+typealias MenuFirstMouseHost<Content: View> = NSHostingView<Content>
+#endif

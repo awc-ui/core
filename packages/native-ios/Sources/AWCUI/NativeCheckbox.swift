@@ -203,7 +203,7 @@ struct AWCNativeCheckbox: View {
         let layer = reduced ? targets.layer : layerTrack.presented(t)
         let fill = reduced ? Color(awcHex: targets.fill) : fillTrack.presented(t) ?? Color(awcHex: targets.fill)
         let outline = reduced ? Color(awcHex: targets.outline) : outlineTrack.presented(t) ?? Color(awcHex: targets.outline)
-        let glyph = m.selected ? AWCCheckboxGlyph.frame(glyphStart.map { t - $0 } ?? glyphDuration, duration: glyphDuration, curve: standard) : (scale: 1.0, opacity: 1.0)
+        let glyph = m.selected ? AWCCheckboxGlyph.frame(glyphStart.map { t - $0 } ?? (lastSelected || reduced ? glyphDuration : 0), duration: glyphDuration, curve: standard) : (scale: 1.0, opacity: 1.0)
         let support = m.supportMessage, hasSupport = !support.isEmpty
         let hostH = hasSupport ? touch + 2 + max(st.supportLineHeight, supportFrame.height) : touch
         let ring = s.focusVisible

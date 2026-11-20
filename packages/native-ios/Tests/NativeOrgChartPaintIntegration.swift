@@ -4,7 +4,7 @@ import Observation
 @testable import AWCUI
 
 // md-organization-chart paint and geometry against Chrome 153 (outputs/native-parity/md-organization-chart/web-reference,
-// oc-paint.html, DPR 1): 97 cases — themes × directions × orientations × selection modes, densities, folds, locked-open,
+// oc-paint.html, DPR 1): 97 cases (+ the 13-case ::part() subset, ?subset=parts) — themes × directions × orientations × selection modes, densities, folds, locked-open,
 // empty states, multiple roots, only-child chains, accent, trail geometry, hover, keyboard focus, every hook, narrow
 // viewports, localised labels and the JSON attribute. Rendered through AWCNativeView (production dispatch).
 // Checks: every card box (Core Text widths), every toggler box, the host height, and every flat pixel of the clip.
@@ -35,6 +35,17 @@ struct OrgChartPaintFixture: View {
                      selectedColor: c("selected-color"), focusRingColor: c("focus-ring-color"), stateLayerColor: c("state-layer-color"), toggleSize: n("toggle-size"),
                      levelGap: n("level-gap"), siblingGap: n("sibling-gap"), duration: n("duration"))
     }
+    /// The case's `md-organization-chart::part(x) { … }` rules (R5-06).
+    static func parts(_ html: String) -> [AWCOrgChartPart: AWCOrgChartPartAppearance] {
+        guard let a = html.range(of: "<style>"), let b = html.range(of: "</style>") else { return [:] }
+        var out: [AWCOrgChartPart: AWCOrgChartPartAppearance] = [:]
+        for rule in html[a.upperBound..<b.lowerBound].split(separator: "}") {
+            let kv = rule.split(separator: "{", maxSplits: 1); guard kv.count == 2, let o = kv[0].range(of: "::part("), let c = kv[0].range(of: ")", range: o.upperBound..<kv[0].endIndex),
+                  let part = AWCOrgChartPart(part: String(kv[0][o.upperBound..<c.lowerBound])) else { continue }
+            out[part] = (out[part] ?? .init()).merging(AWCOrgChartPartAppearance(css: String(kv[1])))
+        }
+        return out
+    }
     static func properties(_ c: AWCValue) -> [String: AWCValue] {
         let html = c["html"].string
         var p: [String: AWCValue] = [:]
@@ -59,6 +70,7 @@ struct OrgChartPaintFixture: View {
         return ZStack(alignment: .topLeading) {
             AWCNativeView(node: node) { _ in }
                 .awcOrgChartAppearance(Self.hooks(html))
+                .awcOrgChartPartAppearance(Self.parts(html))
                 .frame(width: host["width"].number ?? 920, alignment: .topLeading)
                 .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { if state.epoch == epoch { state.height = $0 } }
                 .awcDensity(Self.ancestorDensity(html) ?? .nan)
@@ -145,7 +157,9 @@ struct OrgChartGrid {
         let density = AWCNativeDensity.resolve(props["density"]?.number, inherited: OrgChartPaintFixture.ancestorDensity(html) ?? 0)
         let model = AWCOrgChartModel(roots: roots, collapsed: AWCOrgChartModel.seededCollapsed(roots), collapsible: props["collapsible"]?.bool ?? true,
                                      mode: props["selectionMode"]?.string ?? "none", selection: (props["selectedIds"]?.array ?? []).map(\.string),
-                                     vertical: props["orientation"]?.string != "horizontal", rtl: c["dir"].string == "rtl", metrics: .init(density: density, appearance: appearance))
+                                     vertical: props["orientation"]?.string != "horizontal", rtl: c["dir"].string == "rtl", metrics: {
+                                         // The case's ::part() rules size the layout too (node / viewport padding, name / title font).
+                                         var m = AWCOrgChartMetrics(density: density, appearance: appearance); m.parts = AWCOrgChartParts(styles: OrgChartPaintFixture.parts(html)); return m }())
         let layout = model.layout(width: hostRect.width)
         check(abs(Double(state.height) - hostRect.height) <= 0.6, "\(name) host height \(state.height) vs \(hostRect.height)")
         let items = c["items"].array
@@ -182,6 +196,10 @@ struct OrgChartGrid {
         let oracle = try! JSONDecoder().decode(AWCValue.self, from: Data(contentsOf: fixtures.appendingPathComponent("orgchart-web-paint.json")))
         let only = env["AWC_ORGCHART_PAINT_ONLY"]
         for c in oracle["cases"].array where only.map({ c["name"].string.contains($0) }) ?? true { run(c, shots: fixtures.appendingPathComponent("orgchart-web-paint")) }
+        // ::part() subset (oc-paint.html?subset=parts, R5-06).
+        if let data = try? Data(contentsOf: fixtures.appendingPathComponent("orgchart-web-paint-parts.json")), let parts = try? JSONDecoder().decode(AWCValue.self, from: data) {
+            for c in parts["cases"].array where only.map({ c["name"].string.contains($0) }) ?? true { run(c, shots: fixtures.appendingPathComponent("orgchart-web-paint-parts")) }
+        }
         if let output = env["AWC_ORGCHART_PAINT_OUTPUT"] { try! JSONSerialization.data(withJSONObject: ["checks": checks, "failures": failures, "report": report], options: [.prettyPrinted, .sortedKeys]).write(to: URL(fileURLWithPath: output)) }
         print("Org chart native paint: \(checks - failures.count)/\(checks) checks passed")
         window.close(); if !failures.isEmpty { exit(1) }

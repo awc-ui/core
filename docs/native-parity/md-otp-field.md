@@ -1,6 +1,6 @@
 # md-otp-field native checkpoint
 
-Status: **installed in canonical 2026-10-31 (n3-051); gates 2–3 and accessibility run on macOS SwiftUI, the iOS simulator and the
+Status: **installed in canonical 2026-10-31 (n3-051); follow-ups 2026-11-05 (n3-078); gates 2–3 and accessibility run on macOS SwiftUI, the iOS simulator and the
 Android emulator** against Mac Chrome 153 oracles. Open items are listed under Remaining. Independent final audit pending. Source contract:
 [md-otp-field-source-review.md](md-otp-field-source-review.md); plan: [md-otp-field-native-plan.md](md-otp-field-native-plan.md).
 
@@ -10,6 +10,7 @@ Android emulator** against Mac Chrome 153 oracles. Open items are listed under R
 | --- | --- | --- |
 | Renderer (one platform text input per cell, as the source's one `<input>` per cell) | `AWCNativeView(tag: "md-otp-field", …)` (`NativeOTPField.swift`, on `FieldTextInput.swift` with editing keys and paste) | `AWCComponent("md-otp-field", …)` (`NativeOTPField.kt`) |
 | The seven `--md-otp-field-*` hooks | `AWCOTPFieldAppearance` + `.awcOTPFieldAppearance(_:for:)` | `AWCOTPFieldAppearance` + `AWCOTPFieldAppearanceScope` |
+| `::part(cell)` (border colour / width, background, text, caret), `::part(cells)` (gap), `::part(separator)` (colour, opacity), `::part(supporting-text)` (colour) | `AWCOTPFieldPartAppearance` + `.awcOTPFieldPartAppearance(_:for:)` | `AWCOTPFieldPartAppearance` + `AWCOTPFieldPartAppearanceScope` |
 | Methods `setFocus`, `clear`, `getValidity`, `setCustomValidity`, `checkValidity`, `reportValidity` | `AWCOTPFieldController` + `.awcOTPFieldController(_:for:)` | `AWCOTPFieldController` + `AWCOTPFieldControllerScope` |
 | `separator` slot | node children with `slot: "separator"` | the `separator` slot of the content lambda |
 
@@ -22,19 +23,19 @@ transition; required / incomplete validation.
 
 ## Evidence
 
-Oracles: Mac Chrome 153, `outputs/native-parity/md-otp-field/web-oracle-mac/` (job n3-001): 168 paint cases, 4 interaction runs
+Oracles: Mac Chrome 153, `outputs/native-parity/md-otp-field/web-oracle-mac/` (jobs n3-001, n3-061 for `::part`): 177 paint cases (9 with part rules), 4 interaction runs
 (+ reduced motion).
 
 | Platform | Paint | States | Jobs |
 | --- | --- | --- | --- |
-| macOS SwiftUI | 12,344 / 12,344 | 1,370 / 1,370 | n3-047 |
-| iOS simulator (AWC-n3, iOS 26.3.1) | 12,344 / 12,344 | 1,360 / 1,370 (open: frames of runs whose keystrokes reach the simulator up to 86 ms late) | n3-047 |
-| Android emulator (emulator-5560) | 12,176 / 12,176 | 1,370 / 1,370 | n3-A029, n3-A031 |
+| macOS SwiftUI | 13,164 / 13,164 | 1,370 / 1,370 | n3-074, n3-080 |
+| iOS simulator (AWC-n3, iOS 26.3.1) | 13,164 / 13,164 | 1,361–1,362 / 1,370 (open: simulator keystroke delivery, see Remaining) | n3-067, n3-076, n3-079 |
+| Android emulator (emulator-5560) | 12,933 / 12,933 | 1,370 / 1,370 | n3-A035, n3-A036 |
 
 ## Laboratory (gate 3)
 
 Studio module (`otp-field-appearance.js`), retained updates, the six methods with results, examples, policies, SwiftUI live host
-27/27 (canonical, n3-051), Android host passes (n3-A029).
+27/27 (n3-080), Android host passes (n3-A036).
 
 ## Accessibility (tools/ax)
 
@@ -43,14 +44,22 @@ on macOS each textbox reports the bordered cell as its frame; the group is named
 
 ## Exceptions (proposed; reviewer acceptance pending)
 
-- **Hover tint on iOS touch** (proposed). Source: a cell under the mouse pointer shows the `:hover` border (on-surface). Platform/API: iOS UIKit touch input (no pointer hover without a pointing device; SwiftUI `onHover` still applies with an iPad pointer). Technical reason: touch has no hover state. User impact: none on touch. Tested native equivalent: the hover border on macOS (pointer) and Android (mouse) in the states suites. Evidence: the iOS states suite skips the Chrome frames of the pointer-rested cell and reports them (`hoverFramesUnsupportedOnTouch`, n3-047). Reviewer / acceptance: pending.
+None. The earlier proposal (hover tint on iOS touch) is withdrawn: the iPadOS pointer hovers a cell through `.onContinuousHover`, the native equivalent of `:hover`, and the iOS states suite now checks those frames (decision 5).
 
 ## Decisions
 
 See "Decisions (autonomous, 2026-10-27, reversible)" in the source review: editing a complete code, Tab stops, IME, paste into a
 masked cell on macOS, hover on iOS.
 
+- 6-3 (2026-11-14): (1) reduced motion: the cell borders are drawn from their targets (every change snaps there), not from the colour
+  tracks an `.onChange` sets after the render; before, `otp-keyboard-{ltr,rtl} (reduced) type-12` kept the borders one focus move
+  behind in 3 of 10 runs (d4: 2 of 3). (2) A `value` written by a retained update is taken while the body evaluates, with the same
+  update's length / validation / transform; the `.onChange` write alone was sometimes not followed by a render (live host
+  `test-live-otpfield.mjs` canonical 14/20, patched 20/20 twice).
+
 ## Remaining
 
-- iOS simulator: runs whose keystrokes arrive up to 86 ms late (simulator input latency) leave frames outside the envelope.
+- iOS simulator: a hardware key reaches a UIKit text input through the keyboard 5–70 ms after the key-down (di, 2026-11-04; not a
+  field defect). The states suite times each keystroke from its arrival (keys still in flight awaited, keys Chrome applies
+  together compared from the first arrival); 8–9 frames stay outside in the reduced-motion RTL Backspace ×3 / Delete phases.
 - Independent final audit.

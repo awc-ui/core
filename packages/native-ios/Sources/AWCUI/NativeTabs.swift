@@ -71,24 +71,28 @@ public struct AWCTabsAppearance: Equatable, Sendable {
 
 /// `::part()` styling of md-tab: state-layer (background-color, opacity), icon / label (color), indicator / divider
 /// (background-color). Part rules come from the outer tree, so they win over the hooks and every internal state rule (a fixed
-/// state-layer opacity shows in every state, as in Chrome). `content` is a layout wrapper with no paint of its own (exception
-/// record in md-tabs.md).
+/// state-layer opacity shows in every state, as in Chrome). `content` — the wrapper of icon, label and badge — takes a box
+/// (`AWCPartBox`: background, border, radius, padding with the layout shift; gate-7 R6-17).
 public struct AWCTabPartAppearance: Equatable, Sendable {
     public let stateLayerColor: String?, stateLayerOpacity: Double?, iconColor: String?, labelColor: String?, indicatorColor: String?, dividerColor: String?
+    public let content: AWCPartBox?
     public init(stateLayerColor: String? = nil, stateLayerOpacity: Double? = nil, iconColor: String? = nil, labelColor: String? = nil,
-                indicatorColor: String? = nil, dividerColor: String? = nil) {
+                indicatorColor: String? = nil, dividerColor: String? = nil, content: AWCPartBox? = nil) {
         func c(_ v: String?) -> String? { v.flatMap { $0.isEmpty ? nil : $0 } }
         self.stateLayerColor = c(stateLayerColor); self.stateLayerOpacity = stateLayerOpacity.flatMap { $0.isFinite ? min(1, max(0, $0)) : nil }
         self.iconColor = c(iconColor); self.labelColor = c(labelColor); self.indicatorColor = c(indicatorColor); self.dividerColor = c(dividerColor)
+        self.content = content
     }
     /// Laboratory names (the fields above).
     public init(values: [String: AWCValue]) {
         self.init(stateLayerColor: values["stateLayerColor"]?.string, stateLayerOpacity: values["stateLayerOpacity"]?.number, iconColor: values["iconColor"]?.string,
-                  labelColor: values["labelColor"]?.string, indicatorColor: values["indicatorColor"]?.string, dividerColor: values["dividerColor"]?.string)
+                  labelColor: values["labelColor"]?.string, indicatorColor: values["indicatorColor"]?.string, dividerColor: values["dividerColor"]?.string,
+                  content: AWCPartBox(value: values["content"]))
     }
     public func merging(_ o: Self) -> Self {
         .init(stateLayerColor: o.stateLayerColor ?? stateLayerColor, stateLayerOpacity: o.stateLayerOpacity ?? stateLayerOpacity, iconColor: o.iconColor ?? iconColor,
-              labelColor: o.labelColor ?? labelColor, indicatorColor: o.indicatorColor ?? indicatorColor, dividerColor: o.dividerColor ?? dividerColor)
+              labelColor: o.labelColor ?? labelColor, indicatorColor: o.indicatorColor ?? indicatorColor, dividerColor: o.dividerColor ?? dividerColor,
+              content: AWCPartBox.merge(content, o.content))
     }
 }
 /// `::part(container)` of md-tabs: the scrolling strip's background-color (painted over the host background).
@@ -281,6 +285,8 @@ struct AWCTabGeometry {
 struct AWCTabsLayoutInput {
     let specs: [AWCTabSpec], primary: Bool, mode: String, fixed: Double?, viewport: Double, rtl: Bool
     let inheritedDensity: Double, indicatorHeight: Double?, slotWidths: [String: Double]
+    /// md-tab `::part(content)` boxes by tab id (gate-7 R6-17).
+    var contentBoxes: [String: AWCPartBox] = [:]
 }
 
 enum AWCTabsLayout {
@@ -288,9 +294,9 @@ enum AWCTabsLayout {
         b.isEmpty ? CGSize(width: 6, height: 6) : CGSize(width: max(6, AWCNativeFonts.tabTextWidth(b, size: 10, tracking: 0)) + 6, height: 14)
     }
     /// The max-content width of a tab (padding + inner), never below its minimum.
-    static func intrinsic(_ s: AWCTabSpec, _ m: AWCTabMetrics, primary: Bool, slotWidths: [String: Double]) -> Double {
+    static func intrinsic(_ s: AWCTabSpec, _ m: AWCTabMetrics, primary: Bool, slotWidths: [String: Double], box: AWCPartBox? = nil) -> Double {
         let content = contentSize(s, m, slotWidths: slotWidths).width
-        return max(m.minWidth, 2 * m.padX + (primary ? max(content, 24) : content))
+        return max(m.minWidth, 2 * m.padX + (primary ? max(content, 24) : content) + (box?.horizontal ?? 0))
     }
     static func labelWidth(_ s: AWCTabSpec, _ m: AWCTabMetrics, slotWidths: [String: Double]) -> (text: Double, total: Double) {
         let text = s.hasLabel ? AWCNativeFonts.tabTextWidth(s.label, size: CGFloat(m.labelSize)) : 0
@@ -312,7 +318,7 @@ enum AWCTabsLayout {
     static func widths(_ input: AWCTabsLayoutInput) -> [Double] {
         let metrics = input.specs.map { AWCTabMetrics(d: $0.density(inherited: input.inheritedDensity)) }
         if let fixed = input.fixed { return input.specs.map { _ in fixed } }
-        if input.mode == "auto" { return zip(input.specs, metrics).map { intrinsic($0, $1, primary: input.primary, slotWidths: input.slotWidths) } }
+        if input.mode == "auto" { return zip(input.specs, metrics).map { intrinsic($0, $1, primary: input.primary, slotWidths: input.slotWidths, box: input.contentBoxes[$0.id]) } }
         var result = [Double?](repeating: nil, count: input.specs.count)
         while true {
             let open = result.indices.filter { result[$0] == nil }
@@ -324,7 +330,8 @@ enum AWCTabsLayout {
         }
         return result.map { $0 ?? 0 }
     }
-    static func geometry(_ s: AWCTabSpec, width w: Double, primary: Bool, rtl: Bool, inheritedDensity: Double, indicatorHeight: Double?, slotWidths: [String: Double]) -> AWCTabGeometry {
+    static func geometry(_ s: AWCTabSpec, width w: Double, primary: Bool, rtl: Bool, inheritedDensity: Double, indicatorHeight: Double?, slotWidths: [String: Double],
+                         contentBox: AWCPartBox? = nil) -> AWCTabGeometry {
         let m = AWCTabMetrics(d: s.density(inherited: inheritedDensity))
         var g = AWCTabGeometry(); g.width = w; g.stacked = s.stacked; g.inline = s.inline
         g.kind = s.inline ? "inline" : s.stacked ? "stacked" : s.hasIcon ? "icon" : "label"
@@ -332,17 +339,22 @@ enum AWCTabsLayout {
         let indH = indicatorHeight ?? (primary ? 3 : 2)
         let avail = max(0, w - 2 * m.padX), size = contentSize(s, m, slotWidths: slotWidths)
         let lw = labelWidth(s, m, slotWidths: slotWidths)
+        // ::part(content) box (gate-7 R6-17): border + padding widen the content's border box (the primary indicator spans it); a
+        // primary content fills the tab's height and centres its children in the padded area, a secondary one grows around them.
+        let ins = contentBox.insets, ih = ins.left + ins.right, iv = ins.top + ins.bottom
         var box: CGRect
         if primary {
-            let inner = min(max(Double(size.width), 24), avail), innerX = m.padX + (avail - inner) / 2
+            let inner = min(max(Double(size.width), 24) + ih, avail), innerX = m.padX + (avail - inner) / 2
             box = CGRect(x: innerX, y: 0, width: inner, height: max(0, h - indH - 2))
             g.indicator = CGRect(x: innerX, y: h - indH, width: inner, height: indH)
         } else {
-            let cw = min(Double(size.width), avail)
-            box = CGRect(x: m.padX + (avail - cw) / 2, y: (h - Double(size.height)) / 2, width: cw, height: Double(size.height))
+            let cw = min(Double(size.width) + ih, avail), ch = Double(size.height) + iv
+            box = CGRect(x: m.padX + (avail - cw) / 2, y: (h - ch) / 2, width: cw, height: ch)
             g.indicator = CGRect(x: 0, y: h - indH, width: w, height: indH)
         }
         g.content = box
+        // The content area: the border box less border and padding (physical edges).
+        box = CGRect(x: Double(box.minX) + ins.left, y: Double(box.minY) + ins.top, width: max(0, Double(box.width) - ih), height: max(0, Double(box.height) - iv))
         let stackW = min(Double(size.width), Double(box.width)), stackH = Double(size.height)
         let stackY = Double(box.minY) + (Double(box.height) - stackH) / 2
         // The label shrinks (ellipsis) to what the content box leaves it.
@@ -383,7 +395,7 @@ enum AWCTabsLayout {
         let widths = widths(input), total = widths.reduce(0, +), content = max(total, input.viewport)
         var x = 0.0, tabs: [AWCTabGeometry] = []
         for (s, w) in zip(input.specs, widths) {
-            var g = geometry(s, width: w, primary: input.primary, rtl: input.rtl, inheritedDensity: input.inheritedDensity, indicatorHeight: input.indicatorHeight, slotWidths: input.slotWidths)
+            var g = geometry(s, width: w, primary: input.primary, rtl: input.rtl, inheritedDensity: input.inheritedDensity, indicatorHeight: input.indicatorHeight, slotWidths: input.slotWidths, contentBox: input.contentBoxes[s.id])
             g.x = input.rtl ? content - x - w : x; x += w; tabs.append(g)
         }
         return (tabs, content, tabs.map(\.height).max() ?? 0)
@@ -743,7 +755,8 @@ extension AWCNativeTabs {
         let mode = widthMode, look = tabLook
         func input(_ v: Double) -> AWCTabsLayoutInput {
             AWCTabsLayoutInput(specs: specs, primary: primary, mode: mode.mode, fixed: mode.fixed, viewport: v, rtl: rtl,
-                               inheritedDensity: inheritedDensity, indicatorHeight: look.activeIndicatorHeight, slotWidths: runtime.slotWidths)
+                               inheritedDensity: inheritedDensity, indicatorHeight: look.activeIndicatorHeight, slotWidths: runtime.slotWidths,
+                               contentBoxes: Dictionary(specs.compactMap { s in partStyle(s.id).content.map { (s.id, $0) } }, uniquingKeysWith: { a, _ in a }))
         }
         let fixedWidth = stripWidth ?? (standalone ? AWCTabsLayout.widths(input(0)).reduce(0, +) : nil)
         let w = fixedWidth ?? Double(viewport)
@@ -902,12 +915,20 @@ extension AWCNativeTabs {
                            host: Color, icon: Color, at t: Double) -> some View {
         let ind = m.indicator.value(t), opacity = m.indicatorOpacity.value(t)[0]
         let r = primary ? min(Double(g.indicator.height), Double(g.indicator.width) / 2) : min(2, Double(g.indicator.height))
-        let frames: [CGRect] = [g.divider, g.icon ?? .zero, g.labelText, g.badge ?? .zero, g.indicator, g.content, g.label ?? .zero]
+        let frames: [CGRect] = [g.divider, CGRect(x: 0, y: 0, width: g.width, height: g.height), g.icon ?? .zero, g.labelText, g.badge ?? .zero, g.indicator, g.content, g.label ?? .zero]
         let ps = partStyle(s.id), labelInk = ps.labelColor.map { Color(awcHex: $0) } ?? host
         let dividerFill = ps.dividerColor.map { Color(awcHex: $0) } ?? palette.tabDivider, indicatorFill = ps.indicatorColor.map { Color(awcHex: $0) } ?? palette.indicator
         AWCTabParts(frames: frames, size: CGSize(width: g.width, height: g.height)) {
             Rectangle().fill(dividerFill)
                 .awcInspect(nodeID: s.id, part: "divider", name: "divider") { _ in ["color": awcTabsRGBA(awcTabsComponents(dividerFill))] }
+            // ::part(content) box (gate-7 R6-17): over the divider, under the tab's content and the indicator (the source's stacking
+            // order), clipped by the tab as the strip's scroll container clips it.
+            Group {
+                if let b = ps.content, b.paints {
+                    AWCPartBoxPaint(box: b, ink: host).frame(width: g.content.width, height: g.content.height).offset(x: g.content.minX, y: g.content.minY)
+                        .frame(width: g.width, height: g.height, alignment: .topLeading).clipped()
+                } else { Color.clear }
+            }
             Group {
                 if g.icon != nil {
                     if let slot = s.slotIcon { renderChild(slot).foregroundStyle(ps.iconColor.map { Color(awcHex: $0) } ?? host) }
@@ -928,7 +949,7 @@ extension AWCNativeTabs {
                     ["opacity": .number(opacity), "translate": .number(ind[0]), "scale": .number(ind[1]), "color": awcTabsRGBA(awcTabsComponents(indicatorFill))]
                 }
                 .scaleEffect(x: ind[1], y: 1, anchor: .center).offset(x: ind[0]).opacity(opacity)
-            Color.clear.awcInspect(nodeID: s.id, part: "content", name: "content") { _ in [:] }
+            Color.clear.awcInspect(nodeID: s.id, part: "content", name: "content") { _ in ps.content?.metrics(ink: host) ?? [:] }
             Color.clear.awcInspect(nodeID: s.id, part: "label", name: "label") { _ in ["color": awcTabsRGBA(awcTabsComponents(labelInk))] }
         }
         .allowsHitTesting(false)
@@ -1071,19 +1092,31 @@ enum AWCTabPanelLinks {
         byID[id] = Box(view, name); if let tabs, index >= 0 { byTabs[tabs, default: [:]][index] = Box(view, name) }
     }
     /// The panel's element: the nearest accessibility ancestor of its focus surface named like the panel (its SwiftUI group).
-    static func element(controls: String, tabs: String, index: Int) -> AnyObject? {
+    static func element(controls: String, tabs: String, index: Int, roles: Set<String> = ["AXGroup"]) -> AnyObject? {
         guard let box = controls.isEmpty ? byTabs[tabs]?[index] : byID[controls], let view = box.view else { return nil }
         #if canImport(AppKit)
         // The SwiftUI group around the surface is not among the surface's accessibility ancestors: search the window's tree
         // (breadth first) for the group named like the panel whose frame holds the surface.
         guard let surface = view as? NSView, let window = surface.window, let root = window.contentView, !box.name.isEmpty else { return nil }
         let r = window.convertToScreen(surface.convert(surface.bounds, to: nil)), mid = CGPoint(x: r.midX, y: r.midY)
+        let debug = ProcessInfo.processInfo.environment["AWC_TAB_LINK_DEBUG"] != nil
+        // Read role, label, frame and children of formal NSAccessibilityProtocol values and of SwiftUI's accessibility nodes.
+        func read(_ item: Any) -> (role: String?, label: String?, frame: CGRect, children: [Any])? {
+            if let e = item as? NSAccessibilityProtocol { return (e.accessibilityRole()?.rawValue, e.accessibilityLabel(), e.accessibilityFrame(), e.accessibilityChildren() ?? []) }
+            // SwiftUI's AccessibilityNode implements the NSAccessibility methods without the formal conformance: call them by name.
+            guard let o = item as? NSObject else { return nil }
+            func get(_ name: String) -> Any? { o.responds(to: NSSelectorFromString(name)) ? o.value(forKey: name) : nil }
+            return ((get("accessibilityRole") as? NSAccessibility.Role)?.rawValue ?? get("accessibilityRole") as? String, get("accessibilityLabel") as? String,
+                    (get("accessibilityFrame") as? NSValue)?.rectValue ?? .zero, (get("accessibilityChildren") as? [Any]) ?? [])
+        }
         var queue: [Any] = root.accessibilityChildren() ?? [], visited = 0
+        if debug { FileHandle.standardError.write("AWC tab link \(box.name) mid \(mid) roots \(queue.count)\n".data(using: .utf8)!) }
         while !queue.isEmpty, visited < 5000 {
             let item = queue.removeFirst(); visited += 1
-            guard let e = item as? NSAccessibilityProtocol else { continue }
-            if e.accessibilityRole() == .group, e.accessibilityLabel() == box.name, e.accessibilityFrame().insetBy(dx: -1, dy: -1).contains(mid) { return item as AnyObject }
-            queue.append(contentsOf: e.accessibilityChildren() ?? [])
+            guard let e = read(item) else { if debug { FileHandle.standardError.write("  unreadable \(type(of: item))\n".data(using: .utf8)!) }; continue }
+            if debug { FileHandle.standardError.write("  \(type(of: item)) \(e.role ?? "-") \(e.label ?? "-") \(e.frame) \(e.children.count)\n".data(using: .utf8)!) }
+            if let role = e.role, roles.contains(role), e.label == box.name, e.frame.insetBy(dx: -1, dy: -1).contains(mid) { return item as AnyObject }
+            queue.append(contentsOf: e.children)
         }
         return nil
         #else

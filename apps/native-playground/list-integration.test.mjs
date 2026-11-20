@@ -103,9 +103,10 @@ test('methods, events, slots and pointer input use the released contract', () =>
     for (const [component, key] of [[list, 'properties'], [list, 'events'], [list, 'methods'], [list, 'slots'], [item, 'properties'], [item, 'methods'], [item, 'slots']]) {
       assert.deepEqual([...component.support[platform][key]].sort(), component[key].map(member => member.name).sort(), `${platform} ${component.tag} ${key}`);
     }
-    // The item-to-list protocol events stay internal natively; the list emits mdSelect/mdActivate/mdReorder.
-    assert.deepEqual([...item.support[platform].events].sort(), ['mdClick', 'mdExpand']);
-    assert.deepEqual([...item.support[platform].unsupportedEvents].sort(), ['mdItemClick', 'mdItemRequestReorder', 'mdItemSelect', 'mdRequestActivation']);
+    // Every md-list-item event is delivered natively, the list-facing ones included (gate-7 r3-13: mdRequestActivation,
+    // mdItemClick, mdItemSelect; mdItemRequestReorder is coordinated by the list, which stops it as the source does).
+    assert.deepEqual([...item.support[platform].events].sort(), item.events.map(member => member.name).sort());
+    assert.deepEqual([...(item.support[platform].unsupportedEvents ?? [])], []);
     for (const [component, methods] of [[list, ['activateNext', 'activatePrevious', 'selectItem', 'getSelectedIndices']], [item, ['setFocus', 'focusItem', 'toggle', 'expand', 'collapse']]]) for (const method of methods) {
       assert.equal(nativeMethodSupported(component.tag, method, component.support[platform]), true, `${component.tag}.${method}`);
       assert.equal(nativeMethodSupported(component.tag, method, { ...component.support[platform], methods: [] }), false);

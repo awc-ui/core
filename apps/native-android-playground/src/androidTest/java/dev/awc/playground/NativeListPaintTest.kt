@@ -112,7 +112,7 @@ class NativeListPaintTest {
         check(cfg.contains(P.Disabled)==disabled,"$name $id disabled ${cfg.contains(P.Disabled)} vs aria-disabled $disabled")
         if(index!=null) check(cfg.getOrNull(P.CollectionItemInfo)?.rowIndex==index,"$name $id set position ${cfg.getOrNull(P.CollectionItemInfo)?.rowIndex} vs $index")
     }
-    private fun check(ok:Boolean,label:String) { checks++;if(!ok) { if(label.startsWith("120-density-inherited")) knownGaps+=label else failures+=label } }
+    private fun check(ok:Boolean,label:String) { checks++;if(!ok) failures+=label }
     private fun opt(c:JSONObject,k:String)=if(c.has(k) && !c.isNull(k)) c.get(k) else null
     @Composable private fun Hooked(content:@Composable ()->Unit) {
         val h=itemHooks

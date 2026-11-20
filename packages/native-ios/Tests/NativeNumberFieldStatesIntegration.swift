@@ -9,8 +9,12 @@ import Observation
 // per-frame label motion inside Chrome's ±2-frame envelope.
 #if canImport(AppKit)
 final class NFKeyWindow: NSWindow { override var canBecomeKey: Bool { true }; override var canBecomeMain: Bool { true } }
+/// SwiftUI receives a synthesized press while the test process is not the active application (another process activated):
+/// NSWindow.sendEvent hands an inactive app's first click only to views that accept first mouse (fi, 2026-10-31).
+final class NFAcceptingHost: NSHostingView<NFStatesFixture> { override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true } }
 #else
 typealias NFKeyWindow = NSWindow
+typealias NFAcceptingHost = NSHostingView<NFStatesFixture>
 #endif
 @Observable final class NFStatesState {
     var node = AWCNode(id: "nf", tag: "md-number-field")
@@ -47,7 +51,9 @@ struct NFStatesFixture: View {
     static var host: NSHostingView<NFStatesFixture>!, window: NFKeyWindow!
     static var checks = 0, failures: [String] = [], report: [[String: Any]] = []
     static func check(_ value: Bool, _ name: String) { checks += 1; if !value { failures.append(name); print("FAIL: " + name); fflush(stdout) } }
-    struct Sample { let t: Double; let m: [String: AWCNativeInspectionNode] }
+    struct Sample { var t: Double; var m: [String: AWCNativeInspectionNode]; var ph: Int; var at: Double
+        nonisolated(unsafe) static var cur = 0
+        @MainActor init(t: Double, m: [String: AWCNativeInspectionNode], ph: Int = Sample.cur, at: Double? = nil) { self.t = t; self.m = m; self.ph = ph; self.at = at ?? nfClock() } }
     static var samples: [Sample] = []
     static var phaseStart = 0.0
     static var maxLate = 0.0
@@ -162,12 +168,20 @@ struct NFStatesFixture: View {
         let t0 = nfClock()
         for (i, p) in r["phases"].array.enumerated() {
             let label = p["label"].string
+            Sample.cur = i
             let next = i + 1 < r["phases"].array.count ? r["phases"].array[i + 1]["t"].number! : (p["t"].number! + 450)
             let prevStart = phaseStart
             phaseStart = t0 + p["t"].number!
-            let carried = samples.map { Sample(t: $0.t + prevStart - phaseStart, m: $0.m) }.filter { $0.t >= -45 && $0.t < 0 }
+            let carried = samples.map { Sample(t: $0.t + prevStart - phaseStart, m: $0.m, ph: $0.ph, at: $0.at) }.filter { $0.t >= -45 && $0.t < 0 }
+            // The earlier phases' frames are re-timed once (carried) and never kept under their old times (C96-01, 9-6-124).
+            samples = carried
             let wait = phaseStart - nfClock(); if wait > 0 { pump(wait / 1000) }
-            samples = carried + samples.filter { $0.t >= -45 && $0.t < 0 }
+            samples = samples.filter { $0.t >= -45 && $0.t < 0 }
+            if ProcessInfo.processInfo.environment["AWC_DIAG_CARRY"] != nil {
+                let stale = samples.filter { Swift.abs($0.t - ($0.at - phaseStart)) > 1 }.count
+                var byPh: [Int: Int] = [:]; for x in samples { byPh[x.ph, default: 0] += 1 }
+                print("DIAG-CARRY \(name) phase#\(i) \(label): buffer=\(samples.count) staleTime=\(stale) otherPhase=\(samples.filter { $0.ph != i }.count) byPhase=\(byPh.sorted { $0.key < $1.key }.map { "\($0.key):\($0.value)" }.joined(separator: ","))"); fflush(stdout)
+            }
             cadence = r["events"].array.filter { $0["name"].string == "mdInput" && $0["t"].number! >= p["t"].number! && $0["t"].number! < next }.map { $0["t"].number! - p["t"].number! - 2 }
             if !label.contains("type") { cadence = [] }
             maxLate = max(maxLate, nfClock() - phaseStart)
@@ -187,7 +201,7 @@ struct NFStatesFixture: View {
                let k = samples.firstIndex(where: { $0.t >= 0 && abs((nativeFont($0) ?? n0) - n0) > 0.01 }), k > 0, let v1 = nativeFont(samples[k]) {
                 let tp = samples[k - 1].t, tk = samples[k].t, crossing = tp + (tk - tp) * min(1, max(0, (n0 - cv) / (n0 - v1)))
                 if crossing > chromeAt {
-                    let shift = crossing - chromeAt; samples = samples.map { Sample(t: $0.t - shift, m: $0.m) }
+                    let shift = crossing - chromeAt; samples = samples.map { Sample(t: $0.t - shift, m: $0.m, ph: $0.ph, at: $0.at) }
                     report.append(["run": name, "phase": label, "tapReleaseFocusLatency": shift])
                 }
             }
@@ -234,13 +248,65 @@ struct NFStatesFixture: View {
         // Press-and-hold: every tick lands where Chrome's did relative to the first one (400 ms delay, then 60 ms).
         if name.hasPrefix("nf-steppers-pointer") {
             let wt = web.filter { $0["name"].string == "mdInput" }.map { $0["t"].number! }, nt = native.filter { $0.name == "mdInput" }.map { $0.t - t0 }
-            for (i, (a, b)) in zip(wt, nt).enumerated() where i > 0 { check(abs((b - nt[0]) - (a - wt[0])) <= 40, "\(name) tick \(i) at \(b - nt[0]) vs \(a - wt[0])") }
+            for (i, (a, b)) in zip(wt, nt).enumerated() where i > 0 {
+                // Each press is timed from its own arrival (a synthesized press reaches the view 0–60 ms after its schedule, varying
+                // per press and with load; di, 2026-11-05): a tick of the same press (Chrome's gap under 450 ms: the 400 ms delay,
+                // then 60 ms) keeps Chrome's gap to the one before it; the first tick of the next press starts a new timeline.
+                let gap = a - wt[i - 1]
+                if gap < 450 { check(abs((b - nt[i - 1]) - gap) <= 40, "\(name) tick \(i) \(b - nt[i - 1]) ms after tick \(i - 1) vs \(gap)") }
+            }
         }
         _ = window.makeFirstResponder(nil)
     }
+    // S71-02 / S71-05: members without an oracle phase. Each case reads the value / label the host reports after the property
+    // reached the field (created, or retained: the node is replaced without a new view identity).
+    static func memberValue() -> Double? { state.measurements.first { $0.name == "md-number-field" }?.metrics["value"]?.number }
+    static func memberMetric(_ part: String, _ key: String) -> AWCValue? { state.measurements.first { $0.name == part }?.metrics[key] }
+    static func memberCreate(_ p: [String: AWCValue]) {
+        state.node = AWCNode(id: "nf", tag: "md-number-field", properties: p)
+        _ = window.makeFirstResponder(nil); state.measurements = []; state.epoch += 1; samples = []; pump(0.4)
+    }
+    static func memberRetain(_ p: [String: AWCValue]) { state.node = AWCNode(id: "nf", tag: "md-number-field", properties: p); pump(0.25) }
+    static func memberSteps(_ ops: [Int]) -> [Double?] {
+        ops.map { op in if op > 0 { numberFieldStatesController.stepUp() } else { numberFieldStatesController.stepDown() }; pump(0.1); return memberValue() }
+    }
+    static func memberTyped(_ p: [String: AWCValue]) -> Double? {
+        memberCreate(p); act("member", "focus"); pump(0.1); act("member", "type-out-of-range"); act("member", "Tab-blur-clamps"); pump(0.15)
+        return memberValue()
+    }
+    static func members() {
+        let only = ProcessInfo.processInfo.environment["AWC_NF_MEMBERS"].map { Set($0.split(separator: ",").map(String.init)) }
+        func on(_ k: String) -> Bool { only?.contains(k) ?? true }
+        let base: [String: AWCValue] = ["label": .string("Team"), "value": .number(7), "min": .number(0), "max": .number(10), "variant": .string("outlined")]
+        func with(_ extra: [String: AWCValue]) -> [String: AWCValue] { base.merging(extra) { $1 } }
+        if on("step") {
+            memberCreate(base); memberRetain(with(["step": .number(2)]))
+            let got = memberSteps([1, 1, -1]); check(got == [9, 10, 8], "member step: stepUp, stepUp, stepDown after a step update \(got)")
+            memberCreate(with(["step": .number(2)])); let c = memberSteps([1, 1, -1]); check(c == [9, 10, 8], "member step: the same steps on a created field \(c)")
+        }
+        if on("max") { memberCreate(base); memberRetain(with(["max": .number(8)])); let g = memberSteps([1, 1]); check(g == [8, 8], "member max: stepUp after a max update \(g)") }
+        if on("min") { memberCreate(with(["value": .number(6)])); memberRetain(with(["value": .number(6), "min": .number(5)])); let g = memberSteps([-1, -1]); check(g == [5, 5], "member min: stepDown after a min update \(g)") }
+        if on("snapOnStep") {
+            memberCreate(with(["step": .number(2)])); memberRetain(with(["step": .number(2), "snapOnStep": .bool(true)]))
+            let g = memberSteps([1, -1]); check(g == [8, 6], "member snapOnStep: stepUp, stepDown after a snapOnStep update \(g)")
+            memberCreate(with(["step": .number(2)])); let off = memberSteps([1]); check(off == [9], "member snapOnStep: off steps from the typed base \(off)")
+        }
+        if on("allowOutOfRange") {
+            let wide: [String: AWCValue] = ["value": .number(5), "max": .number(100)]
+            let keep = memberTyped(with(wide.merging(["allowOutOfRange": .bool(true)]) { $1 })); check(keep == 250, "member allowOutOfRange: a typed value past max is kept \(String(describing: keep))")
+            let clamp = memberTyped(with(wide)); check(clamp == 100, "member allowOutOfRange: off clamps a typed value to max \(String(describing: clamp))")
+        }
+        if on("labels") {
+            memberCreate(with(["incrementLabel": .string("Plus one"), "decrementLabel": .string("Minus one")]))
+            check(memberMetric("increment", "label")?.string == "Plus one", "member incrementLabel: \(String(describing: memberMetric("increment", "label")?.string))")
+            check(memberMetric("decrement", "label")?.string == "Minus one", "member decrementLabel: \(String(describing: memberMetric("decrement", "label")?.string))")
+            memberRetain(with(["incrementLabel": .string("More"), "decrementLabel": .string("Less")]))
+            check(memberMetric("increment", "label")?.string == "More" && memberMetric("decrement", "label")?.string == "Less", "member labels follow a retained update")
+        }
+    }
     static func main() {
         _ = NSApplication.shared; NSApp.setActivationPolicy(.accessory)
-        host = NSHostingView(rootView: NFStatesFixture(state: state))
+        host = NFAcceptingHost(rootView: NFStatesFixture(state: state))
         window = NFKeyWindow(contentRect: .init(x: -20000, y: -20000, width: 480, height: 320), styleMask: [.borderless], backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false; window.colorSpace = .sRGB; window.contentView = host; window.orderFrontRegardless()
         #if canImport(AppKit)
@@ -265,6 +331,7 @@ struct NFStatesFixture: View {
                 }
             }
         }
+        members()
         if let output = ProcessInfo.processInfo.environment["AWC_NF_STATES_OUTPUT"] { try! JSONSerialization.data(withJSONObject: ["checks": checks, "failures": failures, "report": report], options: [.prettyPrinted, .sortedKeys]).write(to: URL(fileURLWithPath: output)) }
         print("Number field native states: \(checks - failures.count)/\(checks) checks passed")
         window.close(); if !failures.isEmpty { exit(1) }

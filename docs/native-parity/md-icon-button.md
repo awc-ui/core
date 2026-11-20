@@ -1,6 +1,6 @@
 # Icon Button migration audit
 
-Status: implementation and integration review completed on Web, macOS SwiftUI and Android. iOS device/simulator execution and final catalog certification remain pending. This is an individual component record, not acceptance of the remaining catalog.
+Status: implementation and integration review completed on Web, macOS SwiftUI and Android. iOS simulator execution (iPhone 17 Pro iOS 26.3, iPhone 16 Pro iOS 18.6, gate 6) passed; the gate-7 verdict is in AUDIT.md and final catalog certification remains with the coordinator. This is an individual component record, not acceptance of the remaining catalog.
 
 ## Source contract
 
@@ -44,7 +44,7 @@ External run artifacts are in `../../../../outputs/native-parity/md-icon-button`
 
 ## Unverified gates
 
-No iOS SDK, simulator or connected iOS device is available in this environment. The shared SwiftUI implementation and actual macOS native views are tested; UIKit focus, iOS keyboard behavior and VoiceOver execution are **not** certified by those tests. This remains an unverified platform gate, not an accepted migration exception.
+iOS simulator execution is recorded below (gate 6): UIKit focus, keyboard behaviour and rendering run on the simulator; VoiceOver itself is not exercised by those suites.
 
 The independent final catalog audit and dependent badge/avatar audits remain pending. Therefore this component is not labeled fully certified across all requested platforms.
 

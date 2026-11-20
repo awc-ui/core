@@ -1465,18 +1465,28 @@ md-tooltip.md-list-item__supporting-tooltip--empty {
 .md-list-item__expanded-panel-inner {
   min-block-size: 0;
   overflow: hidden;
+  /* Collapsed content leaves the tab order and the accessibility tree. The
+     panel's `hidden` attribute cannot do it: `display: grid` (the 0fr/1fr
+     collapse) overrides it. Visibility switches when the collapse ends and
+     at once on expand, so both transitions keep their content painted. */
+  visibility: hidden;
   /* Child motion coordinated with the parent height/opacity — the content
      starts lifted and arcs down into its resting position on open. */
   transform: translateY(-8px);
-  transition: transform var(--_collapse-duration) var(--_collapse-easing);
+  transition:
+    transform var(--_collapse-duration) var(--_collapse-easing),
+    visibility 0s linear var(--_collapse-duration);
   padding-block: var(--_expanded-panel-padding-block);
   padding-inline-start: var(--_expanded-panel-padding-inline-start);
   padding-inline-end: var(--_expanded-panel-padding-inline);
 }
 
 :host(.md-list-item--expanded) .md-list-item__expanded-panel-inner {
+  visibility: visible;
   transform: translateY(0);
-  transition: transform var(--_expand-duration) var(--_expand-easing);
+  transition:
+    transform var(--_expand-duration) var(--_expand-easing),
+    visibility 0s;
 }
 
 /* Flat expansion list — child rows are full-width sibling list items, not a

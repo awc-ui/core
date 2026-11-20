@@ -25,6 +25,18 @@ class LivePreviewBreadcrumbsHostTest {
         val y=((box.getDouble("y")+box.getDouble("height")/2)*s).toInt()
         for(x in (box.getDouble("x")*s).toInt() until ((box.getDouble("x")+box.getDouble("width"))*s).toInt().coerceAtMost(b.width-1)) if(listOf(16,8,0).all { abs((color shr it and 255)-(b.getPixel(x,y) shr it and 255))<=3 }) n++
         return n }
+    /** Glyph ink (gate-7 R6-22 / R6-23): in the band 15–60 % of a box, inset by a quarter of its height at both ends (a pill's round
+     *  ends), the dominant colour (the background) and the pixel farthest from it. */
+    private fun ink(frame:JSONObject,box:JSONObject):Pair<Int,Int> { val b=bitmap(frame);val s=b.width/640.0;val inset=box.getDouble("height")*.25
+        val x0=((box.getDouble("x")+inset)*s).toInt().coerceAtLeast(0);val x1=((box.getDouble("x")+box.getDouble("width")-inset)*s).toInt().coerceAtMost(b.width)
+        val y0=((box.getDouble("y")+box.getDouble("height")*.15)*s).toInt().coerceAtLeast(0);val y1=((box.getDouble("y")+box.getDouble("height")*.6)*s).toInt().coerceAtMost(b.height)
+        val counts=HashMap<Int,Int>();for(y in y0 until y1)for(x in x0 until x1){val k=b.getPixel(x,y) and 0xFFFFFF;counts[k]=(counts[k]?:0)+1}
+        val bg=counts.maxByOrNull { it.value }?.key?:0;var best=bg;var far=-1
+        for(y in y0 until y1)for(x in x0 until x1){val p=b.getPixel(x,y) and 0xFFFFFF;val d=listOf(16,8,0).maxOf { abs((p shr it and 255)-(bg shr it and 255)) };if(d>far){far=d;best=p}}
+        return bg to best }
+    private fun assertInk(label:String,frame:JSONObject,box:JSONObject,color:Int,alpha:Double=1.0) { val (bg,got)=ink(frame,box)
+        val ok=listOf(16,8,0).all { abs(((bg shr it and 255)*(1-alpha)+(color shr it and 255)*alpha)-(got shr it and 255))<=12 }
+        assertTrue("$label: label ink #%06X on #%06X, expected #%06X at %.2f".format(got,bg,color,alpha),ok) }
     private fun events(r:JSONObject)=r.optJSONArray("events")?.let { a->(0 until a.length()).map { a.getJSONObject(it) } }.orEmpty()
     @Test fun breadcrumbsTrailHooksUpdatesAndMethods() { withHost { token,command->
         command(configure("md-breadcrumbs",JSONObject()) { put("breadcrumbsAppearance",JSONObject().put("currentBackground","#6A1B9A").put("gap",14)) });Thread.sleep(900)
@@ -45,8 +57,17 @@ class LivePreviewBreadcrumbsHostTest {
         command(configure("md-breadcrumb-item",JSONObject()) { put("breadcrumbItemAppearance",JSONObject().put("currentBackground","#6A1B9A")) });Thread.sleep(900)
         frame=command(frameCommand);val item=root(frame,"md-breadcrumb-item")
         assertEquals("a standalone crumb is a link, not the current page",0,count(frame,item,0x6A1B9A))
+        // Gate-7 R6-22: the label repaints in the update that changes it (glyph ink, not only the pill).
+        assertInk("a standalone link",frame,item,0x49454F)
+        command(update(JSONObject().put("disabled",true)));Thread.sleep(500);frame=command(frameCommand)
+        assertInk("disabled by an update",frame,root(frame,"md-breadcrumb-item"),0x1C1B1F,.61)
+        command(update(JSONObject().put("disabled",false)));Thread.sleep(500);frame=command(frameCommand)
+        assertInk("enabled again by an update",frame,root(frame,"md-breadcrumb-item"),0x49454F)
         command(update(JSONObject().put("current",true)));Thread.sleep(400);frame=command(frameCommand)
         assertTrue("current paints the pill",count(frame,item,0x6A1B9A)>20)
+        assertInk("current by an update",frame,root(frame,"md-breadcrumb-item"),0x1D192B)
+        command(update(JSONObject().put("current",false)));Thread.sleep(500);frame=command(frameCommand)
+        assertInk("a link again by an update",frame,root(frame,"md-breadcrumb-item"),0x49454F)
         assertRejected(token,update(JSONObject().put("collapsed",true)));assertRejected(token,update(JSONObject().put("current","yes")))
     } }
     private fun assertRejected(token:String,body:JSONObject) { val response=request("POST","/command",token,body);assertTrue("$body rejected: $response",response.first>=400 || response.second.has("error")) }

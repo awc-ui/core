@@ -1,0 +1,110 @@
+{
+ "tag": "md-rating",
+ "case": "default",
+ "html": "<md-rating data-ax-node=\"n0\" id=\"example-md-rating\"></md-rating>",
+ "props": {
+  "n0": {
+   "defaultValue": 0,
+   "density": 0,
+   "disabled": false,
+   "emptyIcon": "star",
+   "hover": "preview",
+   "icon": "star",
+   "max": 5,
+   "name": "",
+   "outlineEmpty": true,
+   "precision": 0.5,
+   "ratingLabel": "Rating",
+   "readonly": false,
+   "showValueLabel": true,
+   "size": "md",
+   "softDisabled": false,
+   "value": 3
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   272
+  ],
+  "children": [
+   {
+    "role": "generic",
+    "name": "",
+    "ignored": false,
+    "invalid": "false",
+    "frame": [
+     16,
+     16,
+     224.03125,
+     28
+    ],
+    "children": [
+     {
+      "role": "slider",
+      "name": "Rating",
+      "ignored": false,
+      "value": 3,
+      "focusable": true,
+      "settable": true,
+      "orientation": "horizontal",
+      "valuemin": 0,
+      "valuemax": 5,
+      "valuetext": "",
+      "frame": [
+       16,
+       16,
+       156,
+       28
+      ]
+     },
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [
+  {
+   "dom": "div",
+   "role": "slider",
+   "name": "Rating",
+   "frame": [
+    16,
+    16,
+    156,
+    28
+   ],
+   "props": {
+    "focusable": true,
+    "focused": true,
+    "settable": true,
+    "orientation": "horizontal",
+    "valuemin": 0,
+    "valuemax": 5,
+    "valuetext": ""
+   }
+  },
+  {
+   "outside": "ax-after"
+  }
+ ],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

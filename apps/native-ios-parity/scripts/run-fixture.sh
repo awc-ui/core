@@ -5,7 +5,8 @@
 # Env: AWC_IOS_BUILD (build dir), AWC_IOS_DEVICE (simulator UDID), AWC_IOS_CAPTURE (tile|hierarchy|layer),
 #      WITH_TIMEOUT (timeout wrapper: <secs> cmd...), AWC_IOS_RUN_TIMEOUT (seconds, default 1800),
 #      AWC_IOS_EXTRA_SOURCES (support sources), AWC_IOS_SWIFT_FLAGS (e.g. -D AWC_STANDALONE),
-#      AWC_IOS_ARGS (fixture command-line arguments; @BUNDLE@ expands to the app bundle path at launch).
+#      AWC_IOS_ARGS (fixture command-line arguments; @BUNDLE@ expands to the app bundle path at launch),
+#      AWC_IOS_AX_RUNTIME (voiceover|off|automation: the simulator's accessibility runtime, default voiceover).
 set -u
 export DEVELOPER_DIR=${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}
 H=$(cd "$(dirname "$0")/.." && pwd); P=$(cd "$H/../../packages/native-ios" && pwd)
@@ -42,6 +43,16 @@ PLIST
 codesign --force --sign - --timestamp=none "$APP" >/dev/null 2>&1
 $TO 120 xcrun simctl boot "$DEV" >/dev/null 2>&1; $TO 300 xcrun simctl bootstatus "$DEV" -b >/dev/null 2>&1
 xcrun simctl ui "$DEV" appearance light >/dev/null 2>&1
+# Accessibility runtime (gate-7 R2-D12). UIKit loads its accessibility bundles when the simulator's com.apple.Accessibility
+# runtime is on, and they change what views report (an activity indicator's empty label reads "In progress"). tools/ax's
+# probe and Accessibility Inspector switch it on and the setting persists per simulator, so every run sets it explicitly.
+# AWC_IOS_AX_RUNTIME=voiceover (default): AccessibilityEnabled + ApplicationAccessibilityEnabled on, the state VoiceOver
+# runs the app in (VoiceOver itself stays off: it would take the synthesized touches as its gestures); AutomationEnabled
+# off (set by UI automation, not by VoiceOver). off: all three off. automation: all three on (tools/ax, XCUITest).
+case "${AWC_IOS_AX_RUNTIME:-voiceover}" in off) AXV="NO NO NO" ;; automation) AXV="YES YES YES" ;; *) AXV="YES YES NO" ;; esac
+AXK="AccessibilityEnabled ApplicationAccessibilityEnabled AutomationEnabled"; i=1
+for k in $AXK; do v=$(echo $AXV | cut -d' ' -f$i); xcrun simctl spawn "$DEV" defaults write com.apple.Accessibility $k -bool $v >/dev/null 2>&1; i=$((i+1)); done
+echo "ax-runtime ${AWC_IOS_AX_RUNTIME:-voiceover}: $(for k in $AXK; do printf '%s=%s ' $k "$(xcrun simctl spawn "$DEV" defaults read com.apple.Accessibility $k 2>/dev/null)"; done)"
 $TO 30 xcrun simctl terminate "$DEV" dev.awc.native.parity >/dev/null 2>&1
 # Install from outside ~/Documents: CoreSimulator has no TCC grant for it and would block on a prompt.
 STAGE=${AWC_IOS_STAGE:-/tmp/awc-ios/stage}; rm -rf "$STAGE/AWCParity.app"; mkdir -p "$STAGE"; cp -R "$APP" "$STAGE/"

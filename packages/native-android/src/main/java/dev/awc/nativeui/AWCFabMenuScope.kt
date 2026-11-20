@@ -9,6 +9,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.findRootCoordinates
@@ -21,6 +23,8 @@ internal class NativeAnchor(val id: String,val tag: String) {
     var bounds by mutableStateOf(Rect.Zero)
     var focus: AWCButtonFocusState?=null
     var pointerWasFocused=false
+    /** Mouse over the anchor, as the scope tracked it (null until a mouse event arrives). */
+    var pointerInside by mutableStateOf<Boolean?>(null)
     var expanded by mutableStateOf<Boolean?>(null)
     var fabPresentation by mutableStateOf<NativeFabAnchorPresentation?>(null)
     var setMenuIcon: ((String?)->Unit)?=null
@@ -72,6 +76,18 @@ fun AWCFabMenuScope(modifier: Modifier=Modifier,content: @Composable ()->Unit) {
     }
     CompositionLocalProvider(LocalNativeAnchorRegistry provides registry) {
         Box(modifier.onGloballyPositioned { registry.coordinates=it;registry.refresh() }
+            .pointerInput(registry) {
+                awaitPointerEventScope {
+                    while(true) {
+                        val event=awaitPointerEvent(PointerEventPass.Initial)
+                        val mouse=event.changes.firstOrNull { it.type==PointerType.Mouse } ?: continue
+                        registry.refresh()
+                        val point=mouse.position+registry.bounds.topLeft
+                        val left=event.type==PointerEventType.Exit
+                        registry.anchors.values.forEach { it.pointerInside=!left && it.bounds.contains(point) }
+                    }
+                }
+            }
             .pointerInput(registry) {
                 awaitEachGesture {
                     val down=awaitFirstDown(false,PointerEventPass.Initial)

@@ -1,6 +1,6 @@
 # md-organization-chart — accessibility parity
 
-Generated 2026-10-30T11:08:03.185Z by tools/ax. Web = Chrome AX tree of the same effective node.
+Generated 2026-11-05T01:32:19.316Z by tools/ax. Web = Chrome AX tree of the same effective node.
 
 ## single
 

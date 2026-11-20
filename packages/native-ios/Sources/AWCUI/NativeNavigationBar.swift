@@ -1,6 +1,11 @@
 import SwiftUI
 import Observation
 import CoreText
+#if canImport(AppKit)
+import AppKit
+#else
+import UIKit
+#endif
 
 // MARK: - Hooks
 
@@ -149,24 +154,28 @@ public struct AWCNavigationBarAppearance: Equatable, Sendable {
 /// changes; `focusTab(index)` moves keyboard focus to a destination (not a hard-disabled one) without selecting it.
 /// `::part()` styling of md-navigation-tab: state-layer (background-color, opacity), icon / label (color), indicator
 /// (background-color), badge (background-color, color). Part rules come from the outer tree and win over the hooks and every
-/// internal state rule. `container` and `icon-container` are layout wrappers with no paint (exception record in md-navigation-bar.md).
+/// internal state rule. `container` (indicator, icon and label) and `icon-container` take boxes (`AWCPartBox`: background, border, radius, padding with
+/// the layout shift; gate-7 R6-17).
 public struct AWCNavigationTabPartAppearance: Equatable, Sendable {
     public let stateLayerColor: String?, stateLayerOpacity: Double?, iconColor: String?, labelColor: String?, indicatorColor: String?
     public let badgeColor: String?, badgeLabelColor: String?
+    public let container: AWCPartBox?, iconContainer: AWCPartBox?
     public init(stateLayerColor: String? = nil, stateLayerOpacity: Double? = nil, iconColor: String? = nil, labelColor: String? = nil,
-                indicatorColor: String? = nil, badgeColor: String? = nil, badgeLabelColor: String? = nil) {
+                indicatorColor: String? = nil, badgeColor: String? = nil, badgeLabelColor: String? = nil, container: AWCPartBox? = nil, iconContainer: AWCPartBox? = nil) {
         func c(_ v: String?) -> String? { v.flatMap { $0.isEmpty ? nil : $0 } }
         self.stateLayerColor = c(stateLayerColor); self.stateLayerOpacity = stateLayerOpacity.flatMap { $0.isFinite ? min(1, max(0, $0)) : nil }
         self.iconColor = c(iconColor); self.labelColor = c(labelColor); self.indicatorColor = c(indicatorColor); self.badgeColor = c(badgeColor); self.badgeLabelColor = c(badgeLabelColor)
+        self.container = container; self.iconContainer = iconContainer
     }
     public init(values: [String: AWCValue]) {
         self.init(stateLayerColor: values["stateLayerColor"]?.string, stateLayerOpacity: values["stateLayerOpacity"]?.number, iconColor: values["iconColor"]?.string,
                   labelColor: values["labelColor"]?.string, indicatorColor: values["indicatorColor"]?.string, badgeColor: values["badgeColor"]?.string,
-                  badgeLabelColor: values["badgeLabelColor"]?.string)
+                  badgeLabelColor: values["badgeLabelColor"]?.string, container: AWCPartBox(value: values["container"]), iconContainer: AWCPartBox(value: values["iconContainer"]))
     }
     public func merging(_ o: Self) -> Self {
         .init(stateLayerColor: o.stateLayerColor ?? stateLayerColor, stateLayerOpacity: o.stateLayerOpacity ?? stateLayerOpacity, iconColor: o.iconColor ?? iconColor,
-              labelColor: o.labelColor ?? labelColor, indicatorColor: o.indicatorColor ?? indicatorColor, badgeColor: o.badgeColor ?? badgeColor, badgeLabelColor: o.badgeLabelColor ?? badgeLabelColor)
+              labelColor: o.labelColor ?? labelColor, indicatorColor: o.indicatorColor ?? indicatorColor, badgeColor: o.badgeColor ?? badgeColor, badgeLabelColor: o.badgeLabelColor ?? badgeLabelColor,
+              container: AWCPartBox.merge(container, o.container), iconContainer: AWCPartBox.merge(iconContainer, o.iconContainer))
     }
 }
 /// `::part(container)` of md-navigation-bar: the bar's background-color.
@@ -397,6 +406,8 @@ struct AWCNavigationTabState: Equatable {
 struct AWCNavigationTabGeometry {
     var x = 0.0, width = 0.0, height = 0.0
     var container = CGRect.zero, indicator = CGRect.zero, icon = CGRect.zero, label: CGRect? = nil, badge: CGRect? = nil
+    /// icon-container: its border box and its padding box (the badge's containing block).
+    var iconContainer = CGRect.zero, iconPadding = CGRect.zero
 }
 
 extension AWCNativeFonts {
@@ -417,18 +428,27 @@ enum AWCNavigationBarLayout {
         guard count > 0 else { return [] }
         return Array(repeating: max(64, width / Double(count)), count: count)
     }
-    static func tab(_ s: AWCNavigationTabSpec, metrics m: AWCNavigationTabMetrics, active: Bool, x: Double, width: Double, height: Double) -> AWCNavigationTabGeometry {
+    static func tab(_ s: AWCNavigationTabSpec, metrics m: AWCNavigationTabMetrics, active: Bool, x: Double, width: Double, height: Double,
+                    container: AWCPartBox? = nil, iconContainer: AWCPartBox? = nil) -> AWCNavigationTabGeometry {
         var g = AWCNavigationTabGeometry(x: x, width: width, height: height)
         let iw = m.indicatorWidth, ih = m.indicatorHeight
         let hasLabel = m.behavior != "none"
         let labelW = hasLabel ? min(width, AWCNativeFonts.navigationTextWidth(s.labelText, size: CGFloat(m.labelSize), weight: active ? m.activeWeight : m.inactiveWeight, tracking: 0.5)) : 0
-        let stackH = ih + (hasLabel ? m.gap + m.lineHeight : 0)
+        // ::part(container) / ::part(icon-container) boxes (gate-7 R6-17): border + padding (physical edges) around their content.
+        let ci = container.insets, ki = iconContainer.insets
+        let kw = iw + ki.left + ki.right, kh = ih + ki.top + ki.bottom
+        let stackH = kh + (hasLabel ? m.gap + m.lineHeight : 0), boxH = stackH + ci.top + ci.bottom
         // justify-content: center (icon-only) centres even an overflowing stack (negative free space splits evenly).
-        let top = hasLabel ? m.padTop : m.padTop + (height - m.padTop - m.padBottom - stackH) / 2
-        g.container = CGRect(x: 0, y: top, width: width, height: stackH)
-        g.indicator = CGRect(x: (width - iw) / 2, y: top, width: iw, height: ih)
-        g.icon = CGRect(x: (width - m.iconSize) / 2, y: top + (ih - m.iconSize) / 2, width: m.iconSize, height: m.iconSize)
-        if hasLabel { g.label = CGRect(x: (width - labelW) / 2, y: top + ih + m.gap, width: labelW, height: m.lineHeight) }
+        let top = hasLabel ? m.padTop : m.padTop + (height - m.padTop - m.padBottom - boxH) / 2
+        // The container is 100 % wide plus its border and padding, centred on the tab; x0 / y0: its content box.
+        g.container = CGRect(x: -(ci.left + ci.right) / 2, y: top, width: width + ci.left + ci.right, height: boxH)
+        let x0 = Double(g.container.minX) + ci.left, y0 = top + ci.top
+        // The indicator is absolutely positioned: block-start at the container's padding edge, centred on its content box.
+        g.indicator = CGRect(x: x0 + (width - iw) / 2, y: top + container.border, width: iw, height: ih)
+        g.iconContainer = CGRect(x: x0 + (width - kw) / 2, y: y0, width: kw, height: kh)
+        g.iconPadding = g.iconContainer.insetBy(dx: iconContainer.border, dy: iconContainer.border)
+        g.icon = CGRect(x: Double(g.iconContainer.minX) + ki.left + (iw - m.iconSize) / 2, y: y0 + ki.top + (ih - m.iconSize) / 2, width: m.iconSize, height: m.iconSize)
+        if hasLabel { g.label = CGRect(x: x0 + (width - labelW) / 2, y: y0 + kh + m.gap, width: labelW, height: m.lineHeight) }
         return g
     }
 }
@@ -558,6 +578,16 @@ struct AWCNativeNavigationBar: View {
         if st.hover { return (0.08, awcTabsComponents(palette.hover)) }
         return (0, host)
     }
+    /// iOS: a state change starts its CSS transitions in the next frame (one 60 Hz frame of transition delay), as Chrome
+    /// computes style once per frame after the input; started in the input's own frame, the focus and press layers ran a
+    /// frame ahead of Chrome after an arrow key or a press (gate-7 R6-19, R6-16). macOS: in the input's update, as before.
+    static var inputFrameDelay: Double {
+        #if os(iOS)
+        return 1000.0 / 60
+        #else
+        return 0
+        #endif
+    }
     func targets(_ s: AWCNavigationTabSpec, _ st: AWCNavigationTabState, _ m: AWCNavigationTabMetrics, _ palette: AWCNavigationBarPalette, now: Double) {
         let motion = runtime.motion(s.id)
         let color = awcTabsComponents(st.active ? palette.activeIcon : palette.inactiveIcon)
@@ -570,12 +600,13 @@ struct AWCNativeNavigationBar: View {
             motion.indicatorScale.snap([st.active ? 1 : 0]); motion.indicatorOpacity.snap([st.active ? 1 : 0]); motion.initialized = true; return
         }
         let r = reduced
-        motion.color.set(color, duration: r ? 0 : 200, curve: .emphasizedDecelerate, now: now)
-        motion.labelColor.set(labelColor, duration: r ? 0 : 100, curve: .ease, now: now)
-        motion.labelOpacity.set([labelOpacity], duration: r ? 0 : 100, curve: .ease, now: now)
-        motion.layer.set([layer], duration: r ? 0 : 100, curve: .ease, now: now)
-        motion.indicatorScale.set([st.active ? 1 : 0], duration: r ? 0 : 200, curve: .emphasizedDecelerate, now: now)
-        motion.indicatorOpacity.set([st.active ? 1 : 0], duration: r ? 0 : 100, curve: .ease, now: now)
+        let delay = Self.inputFrameDelay
+        motion.color.set(color, duration: r ? 0 : 200, curve: .emphasizedDecelerate, now: now, delay: delay)
+        motion.labelColor.set(labelColor, duration: r ? 0 : 100, curve: .ease, now: now, delay: delay)
+        motion.labelOpacity.set([labelOpacity], duration: r ? 0 : 100, curve: .ease, now: now, delay: delay)
+        motion.layer.set([layer], duration: r ? 0 : 100, curve: .ease, now: now, delay: delay)
+        motion.indicatorScale.set([st.active ? 1 : 0], duration: r ? 0 : 200, curve: .emphasizedDecelerate, now: now, delay: delay)
+        motion.indicatorOpacity.set([st.active ? 1 : 0], duration: r ? 0 : 100, curve: .ease, now: now, delay: delay)
     }
 }
 
@@ -594,7 +625,8 @@ extension AWCNativeNavigationBar {
         let geometry: [AWCNavigationTabGeometry] = specs.enumerated().map { i, s in
             // RTL starts at the right edge (an overflowing row overflows to the left).
             let x = widths.prefix(i).reduce(0, +), physical = rtl ? (standalone ? content : w) - x - widths[i] : x
-            return AWCNavigationBarLayout.tab(s, metrics: metrics(s), active: states[i].active, x: physical, width: widths[i], height: height)
+            return AWCNavigationBarLayout.tab(s, metrics: metrics(s), active: states[i].active, x: physical, width: widths[i], height: height,
+                                              container: partStyle(s.id).container, iconContainer: partStyle(s.id).iconContainer)
         }
         for (i, s) in specs.enumerated() { targets(s, states[i], metrics(s), palette, now: now) }
         let animating = specs.contains { runtime.motion($0.id).running(now) }
@@ -708,16 +740,21 @@ extension AWCNativeNavigationBar {
         let ps = partStyle(s.id), indicatorFill = ps.indicatorColor.map { Color(awcHex: $0) } ?? palette.indicator, iconInk = ps.iconColor.map { Color(awcHex: $0) } ?? host
         let labelColor = ps.labelColor.map { Color(awcHex: $0) } ?? awcTabsColor(motion.labelColor.value(t)), labelOpacity = motion.labelOpacity.value(t)[0]
         let badgeFrame = badgeRect(s, g, m)
-        let frames: [CGRect] = [g.container, g.indicator, g.indicator, g.icon, g.label ?? .zero, badgeFrame ?? .zero,
-                                g.indicator.insetBy(dx: -4, dy: -4)]
+        let frames: [CGRect] = [g.container, g.indicator, g.iconContainer, g.icon, g.label ?? .zero, badgeFrame ?? .zero,
+                                // The focus ring is the icon-container's ::after at inset -4: around its padding box.
+                                g.iconPadding.insetBy(dx: -4, dy: -4)]
         AWCTabParts(frames: frames, size: CGSize(width: g.width, height: g.height)) {
-            Color.clear.awcInspect(nodeID: s.id, part: "container", name: "container") { _ in [:] }
+            // ::part(container) / ::part(icon-container) boxes (gate-7 R6-17), in the source's paint order: the container under the
+            // indicator, the icon-container over it and under the icon.
+            Group { if let b = ps.container, b.paints { AWCPartBoxPaint(box: b, ink: host) } else { Color.clear } }
+                .awcInspect(nodeID: s.id, part: "container", name: "container") { _ in ps.container?.metrics(ink: host) ?? [:] }
             RoundedRectangle(cornerRadius: CGFloat(radius), style: .circular).fill(indicatorFill)
                 .awcInspect(nodeID: s.id, part: "indicator", name: "indicator") { _ in
                     ["opacity": .number(opacity), "scale": .number(scale), "color": awcTabsRGBA(awcTabsComponents(indicatorFill)), "radius": .number(radius)]
                 }
                 .scaleEffect(x: scale, y: 1, anchor: .center).opacity(opacity)
-            Color.clear.awcInspect(nodeID: s.id, part: "icon-container", name: "icon-container") { _ in [:] }
+            Group { if let b = ps.iconContainer, b.paints { AWCPartBoxPaint(box: b, ink: host) } else { Color.clear } }
+                .awcInspect(nodeID: s.id, part: "icon-container", name: "icon-container") { _ in ps.iconContainer?.metrics(ink: host) ?? [:] }
             icon(s, st, m, host: iconInk)
                 .awcInspect(nodeID: s.id, part: "icon", name: "icon") { _ in ["color": awcTabsRGBA(awcTabsComponents(iconInk)), "size": .number(m.iconSize), "glyph": .string(glyph(s, st))] }
             Group {
@@ -736,7 +773,7 @@ extension AWCNativeNavigationBar {
             badge(s, m, palette, ps)
             Group {
                 if st.focusVisible {
-                    RoundedRectangle(cornerRadius: CGFloat(min(m.shape, (Double(g.indicator.height) + 8) / 2, (Double(g.indicator.width) + 8) / 2)), style: .circular)
+                    RoundedRectangle(cornerRadius: CGFloat(min(m.shape, (Double(g.iconPadding.height) + 8) / 2, (Double(g.iconPadding.width) + 8) / 2)), style: .circular)
                         .strokeBorder(palette.focusRing, lineWidth: 3)
                         .awcInspect(nodeID: s.id, part: "focus-ring", name: "focus-ring") { _ in ["color": awcTabsRGBA(awcTabsComponents(palette.focusRing))] }
                 } else { Color.clear }
@@ -745,12 +782,21 @@ extension AWCNativeNavigationBar {
         .accessibilityHidden(true)
     }
     func glyph(_ s: AWCNavigationTabSpec, _ st: AWCNavigationTabState) -> String { st.active && !s.activeIcon.isEmpty ? s.activeIcon : s.icon }
+    /// Text slotted as an icon: `--md-navigation-tab-slotted-icon-font` (a CSS family list; default system-ui) at the icon size,
+    /// its natural run centred on the icon box (the source's inline-flex box lets it overflow both sides, never truncated).
+    @ViewBuilder func slotted(_ slot: AWCNode, _ s: AWCNavigationTabSpec, _ m: AWCNavigationTabMetrics, host: Color) -> some View {
+        let family = AWCCSSFontFamily.resolve(m.look.slottedIconFont)
+        if slot.tag == "#text" {
+            renderChild(slot).font(family.font(size: CGFloat(m.iconSize))).foregroundStyle(host).lineLimit(1).fixedSize()
+                .awcInspect(nodeID: s.id, part: "slotted-icon", name: "slotted-icon") { _ in ["family": .string(family.name), "fontSize": .number(m.iconSize), "color": awcTabsRGBA(awcTabsComponents(host))] }
+        } else { renderChild(slot).font(family.font(size: CGFloat(m.iconSize))).foregroundStyle(host) }
+    }
     /// The active tab shows the active-icon slot, else the icon glyph; an inactive tab the icon slot, else the glyph.
     @ViewBuilder func icon(_ s: AWCNavigationTabSpec, _ st: AWCNavigationTabState, _ m: AWCNavigationTabMetrics, host: Color) -> some View {
         let slot = st.active ? s.slotActiveIcon : s.slotIcon
         // The icon box is icon-size square (the glyph's line box overflows it, centred, as the inline-flex icon span).
         Group {
-            if let slot { renderChild(slot).font(m.look.slottedIconFont.map { Font.custom($0, fixedSize: CGFloat(m.iconSize)) } ?? .system(size: CGFloat(m.iconSize))).foregroundStyle(host) }
+            if let slot { slotted(slot, s, m, host: host) }
             else { Text(glyph(s, st)).font(AWCNativeFonts.symbol(size: CGFloat(m.iconSize))).foregroundStyle(host).fixedSize() }
         }
         .frame(width: CGFloat(m.iconSize), height: CGFloat(m.iconSize))
@@ -760,12 +806,13 @@ extension AWCNativeNavigationBar {
     /// (physical, also in RTL as Chrome renders it).
     func badgeRect(_ s: AWCNavigationTabSpec, _ g: AWCNavigationTabGeometry, _ m: AWCNavigationTabMetrics) -> CGRect? {
         guard let text = s.badge else { return nil }
-        let c = g.indicator
+        // The badge's containing block is the icon-container's padding box; its offsets come from the indicator metrics.
+        let c = g.iconPadding
         if text.isEmpty {
             return CGRect(x: rtl ? c.minX + 14 : c.maxX - 14 - 6, y: c.minY + 2, width: 6, height: 6)
         }
         let w = max(16, AWCNativeFonts.navigationTextWidth(text, size: 11, weight: 500, tracking: 0.5) + 8)
-        let inset = (Double(c.width) - m.iconSize) / 2, top = (Double(c.height) - m.iconSize) / 2
+        let inset = (m.indicatorWidth - m.iconSize) / 2, top = (m.indicatorHeight - m.iconSize) / 2
         let x0 = rtl ? Double(c.minX) + inset : Double(c.maxX) - inset - w
         return CGRect(x: x0 + w / 2, y: Double(c.minY) + top - 8, width: w, height: 16)
     }
@@ -851,3 +898,32 @@ struct AWCNavigationBarLandmarkBridge: NSViewRepresentable {
     }
 }
 #endif
+
+/// The first available family of a CSS `font-family` list, as Chrome on Apple platforms resolves it: `system-ui` /
+/// `-apple-system` / `BlinkMacSystemFont` → the system font; the generic families → Helvetica (sans-serif), Times (serif;
+/// Times New Roman on iOS), Menlo (monospace), Apple Chancery (cursive), Papyrus (fantasy); a named family when installed. An
+/// empty list, or one with no available family, is the system font.
+struct AWCCSSFontFamily: Equatable {
+    /// "system-ui" or the resolved family name.
+    let name: String
+    static func installed(_ family: String) -> Bool {
+        #if canImport(AppKit)
+        return NSFontManager.shared.availableFontFamilies.contains { $0.caseInsensitiveCompare(family) == .orderedSame }
+        #else
+        return UIFont.familyNames.contains { $0.caseInsensitiveCompare(family) == .orderedSame }
+        #endif
+    }
+    static func resolve(_ list: String?) -> Self {
+        let generic: [String: [String]] = ["sans-serif": ["Helvetica"], "serif": ["Times", "Times New Roman"], "monospace": ["Menlo", "Courier"],
+                                           "cursive": ["Apple Chancery", "Snell Roundhand"], "fantasy": ["Papyrus"]]
+        for raw in (list ?? "").split(separator: ",") {
+            let name = raw.trimmingCharacters(in: .whitespaces).trimmingCharacters(in: CharacterSet(charactersIn: "\"'"))
+            if name.isEmpty { continue }
+            if ["system-ui", "-apple-system", "blinkmacsystemfont", "ui-sans-serif"].contains(name.lowercased()) { return .init(name: "system-ui") }
+            if let candidates = generic[name.lowercased()] { if let f = candidates.first(where: installed) { return .init(name: f) }; continue }
+            if installed(name) { return .init(name: name) }
+        }
+        return .init(name: "system-ui")
+    }
+    func font(size: CGFloat) -> Font { name == "system-ui" ? .system(size: size) : .custom(name, fixedSize: size) }
+}

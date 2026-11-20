@@ -1919,7 +1919,6 @@
         "resize",
         "replay",
         "toDataURL",
-        "getInstance",
         "setZoom",
         "resetZoom"
       ],
@@ -1932,15 +1931,31 @@
       ],
       "unsupportedProperties": [],
       "unsupportedEvents": [],
-      "unsupportedMethods": [],
+      "unsupportedMethods": [
+        "getInstance"
+      ],
       "unsupportedSlots": [],
       "notes": [
         "Dedicated native chart (the ported md-chart engine drawn on a SwiftUI Canvas / Compose DrawScope): every property, the legend, tooltips, hover layer, keyboard cursor and its live announcement, drag and slider zoom, entrance / drill / follow motion, the header, footer, empty and loader slots, and every event.",
         "Formatter and renderer closures (valueFormatter, tooltipRenderer) go through AWCChartFormatters + .awcChartFormatters (SwiftUI) / ChartFormatters + LocalAWCChartFormatters (Compose), keyed by node id; hooks through AWCChartAppearance; methods through AWCChartController (toDataURL returns the canvas layer as a PNG data URL; getInstance has no native counterpart — it returns the Web engine object).",
-        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint scenes, hover / keyboard / pointer and state replays with events, entrance motion per frame, slots, RTL."
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint scenes, hover / keyboard / pointer and state replays with events, entrance motion per frame, slots, RTL.",
+        "Typed part appearances for the ::part() targets (AWCChartPart; the shared sparse vocabulary AWCPartStyle: colour, background, opacity, corner radius, padding, font size / weight, letter spacing; .awcChartPartAppearance / AWCChartPartAppearanceScope) for every chart of the subtree or one node ID; part rules win over the hooks, as outer ::part() rules do."
       ],
       "verification": "not-device-verified",
-      "visualParts": [],
+      "visualParts": [
+        "header",
+        "canvas",
+        "empty",
+        "loading",
+        "footer",
+        "zoom",
+        "zoom-slider",
+        "zoom-pan",
+        "zoom-band",
+        "zoom-track",
+        "zoom-window",
+        "zoom-handle"
+      ],
       "appearance": {
         "api": ".awcChartAppearance(AWCChartAppearance)",
         "fields": [
@@ -2021,7 +2036,6 @@
         "resize",
         "replay",
         "toDataURL",
-        "getInstance",
         "setZoom",
         "resetZoom"
       ],
@@ -2034,15 +2048,31 @@
       ],
       "unsupportedProperties": [],
       "unsupportedEvents": [],
-      "unsupportedMethods": [],
+      "unsupportedMethods": [
+        "getInstance"
+      ],
       "unsupportedSlots": [],
       "notes": [
         "Dedicated native chart (the ported md-chart engine drawn on a SwiftUI Canvas / Compose DrawScope): every property, the legend, tooltips, hover layer, keyboard cursor and its live announcement, drag and slider zoom, entrance / drill / follow motion, the header, footer, empty and loader slots, and every event.",
         "Formatter and renderer closures (valueFormatter, tooltipRenderer) go through AWCChartFormatters + .awcChartFormatters (SwiftUI) / ChartFormatters + LocalAWCChartFormatters (Compose), keyed by node id; hooks through AWCChartAppearance; methods through AWCChartController (toDataURL returns the canvas layer as a PNG data URL; getInstance has no native counterpart — it returns the Web engine object).",
-        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint scenes, hover / keyboard / pointer and state replays with events, entrance motion per frame, slots, RTL."
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint scenes, hover / keyboard / pointer and state replays with events, entrance motion per frame, slots, RTL.",
+        "Typed part appearances for the ::part() targets (AWCChartPart; the shared sparse vocabulary AWCPartStyle: colour, background, opacity, corner radius, padding, font size / weight, letter spacing; .awcChartPartAppearance / AWCChartPartAppearanceScope) for every chart of the subtree or one node ID; part rules win over the hooks, as outer ::part() rules do."
       ],
       "verification": "not-device-verified",
-      "visualParts": [],
+      "visualParts": [
+        "header",
+        "canvas",
+        "empty",
+        "loading",
+        "footer",
+        "zoom",
+        "zoom-slider",
+        "zoom-pan",
+        "zoom-band",
+        "zoom-track",
+        "zoom-window",
+        "zoom-handle"
+      ],
       "appearance": {
         "api": "AWCChartAppearanceScope(AWCChartAppearance)",
         "fields": [

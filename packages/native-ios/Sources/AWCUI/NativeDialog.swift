@@ -159,6 +159,7 @@ struct AWCNativeDialog: View {
     @Environment(\.awcNativeDensity) private var inheritedDensity
     @Environment(\.accessibilityReduceMotion) private var systemReduced
     @Environment(\.awcModalReducedMotion) private var reducedOverride
+    @Environment(\.awcForcedColors) private var forced
     @State private var track = AWCCSSTransitionTrack()
     @State private var emitted: Bool?
     @State private var owner: AWCModalOwner
@@ -168,6 +169,8 @@ struct AWCNativeDialog: View {
     @State private var settle = 0
     @State private var boundController: AWCDialogController?
 
+    /// The source's `aria-describedby` target: the text of the content slot.
+    var describedBy = ""
     init(id: String, model: AWCDialogModel, theme: AWCTheme, open: Binding<Bool>, slots: AWCDialogSlots, emit: @escaping (String) -> Void) {
         self.id = id; self.model = model; self.theme = theme; self.open = open; self.slots = slots; self.emit = emit
         _owner = State(initialValue: AWCModalOwner(id: id))
@@ -180,6 +183,9 @@ struct AWCNativeDialog: View {
     private var curve: [Double] { awcCSSCubicBezier(theme.tokens["--md-sys-motion-easing-standard"]) ?? [0.2, 0, 0, 1] }
     private func color(_ token: String, _ fallback: String) -> Color { Color(awcHex: theme.tokens["--md-sys-color-" + token] ?? fallback) }
     private func hex(_ value: String?) -> Color? { value.map { Color(awcHex: $0) } }
+    /// forced-colors: text and icons CanvasText; backgrounds Canvas keeping their alpha (the UA forcing of the dialog's own colours).
+    private func ink(_ c: Color) -> Color { forced.map { Color(awcHex: $0.canvasText) } ?? c }
+    private func backdrop(_ value: String?) -> Color? { value.map { v in Color(awcHex: forced.map { $0.canvas(keepingAlphaOf: v) } ?? v) } }
 
     var body: some View {
         let now = CACurrentMediaTime() * 1000
@@ -256,7 +262,7 @@ struct AWCNativeDialog: View {
         ZStack(alignment: .topLeading) {
             if !fullscreen {
                 let scrimPart = part(.scrim)
-                (hex(scrimPart.background) ?? hex(appearance.scrimColor) ?? Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 0.32))
+                (backdrop(scrimPart.background ?? appearance.scrimColor) ?? backdrop(forced.map { _ in "#00000052" }) ?? Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 0.32))
                     .frame(width: viewport.width, height: viewport.height)
                     .opacity(p)
                     .contentShape(Rectangle())
@@ -286,7 +292,7 @@ struct AWCNativeDialog: View {
         let fullscreen = model.fullscreen
         let corners = fullscreen ? AWCCornerShape.points(0) : appearance.containerShape ?? .points(max(16, 28 + 2 * d))
         let shape = AWCNativeCornerShape(corners: corners)
-        let fill = hex(appearance.containerColor) ?? color("surface-container-high", "#ECE6F0")
+        let fill = forced.map { Color(awcHex: $0.canvas(keepingAlphaOf: appearance.containerColor ?? "#ECE6F0")) } ?? hex(appearance.containerColor) ?? color("surface-container-high", "#ECE6F0")
         let cv = max(8, 16 + 2 * d), ch = max(12, 24 + 2 * d)
         let contentTop = fullscreen ? max(12, 24 + 2 * d) : cv
         let headerDivider = fullscreen && model.headerDivider
@@ -304,13 +310,14 @@ struct AWCNativeDialog: View {
         .clipShape(shape)
         .background { shape.fill(hex(containerPart.background) ?? fill) }
         .background {
-            if !fullscreen {
+            if !fullscreen && forced == nil {
                 AWCNativeBoxShadow(corners: corners, layers: AWCBoxShadow.source(theme.tokens["--md-sys-elevation-3"] ?? "none") ?? [], placement: .outer)
             }
         }
         .overlay {
             if let outline = containerPart.outlineColor, let lineWidth = containerPart.outlineWidth { shape.strokeBorder(Color(awcHex: outline), lineWidth: lineWidth).allowsHitTesting(false) }
         }
+        .modifier(AWCForcedHostBorder(width: 2, color: forced?.canvasText, fill: forced.map { $0.canvas(keepingAlphaOf: appearance.containerColor ?? "#ECE6F0") }, corners: corners))
         .background {
             AWCModalContainerFocus(id: id + ".container", label: accessibleName) { view in regions.container = view }
                 .accessibilityHidden(true)
@@ -318,6 +325,7 @@ struct AWCNativeDialog: View {
         .accessibilityElement(children: .contain)
         .accessibilityLabel(accessibleName)
         .accessibilityAddTraits(.isModal)
+        .awcModalSurfaceAccessibility(id: id, role: AWCModalSurfaceRole(kind: fullscreen ? .dialog : .alertDialog, modal: true, description: describedBy))
         .awcInspect(nodeID: id, part: "container", name: "container") { size in
             ["role": .string(fullscreen ? "dialog" : "alertdialog"), "label": .string(accessibleName), "radius": .number(Double(corners.radii(in: size).first?.width ?? 0))]
         }
@@ -335,7 +343,7 @@ struct AWCNativeDialog: View {
         .font(AWCNativeFonts.label(size: size, weight: 400))
         .tracking(p.letterSpacing ?? 0)
         .underline(p.underline ?? false)
-        .foregroundStyle(hex(p.color) ?? hex(appearance.headlineColor) ?? color("on-surface", "#1C1B1F"))
+        .foregroundStyle(ink(hex(p.color) ?? hex(appearance.headlineColor) ?? color("on-surface", "#1C1B1F")))
         .multilineTextAlignment(hasIcon && !model.fullscreen ? .center : .leading)
         .lineLimit(single ? 1 : nil)
         .truncationMode(.tail)
@@ -349,6 +357,7 @@ struct AWCNativeDialog: View {
             HStack(spacing: gap) {
                 AWCDialogCloseButton(id: id + ".close-button", label: model.label("close"), theme: theme, part: part(.closeButton), handle: closeFocus,
                                      action: { dismiss(cancel: true) })
+                    .awcCursor(.pointer)
                     .awcInspect(nodeID: id, part: "close-button", name: "close-button")
                 if hasHeadline {
                     headline(size: max(16, 22 + d), line: max(22, 28 + d), single: true).frame(maxWidth: .infinity, alignment: .leading)
@@ -358,7 +367,7 @@ struct AWCNativeDialog: View {
             }
             .padding(.horizontal, pi)
             .frame(maxWidth: .infinity, minHeight: hh, maxHeight: hh, alignment: .leading)
-            .background(hex(headerPart.background) ?? fill)
+            .background(backdrop(headerPart.background) ?? fill)
             .onAppear { if !regions.extra.contains(where: { $0.handle === closeFocus }) { regions.extra.append((0, -1, closeFocus)) } }
             .awcInspect(nodeID: id, part: "header", name: "header")
         } else {
@@ -382,7 +391,7 @@ struct AWCNativeDialog: View {
     }
     @ViewBuilder private func icon() -> some View {
         let p = part(.icon), size = appearance.iconSize ?? 24
-        let ink = hex(p.color) ?? hex(appearance.iconColor) ?? color("secondary", "#625B71")
+        let ink = self.ink(hex(p.color) ?? hex(appearance.iconColor) ?? color("secondary", "#625B71"))
         Group {
             if let slot = slots.icon { slot.font(AWCNativeFonts.symbol(size: size)) } else { AWCMaterialSymbol(model.icon, size: size) }
         }
@@ -393,16 +402,17 @@ struct AWCNativeDialog: View {
     }
     private func divider(second: Bool = false) -> some View {
         let p = part(.divider)
-        return Rectangle().fill(hex(p.background) ?? hex(appearance.dividerColor) ?? color("outline-variant", "#CAC4D0"))
+        return Rectangle().fill(forced.map { Color(awcHex: $0.canvasText) } ?? hex(p.background) ?? hex(appearance.dividerColor) ?? color("outline-variant", "#CAC4D0"))
             .frame(maxWidth: .infinity).frame(height: p.height ?? 1)
             .awcInspect(nodeID: id, part: second ? "divider-bottom" : "divider", name: second ? "divider-bottom" : "divider")
     }
     private func content(top: Double, bottom: Double, inline: Double, density d: Double) -> some View {
         let p = part(.content)
         let size = max(12, 14 + 0.5 * d), line = max(16, 20 + d)
-        let ink = hex(p.color) ?? hex(appearance.contentColor) ?? color("on-surface-variant", "#49454F")
+        let ink = self.ink(hex(p.color) ?? hex(appearance.contentColor) ?? color("on-surface-variant", "#49454F"))
         return ScrollView(.vertical) {
             VStack(alignment: .leading, spacing: 0) { slots.content }
+                .environment(\.awcTextInk, ink).environment(\.awcTextLineBox, CGSize(width: size, height: line))
                 .frame(maxWidth: .infinity, alignment: .topLeading)
                 .padding(EdgeInsets(top: top, leading: inline, bottom: bottom, trailing: inline))
                 .font(AWCNativeFonts.label(size: size, weight: 400)).tracking(0.25)
@@ -455,14 +465,15 @@ struct AWCDialogCloseButton: View {
     @Environment(\.awcNativePointerState) private var pointer
     @Environment(\.awcModalReducedMotion) private var reducedOverride
     @Environment(\.accessibilityReduceMotion) private var systemReduced
+    @Environment(\.awcForcedColors) private var forced
     @State private var hovered = false
     @State private var frame: CGRect = .zero
     @State private var touchPress = AWCTouchPressState()
     var body: some View {
         let hover = pointer.map { $0.location.map(frame.contains) ?? false } ?? hovered
         let reduced = reducedOverride ?? systemReduced
-        let face = Face(id: id, ink: Color(awcHex: part.color ?? theme.tokens["--md-sys-color-on-surface"] ?? "#1C1B1F"),
-                        background: part.background.map { Color(awcHex: $0) }, ring: Color(awcHex: theme.tokens["--md-sys-color-secondary"] ?? "#625B71"),
+        let face = Face(id: id, ink: Color(awcHex: forced?.buttonText ?? part.color ?? theme.tokens["--md-sys-color-on-surface"] ?? "#1C1B1F"),
+                        background: part.background.map { bg in Color(awcHex: forced.map { $0.canvas(keepingAlphaOf: bg) } ?? bg) }, ring: Color(awcHex: forced?.highlight ?? theme.tokens["--md-sys-color-secondary"] ?? "#625B71"),
                         focusVisible: handle.isFocusVisible, hover: hover,
                         duration: reduced ? 0 : awcCSSDuration(theme.tokens["--md-sys-motion-duration-short1"]) ?? 50,
                         curve: awcCSSCubicBezier(theme.tokens["--md-sys-motion-easing-standard"]) ?? [0.2, 0, 0, 1], handle: handle)
@@ -536,9 +547,11 @@ extension AWCNativeView {
             let items = node.children(inSlot: name)
             return items.isEmpty ? nil : AnyView(ForEach(items) { item in child(item) })
         }
-        return AWCNativeDialog(id: node.id, model: AWCDialogModel(local), theme: theme,
-                               open: Binding(get: { b("open") }, set: { set("open", .bool($0)) }),
+        var dialog = AWCNativeDialog(id: node.id, model: AWCDialogModel(local), theme: theme,
+                               open: $local[awcBool: "open"],
                                slots: AWCDialogSlots(content: slot(nil), headline: slot("headline"), icon: slot("icon"), actions: slot("actions"), headerAction: slot("header-action")),
                                emit: { name in emit(name) })
+        dialog.describedBy = awcCollapsedInlineText(node.children(inSlot: nil).map { $0.authoredTextContent.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }.joined(separator: " "))
+        return dialog
     }
 }

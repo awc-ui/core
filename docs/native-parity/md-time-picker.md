@@ -69,10 +69,10 @@ The Gate-1 review found no component defect (it fixed an environment-suite race 
 
 | Platform | Paint (10726 checks; Compose 10630) | Interaction states (16992 checks) |
 |---|---|---|
-| macOS SwiftUI (Mac, AWCUI test runner) | 10726/10726 | 16991/16992 (test r10; one boundary sample, see Known differences) |
-| iOS 26.3.1 simulator, iPhone 17 Pro | 10726/10726 | 16975/16992 (input leads, see Known differences) |
-| iOS 26.3.1 simulator, iPad Pro 11-inch | 10726/10726 | 16965/16992 (input leads) |
-| iOS 18.6 simulator, iPhone 16 Pro | 10726/10726 | 16974/16992 (input leads) |
+| macOS SwiftUI (Mac, AWCUI test runner) | 10726/10726 | 16991/16992 (canonical, fi-912); test r14 checks 15551: 15551/15551 (fi-758, screen unlocked) |
+| iOS 26.3.1 simulator, iPhone 17 Pro | 10726/10726 | 15526/15551 timed from the delivered input, no leads (test r14; queue-timed 15482) |
+| iOS 26.3.1 simulator, iPad Pro 11-inch | 10726/10726 | 15547/15551 (delivered-input timing; same-session baseline 15535 / 15537, fi-760) |
+| iOS 18.6 simulator, iPhone 16 Pro | 10726/10726 | 15525/15551 (delivered-input timing) |
 | Android emulator (API 36, emulator-5556), Compose | 10630/10630 | 16992/16992 (A033, A034) |
 
 Each paint case checks the host, every part box (dial numbers by text, the rotated hand's box), the tiles' values, the
@@ -82,14 +82,16 @@ and length, status text, focused part) and every per-frame motion sample.
 
 ## Known differences
 
-* iOS interaction residuals (≤ 18 of 16992 per device): synthesized touches reach SwiftUI buttons and tap gestures
-  ≈ 2 frames later than AppKit mouse events, keys ≈ 1 frame later; the states test leads those inputs by env
-  (`AWC_TP_POINTER_LEAD=33`, `AWC_TP_KEY_LEAD=12`). The rest are dial taps, the mode toggle and the first dialog frames of
-  two RTL runs. The raw-touch path belongs to fork di (iOS timing across components, REQUESTS.md 2026-10-31); open, not
-  waived.
-* macOS states: one per-frame sample at a transition boundary misses in a full run, a different one each time (fi-728: a hand
-  angle 1.2° off, fi-738: the first mode-bloom frame); both were one frame from Chrome's sample. Open, attributed to the
-  runner's frame delivery under machine load (not reproduced on demand); not waived.
+* iOS timing (test r14, fork di's advice): a synthesized touch or key reaches the app when UIKit delivers it (one touch phase
+  per frame; SwiftUI acts within that delivery). The test pairs each phase's first and last queued input with the harness's
+  delivery stamps (`AWCShimTouch.deliveredAt`) and compares a Chrome sample with the native frames at its time plus that
+  delivery delay; the env leads are gone. The simulator's accessibility runtime is set off before every run (fork d2: it
+  changes UIKit's accessibility bundles; fi's harness wrapper prints the state). The residuals left are listed per run in
+  `outputs/native-parity/_ios/fi/console-tp18-*.log`; open, not waived.
+* Mode switch (closed): Chrome's `inputArea` and `dialWrap` selectors resolve to the one blooming wrapper while the modes swap
+  (equal samples); the test compared the outgoing native area with it. It now compares the incoming mode's area (test r12+).
+* macOS with the screen locked (fi-745 / fi-748): the application is never active (every press "inactive"); dial-tap hand
+  samples miss by a frame (3-12 of 15551). Unlocked (fi-917): 15550/15551, one dial-tap hand sample (see the iOS timing item).
 * macOS runner under load (fixed in the test, r10): while another process holds activation, `NSWindow.sendEvent` passes a
   synthesized press to the hit view only if it accepts first mouse; SwiftUI's hosting view does not, so dial taps, drags and
   scrim presses were dropped (fi-736: 16,198/16,992 with a simulator booting in parallel). The diagnostic run that
@@ -129,10 +131,10 @@ Paint passes on all three simulators; the interaction residuals are listed under
 
 **Accessibility (tools/ax**, 3 cases — closed, the open dial dialog, the input dialog — on macOS, iOS 26.3 iPad, Android
 API 36; report `outputs/native-parity/_ax-fi-pickers3/md-time-picker/report.md`): open, input and the Android closed case
-pass; the closed case has **one open finding on macOS and iOS**: the trigger's leading `schedule` glyph is exposed as static
-text (Chrome hides the slotted md-icon). The glyph is md-text-field's `AWCFieldGlyph`, already `accessibilityHidden`; hiding
-the whole glyph slot as well did not remove it (fi-741), so the element comes from another path still to be found. Open,
-not waived. Fixed on the way: the read-only trigger was AppKit static text; it is now AXTextField (n3's `FieldTextInput.swift`
+pass. The closed case's trigger exposed its hidden leading glyph as the text "schedule"; the trigger is now an explicit
+accessibility container (`.accessibilityElement(children: .contain)`, NativeTimePicker r12), which removes it on iOS (fi-746:
+the container gesture was not the cause). The macOS recheck passes too (fi-917 macOS capture, fi-920 iOS capture on canonical: 0 open findings on macOS,
+iOS and Android). Fixed on the way: the read-only trigger was AppKit static text; it is now AXTextField (n3's `FieldTextInput.swift`
 reports every input as a text field or combo box); tools/ax's Web page assigned `open` before
 `variant` (the dial case opened in the input mode) and the macOS host's Tab skipped the modal scope (fixed in the lab patch).
 Reviewed conventions (`tools/ax/expectations.mjs`): the hour / minute spin buttons are editable text fields with their
@@ -154,5 +156,30 @@ md-dialog); Compose's selectable group reports AM / PM as options; the focus wal
   (tools/ax: Chrome's first Tab lands on the hour field). The cyclic focus order is identical.
 * Accessibility conventions (tools/ax expectations, reviewed): editable number fields for the spin buttons; the outline
   legend; AXGroup for the dialog and the period group on macOS; options for AM / PM on Compose.
+* md-text-field reports the vertical arrows only to inputs with `navigationKeys` (n3, 2026-10-31): the hour / minute tiles
+  set it (fi-911); the macOS states tests post and dequeue each key so it is the application's current event, as a hardware
+  key is (fi-912).
+* A transition the source starts in its input handler (the dial hand) begins at the begin time of the frame in progress,
+  as Chrome's does: the frame its press arrived in (TimePickerModel r13, NativeTimePicker r14).
 * Shared md-text-field edits (tp-swift.json r7, rebased on n3's 2026-10-31 `FieldTextInput.swift`): the read-only trigger's
   activation (its own field editor sees Enter / Space; a click opens), the field-focus target and the activation environment.
+
+## Story 6-2 audit readiness (2026-11-18)
+
+Canonical (shim v5 `30db5861`, install 115 cpshift, 110 modenextframe+tabkeyat+releaseclock, 101 labels, 009 tap-shift). Evidence is in the story record `6-2-pickers-audit-readiness`; every run is a whole-suite run, load written in each job log.
+
+- macOS paint 11124/11124 (incl. 7 label cases), states 15549-15551 of 15551 over 3 runs (misses 0-2, load dependent); Android 6/6 instrumented classes and 2/2 canonical picker classes; tools/ax clean (3 cases).
+- iOS states (jobs 111): iPhone 26.3 15544 and 15543, iPad 26.3 15546, iOS 18.6 15539 of 15551. Open misses, not accepted as a residual: tap-hour-7 t=1100 (2 of 4 iOS runs), dismiss-escape tap-hour-5 (3 of 4), focus-trap-dial Tab/Shift+Tab hand (3 of 4), drag-inner-14-to-17 (2 of 4), dial-drag am period-am (4 of 4, 1 sample), and the story-9-23 class: open t=266 (row 35), mode-toggle to-input/to-dial (toggle's input-hour becomeFirstResponder inside the motion, KNOWN-CAUSES row 35 / story 9-23). All are findings S62-01 to S62-08 in `work/audit/DEFECTS.md`.
+
+### Exception proposal: period-am-ripple / period-pm-ripple (pending gate-7 review, story 7-3)
+
+# Exception proposal (pending gate-7 review, story 7-3 reviewer decides): md-time-picker parts `period-am-ripple`, `period-pm-ripple`
+Status: PROPOSAL, not accepted. Written by story 6-2, session 1 (2026-11-17).
+- Source behaviour: each period button (AM, PM) contains an `<md-ripple part="period-am-ripple|period-pm-ripple" aria-hidden="true">`. The host element is `display: contents`.
+- Chrome 153 measurement (Mac, outputs/native-parity/md-time-picker/web-oracle-mac/paint.json, case dial-12h-light-ltr and every dial/input 12h case): part rect {x:0,y:0,width:0,height:0}, display "contents", aria-hidden "true". The part has no box of its own; the ripple surface and wave are drawn by md-ripple's inner shadow elements clipped to the button.
+- Affected platforms / API: SwiftUI (macOS, iOS) and Compose: a typed part node with a geometry/style contract cannot be compared, because Chrome reports no box to compare against.
+- Technical reason: nothing to measure; a native inspect node would assert an empty rect and prove nothing.
+- User impact: none visible; the box is empty and aria-hidden. The visible effect (press wave and hover/focus/press state layer on the period button) is drawn on the period button.
+- Tested native equivalent (state of 2026-11-17, session 10): `NativeTimePickerStatesIntegration` compares the period buttons' background (state layer + checked tone, `period.amBg` / `period.pmBg`) against Chrome's frame samples through the `am` press phase of the three `dial-drag-12h-*` runs (fixture `timepicker-web-states.json`; Swift line ~396, Compose twin in NativeTimePickerInteractionTest). NOT covered: the press wave ink itself (the oracle records no animation target for it), and a `pm` press phase (no run presses PM). Open to close the gap: add a `pm` press phase and wave sampling to tp-states.html (oracle-src), capture on the Mac, convert, add Swift + Compose checks, one mutation run each. Until then the exception stays a proposal with this stated gap.
+- Evidence link: paint.json above; Swift paint test skip: NativeTimePickerPaintIntegration.swift line ~165.
+- Reviewer / acceptance: pending gate-7 review (story 7-3).

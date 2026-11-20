@@ -60,3 +60,13 @@ internal val LocalAWCAccordionItemParts=staticCompositionLocalOf { emptyMap<AWCA
 }
 /** CSS margin collapsing of adjoining vertical margins: largest positive plus most negative. */
 internal fun accordionCollapsedMargin(vararg margins:Double)=(margins.filter { it>0 }.maxOrNull() ?: 0.0)+(margins.filter { it<0 }.minOrNull() ?: 0.0)
+
+/** md-accordion's own exported part (`::part(drop-placeholder)`). */
+enum class AWCAccordionPart(val source:String) { DropPlaceholder("drop-placeholder") }
+internal val LocalAWCAccordionParts=staticCompositionLocalOf { emptyMap<AWCAccordionPart,AWCAccordionPartAppearance>() }
+/** `md-accordion::part(drop-placeholder)`: fill (backgroundColor), dashed outline (borderColor, borderWidth), cornerShape, opacity. */
+@Composable fun AWCAccordionPartAppearanceScope(part:AWCAccordionPart,appearance:AWCAccordionPartAppearance,content:@Composable ()->Unit) {
+    val inherited=LocalAWCAccordionParts.current
+    val resolved=remember(inherited,part,appearance) { inherited+(part to (inherited[part] ?: AWCAccordionPartAppearance()).merged(appearance)) }
+    CompositionLocalProvider(LocalAWCAccordionParts provides resolved,content=content)
+}

@@ -1,5 +1,8 @@
 package dev.awc.nativeui.stepper
 
+import dev.awc.nativeui.AWCAccordionPartAppearance
+import dev.awc.nativeui.AWCStepPart
+import dev.awc.nativeui.AWCStepperPart
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -171,7 +174,19 @@ class StepperTheme(val tokens: Map<String, String>) {
     fun color(role: String, fallback: String) = stepperColor(tokens["--md-sys-color-$role"] ?: fallback) ?: stepperColor(fallback)!!
 }
 
-internal class StepperEnv(val s: Double, val theme: StepperTheme, val hooks: StepperHooks) {
+internal class StepperEnv(val s: Double, val theme: StepperTheme, val hooks: StepperHooks,
+                          /** `md-step::part(...)` rules (typed): the metric ones are layout inputs. */
+                          val parts: Map<AWCStepPart, AWCAccordionPartAppearance> = emptyMap(),
+                          /** Layout runs in LTR and is mirrored afterwards: a physical left / right padding swaps sides in RTL. */
+                          val rtl: Boolean = false) {
+    /** Border + padding of a wrapper part (`def`: the source's own padding when the part sets none; a part `padding` replaces all four edges). */
+    fun insets(k: AWCStepPart, def: StepInsets = StepInsets()): StepInsets {
+        val a = parts[k]; val bw = a?.borderWidth ?: 0.0
+        val q = a?.padding
+        val p = if (q == null) def else if (rtl) StepInsets(q.top, q.left, q.bottom, q.right) else StepInsets(q.top, q.right, q.bottom, q.left)
+        return StepInsets(p.t + bw, p.r + bw, p.b + bw, p.l + bw)
+    }
+    fun pad(k: AWCStepPart): StepInset = parts[k]?.padding?.let { StepInset(it.top, it.right, it.bottom, it.left) } ?: StepInset.ZERO
     fun sp(name: String, d: Double) = theme.spacing(name, s, d)
     fun c(hook: String, role: String, d: String) = hooks.step(hook)?.let(::stepperColor) ?: theme.color(role, d)
 }
@@ -185,7 +200,15 @@ fun interface StepperMeasure { fun width(text: String, size: Double, weight: Dou
 data class StepperPointer(val hover: Int? = null, val pressed: Int? = null)
 
 data class StepLine(val part: String, val rect: SRect, val color: SRGBA, val fontSize: Double, val lineHeight: Double, val weight: Double,
-                    val text: String, val lines: Int, val italic: Boolean, val wrapped: List<String>)
+                    val text: String, val lines: Int, val italic: Boolean, val wrapped: List<String>,
+                    /** CSS letter-spacing (::part rules only). */
+                    val letterSpacing: Double = 0.0)
+/** Physical edges (CSS padding). */
+data class StepInset(val top: Double, val right: Double, val bottom: Double, val left: Double) { companion object { val ZERO = StepInset(0.0, 0.0, 0.0, 0.0) } }
+/** A wrapper part's CSS box (story 5-3: md-step inner / indicator / text, md-stepper mobile-progress): the paint of the box inside the border box the layout gives it. */
+class StepBox(var background: SRGBA? = null, var borderWidth: Double = 0.0, var borderColor: SRGBA? = null, var radius: Double = 0.0)
+/** Border + padding per physical edge (the distance from a wrapper's border box to its content box). */
+internal class StepInsets(val t: Double = 0.0, val r: Double = 0.0, val b: Double = 0.0, val l: Double = 0.0) { val h get() = l + r; val v get() = t + b }
 data class StepConnector(val rect: SRect, val color: SRGBA, val fill: Double, val fillColor: SRGBA, val vertical: Boolean)
 data class StepPanel(val rect: SRect, val opacity: Double, val visible: Boolean, val gridRows: Double?, val contentX: Double, val contentY: Double, val contentWidth: Double)
 
@@ -194,6 +217,8 @@ class StepPaint {
     var hostRect = SRect.ZERO
     var inner = SRect.ZERO; var indicator = SRect.ZERO; var stateLayer = SRect.ZERO; var bubble = SRect.ZERO
     var indicatorOpacity = 1.0
+    /** ::part(inner / indicator / text) boxes (null: no background and no border). */
+    var innerBox: StepBox? = null; var indicatorBox: StepBox? = null; var textBox: StepBox? = null
     var focusRing: Pair<SRGBA, SRGBA>? = null
     var stateLayerVisible = true; var stateOpacity = 0.0; var stateColor = SRGBA(0.0, 0.0, 0.0, 0.0)
     var dot = false
@@ -212,6 +237,8 @@ class StepPaint {
     var hasLeadingConnector = false
     var panel: StepPanel? = null
     var actions: SRect? = null
+    /** ::part(bubble) / ::part(dot) corner radius (null: full); ::part(content) background and padding. */
+    var bubbleRadius: Double? = null; var panelBackground: SRGBA? = null; var panelInset = StepInset.ZERO
     var disabled = false; var readonly = false
     var hasPanel = false; var renderPanel = false
 }
@@ -220,12 +247,18 @@ class StepperPaint {
     var host = SRect.ZERO
     var list: SRect? = null; var content = SRect.ZERO
     var nav: SRect? = null; var mobileNav: SRect? = null; var mobileProgress: SRect? = null
+    /** ::part(mobile-progress) box. */
+    var mobileProgressBox: StepBox? = null
     var navButtons: Pair<SRect, SRect>? = null
     var mobileDots: List<Triple<SRect, SRGBA, Double>> = emptyList()
     var mobileText: Triple<SRect, String, SRGBA>? = null
     var steps: List<StepPaint> = emptyList()
     var hideList = false
     var buttonDensity = 0.0
+    /** The slotted content's box inside `content` (its padding and the slotted child's top margin). */
+    var slot: SRect? = null
+    /** ::part(list / content / nav / mobile-nav) background colours. */
+    var listBackground: SRGBA? = null; var contentBackground: SRGBA? = null; var navBackground: SRGBA? = null; var mobileNavBackground: SRGBA? = null
 }
 
 /** Inputs from the host and its children. */
@@ -241,17 +274,22 @@ data class StepperLayoutInput(
     val tokens: Map<String, String> = emptyMap(), val hooks: StepperHooks = StepperHooks(),
     /** Widths of the built-in nav buttons (Back, Continue/Finish) when the host measured them; else md-button sm metrics. */
     val buttonWidths: Pair<Double, Double>? = null,
+    /** `md-step::part(...)` / `md-stepper::part(...)` rules (typed, as AWCAccordionPartAppearance). */
+    val stepParts: Map<AWCStepPart, AWCAccordionPartAppearance> = emptyMap(),
+    val stepperParts: Map<AWCStepperPart, AWCAccordionPartAppearance> = emptyMap(),
 )
 
 object StepperLayout {
     /** The width a step's panel content lays out at (known before its height): the full width in a horizontal stepper,
      *  the rail's remainder (inline start: 8 + indicator + ring + gap-md) in a vertical one. */
     fun contentWidth(m: StepperModel, input: StepperLayoutInput, i: Int): Double {
-        if (m.p.orientation == "horizontal" || i >= m.count) return input.width
+        val cp = input.stepParts[AWCStepPart.Content]?.padding
+        val padX = (cp?.left ?: 0.0) + (cp?.right ?: 0.0)                   // ::part(content) padding
+        if (m.p.orientation == "horizontal" || i >= m.count) return max(0.0, input.width - padX)
         val sd = stepperDensity(m.p.density, input.globalDensity)
         val e = StepperEnv(stepperDensity(m.steps[i].density, sd), StepperTheme(input.tokens), input.hooks.merging(m.steps[i].style))
         val ind = indicator(m, e, false, false)
-        return max(0.0, input.width - (8 + ind.h + 2 * ind.ring + e.sp("gap-md", 12.0)))
+        return max(0.0, input.width - (8 + ind.h + 2 * ind.ring + e.sp("gap-md", 12.0)) - padX)
     }
     fun buttonHeight(s: Double) = max(24.0, 40 + 4 * s)
     /** md-button size sm: min-width max(40, 58 + 4s), padding-inline max(8, 16 + s), label-large 14 (+.5s, floor 12), letter-spacing .1. */
@@ -263,11 +301,11 @@ object StepperLayout {
     private class TextItem(val part: String, val w: Double, val h: Double, val fs: Double, val lh: Double, val weight: Double, val text: String, val lines: Int, val wrapped: List<String>)
     private class TextM(val w: Double, val h: Double, val items: List<TextItem>)
 
-    private fun wrap(text: String, fs: Double, weight: Double, avail: Double, measure: StepperMeasure): List<String> {
+    private fun wrap(text: String, fs: Double, weight: Double, avail: Double, measure: StepperMeasure, ls: Double = 0.0): List<String> {
         val lines = ArrayList<String>(); var cur = ""
         for (w in text.split(" ")) {
             val cand = if (cur.isEmpty()) w else "$cur $w"
-            if (cur.isNotEmpty() && stepperLUCeil(measure.width(cand, fs, weight, 0.0)) > avail + 1e-9) { lines += cur; cur = w } else cur = cand
+            if (cur.isNotEmpty() && stepperLUCeil(measure.width(cand, fs, weight, ls)) > avail + 1e-9) { lines += cur; cur = w } else cur = cand
         }
         if (cur.isNotEmpty()) lines += cur
         return lines
@@ -277,26 +315,35 @@ object StepperLayout {
         val s = m.steps[i]
         var labFs = max(11.0, 14 + 0.5 * e.s); var labLh = max(16.0, 20 + e.s)
         if (compact && horizontal) { labFs = 12.0; labLh = 16.0 }
+        // ::part(label / optional / description) rules come from the outer tree: they win over the state and @media rules.
+        val lp = e.parts[AWCStepPart.Label]
+        labFs = lp?.fontSize ?: labFs; labLh = lp?.lineHeight ?: labLh
+        val labLs = lp?.letterSpacing ?: 0.0
         val capFs = max(10.0, 12 + 0.5 * e.s); val capLh = max(14.0, 16 + 0.5 * e.s)
-        val weight = if (m.isActive(i)) 600.0 else 500.0
-        val fontWeight = if (weight > 500) 700.0 else 500.0
+        fun cap(k: AWCStepPart): DoubleArray { val a = e.parts[k]; return doubleArrayOf(a?.fontSize ?: capFs, a?.lineHeight ?: capLh, a?.fontWeight ?: 400.0, a?.letterSpacing ?: 0.0) }
+        val weight = lp?.fontWeight ?: if (m.isActive(i)) 600.0 else 500.0
+        val fontWeight = if (weight > 500) 700.0 else if (weight > 400) 500.0 else 400.0
         val supporting = if (s.error && s.errorText.isNotEmpty()) s.errorText else s.description
         val opt = if (s.optional) m.p.optionalWord else ""
         val items = ArrayList<TextItem>()
         if (s.label.isNotEmpty()) {
-            var w = stepperLUCeil(measure.width(s.label, labFs, fontWeight, 0.0)); var lines = 1; var wrapped = listOf(s.label)
+            var w = stepperLUCeil(measure.width(s.label, labFs, fontWeight, labLs)); var lines = 1; var wrapped = listOf(s.label)
             if (w > avail) {
-                val ls = wrap(s.label, labFs, fontWeight, avail, measure); lines = if (horizontal) min(2, ls.size) else ls.size; w = avail
+                val ls = wrap(s.label, labFs, fontWeight, avail, measure, labLs); lines = if (horizontal) min(2, ls.size) else ls.size; w = avail
                 val keep = ls.take(lines).toMutableList(); if (ls.size > lines && keep.isNotEmpty()) keep[keep.size - 1] = keep.last() + "…"; wrapped = keep
             }
             items += TextItem("label", w, lines * labLh, labFs, labLh, weight, s.label, lines, wrapped)
         }
         val captions = !(compact && horizontal)
-        if (opt.isNotEmpty() && captions) { val w = stepperLUCeil(measure.width(opt, capFs, 400.0, 0.0)); items += TextItem("optional", min(w, avail), capLh, capFs, capLh, 400.0, opt, 1, listOf(opt)) }
+        if (opt.isNotEmpty() && captions) {
+            val (fs, lh, fw, ls) = cap(AWCStepPart.Optional).toList()
+            val w = stepperLUCeil(measure.width(opt, fs, fw, ls)); items += TextItem("optional", min(w, avail), lh, fs, lh, fw, opt, 1, listOf(opt))
+        }
         if (supporting.isNotEmpty() && captions) {
-            var w = stepperLUCeil(measure.width(supporting, capFs, 400.0, 0.0)); var lines = 1; var wrapped = listOf(supporting)
-            if (w > avail) { wrapped = wrap(supporting, capFs, 400.0, avail, measure); lines = wrapped.size; w = avail }
-            items += TextItem("description", w, lines * capLh, capFs, capLh, 400.0, supporting, lines, wrapped)
+            val (fs, lh, fw, ls) = cap(AWCStepPart.Description).toList()
+            var w = stepperLUCeil(measure.width(supporting, fs, fw, ls)); var lines = 1; var wrapped = listOf(supporting)
+            if (w > avail) { wrapped = wrap(supporting, fs, fw, avail, measure, ls); lines = wrapped.size; w = avail }
+            items += TextItem("description", w, lines * lh, fs, lh, fw, supporting, lines, wrapped)
         }
         if (items.isEmpty()) return null
         return TextM(items.maxOf { it.w }, items.sumOf { it.h } + 2.0 * (items.size - 1), items)
@@ -367,28 +414,36 @@ object StepperLayout {
         return Ind(size, if (dot) 10.0 else size, e.hooks.px("indicator-ring") ?: max(4.0, 8 + e.s))
     }
 
-    private class Header(val inner: SRect, val pad: Double, val pin: Double, val gap: Double, val indw: Double, val ind: Ind, val text: TextM?)
+    /** `ii` / `xi` / `ti`: border + padding of the inner / indicator / text boxes; `iw` / `ih`, `tw` / `th`: the indicator's and the text's border boxes. */
+    private class Header(val inner: SRect, val pad: Double, val pin: Double, val gap: Double, val indw: Double, val ind: Ind, val text: TextM?,
+                         val ii: StepInsets = StepInsets(), val xi: StepInsets = StepInsets(), val ti: StepInsets = StepInsets(),
+                         val iw: Double = 0.0, val ih: Double = 0.0, val tw: Double = 0.0, val th: Double = 0.0)
     private fun header(m: StepperModel, i: Int, e: StepperEnv, colw: Double, compact: Boolean, measure: StepperMeasure): Header {
         val ind = indicator(m, e, compact, true)
         val pad = max(0.0, 4 + e.s); val pin = if (compact) e.sp("inset-xs", 4.0) else e.sp("inset-sm", 8.0)
         val gap = if (compact) e.sp("gap-xs", 4.0) else max(2.0, 6 + e.s); val indw = ind.h + 2 * ind.ring
-        val tm = textMetrics(m, i, e, colw - 2 * pin, true, compact, measure)
-        val cw = max(indw, tm?.w ?: 0.0)
-        val iw = min(colw, cw + 2 * pin); val ih = pad + indw + (tm?.let { gap + it.h } ?: 0.0)
-        return Header(SRect(stepperHalf(colw - iw), 0.0, iw, ih), pad, pin, gap, indw, ind, tm)
+        val ii = e.insets(AWCStepPart.Inner, StepInsets(pad, pin, 0.0, pin)); val xi = e.insets(AWCStepPart.Indicator); val ti = e.insets(AWCStepPart.Text)
+        val tm = textMetrics(m, i, e, colw - ii.h - ti.h, true, compact, measure)
+        val IW = indw + xi.h; val IH = indw + xi.v; val TW = (tm?.w ?: 0.0) + ti.h; val TH = (tm?.h ?: 0.0) + ti.v
+        val cw = max(IW, if (tm != null) TW else 0.0)
+        val iw = min(colw, cw + ii.h); val ih = ii.t + IH + (if (tm != null) gap + TH else 0.0) + ii.b
+        return Header(SRect(stepperHalf(colw - iw), 0.0, iw, ih), pad, pin, gap, indw, ind, tm, ii, xi, ti, IW, IH, TW, TH)
     }
 
-    private fun parts(m: StepperModel, i: Int, e: StepperEnv, v: Visual, inner: SRect, ind: SRect, ih: Ind, textX: Double, textY: Double, tm: TextM?, horizontal: Boolean): StepPaint {
+    private fun parts(m: StepperModel, i: Int, e: StepperEnv, v: Visual, inner: SRect, ind: SRect, ih: Ind, textX: Double, textY: Double, tm: TextM?, horizontal: Boolean,
+                      xi: StepInsets = StepInsets(), textBox: SRect? = null): StepPaint {
         val p = StepPaint(); p.index = i
         val dis = m.effectivelyDisabled(i); val ro = m.p.readonly
         p.disabled = dis; p.readonly = ro; p.hasPanel = m.hasPanel(i); p.renderPanel = m.renderPanel(i)
         p.inner = inner; p.indicator = ind; p.indicatorOpacity = if (dis) 0.38 else 1.0
         if (m.focusVisible == i && !ro) p.focusRing = e.theme.color("surface", "#FEF7FF") to e.theme.color("secondary", "#625B71")
-        p.stateLayerVisible = !(dis || ro); p.stateLayer = if (p.stateLayerVisible) ind else SRect.ZERO
+        // The state layer is `inset: 0` of the indicator: its padding box (inside the border).
+        val ibw = e.parts[AWCStepPart.Indicator]?.borderWidth ?: 0.0
+        p.stateLayerVisible = !(dis || ro); p.stateLayer = if (p.stateLayerVisible) SRect(ind.x + ibw, ind.y + ibw, ind.width - 2 * ibw, ind.height - 2 * ibw) else SRect.ZERO
         p.stateOpacity = v.state; p.stateColor = v.stateColor
         p.dot = m.p.indicator == "dot"
         val h = ih.h
-        val bx = ind.x + stepperHalf(ind.width - h); val by = ind.y + stepperHalf(ind.height - h)
+        val bx = ind.x + xi.l + stepperHalf(ind.width - xi.h - h); val by = ind.y + xi.t + stepperHalf(ind.height - xi.v - h)
         p.scale = v.scale; p.transformNone = v.transformNone
         p.glyphScale = v.glyphScale; p.glyphOpacity = v.glyphOpacity; p.hostOpacity = v.hostOpacity
         p.contentOpacity = v.contentOpacity; p.contentDY = v.contentDY
@@ -399,13 +454,14 @@ object StepperLayout {
         p.glyph = g; p.number = if (p.dot || g != null) null else (i + 1).toString()
         p.glyphFilled = m.isActive(i) || m.steps[i].completed || m.steps[i].error
         if (tm != null) {
-            p.text = SRect(textX, textY, tm.w, tm.h); p.textOpacity = if (dis) 0.38 else 1.0
+            p.text = textBox ?: SRect(textX, textY, tm.w, tm.h); p.textOpacity = if (dis) 0.38 else 1.0
             var y = textY; val lines = ArrayList<StepLine>()
             for (it in tm.items) {
                 val w = if (horizontal) it.w else tm.w
                 val x = textX + if (horizontal) stepperHalf(tm.w - w) else 0.0
                 val color = when (it.part) { "label" -> v.label; "optional" -> v.optional; else -> v.description }
-                lines += StepLine(it.part, SRect(x, y, w, it.h), color, it.fs, it.lh, it.weight, it.text, it.lines, it.part == "optional", it.wrapped)
+                lines += StepLine(it.part, SRect(x, y, w, it.h), color, it.fs, it.lh, it.weight, it.text, it.lines, it.part == "optional", it.wrapped,
+                    AWCStepPart.fromSource(it.part)?.let { k -> e.parts[k]?.letterSpacing } ?: 0.0)
                 y += it.h + 2
             }
             p.lines = lines
@@ -418,13 +474,13 @@ object StepperLayout {
         val p = m.p; val n = m.count; val W = input.width
         val sd = stepperDensity(p.density, input.globalDensity)
         val theme = StepperTheme(input.tokens)
-        val senv = StepperEnv(sd, theme, input.hooks)
+        val senv = StepperEnv(sd, theme, input.hooks, input.stepParts, input.rtl)
         val horizontal = p.orientation == "horizontal"; val mobile = p.variant == "mobile"
         val compact = input.viewportWidth < 600
         // `:host(.md-stepper--mobile) .md-stepper__list { display: none }` loses to the panel-mode grid rule: a mobile
         // stepper whose steps carry content still shows its header row.
         val hideList = mobile && !(horizontal && m.panelMode == "step")
-        val envs = m.steps.map { StepperEnv(stepperDensity(it.density, sd), theme, input.hooks.merging(it.style)) }
+        val envs = m.steps.map { StepperEnv(stepperDensity(it.density, sd), theme, input.hooks.merging(it.style), input.stepParts, input.rtl) }
         val vis = (0 until n).map { resolve(m, it, envs[it], pointer, motion, now, reduced) }
         val out = StepperPaint(); out.hideList = hideList; out.buttonDensity = sd
         fun contentH(i: Int) = if (m.steps[i].hasContent) input.contentHeights[i] ?: input.defaultContentHeight else 0.0
@@ -444,9 +500,11 @@ object StepperLayout {
             for (i in 0 until n) {
                 val hd = hds[i]; val colx = if (hideList) 0.0 else xs[i]; val colw = if (hideList) W else cols[i]; val e = envs[i]
                 val inner = hd.inner.offset(colx, 0.0)
-                val ind = SRect(inner.x + stepperHalf(inner.width - hd.indw), inner.y + hd.pad, hd.indw, hd.indw)
-                val tx = inner.x + hd.pin + (hd.text?.let { stepperHalf(inner.width - 2 * hd.pin - it.w) } ?: 0.0)
-                val sp = parts(m, i, e, vis[i], inner, ind, hd.ind, tx, ind.y + hd.indw + hd.gap, hd.text, true)
+                // Border boxes of the indicator and the text, centred in the inner box's content box (flex column, align-items: center).
+                val cx0 = inner.x + hd.ii.l; val cwid = inner.width - hd.ii.h
+                val ind = SRect(cx0 + stepperHalf(cwid - hd.iw), inner.y + hd.ii.t, hd.iw, hd.ih)
+                val tbox = hd.text?.let { SRect(cx0 + stepperHalf(cwid - hd.tw), ind.y + hd.ih + hd.gap, hd.tw, hd.th) }
+                val sp = parts(m, i, e, vis[i], inner, ind, hd.ind, (tbox?.x ?: 0.0) + hd.ti.l, (tbox?.y ?: 0.0) + hd.ti.t, hd.text, true, hd.xi, tbox)
                 if (!m.isLast(i)) {
                     val th = e.hooks.px("connector-thickness") ?: max(2.0, 4 + 0.5 * e.s)
                     val gap = if (compact) 8.0 else max(4.0, 10 + e.s)
@@ -466,10 +524,14 @@ object StepperLayout {
             } else if (m.panelMode == "step") {
                 var row2 = 0.0
                 for (i in 0 until n) if (m.renderPanel(i)) {
-                    val e = envs[i]; val h = stepperLU(panelInner(i, true) * vis[i].panel)
+                    val e = envs[i]; val track = stepperLU(panelInner(i, true) * vis[i].panel); val cp = e.pad(AWCStepPart.Content)
+                    val h = track + cp.top + cp.bottom      // ::part(content) padding sits outside the grid track (even collapsed)
                     row2 = max(row2, h)
                     val top = e.hooks.px("panel-padding-block-start") ?: e.sp("inset-lg", 16.0)
-                    steps[i].panel = StepPanel(SRect(0.0, row1, W, h), vis[i].panelOpacity, vis[i].panelVisible, if (m.p.lazy) null else h, 0.0, row1 + top, W)
+                    // Physical padding: in RTL the mirror maps the right inset back to the left edge.
+                    steps[i].panel = StepPanel(SRect(0.0, row1, W, h), vis[i].panelOpacity, vis[i].panelVisible, if (m.p.lazy) null else track,
+                        if (input.rtl) cp.right else cp.left, row1 + cp.top + top, max(0.0, W - cp.left - cp.right))
+                    steps[i].panelInset = cp
                 }
                 listH = row1 + row2
             } else listH = row1
@@ -479,14 +541,21 @@ object StepperLayout {
                 val e = envs[i]; val v = vis[i]
                 val ind = indicator(m, e, false, false)
                 val indw = ind.h + 2 * ind.ring; val gap = e.sp("gap-md", 12.0)
-                val tm = textMetrics(m, i, e, W - 8 - indw - gap, false, false, measure)
-                val ih = max(indw, tm?.h ?: 0.0); val iw = 8 + indw + (tm?.let { gap + it.w } ?: 0.0)
+                // `inner`: padding-inline-start 8px unless a part sets the padding; `indicator` / `text` boxes add their own border + padding.
+                val ii = e.insets(AWCStepPart.Inner, StepInsets(0.0, 0.0, 0.0, 8.0)); val xi = e.insets(AWCStepPart.Indicator); val ti = e.insets(AWCStepPart.Text)
+                val IW = indw + xi.h; val IH = indw + xi.v
+                val tm = textMetrics(m, i, e, W - ii.h - IW - gap - ti.h, false, false, measure)
+                val TW = (tm?.w ?: 0.0) + ti.h; val TH = (tm?.h ?: 0.0) + ti.v
+                val ch = max(IH, if (tm != null) TH else 0.0)
+                val ih = ii.t + ch + ii.b; val iw = ii.l + IW + (if (tm != null) gap + TW else 0.0) + ii.r
                 val inner = SRect(0.0, y, iw, ih)
-                val indR = SRect(8.0, y + stepperHalf(ih - indw), indw, indw)
-                val sp = parts(m, i, e, v, inner, indR, ind, 8 + indw + gap, y + (tm?.let { stepperHalf(ih - it.h) } ?: 0.0), tm, false)
+                val indR = SRect(ii.l, y + ii.t + stepperHalf(ch - IH), IW, IH)
+                val tbox = tm?.let { SRect(ii.l + IW + gap, y + ii.t + stepperHalf(ch - TH), TW, TH) }
+                val sp = parts(m, i, e, v, inner, indR, ind, (tbox?.x ?: 0.0) + ti.l, (tbox?.y ?: 0.0) + ti.t, tm, false, xi, tbox)
                 val pb = if (m.isLast(i)) 0.0 else e.sp("inset-lg", 16.0)
                 val ms = 8 + ind.h + 2 * ind.ring + gap
-                val panelH = if (m.renderPanel(i)) stepperLU(panelInner(i, false) * v.panel) else 0.0
+                val cp = e.pad(AWCStepPart.Content); val track = if (m.renderPanel(i)) stepperLU(panelInner(i, false) * v.panel) else 0.0
+                val panelH = if (m.renderPanel(i)) track + cp.top + cp.bottom else 0.0     // ::part(content) padding: outside the grid track
                 val hostH = ih + panelH + pb
                 sp.hasLeadingConnector = i > 0
                 if (!m.isLast(i)) {
@@ -496,8 +565,10 @@ object StepperLayout {
                 }
                 if (m.renderPanel(i)) {
                     val cr = SRect(ms, y + ih, W - ms, panelH)
-                    sp.panel = StepPanel(cr, v.panelOpacity, v.panelVisible, if (m.p.lazy) null else panelH, ms, cr.y + e.sp("inset-xs", 4.0), W - ms)
-                    if (m.navActions(i)) sp.actions = SRect(ms, cr.y + e.sp("inset-xs", 4.0) + contentH(i) + e.sp("gap-lg", 16.0), W - ms, buttonHeight(e.s))
+                    val cx = ms + (if (input.rtl) cp.right else cp.left); val cw = max(0.0, W - ms - cp.left - cp.right)
+                    sp.panel = StepPanel(cr, v.panelOpacity, v.panelVisible, if (m.p.lazy) null else track, cx, cr.y + cp.top + e.sp("inset-xs", 4.0), cw)
+                    sp.panelInset = cp
+                    if (m.navActions(i)) sp.actions = SRect(cx, cr.y + cp.top + e.sp("inset-xs", 4.0) + contentH(i) + e.sp("gap-lg", 16.0), cw, buttonHeight(e.s))
                 }
                 sp.hostRect = SRect(0.0, y, W, hostH)
                 steps += sp
@@ -509,32 +580,48 @@ object StepperLayout {
         out.list = if (hideList) null else SRect(0.0, 0.0, W, listH)
         var cy = if (hideList) 0.0 else listH
         val slot = input.slotHeight
+        val sc = input.stepperParts[AWCStepperPart.Content]?.padding
+        val scT = sc?.top ?: 0.0; val scR = sc?.right ?: 0.0; val scB = sc?.bottom ?: 0.0; val scL = sc?.left ?: 0.0
         if (slot != null) {
             val mg = senv.sp("inset-xl", 24.0)
-            if (hideList) { hostOff = mg; out.content = SRect(0.0, 0.0, W, slot) }    // the margin collapses through the host
-            else out.content = SRect(0.0, cy + mg, W, slot)
-            cy = out.content.y + slot
-        } else out.content = SRect(0.0, cy, W, 0.0)
+            // ::part(content) padding: a top padding stops the slotted child's margin collapsing through the content box.
+            if (scT > 0) out.content = SRect(0.0, cy, W, scT + mg + slot + scB)
+            else if (hideList) { hostOff = mg; out.content = SRect(0.0, 0.0, W, slot + scB) }    // the margin collapses through the host
+            else out.content = SRect(0.0, cy + mg, W, slot + scB)
+            out.slot = SRect(if (input.rtl) scR else scL, out.content.y + (if (scT > 0) scT + mg else 0.0), max(0.0, W - scL - scR), slot)
+            cy = out.content.y + out.content.height
+        } else { out.content = SRect(0.0, cy, W, scT + scB); cy += scT + scB }
         val bh = buttonHeight(sd)
         val backW = input.buttonWidths?.first ?: buttonWidth(p.backLabel, sd, measure)
         val nextW = input.buttonWidths?.second ?: buttonWidth(if (m.isFinishStep) p.finishLabel else p.nextLabel, sd, measure)
         if (p.nav && !mobile && horizontal && n > 0) {
             val ny = cy + max(4.0, 20 + 2 * sd)
-            out.nav = SRect(0.0, ny, W, bh)
+            val np = input.stepperParts[AWCStepperPart.Nav]?.padding; val nT = np?.top ?: 0.0; val nB = np?.bottom ?: 0.0
+            val endX = W - ((if (input.rtl) np?.left else np?.right) ?: 0.0)      // flex-end at the inline-end padding edge
+            out.nav = SRect(0.0, ny, W, nT + bh + nB)
             val g = senv.sp("gap-sm", 8.0)
-            out.navButtons = SRect(W - nextW - g - backW, ny, backW, bh) to SRect(W - nextW, ny, nextW, bh)
-            cy = ny + bh
+            out.navButtons = SRect(endX - nextW - g - backW, ny + nT, backW, bh) to SRect(endX - nextW, ny + nT, nextW, bh)
+            cy = ny + nT + bh + nB
         }
         if (p.nav && mobile && n > 0) {
             val my = cy + senv.sp("gap-lg", 16.0); val g = senv.sp("gap-sm", 8.0)
-            out.mobileNav = SRect(0.0, my, W, bh)
+            val mp = input.stepperParts[AWCStepperPart.MobileNav]?.padding; val mT = mp?.top ?: 0.0; val mB = mp?.bottom ?: 0.0
+            val mS = (if (input.rtl) mp?.right else mp?.left) ?: 0.0; val mE = (if (input.rtl) mp?.left else mp?.right) ?: 0.0
             val ph = if (p.indicator == "dot") 8.0 else 20.0
-            val prog = SRect(backW + g, my + stepperHalf(bh - ph), W - backW - nextW - 2 * g, ph)
+            // ::part(mobile-progress) box: border + padding grow the progress box around its caption / dots (the row is as tall as its tallest item).
+            val pa = input.stepperParts[AWCStepperPart.MobileProgress]; val pbw = pa?.borderWidth ?: 0.0; val pq = pa?.padding
+            val piT = (pq?.top ?: 0.0) + pbw; val piB = (pq?.bottom ?: 0.0) + pbw
+            val piL = (if (input.rtl) pq?.right else pq?.left).let { (it ?: 0.0) + pbw }; val piR = (if (input.rtl) pq?.left else pq?.right).let { (it ?: 0.0) + pbw }
+            val boxH = piT + piB + ph; val rowH = max(bh, boxH)
+            out.mobileNav = SRect(0.0, my, W, mT + rowH + mB)
+            val prog = SRect(mS + backW + g, my + mT + stepperHalf(rowH - boxH), W - mS - mE - backW - nextW - 2 * g, boxH)
             out.mobileProgress = prog
-            out.navButtons = SRect(0.0, my, backW, bh) to SRect(W - nextW, my, nextW, bh)
+            val pcx = prog.x + piL; val pcw = prog.width - piL - piR; val pcy = prog.y + piT
+            val by = my + mT + stepperHalf(rowH - bh)
+            out.navButtons = SRect(mS, by, backW, bh) to SRect(W - mE - nextW, by, nextW, bh)
             if (p.indicator == "dot") {
                 val total = n * 8.0 + max(0, n - 1) * g
-                var x = prog.x + stepperHalf(prog.width - total)
+                var x = pcx + stepperHalf(pcw - total)
                 val dots = ArrayList<Triple<SRect, SRGBA, Double>>()
                 for (i in 0 until n) {
                     val activeDot = i == m.active; val done = i < m.active || m.steps[i].completed
@@ -543,20 +630,20 @@ object StepperLayout {
                     var c = color.list(); var sc = if (activeDot && !reduced) 1.5 else 1.0
                     if (motion != null) { c = motion.animate("dot$i.bg", c, now, if (reduced) 0.01 else 200.0, StepperEasing.effects)
                                           sc = motion.animate("dot$i.scale", listOf(sc), now, if (reduced) 0.01 else 500.0, StepperEasing.spatial)[0] }
-                    dots += Triple(SRect(x, prog.y, 8.0, 8.0), SRGBA(c[0], c[1], c[2], c[3]), sc)
+                    dots += Triple(SRect(x, pcy, 8.0, 8.0), SRGBA(c[0], c[1], c[2], c[3]), sc)
                     x += 8 + g
                 }
                 out.mobileDots = dots
             } else {
                 val t = "${p.stepWord} ${m.active + 1} ${p.ofWord} $n"
                 val tw = stepperLUCeil(measure.width(t, 14.0, 500.0, 0.0))
-                out.mobileText = Triple(SRect(prog.x + stepperHalf(prog.width - tw), prog.y, tw, 20.0), t, theme.color("on-surface-variant", "#49454F"))
+                out.mobileText = Triple(SRect(pcx + stepperHalf(pcw - tw), pcy, tw, 20.0), t, theme.color("on-surface-variant", "#49454F"))
             }
-            cy = my + bh
+            cy = my + mT + rowH + mB
         }
         out.host = SRect(0.0, hostOff, W, cy)
         fun fix(r: SRect) = if (r.isEmpty) r else (if (input.rtl) r.mirrored(W) else r).offset(0.0, hostOff)
-        out.list = out.list?.let(::fix); out.content = fix(out.content); out.nav = out.nav?.let(::fix)
+        out.list = out.list?.let(::fix); out.content = fix(out.content); out.slot = out.slot?.let(::fix); out.nav = out.nav?.let(::fix)
         out.mobileNav = out.mobileNav?.let(::fix); out.mobileProgress = out.mobileProgress?.let(::fix)
         out.navButtons = out.navButtons?.let { fix(it.first) to fix(it.second) }
         out.mobileDots = out.mobileDots.map { Triple(fix(it.first), it.second, it.third) }

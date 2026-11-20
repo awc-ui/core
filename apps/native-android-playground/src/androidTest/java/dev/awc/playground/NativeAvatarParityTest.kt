@@ -170,7 +170,11 @@ class NativeAvatarParityTest {
 
     private fun paint(c:JSONObject) {
         val name=c.getString("name")
-        if(c.optBoolean("hidden") || s(c,"slot").contains("<svg")) return
+        if(c.optBoolean("hidden")) {
+            // `:host([hidden]) { display: none }`: the host renders nothing (Chrome: display none, 0x0 box).
+            inspection=null;props=propsOf(c)+("hidden" to true);case=c;epoch++;settle()
+            check(inspection==null && c.getJSONObject("style").getString("display")=="none","${c.getString("name")} hidden host renders nothing");return }
+        if(s(c,"slot").contains("<svg")) return
         inspection=null;props=propsOf(c);case=c;epoch++;settle()
         val a=inspection;if(a==null) { check(false,"$name dispatched to the dedicated renderer");return }
         val r=c.getJSONObject("rect");val wr=Rect(r.getDouble("x").toFloat(),r.getDouble("y").toFloat(),(r.getDouble("x")+r.getDouble("width")).toFloat(),(r.getDouble("y")+r.getDouble("height")).toFloat())

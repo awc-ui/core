@@ -27,6 +27,7 @@ internal val LocalAWCMenuInspection=staticCompositionLocalOf<AWCMenuInspection?>
 /** Imperative md-menu methods (show, close, reposition, getScrollViewport) for one menu id inside an [AWCMenuScope]. */
 class AWCMenuHandle internal constructor(private val registry:()->NativeMenuRegistry?,val id:String) {
     private val c get()=registry()?.controllers?.get(id)
+    internal val controller get()=c
     val isOpen get()=c?.isOpen ?: false
     fun show(keyboard:Boolean=false,autoFocus:Boolean?=null):Boolean { val m=c ?: return false;m.show(autoFocus,keyboard);return true }
     fun close():Boolean { val m=c ?: return false;m.close();return true }
@@ -80,12 +81,26 @@ class AWCMenuHandle internal constructor(private val registry:()->NativeMenuRegi
     var setOpen:(Boolean)->Unit={}
     var emit:(String)->Unit={}
     var focusAnchorAction:(()->Boolean)?=null
+    /** The owner's claim on keys typed on a row before typeahead (printable characters and "Backspace"): md-autocomplete keeps
+     *  typing in its input (`handleListboxKeyDown`). Returns true when the owner consumed the key. */
+    var rowKeyClaim:((String)->Boolean)?=null
     var focusManager:FocusManager?=null
     var scope:CoroutineScope?=null
     var openedAt=Double.NaN
     var closingAt=Double.NaN
     var openedViaKeyboard=false
     var keyboardModality=false
+    /** setVirtualProvider(): the virtual data model (null: the composed rows drive navigation). */
+    var provider:AWCMenuVirtualProvider?=null
+    /** The surface is a listbox while a provider is set (the source's listboxMode). */
+    var listboxMode by mutableStateOf(false)
+    /** setComboboxElement(): the element that keeps focus while the provider's rows are navigated. */
+    var comboboxID:String?=null
+    /** The combobox's active option (its aria-activedescendant) and the row ringed without focus (data-md-focused). */
+    var activeDescendant by mutableStateOf<String?>(null)
+    var virtualRing by mutableStateOf<String?>(null)
+    var virtualIndex=-1
+    private var virtualSeq=0;private var virtualBuffer="";private var virtualBufferAt=Double.NEGATIVE_INFINITY
     private val typeahead=NativeMenuTypeahead()
     private var closeJob:Job?=null;private var lingerJob:Job?=null
     var surfaceRect:Rect?=null
@@ -101,6 +116,8 @@ class AWCMenuHandle internal constructor(private val registry:()->NativeMenuRegi
         var deselect:()->Unit={};var openSubmenu:(Boolean)->Unit={};var collapse:()->Unit={};var hoverLeave:()->Unit={}
         /** `closeSubmenu()`: the flyout plays its exit, the row keeps its open state for 100 ms. */
         var closeSubmenu:()->Unit={}
+        /** The row's click (Enter on the combobox's active option). */
+        var activate:()->Unit={}
     }
     val root:NativeMenuController get()=parent?.root ?: this
     /** The click that opened this menu is the click the document listener sees. */
@@ -140,7 +157,7 @@ class AWCMenuHandle internal constructor(private val registry:()->NativeMenuRegi
     /** `open = false` without the exit (md-sub-menu-item `collapse()`). */
     fun closeNow() { if(!isOpen) return;collapseSubmenus();closeJob?.cancel();lingerJob?.cancel();lingering=false;finishClose() }
     val closeWaiters=mutableListOf<kotlinx.coroutines.CompletableDeferred<Unit>>()
-    private fun finishClose() { closing=false;isOpen=false;ringed=null;focusedID=null;setOpen(false);emit("mdClose")
+    private fun finishClose() { closing=false;isOpen=false;ringed=null;focusedID=null;virtualIndex=-1;virtualRing=null;activeDescendant=null;setOpen(false);emit("mdClose")
         val w=closeWaiters.toList();closeWaiters.clear();w.forEach { it.complete(Unit) } }
     /** `closeEntireMenuTree()` (Tab) closes the root and focuses its anchor. */
     fun closeTree() { val r=root;r.close();r.focusAnchor() }
@@ -170,6 +187,7 @@ class AWCMenuHandle internal constructor(private val registry:()->NativeMenuRegi
         if(r.top<v.top) scrollTop=maxOf(0.0,scrollTop-(v.top-r.top)) else if(r.bottom>v.bottom) scrollTop+=(r.bottom-v.bottom)
     }
     fun focusFirst(ring:Boolean) {
+        provider?.let { p-> val n=p.count();if(n>0) focusVirtual(nextEnabled(-1,1,n),ring);return }
         // The surface composes and lays out after the request: retry each frame until the first row is focusable.
         val s=scope
         if(s==null) { rowOrder.firstOrNull()?.let { focus(it,ring) };return }
@@ -188,10 +206,64 @@ class AWCMenuHandle internal constructor(private val registry:()->NativeMenuRegi
         val i=if(index<0) rowOrder.size-1 else if(index>=rowOrder.size) 0 else index
         focus(rowOrder[i],true)
     }
+    // MARK: virtual provider (handleKeyDownVirtual / focusVirtual / handleTypeaheadVirtual)
+    /** Next non-disabled index from [from] in [dir], wrapping; -1 only when every row is disabled or the list is empty. */
+    fun nextEnabled(from:Int,dir:Int,count:Int):Int {
+        val p=provider ?: return -1;if(count<=0) return -1
+        var idx=from
+        repeat(count) { idx+=dir;if(idx<0) idx=count-1 else if(idx>=count) idx=0;if(!p.isDisabledAt(idx)) return idx }
+        return if(from in 0 until count) from else -1
+    }
+    /** The active index moves at once; after `ensureVisible` the latest request rings its windowed row and (combobox) marks it
+     *  active without moving focus, or (no combobox) focuses it. */
+    fun focusVirtual(index:Int,ring:Boolean=true) {
+        val p=provider ?: return;if(index<0) return
+        val seq=++virtualSeq;virtualIndex=index
+        val apply={ val id=p.rowIdForIndex(index)
+            if(seq==virtualSeq && isOpen && !closing && provider===p && id!=null) {
+                if(comboboxID!=null) { focusedID=id;virtualRing=if(ring) id else null;activeDescendant=id;ensureVisible(id) } else focus(id,ring) } }
+        val s=scope
+        if(s==null) return
+        s.launch { p.ensureVisible(index);withFrameNanos { };apply() }
+    }
+    /** Keys from the combobox (header input or [AWCMenuHandle.handleKey]). */
+    fun comboboxKey(key:String,shift:Boolean,modified:Boolean,fromInput:Boolean=false,time:Double=Double.NaN):Boolean {
+        keyboardModality=true;registry?.pointerModality=false
+        if(provider!=null) virtualKey(key,shift,modified,time,fromInput)?.let { return it }
+        return when(key) {
+            "Escape"->{ close();focusAnchor();true }
+            "Tab"->{ val fm=root.focusManager ?: focusManager;closeTree();fm?.moveFocus(if(shift) FocusDirection.Previous else FocusDirection.Next);true }
+            else->false
+        }
+    }
+    /** The source's handleKeyDownVirtual; null: the key keeps the menu's ordinary handling (Escape, Tab). */
+    fun virtualKey(key:String,shift:Boolean,modified:Boolean,time:Double,fromInput:Boolean=false):Boolean? {
+        val p=provider ?: return null;val n=p.count()
+        return when(key) {
+            "ArrowDown"->{ focusVirtual(nextEnabled(virtualIndex,1,n));true }
+            "ArrowUp"->{ focusVirtual(nextEnabled(virtualIndex,-1,n));true }
+            "Home"->{ focusVirtual(nextEnabled(-1,1,n));true }
+            "End"->{ focusVirtual(nextEnabled(n,-1,n));true }
+            "Enter"->{ if(comboboxID==null || virtualIndex<0) false else { p.rowIdForIndex(virtualIndex)?.let { rows[it]?.activate?.invoke() };true } }
+            "Escape","Tab"->null
+            else->{
+                // Characters typed in the header search field are its own (the source checks e.target).
+                if(fromInput || key.length!=1 || modified || shift) return false
+                val now=if(time.isNaN()) System.nanoTime()/1e6 else time
+                if(now-virtualBufferAt>500) virtualBuffer=""
+                virtualBuffer+=key.lowercase();virtualBufferAt=now
+                val from=if(virtualBuffer.length==1) virtualIndex+1 else virtualIndex
+                val hit=p.findPrefix(virtualBuffer,maxOf(0,from))
+                if(hit>=0) focusVirtual(hit)
+                true
+            }
+        }
+    }
     /** md-menu `handleKeyDown` for a row of this menu (focus is on the row). */
     fun key(key:String,from:String,shift:Boolean,modified:Boolean,rtl:Boolean,time:Double):Boolean {
         if(!isOpen) return false
         keyboardModality=true;registry?.pointerModality=false
+        if(provider!=null) virtualKey(key,shift,modified,time)?.let { return it }
         val index=rowOrder.indexOf(from)
         // Inside a flyout, Escape and the close key reach the submenu row: it closes the flyout and takes focus back.
         val p=parent;val row=parentRowID
@@ -204,6 +276,7 @@ class AWCMenuHandle internal constructor(private val registry:()->NativeMenuRegi
             "End"->{ move(rowOrder.size-1);true }
             "Tab"->{ val fm=root.focusManager ?: focusManager;closeTree();fm?.moveFocus(if(shift) FocusDirection.Previous else FocusDirection.Next);true }
             else->{
+                rowKeyClaim?.let { claim-> if(!modified && (key.length==1 || key=="Backspace") && claim(key)) return true }
                 if(key.length!=1 || modified || shift) return false
                 val hit=typeahead.next(key,time,index,rowOrder.map { rows[it]?.label ?: "" })
                 if(hit!=null) move(hit)

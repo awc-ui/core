@@ -60,6 +60,9 @@ class NativePreviewPresentationTest {
                 Box(Modifier.align(Alignment.BottomEnd).padding(16.dp)) { AWCComponent("md-fab", mapOf("id" to "preview-fab", "icon" to "add", "aria-label" to "Create")) }
                 AWCComponent(tag, fixture(tag) + mapOf("open" to true, "anchor" to "preview-fab")) { slot -> SampleSlot(tag,slot) { _,_ -> } }
             }
+            // R2-D10: md-menu renders through the Laboratory menu host (LivePreviewMenuHost, as LivePreviewActivity): the anchored
+            // native menu with its tonal "Open menu" trigger and the recipe tree, open from the retained `open` property.
+            else if (tag == "md-menu") LivePreviewMenuHost(tag, fixture(tag) + livePreviewMenuRecipe(tag).orEmpty() + mapOf("open" to true), remember { AWCMenuScopeState() }, AWCMenuAppearance(), AWCMenuAppearance(), { _, _ -> }) { element -> element() }
             else AWCComponent(tag, fixture(tag) + mapOf("open" to true, "headline" to "Preview content", "closeable" to true)) { slot -> SampleSlot(tag,slot) { _,_ -> } }
         } } } } }
         for(next in listOf("md-bottom-sheet", "md-side-sheet", "md-menu", "md-fab-menu", "md-date-picker", "md-time-picker", "md-color-picker")) {
@@ -70,11 +73,15 @@ class NativePreviewPresentationTest {
             compose.onAllNodes(isDialog()).assertCountEquals(0)
             compose.onAllNodes(isPopup()).assertCountEquals(0)
             if(next == "md-fab-menu") { compose.mainClock.advanceTimeBy(600); compose.onNode(hasText("Edit") or hasContentDescription("Edit")).assertIsDisplayed() }
+            if(next == "md-menu") compose.onNodeWithText("New project").assertIsDisplayed()
             // md-color-picker (inline by default, as the source) has no close action: it renders in place inside the preview.
             val close = when(next) { "md-date-picker", "md-time-picker" -> "Cancel"; "md-menu", "md-fab-menu", "md-color-picker" -> null; else -> "Close" }
             if(close != null) compose.onNode(hasText(close) or hasContentDescription(close)).performClick()
             else if(next == "md-fab-menu") compose.onRoot().performTouchInput { click(androidx.compose.ui.geometry.Offset(4f, 4f)) } // outside click closes
             else if(next == "md-color-picker") compose.onNodeWithContentDescription("#386a20").assertIsDisplayed()
+            // md-menu closes on Escape anywhere, as the source's document keydown listener: the scope's window key listener
+            // (NativeWindowKeys) receives the window's key events; performKeyInput only reaches the focused Compose node.
+            else if(next == "md-menu") androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(android.view.KeyEvent.KEYCODE_ESCAPE)
             else compose.onRoot().performKeyInput { pressKey(Key.Escape) }
             compose.waitForIdle()
             if(next == "md-fab-menu") {
@@ -85,7 +92,7 @@ class NativePreviewPresentationTest {
                 compose.mainClock.autoAdvance = true
             }
             else if(next.startsWith("md-menu")) {
-                try { compose.onNodeWithText("Open " + next.removePrefix("md-").replace('-', ' ')).assertIsDisplayed() }
+                try { compose.onAllNodesWithText("New project").assertCountEquals(0); compose.onNodeWithText("Open " + next.removePrefix("md-").replace('-', ' ')).assertIsDisplayed() }
                 catch(error: AssertionError) { throw AssertionError(next + "\n" + compose.onRoot().printToString(), error) }
             }
             else if(next.endsWith("sheet")) compose.onNodeWithText("Open " + next.removePrefix("md-").replace('-', ' ')).assertIsDisplayed()

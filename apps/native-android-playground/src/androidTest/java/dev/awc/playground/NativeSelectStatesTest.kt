@@ -136,10 +136,12 @@ class NativeSelectStatesTest {
                 if(kind=="move") bounds("m.field")?.let { p=(it.x+shift+a.optDouble("dx",0.0)) to (it.y+a.optDouble("dy",0.0)) }
                 if(p==null) { check(false,"target ${a.optString("target")} not found");return }
                 val begin=now()
+                // A point click (the outside press) has no separate move step in the oracle: press at 33 ms, release at 67 ms.
+                val pressAt=if(pa!=null) 33.0 else 67.0
                 pump(samples,start,begin+33);mouse { moveTo(at(p),0) }
                 if(kind=="click") {
-                    pump(samples,start,begin+67);mouse { moveTo(at(p),0);press(MouseButton.Primary) }
-                    pump(samples,start,begin+100);mouse { moveTo(at(p),0);release(MouseButton.Primary) }
+                    pump(samples,start,begin+pressAt);mouse { moveTo(at(p),0);press(MouseButton.Primary) }
+                    pump(samples,start,begin+pressAt+33);mouse { moveTo(at(p),0);release(MouseButton.Primary) }
                     // A press on the page outside any control moves the browser's focus to the body.
                     if(pa!=null) compose.runOnUiThread { focusManager?.clearFocus(true) }
                 }
@@ -193,12 +195,16 @@ class NativeSelectStatesTest {
             val clip=p.getJSONObject("clip");val webG=CardWeb.webGrid("$file/${p.getString("shot")}",clip)
             val masks=selectionMask(webG)
             var best:Pair<Double,JSONObject>?=null;var shots=0
-            fun shoot() { val r=CardWeb.compare(webG,MenuEvidence.capture(compose,clip) { s-> shiftScene(s) }.also { shiftScene(base) },masks).put("selectionMask",masks.size);shots++
-                if(best==null || r.getInt("over6")*1e6+r.getDouble("mean")<best!!.second.getInt("over6")*1e6+best!!.second.getDouble("mean")) best=(now()-actual) to r }
+            // Chrome's capture lies between two native frames: each candidate frame and the span of consecutive ones are compared.
+            var prev:CardWeb.Grid?=null
+            fun shoot() { val g=MenuEvidence.capture(compose,clip) { s-> shiftScene(s) }.also { shiftScene(base) };shots++
+                for(c in listOfNotNull(g,prev?.let { CardWeb.between(webG,it,g) })) { val r=CardWeb.compare(webG,c,masks).put("selectionMask",masks.size)
+                    if(best==null || r.getInt("over6")*1e6+r.getDouble("mean")<best!!.second.getInt("over6")*1e6+best!!.second.getDouble("mean")) best=(now()-actual) to r }
+                prev=g }
             var nextShot=lastWeb-start+17
             while(now()<actual+duration) {
                 frame();samples+=sample().let { it.copy(t=it.t-actual) }
-                if(now()>=actual+nextShot && now()<=actual+duration+1) { shoot();nextShot+=16 }
+                if(now()>=actual+nextShot && now()<=actual+duration+17) { shoot();nextShot+=16 }
             }
             if(shots==0) shoot()
             phaseSamples+=samples;phaseStarts+=actual;phaseShots+=best

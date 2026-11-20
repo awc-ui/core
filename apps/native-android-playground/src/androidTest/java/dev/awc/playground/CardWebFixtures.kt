@@ -85,5 +85,12 @@ internal object CardWeb {
             if(d>worst) { worst=d;at="($px,$py) web $a native $b" } }
         return JSONObject().put("compared",n).put("mean",sum/max(n,1)).put("over6",bad).put("worst",worst).put("worstAt",at)
     }
+    /** Chrome's phase-end capture falls between two native frames: per channel, the value nearest [web] within the range of the
+     *  consecutive frames [a] and [b] (a layer still moving at the capture has an intermediate value there). */
+    fun between(web:Grid,a:Grid,b:Grid):Grid { val v=a.v.copyOf()
+        if(a.x==b.x && a.y==b.y && a.w==b.w && a.h==b.h) for(py in 0 until a.h) for(px in 0 until a.w) { val wx=a.x+px-web.x;val wy=a.y+py-web.y
+            if(wx<0 || wy<0 || wx>=web.w || wy>=web.h) continue
+            for(c in 0..2) { val i=(py*a.w+px)*3+c;v[i]=web.v[(wy*web.w+wx)*3+c].coerceIn(min(a.v[i],b.v[i]),max(a.v[i],b.v[i])) } }
+        return Grid(a.x,a.y,a.w,a.h,v) }
     fun ok(r:JSONObject)=r.getInt("compared")>1000 && r.getInt("over6").toDouble()/max(r.getInt("compared"),1)<=.005 && r.getDouble("mean")<=1.0
 }

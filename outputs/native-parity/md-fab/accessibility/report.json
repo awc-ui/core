@@ -1,6 +1,6 @@
 {
  "tag": "md-fab",
- "at": "2026-10-29T11:11:39.197Z",
+ "at": "2026-11-05T01:32:18.451Z",
  "rows": [
   {
    "case": "extended",
@@ -13,7 +13,7 @@
      "button:New project"
     ],
     "contrast": {
-     "measured": 2,
+     "measured": 0,
      "findings": []
     }
    },
@@ -33,7 +33,7 @@
       "button:New project"
      ],
      "findings": [],
-     "contrastMeasured": 2
+     "contrastMeasured": 0
     },
     "ios": {
      "status": "pass",
@@ -130,7 +130,7 @@
      "button:Create"
     ],
     "contrast": {
-     "measured": 2,
+     "measured": 0,
      "findings": []
     }
    },
@@ -150,7 +150,7 @@
       "button:Create"
      ],
      "findings": [],
-     "contrastMeasured": 2
+     "contrastMeasured": 0
     },
     "ios": {
      "status": "pass",
@@ -207,14 +207,6 @@
        "class": "android.view.ViewGroup"
       },
       {
-       "type": "TYPE_WINDOW_CONTENT_CHANGED",
-       "via": "window",
-       "text": [],
-       "contentDescription": "",
-       "changes": 1,
-       "class": "android.view.ViewGroup"
-      },
-      {
        "type": "TYPE_WINDOW_STATE_CHANGED",
        "via": "system",
        "text": [
@@ -230,6 +222,14 @@
        "text": [],
        "contentDescription": "",
        "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
        "class": "android.view.ViewGroup"
       }
      ]
@@ -431,16 +431,6 @@
        "class": "android.view.ViewGroup"
       },
       {
-       "type": "TYPE_WINDOW_STATE_CHANGED",
-       "via": "system",
-       "text": [
-        "AWC Native"
-       ],
-       "contentDescription": "",
-       "changes": 0,
-       "class": "dev.awc.playground.LivePreviewActivity"
-      },
-      {
        "type": "TYPE_VIEW_FOCUSED",
        "via": "window",
        "text": [],
@@ -455,6 +445,16 @@
        "contentDescription": "",
        "changes": 1,
        "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
       }
      ]
     }

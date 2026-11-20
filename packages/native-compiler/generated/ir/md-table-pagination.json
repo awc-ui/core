@@ -960,10 +960,20 @@
       "notes": [
         "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Range text, rows-per-page select (including the All option), previous / next and first / last buttons, compact, disabled, density, the actions slot.",
         "goToPage / setRowsPerPage through AWCTablePaginationController. Hooks through AWCTablePaginationAppearance; --md-table-pagination-padding-inline has no effect in the source and none natively (decision log).",
-        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion).",
+        "Typed part appearances for the family's ::part() targets (AWCTablePart with the shared AWCPartStyle; .awcTablePartAppearance / AWCTablePartAppearanceScope) for every element of the tag or one node ID; part rules win over the hooks and state rules."
       ],
       "verification": "not-device-verified",
-      "visualParts": [],
+      "visualParts": [
+        "display",
+        "rpp",
+        "rpp-select",
+        "nav",
+        "first-button",
+        "prev-button",
+        "next-button",
+        "last-button"
+      ],
       "appearance": {
         "api": ".awcTablePaginationAppearance(AWCTablePaginationAppearance)",
         "fields": [
@@ -1013,10 +1023,20 @@
       "notes": [
         "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Range text, rows-per-page select (including the All option), previous / next and first / last buttons, compact, disabled, density, the actions slot.",
         "goToPage / setRowsPerPage through AWCTablePaginationController. Hooks through AWCTablePaginationAppearance; --md-table-pagination-padding-inline has no effect in the source and none natively (decision log).",
-        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion).",
+        "Typed part appearances for the family's ::part() targets (AWCTablePart with the shared AWCPartStyle; .awcTablePartAppearance / AWCTablePartAppearanceScope) for every element of the tag or one node ID; part rules win over the hooks and state rules."
       ],
       "verification": "not-device-verified",
-      "visualParts": [],
+      "visualParts": [
+        "display",
+        "rpp",
+        "rpp-select",
+        "nav",
+        "first-button",
+        "prev-button",
+        "next-button",
+        "last-button"
+      ],
       "appearance": {
         "api": "AWCTablePaginationAppearanceScope(AWCTablePaginationAppearance)",
         "fields": [

@@ -9,6 +9,18 @@ typealias AWCPlatformFont = UIFont
 typealias AWCPlatformColor = UIColor
 #endif
 
+/// The pasteboard an input with a paste handler reads (md-otp-field's whole-value paste): the general one; the states suites
+/// point it at a named pasteboard of their own, so a test never touches (or waits on) the system clipboard.
+@MainActor enum AWCFieldPasteboard {
+    #if canImport(AppKit)
+    static var board = NSPasteboard.general
+    static var text: String? { board.string(forType: .string) }
+    #else
+    static var board = UIPasteboard.general
+    static var text: String? { board.string }
+    #endif
+}
+
 /// What the native text input draws: the displayed text and the input's CSS typography.
 struct AWCFieldInputConfig: Equatable {
     var text = ""
@@ -143,8 +155,23 @@ enum AWCFieldMetrics {
 
 #if canImport(AppKit)
 /// A cell whose text box is exactly the CSS input line box (no bezel inset, no line-fragment padding).
-/// The field editor of an input with a paste handler: the handler sees the clipboard text before the insertion.
+/// The key event a field editor is handling. NSApp.currentEvent is unset (or stale) when a window delivers the key itself
+/// (window.sendEvent: the view fixtures, the Laboratory host's off-screen preview window that is not key), so the editor records
+/// the event it receives and the text-system commands read that one first.
+@MainActor enum AWCFieldKeyEvent {
+    static var delivered: NSEvent?
+    static var current: NSEvent? {
+        delivered ?? NSApp.currentEvent.flatMap { $0.type == .keyDown && ProcessInfo.processInfo.systemUptime - $0.timestamp < 1 ? $0 : nil }
+    }
+}
+/// The field editor of an input with a paste handler: the handler sees the clipboard text before the insertion. It also records
+/// the key event it handles (AWCFieldKeyEvent) for inputs reporting navigation keys.
 final class AWCFieldPasteEditor: NSTextView {
+    override func keyDown(with event: NSEvent) {
+        let outer = AWCFieldKeyEvent.delivered; AWCFieldKeyEvent.delivered = event
+        defer { AWCFieldKeyEvent.delivered = outer }
+        super.keyDown(with: event)
+    }
     var onPaste: ((String) -> Bool)?
     /// Typing into a read-only input (`readOnlyKeys`): the text the key would insert; true when handled.
     var onReadOnlyText: ((String) -> Bool)?
@@ -153,7 +180,7 @@ final class AWCFieldPasteEditor: NSTextView {
         super.insertText(string, replacementRange: replacementRange)
     }
     override func paste(_ sender: Any?) {
-        if let text = NSPasteboard.general.string(forType: .string), onPaste?(text) == true { return }
+        if let text = AWCFieldPasteboard.text, onPaste?(text) == true { return }
         super.paste(sender)
     }
 }
@@ -197,12 +224,14 @@ final class AWCFieldTextCell: NSTextFieldCell {
     }
     var onPaste: ((String) -> Bool)?
     var onReadOnlyText: ((String) -> Bool)?
+    /// The input reports navigation keys: its own field editor records each key event (AWCFieldKeyEvent).
+    var recordsKeys = false
     private var pasteEditor: AWCFieldPasteEditor?
     /// A read-only field with an activation handler edits in its own field editor, which sees Enter / Space first.
     var activationEditor: AWCFieldActivationEditor?
     override func fieldEditor(for controlView: NSView) -> NSTextView? {
         if let activationEditor { return activationEditor }
-        guard onPaste != nil || onReadOnlyText != nil else { return super.fieldEditor(for: controlView) }
+        guard onPaste != nil || onReadOnlyText != nil || recordsKeys else { return super.fieldEditor(for: controlView) }
         let editor = pasteEditor ?? { let e = AWCFieldPasteEditor(); e.isFieldEditor = true; return e }()
         editor.onPaste = onPaste; editor.onReadOnlyText = onReadOnlyText; pasteEditor = editor; return editor
     }
@@ -281,8 +310,10 @@ func awcFieldAXFrame(_ attribute: NSAccessibility.Attribute, _ outset: CGSize, _
 }
 final class AWCFieldNSTextField: NSTextField, AWCFieldAXState {
     var onFirstResponder: () -> Void = {}
-    /// A read-only field with an activation handler (a picker trigger) opens on its click instead of starting a text selection.
-    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { (cell as? AWCFieldTextCell)?.activationEditor != nil || super.acceptsFirstMouse(for: event) }
+    /// A press into an inactive window focuses the input with that same press, as a Chrome page's input does (AppKit otherwise
+    /// spends the first click on activating the window); a read-only field with an activation handler (a picker trigger) opens on
+    /// that click instead of starting a text selection.
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
     override func mouseDown(with event: NSEvent) {
         if let editor = (cell as? AWCFieldTextCell)?.activationEditor { editor.click(in: self) } else { super.mouseDown(with: event) }
     }
@@ -290,6 +321,9 @@ final class AWCFieldNSTextField: NSTextField, AWCFieldAXState {
     override var acceptsFirstResponder: Bool { isEnabled }
     override func becomeFirstResponder() -> Bool { let ok = super.becomeFirstResponder(); if ok { onFirstResponder() }; return ok }
     override func accessibilityRole() -> NSAccessibility.Role? { awcRole }
+    /// AXSearchField for a Web role=searchbox input (NSSearchField's subrole), else AppKit's own.
+    var awcSubrole: NSAccessibility.Subrole?
+    override func accessibilitySubrole() -> NSAccessibility.Subrole? { awcSubrole ?? super.accessibilitySubrole() }
     var awcAXOutset = CGSize.zero
     override func accessibilityAttributeValue(_ attribute: NSAccessibility.Attribute) -> Any? {
         if attribute.rawValue == "AXInvalid" { return awcInvalid ? "true" : "false" }
@@ -299,6 +333,9 @@ final class AWCFieldNSTextField: NSTextField, AWCFieldAXState {
 }
 final class AWCFieldNSSecureTextField: NSSecureTextField, AWCFieldAXState {
     var onFirstResponder: () -> Void = {}
+    /// A press into an inactive window focuses the input with that same press, as a Chrome page's input does (AppKit otherwise
+    /// spends the first click on activating the window).
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
     var awcInvalid = false, awcRole: NSAccessibility.Role = .textField
     override func becomeFirstResponder() -> Bool { let ok = super.becomeFirstResponder(); if ok { onFirstResponder() }; return ok }
     var awcAXOutset = CGSize.zero
@@ -315,6 +352,9 @@ final class AWCFieldNSSecureTextField: NSSecureTextField, AWCFieldAXState {
 final class AWCFieldNSTextView: NSTextView {
     /// The TextKit 1 stack's root (the text storage owns the layout manager and container; nothing else retains it).
     var ownedStorage: NSTextStorage?
+    /// A press into an inactive window focuses the input with that same press, as a Chrome page's input does (AppKit otherwise
+    /// spends the first click on activating the window).
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
     var awcInvalid = false
     override func accessibilityAttributeValue(_ attribute: NSAccessibility.Attribute) -> Any? {
         attribute.rawValue == "AXInvalid" ? (awcInvalid ? "true" : "false") : super.accessibilityAttributeValue(attribute)
@@ -325,7 +365,7 @@ final class AWCFieldNSTextView: NSTextView {
     override func resignFirstResponder() -> Bool { let ok = super.resignFirstResponder(); if ok { onFocus(false) }; return ok }
     override func doCommand(by selector: Selector) {
         let key = selector == #selector(cancelOperation(_:)) ? "Escape" : selector == #selector(insertTab(_:)) ? "Tab" : selector == #selector(insertBacktab(_:)) ? "Shift+Tab" : ""
-        if key == "Tab" || key == "Shift+Tab" { if !onCommand(key) { key == "Tab" ? window?.selectNextKeyView(self) : window?.selectPreviousKeyView(self) }; return }
+        if key == "Tab" || key == "Shift+Tab" { if !onCommand(key) { AWCDocumentTabOrder.select(from: self, backward: key == "Shift+Tab") }; return }
         if !key.isEmpty, onCommand(key) { return }
         super.doCommand(by: selector)
     }
@@ -414,6 +454,20 @@ struct AWCFieldTextInput: NSViewRepresentable {
             #selector(NSResponder.moveWordRightAndModifySelection(_:)): "ArrowRight", #selector(NSResponder.moveToRightEndOfLine(_:)): "ArrowRight",
             #selector(NSResponder.scrollToBeginningOfDocument(_:)): "Home", #selector(NSResponder.moveToBeginningOfDocument(_:)): "Home",
             #selector(NSResponder.scrollToEndOfDocument(_:)): "End", #selector(NSResponder.moveToEndOfDocument(_:)): "End"]
+        /// ArrowUp / ArrowDown / Home / End named by the text-system command alone, with the Shift / Alt it implies: a command
+        /// issued without a key event (the Laboratory host's doCommand(by:) into its off-screen, never-key preview window).
+        static let navigationSelectors: [Selector: String] = [
+            #selector(NSResponder.moveUp(_:)): "ArrowUp", #selector(NSResponder.moveDown(_:)): "ArrowDown",
+            #selector(NSResponder.moveUpAndModifySelection(_:)): "Shift+ArrowUp", #selector(NSResponder.moveDownAndModifySelection(_:)): "Shift+ArrowDown",
+            #selector(NSResponder.moveToBeginningOfParagraph(_:)): "Alt+ArrowUp", #selector(NSResponder.moveToEndOfParagraph(_:)): "Alt+ArrowDown",
+            NSSelectorFromString("moveToBeginningOfParagraphAndModifySelection:"): "Shift+Alt+ArrowUp",
+            NSSelectorFromString("moveToEndOfParagraphAndModifySelection:"): "Shift+Alt+ArrowDown",
+            #selector(NSResponder.moveParagraphBackwardAndModifySelection(_:)): "Shift+Alt+ArrowUp",
+            #selector(NSResponder.moveParagraphForwardAndModifySelection(_:)): "Shift+Alt+ArrowDown",
+            #selector(NSResponder.moveToBeginningOfDocument(_:)): "Home", #selector(NSResponder.scrollToBeginningOfDocument(_:)): "Home",
+            #selector(NSResponder.moveToEndOfDocument(_:)): "End", #selector(NSResponder.scrollToEndOfDocument(_:)): "End",
+            #selector(NSResponder.moveToBeginningOfDocumentAndModifySelection(_:)): "Shift+Home",
+            #selector(NSResponder.moveToEndOfDocumentAndModifySelection(_:)): "Shift+End"]
         func control(_ control: NSControl, textView: NSTextView, doCommandBy selector: Selector) -> Bool {
             let composing = textView.hasMarkedText()
             if parent.config.editingKeys, let key = Self.editingSelectors[selector] { return parent.events.command(key, composing) }
@@ -421,12 +475,31 @@ struct AWCFieldTextInput: NSViewRepresentable {
             case #selector(NSResponder.insertNewline(_:)): return parent.events.command("Enter", composing)
             case #selector(NSResponder.cancelOperation(_:)): return parent.events.command("Escape", composing)
             // Esc is bound to `complete:` in the text system; the Web key is Escape.
-            case #selector(NSResponder.complete(_:)) where NSApp.currentEvent?.keyCode == 53: return parent.events.command("Escape", composing)
-            case #selector(NSResponder.insertTab(_:)): return parent.events.command("Tab", composing)
-            case #selector(NSResponder.insertBacktab(_:)): return parent.events.command("Shift+Tab", composing)
+            case #selector(NSResponder.complete(_:)) where AWCFieldKeyEvent.current?.keyCode == 53: return parent.events.command("Escape", composing)
+            // An unhandled Tab continues in document order inside a document-order root (NativeDocumentOrder.swift); outside
+            // one, AppKit's field-editor Tab (the window key-view loop).
+            case #selector(NSResponder.insertTab(_:)):
+                // (A Tab that arrives with Shift held — a synthesized event whose characters are a plain tab — is Shift+Tab.)
+                if AWCFieldKeyEvent.current?.modifierFlags.contains(.shift) == true {
+                    return parent.events.command("Shift+Tab", composing) || (!composing && MainActor.assumeIsolated { AWCDocumentTabOrder.move(from: control, backward: true) || AWCDocumentTabOrder.movePrevious(from: control) })
+                }
+                return parent.events.command("Tab", composing) || (!composing && MainActor.assumeIsolated { AWCDocumentTabOrder.move(from: control, backward: false) || AWCDocumentTabOrder.moveNext(from: control) })
+            case #selector(NSResponder.insertBacktab(_:)):
+                return parent.events.command("Shift+Tab", composing) || (!composing && MainActor.assumeIsolated { AWCDocumentTabOrder.move(from: control, backward: true) || AWCDocumentTabOrder.movePrevious(from: control) })
+            // Chrome moves the caret of an input to its start / end on Home / End; the AppKit text system only scrolls.
+            // (A composite that takes navigation keys, md-number-field, sees Home / End first: the composite sees Home / End first, the caret moves only when it does not take the key.)
+            case #selector(NSResponder.scrollToBeginningOfDocument(_:)):
+                if parent.config.navigationKeys, parent.events.command("Home", composing) { return true }
+                textView.moveToBeginningOfDocument(nil); return true
+            case #selector(NSResponder.scrollToEndOfDocument(_:)):
+                if parent.config.navigationKeys, parent.events.command("End", composing) { return true }
+                textView.moveToEndOfDocument(nil); return true
             default:
-                if parent.config.navigationKeys, let e = NSApp.currentEvent, e.type == .keyDown,
-                   let key = awcFieldNavigationKey(code: e.keyCode, shift: e.modifierFlags.contains(.shift), alt: e.modifierFlags.contains(.option),
+                guard parent.config.navigationKeys else { return false }
+                guard let e = AWCFieldKeyEvent.current else {
+                    return Self.navigationSelectors[selector].map { parent.events.command($0, composing) } ?? false
+                }
+                if let key = awcFieldNavigationKey(code: e.keyCode, shift: e.modifierFlags.contains(.shift), alt: e.modifierFlags.contains(.option),
                                                    control: e.modifierFlags.contains(.control), command: e.modifierFlags.contains(.command)) {
                     // One keystroke can bind several selectors (⌥↓: moveForward: then moveToEndOfParagraph:): it is one key.
                     if let (last, handled) = navigationEvent, last === e { return handled }
@@ -512,15 +585,20 @@ struct AWCFieldTextInput: NSViewRepresentable {
                     cell.activationEditor?.onActivate = { [weak c] key in c?.parent.events.activate?(key) ?? false }
                 } else if cell.activationEditor != nil && f.currentEditor() == nil { cell.activationEditor = nil }
             }
-            f.alignment = cfg.centered ? .center : (cfg.rtl ? .right : .left); f.baseWritingDirection = cfg.rtl ? .rightToLeft : .leftToRight
+            // Setting NSControl.alignment ends a running editing session: while editing, the field editor takes it.
+            let alignment: NSTextAlignment = cfg.centered ? .center : (cfg.rtl ? .right : .left)
+            if f.alignment != alignment { if let e = f.currentEditor() as? NSTextView { e.alignment = alignment } else { f.alignment = alignment } }
+            f.baseWritingDirection = cfg.rtl ? .rightToLeft : .leftToRight
             f.setAccessibilityLabel(cfg.accessibilityLabel); f.setAccessibilityHelp(cfg.accessibilityHint); f.setAccessibilityRequired(cfg.required)
             if let ax = f as? AWCFieldAXState { ax.awcInvalid = cfg.invalid; ax.awcRole = cfg.role == "combobox" ? .comboBox : .textField; ax.awcAXOutset = cfg.axOutset }
+            (f as? AWCFieldNSTextField)?.awcSubrole = cfg.role == "searchbox" ? .searchField : nil
             (f.cell as? AWCFieldTextCell)?.awcInvalid = cfg.invalid; (f.cell as? AWCFieldSecureTextCell)?.awcInvalid = cfg.invalid
             (f.cell as? AWCFieldTextCell)?.awcAXOutset = cfg.axOutset; (f.cell as? AWCFieldSecureTextCell)?.awcAXOutset = cfg.axOutset
             if cfg.role == "combobox" { f.setAccessibilityExpanded(cfg.expanded ?? false) }
             if let cell = f.cell as? AWCFieldTextCell {
                 cell.onPaste = events.paste == nil ? nil : { [weak c] text in c?.parent.events.paste?(text) ?? false }
                 cell.onReadOnlyText = cfg.readOnlyKeys ? { [weak c] text in c?.parent.events.command(text, false) ?? false } : nil
+                cell.recordsKeys = cfg.navigationKeys
             }
             f.contentType = cfg.autocomplete == "one-time-code" ? .oneTimeCode : cfg.autocomplete == "username" ? .username : cfg.autocomplete.contains("password") ? .password : nil
             if let editor = f.currentEditor() as? NSTextView { editor.isContinuousSpellCheckingEnabled = cfg.spellcheck }
@@ -644,14 +722,16 @@ final class AWCFieldUITextField: UITextField, AWCKeyView {
             if !onCommand(full) { let p = name == "Home" ? beginningOfDocument : endOfDocument; selectedTextRange = textRange(from: p, to: p) }
             return
         }
+        // One typed character only: a special key's `characters` is its input name ("UIKeyInputDownArrow"), not text.
         if readOnlyKeys, !editable, let key = presses.first?.key, !key.modifierFlags.contains(.command), !key.modifierFlags.contains(.control),
-           let ch = key.characters.unicodeScalars.first, ch.value >= 0x20, ch.value != 0x7F, !(0xF700...0xF8FF).contains(ch.value) {
+           key.characters.count == 1, let ch = key.characters.unicodeScalars.first, ch.value >= 0x20, ch.value != 0x7F, !(0xF700...0xF8FF).contains(ch.value) {
             takenPresses.insert(key.keyCode); _ = onCommand(key.characters); return
         }
         super.pressesBegan(presses, with: event)
     }
     override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
         if let code = presses.first?.key?.keyCode, takenPresses.remove(code) != nil { return }
+        if AWCKeyViewEngineEntry.released(presses, at: self) { return }
         super.pressesEnded(presses, with: event)
     }
     override func pressesCancelled(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
@@ -660,8 +740,13 @@ final class AWCFieldUITextField: UITextField, AWCKeyView {
     }
     var onPaste: ((String) -> Bool)?
     override func paste(_ sender: Any?) {
-        if let text = UIPasteboard.general.string, onPaste?(text) == true { return }
+        if let text = AWCFieldPasteboard.text, onPaste?(text) == true { return }
         super.paste(sender)
+    }
+    /// With a paste handler, Paste is available whenever the pasteboard it reads (AWCFieldPasteboard) holds text.
+    override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+        if action == #selector(paste(_:)), onPaste != nil, isEnabled, AWCFieldPasteboard.board.hasStrings { return true }
+        return super.canPerformAction(action, withSender: sender)
     }
 }
 final class AWCFieldUITextView: UITextView, AWCKeyView {
@@ -774,6 +859,7 @@ struct AWCFieldTextInput: UIViewRepresentable {
             f.spellCheckingType = cfg.spellcheck ? .default : .no; f.returnKeyType = Self.returnKey(cfg.enterKeyHint); Self.plainTyping(f)
             f.textContentType = Self.contentType(cfg)
             f.accessibilityLabel = cfg.accessibilityLabel; f.accessibilityHint = cfg.accessibilityHint
+            if cfg.role == "searchbox", !f.accessibilityTraits.contains(.searchField) { f.accessibilityTraits.insert(.searchField) }
         }
         if let t = c.textView {
             if t.text != cfg.text && !c.composing() { c.applying = true; t.attributedText = NSAttributedString(string: cfg.text, attributes: attrs); c.applying = false }

@@ -1668,14 +1668,21 @@
     "ios": {
       "status": "adapter-implemented",
       "properties": [
+        "valueMissingLabel",
+        "reserveSupportingSpace",
+        "variant",
         "label",
         "placeholder",
         "supportingText",
         "error",
         "errorText",
+        "disabled",
+        "softDisabled",
         "required",
+        "density",
         "options",
         "multiple",
+        "chipPosition",
         "value",
         "inputValue",
         "freeSolo",
@@ -1684,14 +1691,18 @@
         "noOptionsText",
         "noResultsText",
         "loadingText",
+        "statusTemplate",
         "disableCloseOnSelect",
+        "clearOnBlur",
         "clearable",
+        "clearIcon",
         "dropdownIcon",
         "limitResults",
         "open",
-        "valueMissingLabel",
-        "disabled",
-        "softDisabled",
+        "filterer",
+        "placement",
+        "matchTriggerWidth",
+        "maxHeight",
         "name"
       ],
       "events": [
@@ -1702,26 +1713,7 @@
         "mdClear",
         "mdValidityChange"
       ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
-        "reserveSupportingSpace",
-        "variant",
-        "density",
-        "chipPosition",
-        "statusTemplate",
-        "clearOnBlur",
-        "clearIcon",
-        "filterer",
-        "virtualize",
-        "filterMode",
-        "rowHeight",
-        "placement",
-        "matchTriggerWidth",
-        "maxHeight"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "methods": [
         "focusInput",
         "showMenu",
         "closeMenu",
@@ -1732,74 +1724,91 @@
         "reportValidity",
         "setCustomValidity"
       ],
-      "unsupportedSlots": [
+      "slots": [
         "loader",
         "dropdown-icon"
       ],
-      "notes": [
-        "Native searchable sheet, free-form submit and multiple selection. Custom JS filtering and virtualization not executed.",
-        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
+      "unsupportedProperties": [
+        "virtualize",
+        "filterMode",
+        "rowHeight"
       ],
-      "verification": "not-device-verified"
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Dedicated native renderer (SwiftUI / Compose) composed of the library's own md-text-field (editable combobox), md-menu listbox, md-menu-item option rows, md-chip input chips and md-icon-button clear button: typing opens and filters without moving focus (only what was typed since the popup opened filters), ArrowDown / ArrowUp move focus into the list, keys typed on a row keep typing in the input, Enter picks, Escape closes and snaps the text back; multiple selection with chips below / top / left / right / inline (Backspace removes the last chip, the popup stays open); free solo; clear button, caret, loading spinner and loading bar; the polite \"{count} suggestions available\" status. Verified against the Mac Chrome 153 oracles (paint, interaction states, motion, events; full and reduced motion).",
+        "Methods through AWCAutocompleteController: focusInput, showMenu, closeMenu, loadOptions(options), getLabels(values), getValidity / checkValidity / reportValidity / setCustomValidity; filterer is the controller's closure property (native API only). Forms: name, required and reset through AWCFormScope.",
+        "The suggestions present in the nearest AWCMenuScope (anchored below the field); outside a scope they render in flow.",
+        "Not supported: virtualize, filterMode and rowHeight belong to the source's WASM-virtualized list (above 200 options or virtualize=\"always\"); the native lists render every option and always filter by substring (filterMode's default). loadOptions() takes an array (an OptionRowSource is the virtual list's row source)."
+      ],
+      "verification": "not-device-verified",
+      "appearance": {
+        "api": ".awcAutocompleteAppearance(AWCAutocompleteAppearance)",
+        "fields": [
+          "width",
+          "minWidth",
+          "chipGap",
+          "chipRadius",
+          "caretColor",
+          "caretSize",
+          "clearColor",
+          "optionIconColor",
+          "optionIconSize",
+          "loadingColor",
+          "spinnerSize"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "clearable",
-        "disabled",
-        "error",
-        "errorText",
-        "freeSolo",
-        "inputValue",
-        "label",
-        "limitResults",
-        "loading",
-        "maxHeight",
-        "maxSelected",
-        "multiple",
-        "name",
-        "noOptionsText",
-        "noResultsText",
-        "open",
-        "options",
-        "placeholder",
-        "required",
-        "softDisabled",
-        "supportingText",
-        "value"
-      ],
-      "events": [
-        "mdChange",
-        "mdClear",
-        "mdClose",
-        "mdInput",
-        "mdOpen"
-      ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
         "valueMissingLabel",
         "reserveSupportingSpace",
         "variant",
+        "label",
+        "placeholder",
+        "supportingText",
+        "error",
+        "errorText",
+        "disabled",
+        "softDisabled",
+        "required",
         "density",
+        "options",
+        "multiple",
         "chipPosition",
+        "value",
+        "inputValue",
+        "freeSolo",
+        "maxSelected",
+        "loading",
+        "noOptionsText",
+        "noResultsText",
         "loadingText",
         "statusTemplate",
         "disableCloseOnSelect",
         "clearOnBlur",
+        "clearable",
         "clearIcon",
         "dropdownIcon",
+        "limitResults",
+        "open",
         "filterer",
-        "virtualize",
-        "filterMode",
-        "rowHeight",
         "placement",
-        "matchTriggerWidth"
+        "matchTriggerWidth",
+        "maxHeight",
+        "name"
       ],
-      "unsupportedEvents": [
+      "events": [
+        "mdChange",
+        "mdInput",
+        "mdOpen",
+        "mdClose",
+        "mdClear",
         "mdValidityChange"
       ],
-      "unsupportedMethods": [
+      "methods": [
         "focusInput",
         "showMenu",
         "closeMenu",
@@ -1810,15 +1819,41 @@
         "reportValidity",
         "setCustomValidity"
       ],
-      "unsupportedSlots": [
+      "slots": [
         "loader",
         "dropdown-icon"
       ],
-      "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler.",
-        "Automatically registers with AWCFormScope for native name/required rules, successful-control data and reset. Declarative text rules use AWCFormRules; native regex/type and browser UI limitations remain explicit."
+      "unsupportedProperties": [
+        "virtualize",
+        "filterMode",
+        "rowHeight"
       ],
-      "verification": "not-device-verified"
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Dedicated native renderer (SwiftUI / Compose) composed of the library's own md-text-field (editable combobox), md-menu listbox, md-menu-item option rows, md-chip input chips and md-icon-button clear button: typing opens and filters without moving focus (only what was typed since the popup opened filters), ArrowDown / ArrowUp move focus into the list, keys typed on a row keep typing in the input, Enter picks, Escape closes and snaps the text back; multiple selection with chips below / top / left / right / inline (Backspace removes the last chip, the popup stays open); free solo; clear button, caret, loading spinner and loading bar; the polite \"{count} suggestions available\" status. Verified against the Mac Chrome 153 oracles (paint, interaction states, motion, events; full and reduced motion).",
+        "Methods through AWCAutocompleteController: focusInput, showMenu, closeMenu, loadOptions(options), getLabels(values), getValidity / checkValidity / reportValidity / setCustomValidity; filterer is the controller's closure property (native API only). Forms: name, required and reset through AWCFormScope.",
+        "The suggestions present in the nearest AWCMenuScope (anchored below the field); outside a scope they render in flow.",
+        "Not supported: virtualize, filterMode and rowHeight belong to the source's WASM-virtualized list (above 200 options or virtualize=\"always\"); the native lists render every option and always filter by substring (filterMode's default). loadOptions() takes an array (an OptionRowSource is the virtual list's row source)."
+      ],
+      "verification": "not-device-verified",
+      "appearance": {
+        "api": "AWCAutocompleteAppearanceScope(AWCAutocompleteAppearance)",
+        "fields": [
+          "width",
+          "minWidth",
+          "chipGap",
+          "chipRadius",
+          "caretColor",
+          "caretSize",
+          "clearColor",
+          "optionIconColor",
+          "optionIconSize",
+          "loadingColor",
+          "spinnerSize"
+        ]
+      }
     }
   }
 }

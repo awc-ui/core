@@ -190,7 +190,8 @@ func motionValue(_ any: Any?) -> AWCValue {
 @main enum NativeChartMotionIntegration {
     @MainActor static func main() {
         let args = Array(CommandLine.arguments.dropFirst())
-        let root = URL(fileURLWithPath: args.first ?? ".")
+        // Default: the published oracles (outputs/native-parity/<tag>/web-oracle-mac), as the scene / interaction suites.
+        let root = args.first.map { URL(fileURLWithPath: $0) } ?? URL(fileURLWithPath: #filePath).deletingLastPathComponent().appendingPathComponent("../../../../../outputs/native-parity").standardizedFileURL
         let kinds = args.count > 1 ? Array(args.dropFirst()) : ["line", "area", "bar"]
         var total = 0, passed = 0
         for kind in kinds {

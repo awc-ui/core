@@ -1,5 +1,6 @@
 package dev.awc.nativeui
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.focusGroup
@@ -245,7 +246,9 @@ private fun DialogShell(m: AWCDialogModel, s: NativeDialogState, session: AWCMod
     }
     Box(Modifier.fillMaxSize().inspectAWCNode(inspection, "", "md-dialog")) {
         if (!fullscreen) {
-            val scrimColor = part(AWCDialogPart.Scrim).background?.let { awcColor(it, Color.Transparent) } ?: appearance.scrimColor?.let { awcColor(it, Color.Transparent) } ?: Color(0f, 0f, 0f, .32f)
+            // forced-colors: the UA forces the scrim's background to Canvas keeping its alpha.
+            val forcedScrim = awcForcedColors()?.let { f -> awcColor(f.canvasKeepingAlphaOf(part(AWCDialogPart.Scrim).background ?: appearance.scrimColor ?: "#00000052"), Color.Black) }
+            val scrimColor = forcedScrim ?: part(AWCDialogPart.Scrim).background?.let { awcColor(it, Color.Transparent) } ?: appearance.scrimColor?.let { awcColor(it, Color.Transparent) } ?: Color(0f, 0f, 0f, .32f)
             val scrimZ = appearance.scrimZIndex ?: 2147483646.0; val z = appearance.zIndex ?: 2147483647.0
             Box(Modifier.fillMaxSize().zIndex(if (scrimZ > z) 1f else 0f)
                 .drawBehind { drawRect(scrimColor.copy(alpha = scrimColor.alpha * presented.toFloat())) }
@@ -278,12 +281,16 @@ private fun DialogContainer(m: AWCDialogModel, s: NativeDialogState, session: AW
     val dens = LocalDensity.current.density
     val inspection = LocalAWCInspection.current
     val fullscreen = m.fullscreen
-    val fill = appearance.containerColor?.let { awcColor(it, Color.Transparent) } ?: awcColor(tokens["--md-sys-color-surface-container-high"] ?: "#ECE6F0", Color.White)
+    // forced-colors: `.md-dialog__container { border: 2px solid CanvasText }` (content-box: around the width), the UA's Canvas
+    // fill keeping alpha and no box-shadow; text, icon and divider CanvasText.
+    val forced = awcForcedColors()
+    val fill = forced?.let { awcColor(it.canvasKeepingAlphaOf(appearance.containerColor ?: "#ECE6F0"), Color.Black) } ?: appearance.containerColor?.let { awcColor(it, Color.Transparent) } ?: awcColor(tokens["--md-sys-color-surface-container-high"] ?: "#ECE6F0", Color.White)
     val containerPart = part(AWCDialogPart.Container)
     val cv = max(8.0, 16 + 2 * d); val ch = max(12.0, 24 + 2 * d)
     val contentTop = if (fullscreen) max(12.0, 24 + 2 * d) else cv
     val headerDivider = fullscreen && m.headerDivider
-    val shadow = if (fullscreen) emptyList() else NativeShadowLayer.parse(tokens["--md-sys-elevation-3"])
+    val shadow = if (fullscreen || forced != null) emptyList() else NativeShadowLayer.parse(tokens["--md-sys-elevation-3"])
+    val borderPx = if (forced != null) (2 * 2 * dens).roundToInt() else 0
     val contentIndex = if (headerDivider) 2 else 1
     val maxHeight = vh - 96
     val w = (width * dens).roundToInt(); val fullH = (vh * dens).roundToInt()
@@ -293,14 +300,14 @@ private fun DialogContainer(m: AWCDialogModel, s: NativeDialogState, session: AW
     Layout(modifier = Modifier
         .layout { measurable, constraints ->
             val (gw, gh, gf) = geometry.value
-            val pl = measurable.measure(Constraints(minWidth = gw, maxWidth = gw, minHeight = if (gf) gh else 0, maxHeight = if (gf) gh else Constraints.Infinity))
+            val pl = measurable.measure(Constraints(minWidth = gw + borderPx, maxWidth = gw + borderPx, minHeight = if (gf) gh else 0, maxHeight = if (gf) gh else Constraints.Infinity))
             layout(constraints.maxWidth, constraints.maxHeight) {
                 if (gf) pl.place(0, 0) else pl.place(((constraints.maxWidth - pl.width) / 2f).roundToInt(), ((constraints.maxHeight - pl.height) / 2f).roundToInt())
             }
         }
         .then(if (shadow.isNotEmpty()) Modifier.accordionShadow(corners, shadow, false) else Modifier)
         .clip(corners)
-        .background(containerPart.background?.let { awcColor(it, Color.Transparent) } ?: fill)
+        .background((if (forced == null) containerPart.background?.let { awcColor(it, Color.Transparent) } else null) ?: fill)
         .drawWithContent {
             drawContent()
             val o = containerPart.outlineColor; val ow = containerPart.outlineWidth
@@ -322,7 +329,8 @@ private fun DialogContainer(m: AWCDialogModel, s: NativeDialogState, session: AW
         // the window position after the controls (main pass) compared it with the previous one.
         .pointerInput(Unit) { awaitPointerEventScope { while (true) { val e = awaitPointerEvent(PointerEventPass.Final); e.motionEvent?.let { s.pointerWindow = Offset(it.x, it.y) } } } }
         .semantics { paneTitle = name; if (name.isNotEmpty()) contentDescription = name; isTraversalGroup = true }
-        .inspectAWCNode(inspection, "container", "container"),
+        .inspectAWCNode(inspection, "container", "container")
+        .then(if (forced != null) Modifier.border(2.dp, awcColor(forced.canvasText, Color.White), corners).awcBorderInset(2.dp) else Modifier),
         content = {
             CompositionLocalProvider(LocalAWCNativeDensity provides d) {
                 DialogHeader(m, s, d, fill, slots, appearance, part, dismiss)
@@ -357,7 +365,7 @@ private fun DialogHeader(m: AWCDialogModel, s: NativeDialogState, d: Double, fil
     val inspection = LocalAWCInspection.current
     val headerPart = part(AWCDialogPart.Header)
     val headlinePart = part(AWCDialogPart.Headline)
-    val headlineColor = headlinePart.color?.let { awcColor(it, Color.Transparent) } ?: appearance.headlineColor?.let { awcColor(it, Color.Transparent) }
+    val headlineColor = awcForcedColors()?.let { awcColor(it.canvasText, Color.White) } ?: headlinePart.color?.let { awcColor(it, Color.Transparent) } ?: appearance.headlineColor?.let { awcColor(it, Color.Transparent) }
         ?: awcColor(tokens["--md-sys-color-on-surface"] ?: "#1C1B1F", Color.Black)
     val headlineBg = headlinePart.background?.let { awcColor(it, Color.Transparent) }
     @Composable fun headlineText(size: Double, line: Double, single: Boolean, center: Boolean) {
@@ -385,7 +393,7 @@ private fun DialogHeader(m: AWCDialogModel, s: NativeDialogState, d: Double, fil
             .inspectAWCNode(inspection, "header", "header")) { c ->
             val loose = Constraints(0, c.maxWidth, 0, c.maxHeight)
             val p = pi.dp.roundToPx(); val g = gap.dp.roundToPx(); val inner = c.maxWidth - 2 * p
-            val close = subcompose("close") { DialogCloseButton(m.label("close"), s, part(AWCDialogPart.CloseButton), s.emitted == true, Modifier.inspectAWCNode(inspection, "close-button", "close-button")) { dismiss(true) } }
+            val close = subcompose("close") { DialogCloseButton(m.label("close"), s, part(AWCDialogPart.CloseButton), s.emitted == true, Modifier.awcCursor(AWCCursorStyle.Pointer).inspectAWCNode(inspection, "close-button", "close-button")) { dismiss(true) } }
                 .map { it.measure(loose) }
             val action = subcompose("action") { Box(Modifier.inspectAWCNode(inspection, "header-action", "header-action")) { slots.Render("header-action") } }
                 .map { it.measure(loose) }.filter { it.width > 0 || it.height > 0 }
@@ -432,7 +440,7 @@ private fun DialogHeader(m: AWCDialogModel, s: NativeDialogState, d: Double, fil
 private fun DialogIcon(symbol: String?, slots: ModalSlots, appearance: AWCDialogAppearance, iconPart: AWCModalPartAppearance) {
     val tokens = LocalAWCThemeTokens.current
     val size = appearance.iconSize ?: 24.0
-    val ink = iconPart.color?.let { awcColor(it, Color.Transparent) } ?: appearance.iconColor?.let { awcColor(it, Color.Transparent) }
+    val ink = awcForcedColors()?.let { awcColor(it.canvasText, Color.White) } ?: iconPart.color?.let { awcColor(it, Color.Transparent) } ?: appearance.iconColor?.let { awcColor(it, Color.Transparent) }
         ?: awcColor(tokens["--md-sys-color-secondary"] ?: "#625B71", Color.Black)
     CompositionLocalProvider(LocalContentColor provides ink, LocalAWCButtonSlotSize provides size.dp,
         LocalTextStyle provides LocalTextStyle.current.merge(TextStyle(color = ink, fontSize = size.sp, lineHeight = size.sp))) {
@@ -445,7 +453,7 @@ private fun DialogIcon(symbol: String?, slots: ModalSlots, appearance: AWCDialog
 
 @Composable
 private fun DialogDivider(p: AWCModalPartAppearance, appearance: AWCDialogAppearance, name: String, tokens: Map<String, String>) {
-    val color = p.background?.let { awcColor(it, Color.Transparent) } ?: appearance.dividerColor?.let { awcColor(it, Color.Transparent) }
+    val color = awcForcedColors()?.let { awcColor(it.canvasText, Color.White) } ?: p.background?.let { awcColor(it, Color.Transparent) } ?: appearance.dividerColor?.let { awcColor(it, Color.Transparent) }
         ?: awcColor(tokens["--md-sys-color-outline-variant"] ?: "#CAC4D0", Color.Gray)
     Box(Modifier.fillMaxWidth().height((p.height ?: 1.0).dp).background(color).inspectAWCNode(LocalAWCInspection.current, name, name))
 }
@@ -454,7 +462,7 @@ private fun DialogDivider(p: AWCModalPartAppearance, appearance: AWCDialogAppear
 private fun DialogContent(d: Double, top: Double, bottom: Double, inline: Double, p: AWCModalPartAppearance, appearance: AWCDialogAppearance,
                           tokens: Map<String, String>, slots: ModalSlots, group: Modifier) {
     val size = max(12.0, 14 + .5 * d); val line = max(16.0, 20 + d)
-    val ink = p.color?.let { awcColor(it, Color.Transparent) } ?: appearance.contentColor?.let { awcColor(it, Color.Transparent) }
+    val ink = awcForcedColors()?.let { awcColor(it.canvasText, Color.White) } ?: p.color?.let { awcColor(it, Color.Transparent) } ?: appearance.contentColor?.let { awcColor(it, Color.Transparent) }
         ?: awcColor(tokens["--md-sys-color-on-surface-variant"] ?: "#49454F", Color.DarkGray)
     val style = modalText(size, line, ink, .25)
     Column(Modifier.fillMaxWidth().then(if (p.background != null) Modifier.background(awcColor(p.background, Color.Transparent)) else Modifier)
@@ -498,8 +506,9 @@ private fun DialogActions(m: AWCDialogModel, s: NativeDialogState, d: Double, in
 @Composable
 private fun DialogCloseButton(label: String, s: NativeDialogState, p: AWCModalPartAppearance, open: Boolean, modifier: Modifier, action: () -> Unit) {
     val tokens = LocalAWCThemeTokens.current
-    val ink = p.color?.let { awcColor(it, Color.Transparent) } ?: awcColor(tokens["--md-sys-color-on-surface"] ?: "#1C1B1F", Color.Black)
-    val ring = awcColor(tokens["--md-sys-color-secondary"] ?: "#625B71", Color.Gray)
+    val forced = awcForcedColors()
+    val ink = forced?.let { awcColor(it.buttonText, Color.White) } ?: p.color?.let { awcColor(it, Color.Transparent) } ?: awcColor(tokens["--md-sys-color-on-surface"] ?: "#1C1B1F", Color.Black)
+    val ring = awcColor(forced?.highlight ?: tokens["--md-sys-color-secondary"] ?: "#625B71", Color.Gray)
     var hover by remember { mutableStateOf(false) }; var pressed by remember { mutableStateOf(false) }
     var lastInside by remember { mutableStateOf(false) }
     LaunchedEffect(open) { if (!open && lastInside) hover = true }

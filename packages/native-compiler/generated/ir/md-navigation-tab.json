@@ -1593,7 +1593,7 @@
         "Rendered by its bar (geometry, state and motion) or, outside a bar, as a single destination with its own active state; activation emits mdTabClick { index } and follows href / target through the host URL router unless prevented.",
         "The 56 × 32 indicator pill (scaleX 200 ms emphasized-decelerate, opacity 100 ms), the icon (activeIcon and the active-icon / icon slots), the label (600 active / 500 inactive, hidden but named in selected mode, absent in icon-only mode), dot and capped large badges (badgeMax), hard and soft disabled, density 0 to -4.",
         "Hover / press / focus state layers (8 / 12 / 10 %), the focus ring around the indicator and the md-ripple wave; focusEl() through AWCNavigationTabController for a destination outside a bar.",
-        "Typed ::part() targets (AWCNavigationTabPartAppearance): state-layer (colour, fixed opacity), icon, label, indicator and badge (fill, text) colours; container and icon-container are layout wrappers (exception record, md-navigation-bar.md)."
+        "Typed ::part() targets (AWCNavigationTabPartAppearance): state-layer (colour, fixed opacity), icon, label, indicator and badge (fill, text) colours, and container / icon-container as boxes (AWCPartBox: background, border width / colour, corner radius and physical padding with the layout shift)."
       ],
       "verification": "not-device-verified",
       "visualParts": [
@@ -1601,7 +1601,9 @@
         "icon",
         "label",
         "indicator",
-        "badge"
+        "badge",
+        "container",
+        "icon-container"
       ],
       "appearance": {
         "api": ".awcNavigationTabAppearance(AWCNavigationTabAppearance)",
@@ -1667,7 +1669,7 @@
         "Rendered by its bar (geometry, state and motion) or, outside a bar, as a single destination with its own active state; activation emits mdTabClick { index } and follows href / target through the host URL router unless prevented.",
         "The 56 × 32 indicator pill (scaleX 200 ms emphasized-decelerate, opacity 100 ms), the icon (activeIcon and the active-icon / icon slots), the label (600 active / 500 inactive, hidden but named in selected mode, absent in icon-only mode), dot and capped large badges (badgeMax), hard and soft disabled, density 0 to -4.",
         "Hover / press / focus state layers (8 / 12 / 10 %), the focus ring around the indicator and the md-ripple wave; focusEl() through AWCNavigationTabController for a destination outside a bar.",
-        "Typed ::part() targets (AWCNavigationTabPartAppearance): state-layer (colour, fixed opacity), icon, label, indicator and badge (fill, text) colours; container and icon-container are layout wrappers (exception record, md-navigation-bar.md)."
+        "Typed ::part() targets (AWCNavigationTabPartAppearance): state-layer (colour, fixed opacity), icon, label, indicator and badge (fill, text) colours, and container / icon-container as boxes (AWCPartBox: background, border width / colour, corner radius and physical padding with the layout shift)."
       ],
       "verification": "not-device-verified",
       "visualParts": [
@@ -1675,7 +1677,9 @@
         "icon",
         "label",
         "indicator",
-        "badge"
+        "badge",
+        "container",
+        "icon-container"
       ],
       "appearance": {
         "api": "AWCNavigationTabAppearanceScope(AWCNavigationTabAppearance)",

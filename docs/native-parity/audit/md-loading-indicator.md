@@ -1,68 +1,75 @@
 # `md-loading-indicator` — gate 7 independent audit
 
-**Verdict: FAIL (gate 5: default palette not compared; gate 3: no in-place property updates)**
+**Verdict (re-check 2026-11-06): PASS**
 
-All re-runs pass. Colour parity has only been established under the recorded mixed Laboratory palette (R2-D2), and Laboratory edits restart the continuous morph (R2-D6).
+R2-D11 is verified fixed (with R2-D2 and R2-D6 verified on 11-05). Every suite passes on macOS, all iOS simulators and accessibility-runtime states, and Android; no exceptions are needed.
 
-Reviewer: gate-7 reviewer r2, 2026-10-31. Independent of the implementing forks; no product code, tests or fixtures were changed.
+Reviewer: gate-7 reviewer r2. First audit 2026-10-31; re-check 2026-11-05 (R2-D1…D9); re-check 2026-11-06 (R2-D11, R2-D12, fixed by d2 in
+main-queue job d2-036). Independent of the implementing forks; no product code, tests or fixtures were changed (diagnostics ran on r2-only
+copies in `work/audit/r2/diag3`).
 
-Snapshot: `work/audit/r2-tree`, an rsync of the canonical tree taken 2026-10-31 00:12 UTC by job `r2-001-snapshot`
-(42 install jobs present, latest `fx-072-install-orgchart-apk`), build products excluded and rebuilt privately.
-Runtimes: macOS 15.6.1 (24G90) arm64, Swift 6.1.2; iOS simulators iPhone 17 Pro iOS 26.3.1 (`AWC-r2`), iPad Pro 11-inch (M5)
-iOS 26.3.1 (`AWC-r2-ipad`), iPhone 16 Pro iOS 18.6 (`AWC-r2-ios18`); Android 16 / API 36 emulator `emulator-5564` (AwcNative6);
-Chrome 153.0.8010.36 for tools/ax Web captures. Raw outputs: [`work/audit/r2/runs`](../../../../audit/r2/runs); job logs: [`claude-runner/done/r2-*`](../../../../claude-runner/done).
-
-Evidence freshness: the component's recorded manifests were produced on earlier trees. Their source hashes still match the
-component's own TSX/CSS, but shared native files (for example `AWCNativeView.swift`, `Theme.swift`, `AWCComponent.kt`) changed
-afterwards, so every count below was re-run on the snapshot. No `checkpoint.json` exists for this component; the per-suite
-manifests (`*-evidence.json`, `examples/verification.json`, platform audits) play that role.
+Re-check snapshot (2026-11-06 22:20 UTC, job `r2-040-snapshot3`): `work/audit/r2-tree2` refreshed from canonical with rsync --delete (86 install
+jobs present, latest `d4-064-install-r4b`; the three d2-036 files are byte-identical with canonical; no git commands). Runtimes: macOS 15.6.1, Swift 6.1.2;
+iOS simulators iPhone 17 Pro 26.3.1 (`AWC-r2`), a fresh iPhone 17 Pro 26.3.1 created and deleted by the job, iPad Pro 11-inch (M5) 26.3.1, iPhone 16 Pro
+18.6, each run under explicit accessibility-runtime states (`AWC_IOS_AX_RUNTIME` voiceover / automation / off, written and logged by
+`run-fixture.sh` before every launch); Android 16 / API 36 `emulator-5564`; Chrome 153 for tools/ax. Timing-sensitive runs used
+`tools/slot.sh timing 4`, and simulators were shut down on exit. Raw outputs: [`work/audit/r2/runs3`](../../../../audit/r2/runs3) (earlier: [`runs2`](../../../../audit/r2/runs2),
+[`runs`](../../../../audit/r2/runs)); job logs `work/audit/r2/runs3/<job>.log` and [`claude-runner/done/r2-*`](../../../../claude-runner/done).
 
 ## Gates
 
 | Gate | Result | Basis |
 |---|---|---|
-| 1 Source contract | PASS | 3 properties (variant uncontained|contained, label "Loading", density), no events/methods/slots, 5 hooks, part `shape`: complete in SwiftUI (`NativeLoadingIndicator.swift`, `LoadingIndicatorMotion.swift`, `LoadingIndicatorAppearance.swift`), Compose, Laboratory (`loading-indicator-appearance.js`) and tests |
-| 2 Implementation | PASS | Source polygons and 4.55 s morph with overshoot/rotation; reduced-motion equivalent; zero geometry preserved |
-| 3 Laboratory | **FAIL** | Sessions open on both platforms, but there is no retained update: every edit restarts the native session and resets the morph phase, which the Web element keeps (R2-D6). Examples 15+15 compile |
-| 4 Behaviour | PASS | Web 23/23; Swift 1,195 contracts; Android 5 unit + 4 device methods |
-| 5 Visual | **FAIL** | 84 configurations + 16 motion samples match, but only under the recorded Laboratory token maps. Every painted role (primary, primary-container, on-primary-container, secondary) is overridden there, and the "dark" map is not the library dark palette (R2-D2) |
-| 6 Runtime + AX | PASS | macOS, three iOS runtimes, Android; tools/ax 2 cases, 0 open |
-| 7 Final audit | FAIL | R2-D2, R2-D6 |
+| 1 Source contract | PASS | 3 properties, 5 hooks, part `shape`: complete |
+| 2 Implementation | PASS | Polygons, 4.55 s morph, reduced motion; the hidden host clears inspection and semantics |
+| 3 Laboratory | PASS | Retained updates on SwiftUI and Compose (re-probed r2-A041); the morph keeps running across updates; 15+15 examples compile |
+| 4 Behaviour | PASS | `NativeLoadingIndicatorViewIntegration` 2392/2392 on macOS ×3 and all iOS runs; Web 23/23; Android 5 unit + 10 device methods |
+| 5 Visual | PASS | Recorded matrices + fresh default palette (no injection) on Swift and Android |
+| 6 Runtime + AX | PASS | macOS; iPhone 17 Pro 26.3 (`AWC-r2` and a fresh simulator), iPad Pro 26.3 and iPhone 16 Pro 18.6, each under the accessibility runtime "voiceover" (AccessibilityEnabled + ApplicationAccessibilityEnabled on) and "automation" (all on); Android; tools/ax 2 cases, 0 open on macOS, iOS and Android |
+| 7 Final audit | PASS | — |
+
+## Re-check of the open findings
+
+- **R2-D11 — VERIFIED.** d2-036 replaced the `EmptyView()` of a hidden root host with `AWCHiddenHost`, which publishes an empty root inspection (a 0×0 `Color.clear.awcInspectionAbsent().accessibilityHidden(true)`; nested hidden hosts stay `EmptyView`). On the refreshed snapshot the unmodified fixtures pass on macOS in 3 of 3 runs and on every iOS simulator and runtime state. The r2 diagnostic copy (`work/audit/r2/diag3`, job r2-043) now prints `inspectionNodeAbsent=true responderAbsent=true nodes=[]` after hide, where on 11-05 it printed the stale nodes. The shared change does not regress the other r2 components: Progress, Skeleton, Snackbar, Tooltip, List tooltip, Badge and Status Dot all pass on macOS and iOS, and `NativeCursorHiddenIntegration` passes 56/56 (r2-041, r2-042).
+- R2-D2 (default palette) and R2-D6 (in-place updates, morph retention): verified 2026-11-05 and still passing (below).
 
 ## Gate 1 — source contract matrix
 
-Built by `work/audit/r2/tools/contract.py` (TSX `@Prop/@Event/@Method`, `<slot>`, `part=`, CSS `var(--md-…)` versus `packages/native-compiler/generated/catalog.json`; catalog source hash = sha256(TSX + CSS) matches today's source) and `tools/matrix.mjs` (each row located in the SwiftUI sources, Compose sources, Laboratory module and Swift/Android/Studio tests), followed by manual inspection of every zero cell. Result: 9/9 rows complete.
+Re-run of `work/audit/r2/tools/contract.py` and `tools/matrix.mjs` on `r2-tree2`: the catalog's source hash (sha256 of TSX + CSS) matches, and all 9 contract rows have a SwiftUI and a Compose implementation, Laboratory exposure and tests (zero cells were checked by hand).
 
-## Re-run counts (claimed → r2)
+## Re-run counts (2026-11-06)
 
-| Suite | Claimed | r2 result | Job |
+| Suite | Recorded / first audit | r2 re-check | Job |
 |---|---|---|---|
-| Web spec | 23 | 23/23 | r2-009 |
-| Swift macOS `NativeLoadingIndicatorViewIntegration` | 1,798 (1,195 contracts + 603 native) | 1798/1798 | r2-002 |
-| iOS iPhone 17 Pro 26.3 / iPad Pro 26.3 / iPhone 16 Pro 18.6 | 1798/1798 ×3 | 1798/1798 ×3, 0 FAIL | r2-003, r2-008 |
-| Swift live host `test-live-loading-indicator.mjs` | 9 | 9/9 | r2-004 |
-| Android device `NativeLoadingIndicatorParityTest` + host `loadingHooksAndShortComponents…` | 6 methods (5 + focused retry) | 3/3 + 1/1 | r2-A001, r2-A002 |
-| Android unit `NativeLoadingIndicatorContractTest` | 5 methods (103-case suite) | 5/5 | r2-A001 |
-| Generated examples | 15 + 15 | byte-identical; Swift macOS + iOS-sim typecheck; Kotlin compile | r2-004, r2-A002 |
-| Studio tests | 110/140 shared | component 59/59 (incl. loading), shared 173/173 | r2-010 |
-| tools/ax | pass ×3 | pass ×3, 0 open | r2-006, r2-A003 |
+| Swift macOS `NativeLoadingIndicatorViewIntegration` | 2,392 (d2-028/037) | 2392/2392 ×3 | r2-041 |
+| iOS: AWC-r2 / fresh iPhone 26.3 / iPad 26.3 / iPhone 18.6, voiceover + automation | 2392 | 2392/2392 in all 8 runs (4 simulators × voiceover + automation), 0 FAIL | r2-042 |
+| r2 diagnostic (hide) | — | inspection absent, responder absent, nodes [] | r2-043 |
+| Swift live hosts `test-live-loading-indicator` / communication updates | 9 / 42 | 9/9, 42/42 | r2-041 |
+| Android device: Parity (4), host (1), communication host (5) | 5 + 5 | 4/4 + 1/1 + 5/5 | r2-A040 |
+| Android unit `NativeLoadingIndicatorContractTest` | 5 | 5/5 | r2-A040 |
+| Laboratory probe (SwiftUI, Compose) | — | open 200, retained update 200, frame 200 | r2-A041 |
+| tools/ax | 0 open | 0 open on all three native platforms | r2-043, r2-A042 |
+| Generated examples (regenerated 11-06, byte-identical) | 15 + 15 | Swift macOS + iOS-sim typecheck, Kotlin compile | r2-043, r2-A042 |
+| Web spec, Studio (11-05; component TSX/CSS hashes unchanged since) | 23; 59/174 | 23/23; 59/59, 174/174 | r2-A023 |
 
 ## Gate 3 — Laboratory
 
-`../../../../audit/r2/runs/lab/lab-probe.json`: SwiftUI and Compose sessions open with the recipe (`variant: contained`). The retained update is rejected (400, "Retained property updates are unavailable for this component."); the restart with `variant: uncontained` opens 200 on both. Because each edit starts a new native host, the continuously running morph restarts from phase 0. On Web the element keeps animating across attribute changes (R2-D6). There are no methods.
+Sessions open on SwiftUI and Compose through the Laboratory server (restarted by d2-036). The retained `update` returns 200 and the next frame advances (`../../../../audit/r2/runs3/lab/lab-probe.json`, r2-A041). There are no methods.
 
 ## Gate 6 — runtime and accessibility
 
-tools/ax `../../../../audit/r2/runs/ax/md-loading-indicator/report.md`: default and contained cases, 0 open findings on macOS, iOS and Android, with no expectations used.
+tools/ax: [`../../../../audit/r2/runs3/ax/md-loading-indicator/report.md`](../../../../audit/r2/runs3/ax/md-loading-indicator/report.md): 2 cases with Chrome 153 (Web), the macOS host (valid AX trees, r2-043), the iOS 26.3 probe on AWC-r2 (r2-043) and Android (r2-A042): 0 open findings.
 
 ## Exception decisions
 
-No proposed exceptions in the component record. Platform notes reviewed: native contrast preferences versus CSS forced-colors (explicit native forced palette, tested) are a named native equivalent, not a waiver.
+None needed.
 
 ## Findings
 
 Defect records: [`work/audit/DEFECTS.md`](../../../../audit/DEFECTS.md), section "Gate 7 reviewer r2".
 
-- **R2-D2 (blocking, gate 5):** fresh default light/dark palette comparison missing.
-- **R2-D6 (blocking, gate 3):** no retained in-place property updates.
-- Doc note: `md-loading-indicator.md` still says the UIKit bridge is "uncompiled"; it is now compiled and executed by the iOS harness on all three runtimes.
+None open.
+
+## History
+
+2026-10-31: FAIL (gates 3, 5: R2-D2, R2-D6). 2026-11-05: R2-D2 and R2-D6 verified; new regression R2-D11 → FAIL. 2026-11-06: R2-D11 verified → PASS.

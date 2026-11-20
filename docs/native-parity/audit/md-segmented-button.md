@@ -1,59 +1,40 @@
-# md-segmented-button (+ md-segmented-button-set) — gate-7 independent audit
+# md-segmented-button — gate-7 independent audit (re-check 3)
 
-Reviewer: gate-7 reviewer r1, 2026-10-31 ([protocol](../../../../audit/AUDIT-PROTOCOL.md)). Everything below was re-run by r1 on the
-snapshot `work/audit/r1-tree` (canonical tree at 2026-10-31 00:15 UTC after 42 install jobs, latest `fx-072-install-orgchart-apk`; hash
-manifest `work/audit/r1/snap/manifest.sha256`), except the Laboratory probes, which use the running 4177 server (canonical). Job logs:
-`work/claude-runner/done/r1-*.log`; outputs: `work/audit/r1/runs/`; gate-1 matrices: `work/audit/r1/matrix/`; defects:
-[`work/audit/DEFECTS.md`](../../../../audit/DEFECTS.md) (section r1). Mac load average during the runs: 110–940 on 16 cores.
-None of these components has a `checkpoint.json`, so freshness rests on these re-runs (R1-10).
+Reviewer: gate-7 reviewer s7-7 (story 7-7), re-check of 2026-11-15, after the round-3/4 fixes R1-12, R1-13, R1-14, R1-16 and the doc/evidence items R1-09, R1-10
+(installed by main-queue fx-128-install-tick-nil, 2026-11-14). Everything below was re-run by s7-7 on a fresh snapshot `work/audit/s7-7-tree`
+(taken 2026-11-15 11:35 Mac time; latest install fx-128; manifest `work/audit/s7-7/snap/`). Outputs `work/audit/s7-7/` (swift/, ios/, android/, lab/, web/, ax/, examples/, gate1/).
+Jobs: s7-7-001-snapshot, -002-sim, -003-swift, -004-ios, -005-lab-web, -006-ax-mac-ios, -007-gate1, -008-ios18-rerun, a1: s7-7-A001-android, -A003-examples-kotlin, -A004-ax-android.
+Simulators AWC-fi2 (iPhone 17 Pro, iOS 26.3.1) and AWC-fi2-ios18 (iPhone 16 Pro, iOS 18.6); Android emulator-5556. Timing runs through `tools/slot.sh timing 4`.
+Host load: the iOS job started at load average 122 (it fell to 12-19 later), so the runs are, if anything, harsher than the fix jobs'.
 
-## Verdict: FAIL
+## Re-run counts (claimed -> re-run)
+| Suite | Claimed (DEFECTS / checkpoint) | s7-7 re-run |
+|---|---|---|
+| Family paint (Chrome 153 oracles) macOS / iOS 26.3 / Android | 974 | 974/974 / 974/974 / 974/974 |
+| Family states macOS | 27819 (fx-127), 29358 canonical (fx-128, other suites included) | 29186/29186 |
+| Family states Android | 18241 (fx-A084) | 18241/18241; device classes 133/133; unit 195/195 |
+| Family states iOS 26.3 x3 | 26346, 26387, 26279 | 26018, 26659, 26522: all pass (one accepted BRACKET match each, R1-14) |
+| Family states iOS 18.6 x5 | 27276, 27660, 27192 | 27073/27074 (1 FAIL), 27519, 27769, 27876, 26730: all other runs pass |
+| md-button paint / states (shared fixtures) | 1086 / 645 | 1086/1086 macOS and iOS; 646/646 iOS 26.3; Android 712 / 645 |
+| Laboratory 4177 probes (iOS and Android, 9 tags) | retained updates, clicks, methods | all 200; setMenuIcon, show/whenClosed/close fulfilled; split 232.5 |
+| Studio / compiler / Web spec / Web e2e | | 878/878, 12/12, 612/612, all 9 tags pass |
+| Examples (copied Swift / Kotlin) | | Swift typecheck 13/13 files exit 0; Kotlin compile 13 files, 364 cases, BUILD ok |
+| tools/ax macOS+Web+iOS+Android | 0 open | 0 open findings on every tag; reports identical to the installed ones |
+| Checkpoints (R1-10) | regenerated | all six checkpoint.json current against the snapshot (0 differing files) |
 
-Blocking: **R1-03e** (Chrome evidence is light-theme geometry only, the main 35-case reference predates a source change; no state/motion
-comparison), **R1-04** (no retained Laboratory property updates). Non-blocking: R1-09 (the doc still lists the Swift narrow comparison and
-copied-example checks as open — both are done), R1-10. The supporting tag md-segmented-button-set shares this verdict.
-
-## Gate 1 — source contract
-
-Segment: 13 properties, `mdSegmentClick {value, selected}`, 0 methods, default + `icon` slots, 4 parts (`state-layer`, `checkmark`, `icon`,
-`label`), 7 hooks = 27 rows; set: 2 properties, `mdChange: string[]`, default slot = 4 rows
-([segment](../../../../audit/r1/matrix/md-segmented-button.md), [set](../../../../audit/r1/matrix/md-segmented-button-set.md)). All rows have
-SwiftUI and Compose implementations, Laboratory exposure (catalog, `segmented-button-appearance.js`, standalone/set context) and tests;
-`segmentIndex`/`segmentTotal` are injected by the set (NativeSegmentedButtonSet.swift:28) and covered by the set geometry cases. Met.
-
-## Re-run counts (claimed → r1)
-
-| Suite | Claimed | r1 macOS | r1 iOS 26.3 | r1 Android |
-|---|---|---|---|---|
-| `NativeSegmentedViewIntegration` (35 + 12 narrow Web fixtures) | 370 (iOS 370×3; doc text 286) | **370/370** | **370/370** | — |
-| Live host `test-live-segmented` | 12 | **12/12** | — | — |
-| Android device | 5 renderer + 1 host methods | — | — | `NativeSegmentedParityTest` **6/6** + `LivePreviewHostTest#segmentedContext…` **1/1** |
-| Android unit | 7 segmented contracts | — | — | `NativeSegmentedContractTest` **8/8** |
-| Web | 87 source tests | e2e segmented **10/10**, set **3/3** (r1-009) | | |
-
-## Gates 2/5 — against Chrome (R1-03e)
-
-The references are 35 + 12 Chrome 152 computed-geometry configurations (2026-10-20, light only). The 35-case file was recorded at 15:31
-before `md-segmented-button.tsx`/`.css` changed at 18:52 (their hashes differ from `web-evidence.json`; the 12-case narrow file matches today's
-source). No Chrome paint (dark, selected/disabled pixels), no state run (hover/focus/pressed layers, focus ring) and no motion or reduced-motion
-run (checkmark/selection transition).
-
-## Gate 3 — Laboratory
-
-r1-003: in set mode, clicking Day returns one `mdChange ["day"]` from the set on SwiftUI and Android (no leaked `mdSegmentClick`), with the
-selection vector `[true,false,false]`. r1-010: a density edit through a new session changes the frame on both (row height stays 40, as the
-Web `set-local-density` case shows for a stretched grid row). Retained `update` refused (R1-04). Examples: r1 generic segment 10 + set 5 and
-the fork generator's 20 per platform compile (Swift exit 0; Kotlin BUILD SUCCESSFUL).
-
-## Gate 6 — runtime and accessibility
-
-tools/ax: segment 1 case, set 2 cases (single/multiselect), 0 open, 0 accepted, all three platforms; identical to the installed reports
-(iOS encodes radios as buttons with a checked value — comparator convention).
+## Gate 1 matrix
+Regenerated with r1's extractors (`work/audit/s7-7/gate1/`): identical to r1's round-2 matrix. The only unmatched rows are matcher artefacts already reviewed by r1:
+md-segmented-button `segmentIndex`/`segmentTotal` (set-managed, covered through the set tests) and md-split-button `leading-state-layer`/`trailing-state-layer`
+(built by name concatenation in `NativeSplitButton.swift` line 150 and asserted by `split-button-integration.test.mjs`). No new gap.
 
 ## Exceptions
+None proposed; none accepted.
 
-None proposed. The ≈1.6 pt accumulated text-shaping difference across three columns is a measured boundary with unchanged tolerances.
+## Component evidence
+Segmented button (+ set): `NativeSegmentedViewIntegration` 370/370 against 35 Web fixtures (macOS and iOS 26.3); Android `NativeSegmentedParityTest` 6/6; click2 samples (R1-13) pass in every run (BRACKET matches accepted per R1-14).
 
 ## Findings
+No blocking finding. This doc's text is consistent with the evidence (R1-09 closed for this tag).
 
-R1-03e, R1-04 (blocking); R1-09, R1-10. See [DEFECTS.md](../../../../audit/DEFECTS.md).
+## Verdict
+PASS (gate 7, s7-7, 2026-11-15).

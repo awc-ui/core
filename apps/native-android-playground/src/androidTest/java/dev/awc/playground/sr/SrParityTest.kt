@@ -34,9 +34,18 @@ class SrParityTest {
     private fun lifecycle(dir: String, tag: String) = File("$dir/$tag/web-oracle/lifecycle.json").let { if (it.exists()) listOf(it.path) else emptyList() }
 
     @Test fun sliderPaint() = check("slider-paint") { SliderPaintCheck.main(arrayOf("$it/md-slider/web-oracle/paint.json")) }
+    /** gate 7: typed parts, the inset-icon slot and the hooks without a case (Chrome 153, fa-073 / fa-074). */
+    @Test fun sliderPaintParts() = check("slider-paint-extra2") { SliderPaintCheck.main(arrayOf("$it/md-slider/web-oracle/paint-extra2.json")) }
     @Test fun sliderStates() = check("slider-states") { SliderInteract.main(arrayOf("$it/md-slider/web-oracle/states.json", "$it/md-slider/web-oracle/states-reduced.json")) }
     @Test fun sliderLifecycle() = check("slider-lifecycle") { d -> val f = lifecycle(d, "md-slider"); if (f.isEmpty()) println("lifecycle.json absent 1/1") else SliderInteract.main(f.toTypedArray()) }
     @Test fun ratingPaint() = check("rating-paint") { RatingPaintCheck.main(arrayOf("$it/md-rating/web-oracle/paint.json")) }
+    /** gate 7: typed parts and the icon-font-family hook (Chrome 153, fa-073). */
+    @Test fun ratingPaintParts() = check("rating-paint-extra2") { RatingPaintCheck.main(arrayOf("$it/md-rating/web-oracle/paint-extra2.json")) }
     @Test fun ratingStates() = check("rating-states") { RatingInteract.main(arrayOf("$it/md-rating/web-oracle/states.json", "$it/md-rating/web-oracle/states-reduced.json")) }
+    /** gate 7, R6-11: pop scale / duration / state-layer colour runs (Chrome 153, rating-states-extra.html). */
+    @Test fun ratingStatesExtra() = check("rating-states-extra") { d ->
+        val f = listOf("states-extra.json", "states-extra-reduced.json").map { java.io.File("$d/md-rating/web-oracle/$it") }.filter { it.exists() }.map { it.path }
+        if (f.isEmpty()) println("states-extra absent 1/1") else RatingInteract.main(f.toTypedArray())
+    }
     @Test fun ratingLifecycle() = check("rating-lifecycle") { d -> val f = lifecycle(d, "md-rating"); if (f.isEmpty()) println("lifecycle.json absent 1/1") else RatingInteract.main(f.toTypedArray()) }
 }

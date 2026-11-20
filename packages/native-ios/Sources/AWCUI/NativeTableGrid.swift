@@ -41,29 +41,57 @@ struct AWCTableGridLayout: Layout {
     var floorExtra: [Int: Double] = [:]
     var onResolve: ((AWCTableResolvedGrid) -> Void)? = nil
 
-    struct Cache { var widths: [Double] = []; var width = 0.0; var key: Double = -1 }
+    /// What the subviews measure (until they change): a horizontal scroller (md-table-container) sizes its content at the
+    /// viewport width and at the content's own width in every layout pass, so a single-width cache missed on nearly every call
+    /// and re-measured every cell twice per pass (tb-contract: the container's frames took 40–50 ms during a sort).
+    struct Cache {
+        /// Each cell's min- / max-content contribution and the head-floored tracks: they depend on the subviews, not on the width.
+        var items: [AWCTableContribution]? = nil, resolvedTracks: [AWCTableTrack] = []
+        /// The grid's floor (min-inline-size: the explicit min width, else max-content): any available width below it solves alike.
+        var floor = 0.0
+        /// Column solutions by available width.
+        var solved: [Double: ([Double], Double)] = [:]
+        /// Row boxes by column widths, for the rows they were measured with.
+        var boxes: [[Double]: [(y: Double, cells: Double, expanded: Double, height: Double)]] = [:], boxRows: [AWCTableGridRow] = []
+    }
     func makeCache(subviews: Subviews) -> Cache { .init() }
     func updateCache(_ cache: inout Cache, subviews: Subviews) { cache = .init() }
 
     func columns(_ available: Double, _ subviews: Subviews, _ cache: inout Cache) -> ([Double], Double) {
-        if cache.key == available, !cache.widths.isEmpty || tracks.isEmpty { return (cache.widths, cache.width) }
-        var items: [AWCTableContribution] = []
-        for s in subviews {
-            guard case .cell(_, let column, let span, _) = s[AWCTableGridItemKey.self] else { continue }
-            let maxW = Double(s.sizeThatFits(.unspecified).width)
-            let minW = Double(s.sizeThatFits(.init(width: 0, height: nil)).width)
-            items.append(.init(start: column, span: span, minContent: minW, maxContent: maxW))
-        }
-        var resolvedTracks = tracks
-        if let floorRow {
-            for s in subviews {
-                guard case .cell(floorRow, let column, 1, _) = s[AWCTableGridItemKey.self], column < tracks.count, !floorSkip.contains(column) else { continue }
-                let need = (Double(s.sizeThatFits(.unspecified).width) + (floorExtra[column] ?? 0)).rounded(.up)
-                resolvedTracks[column] = AWCTableTemplate.floored(tracks[column], need)
+        if cache.items == nil {
+            // A cell's min-content width only sizes a track whose minimum or maximum is min-content / fit-content (the solver reads
+            // nothing else of it): measured only there — measuring every cell at zero width doubled the cost of each re-layout.
+            func readsMinContent(_ start: Int, _ span: Int) -> Bool {
+                (start..<Swift.min(tracks.count, start + span)).contains { i in
+                    if case .minContent = tracks[i].min { return true }
+                    switch tracks[i].max { case .minContent, .fitContent: return true; default: return false }
+                }
             }
+            var items: [AWCTableContribution] = [], maxContent: [Int: Double] = [:]
+            for (k, s) in subviews.enumerated() {
+                guard case .cell(_, let column, let span, _) = s[AWCTableGridItemKey.self] else { continue }
+                let maxW = Double(s.sizeThatFits(.unspecified).width)
+                let minW = readsMinContent(column, span) ? Double(s.sizeThatFits(.init(width: 0, height: nil)).width) : maxW
+                items.append(.init(start: column, span: span, minContent: minW, maxContent: maxW)); maxContent[k] = maxW
+            }
+            var resolvedTracks = tracks
+            if let floorRow {
+                for (k, s) in subviews.enumerated() {
+                    guard case .cell(floorRow, let column, 1, _) = s[AWCTableGridItemKey.self], column < tracks.count, !floorSkip.contains(column) else { continue }
+                    let need = ((maxContent[k] ?? Double(s.sizeThatFits(.unspecified).width)) + (floorExtra[column] ?? 0)).rounded(.up)
+                    resolvedTracks[column] = AWCTableTemplate.floored(tracks[column], need)
+                }
+            }
+            cache.items = items; cache.resolvedTracks = resolvedTracks
+            cache.floor = minWidth ?? AWCTableColumnSolver.maxContentWidth(resolvedTracks, items: items)
         }
-        let solved = AWCTableColumnSolver.solve(resolvedTracks, items: items, available: available, minWidth: minWidth)
-        cache.widths = solved.widths; cache.width = solved.width; cache.key = available
+        // AWCTableColumnSolver.solve sizes the tracks for max(available, floor): an overflowing grid (the scroller's viewport width,
+        // the content width and its pixel-rounded value) is one solution.
+        let key = tracks.isEmpty ? available : Swift.max(available, cache.floor)
+        if let hit = cache.solved[key] { return hit }
+        let solved = AWCTableColumnSolver.solve(cache.resolvedTracks, items: cache.items ?? [], available: key, minWidth: minWidth)
+        if cache.solved.count >= 8 { cache.solved.removeAll() }
+        cache.solved[key] = (solved.widths, solved.width)
         return (solved.widths, solved.width)
     }
     func x(_ widths: [Double], _ column: Int) -> Double { widths.prefix(Swift.max(0, column)).reduce(0, +) }
@@ -72,7 +100,9 @@ struct AWCTableGridLayout: Layout {
         return widths[column..<Swift.min(widths.count, column + span)].reduce(0, +)
     }
     /// Row boxes: y, cell height, expanded height, total height.
-    func rowBoxes(_ widths: [Double], _ subviews: Subviews) -> [(y: Double, cells: Double, expanded: Double, height: Double)] {
+    func rowBoxes(_ widths: [Double], _ subviews: Subviews, _ cache: inout Cache) -> [(y: Double, cells: Double, expanded: Double, height: Double)] {
+        if cache.boxRows != rows { cache.boxes.removeAll(); cache.boxRows = rows }
+        if let hit = cache.boxes[widths] { return hit }
         var cellHeights = rows.map { $0.minHeight }, expanded = [Double](repeating: 0, count: rows.count)
         for s in subviews {
             switch s[AWCTableGridItemKey.self] {
@@ -90,17 +120,19 @@ struct AWCTableGridLayout: Layout {
             let h = rows[i].borderTop + cellHeights[i] + expanded[i] + rows[i].borderBottom
             out.append((y, cellHeights[i], expanded[i], h)); y += h
         }
+        if cache.boxes.count >= 8 { cache.boxes.removeAll() }
+        cache.boxes[widths] = out
         return out
     }
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout Cache) -> CGSize {
         let available = Swift.max(proposal.width.map(Double.init) ?? 0, fill ?? 0)
         let (widths, width) = columns(available.isFinite ? available : 0, subviews, &cache)
-        let boxes = rowBoxes(widths, subviews)
+        let boxes = rowBoxes(widths, subviews, &cache)
         return .init(width: Swift.max(Double(proposal.width ?? 0), width), height: boxes.last.map { $0.y + $0.height } ?? 0)
     }
     func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout Cache) {
         let (widths, gridWidth) = columns(Swift.max(Double(bounds.width), fill ?? 0), subviews, &cache)
-        let boxes = rowBoxes(widths, subviews)
+        let boxes = rowBoxes(widths, subviews, &cache)
         let total = boxes.last.map { $0.y + $0.height } ?? 0
         // Pinned offsets (pin-mode="static": cumulative widths of earlier pins in the row).
         var startOffsets: [Int: [Int: Double]] = [:], endOffsets: [Int: [Int: Double]] = [:]

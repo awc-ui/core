@@ -46,6 +46,7 @@ class LivePreviewNoOpUpdateHostTest {
         JSONObject().put("scrimDismissible", true), JSONObject().put("scrimDismissible", false), 800, 480)
     @Test fun sideSheet() = noOpThenChange("md-side-sheet", JSONObject().put("open", true).put("headline", "Filters"),
         JSONObject().put("closeable", true), JSONObject().put("closeable", false), 800, 480)
+    @Test fun divider() = noOpThenChange("md-divider", JSONObject(), JSONObject().put("vertical", false), JSONObject().put("vertical", true))
     @Test fun menu() = noOpThenChange("md-menu", JSONObject(), JSONObject().put("quick", false), JSONObject().put("quick", true))
     @Test fun menuItem() = noOpThenChange("md-menu-item", JSONObject(), JSONObject().put("disabled", false), JSONObject().put("disabled", true))
 

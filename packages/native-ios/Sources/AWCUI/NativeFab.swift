@@ -6,8 +6,12 @@ struct AWCNativeFabMetrics {
     let fontSize:CGFloat, fontWeight:Double, lineHeight:CGFloat, letterSpacing:CGFloat
     let hasLabel:Bool, hasIcon:Bool, extended:Bool
     let inset:CGFloat, gap:CGFloat, plainInset:CGFloat
-    init(properties:[String:AWCValue],hasIcon:Bool,appearance:AWCFabAppearance = .init(),tokens:[String:String] = AWCGeneratedTokens.light) {
-        let value=properties["density"]?.number ?? 0,density=[-1.0,-2,-3,-4].contains(value) ? value:0
+    /// A navigation rail's fab-size: the labelled FAB's icon inset is (fab-size − icon) / 2.
+    var railSize:CGFloat? = nil
+    init(properties:[String:AWCValue],hasIcon:Bool,appearance:AWCFabAppearance = .init(),tokens:[String:String] = AWCGeneratedTokens.light,inheritedDensity:Double = 0,spacingRung:Double = 0) {
+        let density=AWCNativeDensity.resolve(properties["density"]?.number,inherited:inheritedDensity)
+        // Spacing tokens: a local -2...-4 brings its own payload; otherwise the inherited global rung applies (-1 is scale only).
+        let rung=density <= -2 ? density:spacingRung
         let label=properties["label"]?.string ?? ""; hasLabel = !label.isEmpty; self.hasIcon=hasIcon
         extended=hasLabel && (properties["extended"]?.bool ?? true)
         let index=hasLabel ? 0:["standard","medium","large"].firstIndex(of:properties["size"]?.string ?? "standard") ?? 0
@@ -18,14 +22,15 @@ struct AWCNativeFabMetrics {
         lineHeight=CGFloat(awcFabNumber(tokens["--md-sys-typescale-label-large-line-height"],20)); letterSpacing=CGFloat(awcFabNumber(tokens["--md-sys-typescale-label-large-letter-spacing"],0.1))
         // The global tokens sheet applies its spacing payload to local density
         // attributes too; these discrete spacing rungs accompany the calc scale.
-        inset=CGFloat(density == -4 ? 8:density <= -2 ? 12:awcFabNumber(tokens["--md-sys-spacing-inset-lg"],16))
-        gap=CGFloat(density <= -2 ? 8:awcFabNumber(tokens["--md-sys-spacing-inset-md"],12))
+        inset=CGFloat(rung == -4 ? 8:rung <= -2 ? 12:awcFabNumber(tokens["--md-sys-spacing-inset-lg"],16))
+        gap=CGFloat(rung <= -2 ? 8:awcFabNumber(tokens["--md-sys-spacing-inset-md"],12))
         plainInset=CGFloat(max(12,20+density*2))
     }
     func padding(_ fraction:CGFloat)->(CGFloat,CGFloat) {
         guard hasLabel else { return (0,0) }
         guard hasIcon else { return (plainInset,plainInset) }
-        return (inset,inset+(20-inset)*fraction)
+        let lead=railSize.map{max(0,($0-iconSize)/2)} ?? inset
+        return (lead,lead+(20-lead)*fraction)
     }
 }
 struct AWCNativeFabPalette {
@@ -46,6 +51,51 @@ struct AWCNativeFabSlots {
     init(node:AWCNode,properties:[String:AWCValue],menuIcon:String?) {
         if let menuIcon { children=[];glyph=menuIcon }
         else { children=node.children(inSlot:"icon").filter{$0.tag != "#text"};glyph=children.isEmpty ? properties["icon"]?.string ?? "":"" }
+    }
+}
+/// md-fab's extend / collapse on the CSS transition's clock (gate-7 R1-12). A CSS transition computes its progress from the
+/// time of the style change, so a first frame that comes late already shows the value Chrome has at that moment. SwiftUI's
+/// implicit animation starts its clock at its own first frame instead (three display frames after the change on iOS), which
+/// kept the whole morph behind Chrome. The layout fraction follows the spatial curve (cubic-bezier(0.38, 1.21, 0.22, 1) over
+/// --md-sys-motion-spring-spatial-default-duration) and the label opacity its 200 ms curve, both timed from the property
+/// change; a change in flight continues from the values on screen, as the implicit animation did.
+struct AWCNativeFabExtendMotion<Content:View>: View {
+    struct Motion: Equatable { var fraction:CGFloat, opacity:Double, target:Bool, started:Date }
+    let extended:Bool
+    let duration:Double
+    let content:(_ fraction:CGFloat,_ labelOpacity:Double)->Content
+    @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
+    @Environment(\.awcReducedMotion) private var reducedOverride
+    @State private var shown:Bool
+    @State private var motion:Motion?
+    init(extended:Bool,duration:Double,@ViewBuilder content:@escaping (_ fraction:CGFloat,_ labelOpacity:Double)->Content) {
+        self.extended=extended;self.duration=duration;self.content=content
+        _shown=State(initialValue:extended)
+    }
+    private func values(at now:Date)->(CGFloat,Double) {
+        guard let motion else {return (shown ? 1:0,shown ? 1:0)}
+        let t=max(0,now.timeIntervalSince(motion.started)),end:Double=motion.target ? 1:0
+        let spatial=AWCNativeButtonTiming.cubic(min(1,t/max(0.001,duration)),x1:0.38,y1:1.21,x2:0.22,y2:1)
+        let fade=AWCNativeButtonTiming.cubic(min(1,t/0.2),x1:0.34,y1:0.8,x2:0.34,y2:1)
+        return (motion.fraction+(CGFloat(end)-motion.fraction)*CGFloat(spatial),motion.opacity+(end-motion.opacity)*fade)
+    }
+    var body:some View {
+        TimelineView(.animation(paused:motion == nil)) { clock in
+            let value=values(at:clock.date)
+            content(value.0,value.1)
+        }
+        .onChange(of:extended) { _,target in
+            // The clock starts here, at the property change; the first frame drawn after it shows the elapsed progress.
+            let now=Date(),current=values(at:now)
+            shown=target
+            motion=(reducedOverride ?? systemReduceMotion) ? nil:.init(fraction:current.0,opacity:current.1,target:target,started:now)
+        }
+        .task(id:motion?.started) {
+            guard let started=motion?.started else {return}
+            try? await Task.sleep(for:.seconds(max(0,max(duration,0.2)-Date().timeIntervalSince(started))+0.02))
+            guard !Task.isCancelled,motion?.started == started else {return}
+            motion=nil
+        }
     }
 }
 /// Label width and insets animate from the real natural label measurement, so
@@ -93,7 +143,9 @@ private struct AWCNativeFabSurface: View {
     /// A docked md-toolbar flattens its paired FAB (box-shadow: none on the slotted host).
     @Environment(\.awcFabFlatElevation) private var flatElevation
     @Environment(\.awcTouchPress) private var touchPress
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
+    @Environment(\.awcReducedMotion) private var reducedOverride
+    private var reduceMotion: Bool { reducedOverride ?? systemReduceMotion }
     @Environment(\.layoutDirection) private var direction
     @State private var frame=CGRect.zero
     @State private var hovered=false
@@ -113,10 +165,8 @@ private struct AWCNativeFabSurface: View {
         let shape=AWCNativeFabShape(radius:m.cornerRadius,circle:style.menuCircle)
         let elevation=style.disabled ? 0:style.lowered ? (hover && !pressed && !style.focused ? 2:1):(hover && !pressed && !style.focused ? 4:3)
         let paint:Animation?=reduceMotion ? nil:.timingCurve(0.2,0,0,1,duration:0.28)
-        let spatial:Animation? = !ready || reduceMotion ? nil:.timingCurve(0.38,1.21,0.22,1,duration:awcFabNumber(tokens["--md-sys-motion-spring-spatial-default-duration"],500)/1000)
         let origin=pointer.flatMap{$0.isPointerDown ? $0.pressLocation.map{CGPoint(x:$0.x-frame.minX,y:$0.y-frame.minY)}:nil} ?? (localDown ? localOrigin:nil)
         let content=configuration.label.foregroundStyle(inheritedInk)
-            .animation(spatial,value:m.extended)
         let filled=content.background {
             shape.fill(background).animation(paint,value:background)
                 .overlay { shape.fill(inheritedInk).opacity(alpha).animation(paint,value:alpha).awcInspect(nodeID:style.nodeID,part:"state-layer",name:"md-fab ::part(state-layer)") }
@@ -130,7 +180,7 @@ private struct AWCNativeFabSurface: View {
         }.overlay { if style.focused { shape.stroke(color("secondary"),lineWidth:3).padding(-3.5) } }
             .background {GeometryReader{ geometry in Color.clear.onChange(of:geometry.frame(in:.named("awc-native-preview")),initial:true){_,value in frame=value} }}
             .awcObservePointerOrigin(enabled:pointer == nil){origin,down in localDown=down;localOrigin=origin}
-            .onHover{hovered=$0}.onChange(of:pressed){_,down in if down {style.pointerPressed()}}
+            .onHover{hovered=$0}.onChange(of:configuration.awcPressed(touchPress)){_,down in if down {style.pointerPressed()}}
             .animation(!ready || reduceMotion ? nil:.timingCurve(0.2,0,0,1,duration:awcFabNumber(tokens["--md-sys-motion-duration-short4"],200)/1000),value:style.menuCircle)
             .onAppear{ready=true}
             .awcInspect(nodeID:style.nodeID,name:"md-fab") { _ in
@@ -162,7 +212,9 @@ private struct AWCNativeFabShape:InsettableShape {
 }
 private struct AWCFabMenuIconMotion:ViewModifier {
     let opacity:Double
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
+    @Environment(\.awcReducedMotion) private var reducedOverride
+    private var reduceMotion: Bool { reducedOverride ?? systemReduceMotion }
     func body(content:Content)->some View {
         content.opacity(opacity).rotationEffect(.degrees(opacity==0 ? -90:0)).scaleEffect(opacity==0 ? 0.6:1)
             .animation(reduceMotion ? nil:.timingCurve(0.2,0,0,1,duration:0.12),value:opacity)
@@ -179,7 +231,7 @@ extension AWCNativeView {
         let tokens=theme.tokens.isEmpty ? AWCGeneratedTokens.light:theme.tokens
         let appearance=menu?.open == true ? fabAppearance.merging(.init(containerColor:tokens["--md-sys-color-"+(menu?.variant ?? "primary")],iconColor:tokens["--md-sys-color-on-"+(menu?.variant ?? "primary")])):fabAppearance
         let slots=AWCNativeFabSlots(node:node,properties:local,menuIcon:controller.menuIcon)
-        let metrics=AWCNativeFabMetrics(properties:local,hasIcon:slots.hasIcon,appearance:fabAppearance,tokens:theme.tokens)
+        let metrics={ var m=AWCNativeFabMetrics(properties:local,hasIcon:slots.hasIcon,appearance:fabAppearance,tokens:theme.tokens,inheritedDensity:inheritedDensity,spacingRung:inheritedSpacingRung); m.railSize=fabRailSize.map{CGFloat($0)}; return m }()
         let direction:LayoutDirection=s("dir") == "rtl" ? .rightToLeft:s("dir") == "ltr" ? .leftToRight:layoutDirection
         let palette=AWCNativeFabPalette(variant:s("variant","primary-container"),lowered:b("lowered"))
         let accessibleName=local["aria-label"]?.string ?? local["ariaLabel"]?.string ?? s("label")
@@ -190,7 +242,8 @@ extension AWCNativeView {
             var event=AWCEvent(name:"mdClick",tag:node.tag,nodeID:node.id,detail:.null);event.activation = .init(kind:.nativeControl,source:source)
             onEvent(AWCEventDispatcher.dispatch(event,through:eventDispatcher,cancelable:true,targetListeners:eventTargetListeners).observedEvent)
         },direction:s("dir")) {
-            AWCNativeFabLayout(metrics:metrics,fraction:metrics.extended ? 1:0,rtl:direction == .rightToLeft) {
+            AWCNativeFabExtendMotion(extended:metrics.extended,duration:awcFabNumber(tokens["--md-sys-motion-spring-spatial-default-duration"],500)/1000) { fraction,labelOpacity in
+            AWCNativeFabLayout(metrics:metrics,fraction:fraction,rtl:direction == .rightToLeft) {
             HStack(spacing:0) {
                 ForEach(slots.children) { item in
                     Group {
@@ -206,11 +259,11 @@ extension AWCNativeView {
                 .environment(\.layoutDirection,direction)
             if metrics.hasLabel {
                 AWCNativeFabLabelLayout {Text(s("label")).font(AWCNativeFonts.label(size:metrics.fontSize,weight:metrics.fontWeight)).tracking(metrics.letterSpacing).fixedSize().frame(height:metrics.lineHeight)}
-                    .clipped().opacity(metrics.extended ? 1:0)
-                    .animation(.timingCurve(0.34,0.8,0.34,1,duration:0.2),value:metrics.extended)
+                    .clipped().opacity(labelOpacity)
                     .modifier(AWCFabPartColor(hex:appearance.labelColor))
                     .awcInspect(nodeID:node.id,part:"label",name:"md-fab ::part(label)")
                     .environment(\.layoutDirection,direction)
+            }
             }
             }.environment(\.layoutDirection,.leftToRight)
         }.onAppear {fabMenuRegistry?.fabControllers[node.id]=controller}

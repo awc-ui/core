@@ -158,8 +158,12 @@
 
 /* Searchable columns get a DEFINITE height (the cap), not a content-driven
    max — so filtering down to fewer rows never collapses the column; the
-   list just shows empty space and keeps its scroll geometry. */
-:host([searchable]) .md-transfer-list__column {
+   list just shows empty space and keeps its scroll geometry. Keyed on the
+   prop (a host class), not on `:host([searchable])`: an authored
+   `searchable="false"` keeps its attribute (Stencil only removes a reflected
+   boolean attribute it wrote itself), which gave a non-searchable list the
+   searchable list's fixed height. */
+:host(.md-transfer-list--searchable) .md-transfer-list__column {
   block-size: var(--_column-max-block);
 }
 

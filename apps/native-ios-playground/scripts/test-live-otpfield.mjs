@@ -42,12 +42,21 @@ try{
   check(!f.error,`configure: ${f.error}`);
   f=await frame();
   check(Math.abs((part(f,'cell-0')?.bounds.width ?? 0)-52)<=0.5,`cell width hook (${part(f,'cell-0')?.bounds.width}).`);
-  check(String(metric(f,'cell-5','border')).toUpperCase().startsWith('#1565C0'),`outline hook (${metric(f,'cell-5','border')}).`);
+  check(String(metric(f,'cell-5','borderColor')).toUpperCase().startsWith('#1565C0'),`outline hook (${metric(f,'cell-5','borderColor')}).`);
   check(metric(f,'md-otp-field','value')==='12'&&metric(f,'cell-1','text')==='2',`initial value (${metric(f,'md-otp-field','value')}).`);
+  let u;
+  // cellLabelTemplate (9-6, S71-05): every cell's accessibility label follows the template ({index} 1-based, {length} the cell count).
+  const label=(f,i)=>metric(f,`cell-${i}`,'accessibilityLabel');
+  check(label(f,0)==='Character 1 of 6'&&label(f,5)==='Character 6 of 6',`default cell labels (${label(f,0)}, ${label(f,5)}).`);
+  u=await update({cellLabelTemplate:'Digit {index} of {length}'});check(!u.error,`update cellLabelTemplate: ${u.error}`);await wait(60);f=await frame();
+  check(label(f,0)==='Digit 1 of 6'&&label(f,3)==='Digit 4 of 6'&&label(f,5)==='Digit 6 of 6',`template labels (${label(f,0)}, ${label(f,3)}, ${label(f,5)}).`);
+  u=await update({length:4});check(!u.error,`update length: ${u.error}`);await wait(60);f=await frame();
+  check(label(f,3)==='Digit 4 of 4'&&!node(f,'cell-4'),`template follows the length (${label(f,3)}).`);
+  u=await update({length:6});await wait(60);
   let m=await method('getValidity');
   check(!m.error&&m.result?.valid===false&&m.result.flags.valueMissing===true&&m.result.validationMessage==='Enter all six digits.',`incomplete code: ${JSON.stringify(m.result ?? m.error)}`);
   check(Object.keys(m.result.flags).length===10,'ten ValidityState flags.');
-  let u=await update({value:'12 34-56x'});check(!u.error,`update value: ${u.error}`);await wait(60);f=await frame();
+  u=await update({value:'12 34-56x'});check(!u.error,`update value: ${u.error}`);await wait(60);f=await frame();
   check(metric(f,'md-otp-field','value')==='123456',`programmatic writes run the pipeline (${metric(f,'md-otp-field','value')}).`);
   m=await method('checkValidity');check(m.result===true,'a complete code is valid.');
   await method('setCustomValidity',['Expired']);m=await method('getValidity');

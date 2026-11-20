@@ -56,6 +56,7 @@ internal fun NativeFabMenu(p: Props,emit: EventSink,slot: Slot?) {
             latestEmit.value(name,null)
         }
         state.onOpeningFocus={ openingFocus.also { openingFocus=false } }
+        state.onKeyboardInput={ keyboardModality=true }
         state.onAnchorFocus={
             if(keyboardModality) anchor?.focus?.requestFocus() else anchor?.focus?.requestPointerFocus()
         }
@@ -131,7 +132,7 @@ internal fun NativeFabMenu(p: Props,emit: EventSink,slot: Slot?) {
 private fun NativeFabMenuLayer(state: NativeFabMenuState,registry: NativeAnchorRegistry,anchor: NativeAnchor?,
     inspection: AWCInspectionContext?,p: Props,slot: Slot?) {
     val visible=state.open && !p.bool("hidden")
-    val reduced=!ValueAnimator.areAnimatorsEnabled()
+    val reduced=LocalAWCButtonReducedMotion.current ?: !ValueAnimator.areAnimatorsEnabled()
     val progress=remember { Animatable(if(visible) 0f else 0f) }
     LaunchedEffect(visible,state.closing) {
         if(!visible) progress.snapTo(0f)
@@ -146,10 +147,12 @@ private fun NativeFabMenuLayer(state: NativeFabMenuState,registry: NativeAnchorR
     val direction=if(rtl) "rtl" else "ltr"
     // Measure the scope separately from the item stack: source host is fixed,
     // inset 0; only the stack takes pointer input and an accessible menu name.
-    Layout(modifier=Modifier.fillMaxSize().then(if(visible) Modifier.inspectAWCNode(inspection,"","md-fab-menu overlay",
+    Layout(modifier=Modifier.fillMaxSize().then(if(visible) Modifier.inspectAWCNode(inspection,"overlay","md-fab-menu overlay",
         AWCInspectionMetrics(display="Overlay",direction=direction)) else Modifier.clearAndSetSemantics { }),
         content={
             Layout(modifier=Modifier
+                // The menu's own box is the item stack, as the Web md-fab-menu box; the overlay is the `overlay` part.
+                .then(if(visible) Modifier.inspectAWCNode(inspection,"","md-fab-menu",AWCInspectionMetrics(display="Item stack",gap=AWCInspectionGap(gap.toDouble(),0.0),direction=direction)) else Modifier)
                 .fabMenuTree(menu=state)
                 .onGloballyPositioned { state.coordinates=it }
                 .graphicsLayer {

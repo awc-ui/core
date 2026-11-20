@@ -69,7 +69,7 @@ internal class SegmentedSetScope(props:Props,val parent:SegmentedSetScope?) {
 }
 internal val LocalSegmentedSets=compositionLocalOf<List<SegmentedSetScope>> { emptyList() }
 internal val LocalSegmentedInset=compositionLocalOf { 12f }
-internal data class SegmentedChild(val id:Any,var minimumWidth:Int=0)
+internal data class SegmentedChild(val id:Any,var minimumWidth:Int=0,var naturalWidth:Float=-1f)
 internal val LocalSegmentedChild=staticCompositionLocalOf<SegmentedChild?> { null }
 
 /** CSS equal fr tracks freeze at their own padding floors before sharing the remainder. */
@@ -149,8 +149,9 @@ internal fun Modifier.segmentTree(scope:SegmentedSetScope?=null,child:Any?=null)
             val id=(children[index].layoutId as? SegmentedChild)?.id ?: return 0
             return if(ordered.size>1 && ordered.lastOrNull()===id) one else 0
         }
-        val track=natural.indices.maxOfOrNull { max(0,natural[it].width-overlap(it)) } ?: 0
-        val width=constraints.constrainWidth(track*children.size)
+        // CSS 1fr tracks: the widest max-content (fractional); the total rounds once and is distributed below.
+        val track=natural.indices.maxOfOrNull { i -> max(0f,((children[i].layoutId as? SegmentedChild)?.naturalWidth?.takeIf { it>=0f } ?: natural[i].width.toFloat())-overlap(i)) } ?: 0f
+        val width=constraints.constrainWidth((track*children.size).roundToInt())
         val height=constraints.constrainHeight(natural.maxOfOrNull { it.height } ?: 0)
         val tracks=segmentedTrackWidths(width,children.indices.map { i ->
             max(0,((children[i].layoutId as? SegmentedChild)?.minimumWidth ?: 0)-overlap(i))

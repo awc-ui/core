@@ -108,8 +108,9 @@ enum AWCShim {
 final class AWCShimFrameClock: NSObject {
     nonisolated(unsafe) static let shared = AWCShimFrameClock()
     nonisolated(unsafe) static var frames = 0
+    nonisolated(unsafe) static var stamps: [Double] = []
     nonisolated(unsafe) private var link: CADisplayLink?
-    @objc private func tick(_ link: CADisplayLink) { AWCShimFrameClock.frames += 1 }
+    @objc private func tick(_ link: CADisplayLink) { AWCShimFrameClock.frames += 1; AWCShimFrameClock.stamps.append(link.timestamp * 1000); if AWCShimFrameClock.stamps.count > 6000 { AWCShimFrameClock.stamps.removeFirst(2000) } }
     static func start() {
         guard shared.link == nil else { return }
         MainActor.assumeIsolated { let l = CADisplayLink(target: shared, selector: #selector(tick(_:))); l.add(to: .main, forMode: .common); shared.link = l }
@@ -449,7 +450,12 @@ class NSWindow: UIWindow {
     /// synchronous sendEvent (otherwise UIKit coalesces consecutive moves into one).
     override func sendEvent(_ event: UIEvent) {
         if event.type == .touches { AWCShimTouch.deliveredTouches += 1 } else if event.type == .presses { AWCShimTouch.deliveredPresses += 1 }
+        if event.type == .touches || event.type == .presses { AWCShimTouch.deliveredAt.append(CACurrentMediaTime() * 1000) }
+        if event.type == .presses, AWCShim.env["AWC_IOS_KEY_TIMING"] == "1" { print("KEYD t=\(Int(CACurrentMediaTime() * 1000) % 100000) phases=\((event as? UIPressesEvent)?.allPresses.map { $0.phase.rawValue } ?? [])"); fflush(stdout) }
+        let phases = event.type == .touches ? (event.allTouches ?? []).map(\.phase) : []
+        if phases.contains(.began), !AWCShimTouch.beforeBegan.isEmpty { let q = AWCShimTouch.beforeBegan; AWCShimTouch.beforeBegan = []; q.forEach { $0() } }
         super.sendEvent(event)
+        if phases.contains(.ended), !AWCShimTouch.afterEnded.isEmpty { let q = AWCShimTouch.afterEnded; AWCShimTouch.afterEnded = []; q.forEach { $0() } }
     }
     var windowNumber: Int { 1 }
     var backingScaleFactor: CGFloat { screen.scale }
@@ -460,7 +466,8 @@ extension UIWindow {
     var firstResponder: UIResponder? {
         UIWindow.firstResponderBox = nil
         UIApplication.shared.sendAction(#selector(UIResponder.awcShimCaptureFirstResponder), to: nil, from: nil, for: nil)
-        return UIWindow.firstResponderBox
+        // iPad: AWCUI's document stand-in (the entry anchor holding first responder while nothing has focus) is no focus.
+        return AWCKeyViewEngineEntry.isDocumentResponder(UIWindow.firstResponderBox) ? nil : UIWindow.firstResponderBox
     }
     static func setFirstResponderBox(_ r: UIResponder) { firstResponderBox = r }
     @discardableResult func makeFirstResponder(_ r: UIResponder?) -> Bool {
@@ -502,10 +509,85 @@ enum AWCShimTouch {
     static weak var window: NSWindow?
     static var down = false, last = CGPoint.zero
     static var deliveredTouches = 0, deliveredPresses = 0
+    /// HID keyboard events UIApplication received (UIKit hands them to the responder chain from UIApplication, not through
+    /// UIWindow.sendEvent, so `deliveredPresses` never sees them). One count per event (UIKit may pass one event through more
+    /// than one of the hooked entry points; the event timestamp tells them apart).
+    static var deliveredKeys = 0, deliveredKeyPath = ""
+    /// 9-6: when UIKit's key entry point received each HID key event (ms, CACurrentMediaTime). A fixture times a key that raises no
+    /// input event (Home, End, Delete) from its arrival: the simulator's HID delivery is not product time.
+    static var keyArrivals: [Double] = []
+    private static var lastKeyStamp: TimeInterval = -1, keyHooked = false
+    static func hookKeyDelivery() {
+        guard !keyHooked else { return }; keyHooked = true
+        let names = ["sendEvent:", "_handleKeyUIEvent:", "handleKeyUIEvent:"]
+        var hooked: [String] = []
+        for name in names {
+            let sel = NSSelectorFromString(name)
+            guard let m = class_getInstanceMethod(UIApplication.self, sel) else { continue }
+            hooked.append(name)
+            typealias F = @convention(c) (AnyObject, Selector, AnyObject) -> Void
+            let original = unsafeBitCast(method_getImplementation(m), to: F.self)
+            let hook: @convention(block) (AnyObject, AnyObject) -> Void = { app, arg in
+                // UIKit gives a physical-keyboard event a private event type (not .presses): every event the key entry
+                // points receive counts, and from sendEvent: only press events (UIPressesEvent or that private type).
+                var countAfter = false
+                if let event = arg as? UIEvent, name != "sendEvent:" || event is UIPressesEvent || event.type.rawValue == 4, event.timestamp != lastKeyStamp {
+                    lastKeyStamp = event.timestamp; countAfter = true; deliveredKeyPath = name
+                    keyArrivals.append(CACurrentMediaTime() * 1000)
+                    if AWCShim.env["AWC_IOS_KEY_TIMING"] == "1" { print("KEYH \(name) \(type(of: event)) type=\(event.type.rawValue)"); fflush(stdout) }
+                } else if AWCShim.env["AWC_IOS_KEY_TIMING"] == "1", let event = arg as? UIEvent, event.type != .touches { print("KEYH skip \(name) \(type(of: event)) type=\(event.type.rawValue)"); fflush(stdout) }
+                original(app, sel, arg)
+                if countAfter { deliveredKeys += 1 }
+            }
+            method_setImplementation(m, imp_implementationWithBlock(hook))
+        }
+        if AWCShim.env["AWC_IOS_KEY_TIMING"] == "1" { print("KEYH hooked \(hooked)"); fflush(stdout) }
+    }
+    /// When UIKit delivered each synthesized touch / press event (ms, CACurrentMediaTime): a fixture times a component from
+    /// its input's delivery, as Chrome's oracles time it from the trusted input's first event.
+    static var deliveredAt: [Double] = []
+    /// A fixture's own pointer model (`AWCNativePointerState`) changes with the touch it describes: `beforeBegan` runs when
+    /// UIKit delivers the next touch-down (before the app handles it), `afterEnded` right after it handled the next touch-up —
+    /// the order AppKit's synchronous sendEvent gives the macOS fixtures (pointer down, mouseDown … mouseUp, pointer up).
+    static var beforeBegan: [() -> Void] = [], afterEnded: [() -> Void] = []
+    /// The fixture's pointer goes down with the next delivered touch-down.
+    static func pointerDown(_ update: @escaping () -> Void, send: () -> Void) {
+        if AWCShim.env["AWC_IOS_POINTER_AT"] == "queue" { update(); send(); return }   // diagnostic: the old queue-time order
+        beforeBegan.append(update); send()
+    }
+    /// The fixture's pointer goes up right after the app handled the touch-up (`send` awaits its delivery). A press still
+    /// pending is applied first; a release UIKit did not deliver within the await is applied at once, as before, so a late
+    /// delivery cannot move the pointer after the fixture's next step (a leave between runs).
+    /// A click the fixture queues in one turn: Chrome's mousedown and mouseup reach the page before its next frame, so it never
+    /// paints `:active`. The fixture's pointer goes down and up together right after the app handled the touch-up (UIKit
+    /// delivers the two touch phases on separate frames, sometimes more than a frame apart).
+    static func pointerClick(down: @escaping () -> Void, up: @escaping () -> Void, sendDown: () -> Void, sendUp: () -> Void) {
+        if AWCShim.env["AWC_IOS_POINTER_AT"] == "queue" { down(); sendDown(); sendUp(); up(); return }
+        sendDown(); afterEnded.append(down); afterEnded.append(up); sendUp()
+        if !afterEnded.isEmpty { let q = afterEnded; afterEnded = []; q.forEach { $0() } }
+    }
+    static func pointerUp(_ update: @escaping () -> Void, send: () -> Void) {
+        if AWCShim.env["AWC_IOS_POINTER_AT"] == "queue" { send(); update(); return }
+        if !beforeBegan.isEmpty { let q = beforeBegan; beforeBegan = []; q.forEach { $0() } }
+        afterEnded.append(update); send()
+        if !afterEnded.isEmpty { let q = afterEnded; afterEnded = []; q.forEach { $0() } }
+    }
     static var lastTouchPoint: CGPoint?
     static var zeroMoveSign: CGFloat = -1
     static var pressStart: Double?
     static var movedSinceBegan = false
+    static func focusSnapshot(_ w: UIWindow) -> String {
+        let item = UIFocusSystem.focusSystem(for: w).flatMap { $0.focusedItem }.map { "\(ObjectIdentifier($0 as AnyObject).hashValue)" } ?? "-"
+        let r = (w.firstResponder as AnyObject?).map { "\(ObjectIdentifier($0).hashValue)" } ?? "-"
+        return item + "|" + r
+    }
+    /// Identity, text and selection of the focused text input (nil when the focus is not a text input).
+    static func textSnapshot(_ w: UIWindow) -> String? {
+        guard let r = w.firstResponder as? UIResponder, let ti = r as? UITextInput else { return nil }
+        let text = ti.textRange(from: ti.beginningOfDocument, to: ti.endOfDocument).flatMap { ti.text(in: $0) } ?? ""
+        let sel = ti.selectedTextRange.map { "\(ti.offset(from: ti.beginningOfDocument, to: $0.start))-\(ti.offset(from: ti.beginningOfDocument, to: $0.end))" } ?? "-"
+        return "\(ObjectIdentifier(r).hashValue)|\(text)|\(sel)"
+    }
     static func awaitDelivery(_ counter: () -> Int, from start: Int, timeout: Double = 0.1) {
         let end = Date().addingTimeInterval(timeout)
         while counter() == start && Date() < end { _ = RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.001)) }
@@ -532,13 +614,38 @@ enum AWCShimTouch {
     static func key(_ e: NSEvent) {
         guard let w = window, AWCTouchSynth.keyAvailable, let usage = AWCTouchSynth.usageForMacKeyCode[e.keyCode] else { AWCShim.note("key \(e.keyCode) (no HID mapping)"); return }
         let mods: [(NSEvent.ModifierFlags, UInt32)] = [(.shift, 225), (.control, 224), (.option, 226), (.command, 227)]
+        // AppKit's auto-repeat of a held key is not a new press: the HID press already sent stands for the held key.
+        if e.type == .keyDown && e.isARepeat { AWCShim.note("key repeat (keyDown isARepeat) folded into the held press"); return }
         if e.type == .keyDown {
             if e.keyCode == 48 { w.awcShimKeyDebug(e.modifierFlags.contains(.shift) ? "shift-tab-key" : "tab-key") }
-            releaseKeys()
+            let pendingReleases = heldKeys.count; releaseKeys()
+            hookKeyDelivery(); let keysBefore = deliveredKeys
             for (flag, u) in mods where e.modifierFlags.contains(flag) { AWCTouchSynth.key(usage: u, down: true, window: w); heldKeys.insert(u) }
-            let before = deliveredPresses
+            let before = deliveredPresses, kq = CACurrentMediaTime() * 1000
+            let textBefore = textSnapshot(w)
+            let focusBefore = focusSnapshot(w)
             AWCTouchSynth.key(usage: usage, down: true, window: w); heldKeys.insert(usage)
-            awaitDelivery({ deliveredPresses }, from: before, timeout: 0.03)
+            // Like AppKit's synchronous sendEvent: the app has handled the key (and its modifiers) when this returns.
+            let keysEnqueued = heldKeys.count
+            if AWCShim.env["AWC_IOS_KEY_AWAIT"] != "0" { awaitDelivery({ deliveredKeys - keysBefore >= keysEnqueued + pendingReleases ? -1 : 0 }, from: 0, timeout: 0.03) }
+            // UIKit's text system applies a key to a text input after the HID delivery (and the field's own deferred work, such
+            // as a focus move to the next cell, follows that): when a text input has focus, the key is handled once its text,
+            // selection or identity changed (40 ms cap from the key, the old await's budget), then one main-queue turn.
+            if AWCShim.env["AWC_IOS_KEY_AWAIT"] != "0", textBefore != nil {
+                let end = Date(timeIntervalSinceNow: max(0, 0.04 - (CACurrentMediaTime() * 1000 - kq) / 1000))
+                while textSnapshot(w) == textBefore && Date() < end { _ = RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.001)) }
+                var ran = false; DispatchQueue.main.async { ran = true }
+                let end2 = Date().addingTimeInterval(0.03); while !ran && Date() < end2 { _ = RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.001)) }
+            }
+            // v4: a focus-moving key (Tab, arrows) is handled once UIKit's focus system / first responder changed (40 ms cap from the
+            // key), then one main-queue turn, so the next key is not sent while the focus update is in flight.
+            if AWCShim.env["AWC_IOS_KEY_AWAIT"] != "0", textBefore == nil, [48, 123, 124, 125, 126].contains(Int(e.keyCode)) {
+                let end = Date(timeIntervalSinceNow: max(0, 0.04 - (CACurrentMediaTime() * 1000 - kq) / 1000))
+                while focusSnapshot(w) == focusBefore && Date() < end { _ = RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.001)) }
+                var ran = false; DispatchQueue.main.async { ran = true }
+                let end2 = Date().addingTimeInterval(0.03); while !ran && Date() < end2 { _ = RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.001)) }
+            }
+            if AWCShim.env["AWC_IOS_KEY_TIMING"] == "1" { print("KEYT code=\(e.keyCode) await=\(String(format: "%.1f", CACurrentMediaTime() * 1000 - kq)) delivered=\(deliveredKeys - keysBefore)/\(keysEnqueued) via=\(deliveredKeyPath) presses=\(deliveredPresses - before)"); fflush(stdout) }
             if e.keyCode == 48, AWCShim.env["AWC_IOS_KEY_DEBUG"] == "1" { AWCShim.pumpFrames(0.02); print("KEYDBG after: \((w.firstResponder as? UIView).map { "\(type(of: $0)) \($0.accessibilityIdentifier ?? "")" } ?? "nil")"); fflush(stdout) }
             if AWCShim.env["AWC_IOS_KEY_HOLD"] != "1" { releaseKeys() }
         } else if heldKeys.contains(usage) { AWCTouchSynth.key(usage: usage, down: false, window: w); heldKeys.remove(usage); releaseKeys() }
@@ -550,8 +657,10 @@ enum AWCShimTouch {
     /// away from its own global geometry, which components compare touch locations with.)
     static var shifted = false
     static var savedOrigin = CGPoint.zero
+    static var pendingRestore: CGPoint? = nil
     static func onScreen(_ phase: String, _ p: CGPoint) -> CGPoint {
         guard let w = window else { return p }
+            if let p0 = pendingRestore { w.frame.origin = p0; pendingRestore = nil }
         let screen = w.screen.bounds.insetBy(dx: 2, dy: 2)
         if phase == "down" {
             let s = w.convert(p, to: w.screen.coordinateSpace)
@@ -559,7 +668,7 @@ enum AWCShimTouch {
                 let target = CGPoint(x: min(max(s.x, screen.minX + screen.width / 2), screen.maxX - 40), y: min(max(s.y, screen.minY), screen.maxY - 40))
                 if !shifted { savedOrigin = w.frame.origin }
                 w.frame.origin = CGPoint(x: w.frame.origin.x + target.x - s.x, y: w.frame.origin.y + target.y - s.y)
-                shifted = true; AWCShim.note("touch outside the screen: window moved for the gesture"); AWCShim.pumpFrames(0.02)
+                shifted = true; AWCShim.note("touch outside the screen: window moved for the gesture"); CATransaction.flush(); _ = RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.001)) // s914: no 20 ms pump before the press (it started every toggle-expand ripple ~20 ms after the fixture clock)
             }
         }
         return p
@@ -600,7 +709,12 @@ enum AWCShimTouch {
                 if ph == .began { pressStart = CACurrentMediaTime() }
                 if ph == .moved || ph == .ended { awaitDelivery({ deliveredTouches }, from: before, timeout: 0.03) }
                 if ph == .ended { pressStart = nil }
-                if phase == "up" && shifted { AWCShim.pumpFrames(0.02); w.frame.origin = savedOrigin; shifted = false }
+                if phase == "up" && shifted {
+                    // The release is delivered (awaited above); moving the window back must not hold the caller for a pump of frames
+                    // (s914: 20 ms spent inside the release call on the phone shifted every sample after a release by ~25 ms).
+                    let o = savedOrigin; shifted = false; pendingRestore = o
+                    DispatchQueue.main.async { if let p = pendingRestore, pendingRestore == o { w.frame.origin = p; pendingRestore = nil } }
+                }
                 return
             }
         }
@@ -629,3 +743,66 @@ extension UIView {
     func keyDown(with e: NSEvent) { AWCShimTouch.dispatch(e) }
 }
 #endif
+
+/// 9-23: main-thread time inside UIKit's own first-responder change (becomeFirstResponder / resignFirstResponder, outermost call of
+/// the UIKit implementations: UIResponder, UITextField, UITextView) and inside UIKit's lazy keyboard creation (+[UIKeyboardImpl
+/// sharedInstanceForCustomInputView:] taking >= 2 ms) and the first HID key event's delivery ("key1"). Product code that overrides
+/// becomeFirstResponder runs before it calls super, outside the bracket; product delegate callbacks UIKit makes inside it are in it.
+/// AWC_IOS_BRACKET=off records nothing (mutation run).
+enum AWCUIKitBrackets {
+    static var intervals: [(kind: String, start: Double, end: Double)] = []
+    static var depth = 0, startAt = 0.0, installed = false
+    static func now() -> Double { CACurrentMediaTime() * 1000 }
+    static func enter() { if depth == 0 { startAt = now() }; depth += 1 }
+    static func leave(_ kind: String) { let n = now(); depth -= 1; if depth == 0 { intervals.append((kind, startAt, n)) } }
+    static func install() {
+        guard !installed else { return }; installed = true
+        if AWCShim.env["AWC_IOS_BRACKET"] == "off" { print("BRK off"); fflush(stdout); return }
+        var done: [String] = []
+        for (cls, name, kind) in [(UIResponder.self, "becomeFirstResponder", "become"), (UITextField.self, "becomeFirstResponder", "become"), (UITextView.self, "becomeFirstResponder", "become"),
+                                  (UIResponder.self, "resignFirstResponder", "resign"), (UITextField.self, "resignFirstResponder", "resign"), (UITextView.self, "resignFirstResponder", "resign")] as [(AnyClass, String, String)] {
+            let sel = NSSelectorFromString(name)
+            guard let m = class_getInstanceMethod(cls, sel) else { continue }
+            if let sup = class_getSuperclass(cls), let sm = class_getInstanceMethod(sup, sel), method_getImplementation(sm) == method_getImplementation(m) { continue }
+            typealias F = @convention(c) (AnyObject, Selector) -> Bool
+            let original = unsafeBitCast(method_getImplementation(m), to: F.self)
+            let hook: @convention(block) (AnyObject) -> Bool = { obj in enter(); let r = original(obj, sel); leave(kind); return r }
+            method_setImplementation(m, imp_implementationWithBlock(hook)); done.append("\(cls).\(name)")
+        }
+        if let kc = NSClassFromString("UIKeyboardImpl"), let m = class_getClassMethod(kc, NSSelectorFromString("sharedInstanceForCustomInputView:")) {
+            let sel = NSSelectorFromString("sharedInstanceForCustomInputView:")
+            typealias F = @convention(c) (AnyObject, Selector, Int) -> Unmanaged<AnyObject>?
+            let original = unsafeBitCast(method_getImplementation(m), to: F.self)
+            let hook: @convention(block) (AnyObject, Int) -> Unmanaged<AnyObject>? = { c, a in
+                let s = now(); let r = original(c, sel, a); let e = now()
+                if e - s >= 2 { intervals.append(("kbd", s, e)) }
+                return r
+            }
+            method_setImplementation(m, imp_implementationWithBlock(hook)); done.append("UIKeyboardImpl.sharedInstanceForCustomInputView:")
+        }
+        print("BRK hooked \(done)"); fflush(stdout)
+    }
+    /// "become=12@3+41 ..." for intervals overlapping [from, to] (absolute ms): kind=len@start-relative-to-origin+abs.
+    static func describe(_ from: Double, _ to: Double, _ origin: Double) -> String {
+        intervals.filter { $0.end >= from && $0.start <= to }.map { "\($0.kind)=\(Int($0.end - $0.start))@\(Int($0.start - origin))a\(Int($0.start))" }.joined(separator: " ")
+    }
+}
+
+/// 9-38 diagnostics of FAIL lines (default on; AWC_DG=0 off). Diagnostics only; on by default; AWC_DG=0 switches it off.
+@MainActor enum AWCDG {
+    static let on = ProcessInfo.processInfo.environment["AWC_DG"] != "0"
+    static var planned = 0.0
+    static func start() { guard on else { return }; AWCShimFrameClock.start(); AWCUIKitBrackets.install() }
+    static func input(planned p: Double) { planned = p }
+    static func suffix() -> String {
+        guard on, planned > 0 else { return "" }
+        let ins = (AWCShimTouch.deliveredAt + AWCShimTouch.keyArrivals).filter { $0 >= planned - 2 && $0 <= planned + 300 }.sorted()
+        let last = ins.last ?? planned, st = AWCShimFrameClock.stamps
+        var gap = 0.0, ga = last, gb = last
+        for k in st.indices.dropFirst() where st[k] > last && st[k - 1] < last + 150 { if st[k] - st[k - 1] > gap { gap = st[k] - st[k - 1]; ga = st[k - 1]; gb = st[k] } }
+        let P = 1000.0 / 60.0
+        let ph = st.last(where: { $0 <= last }).map { ((($0 - planned).truncatingRemainder(dividingBy: P)) + P).truncatingRemainder(dividingBy: P) } ?? -1
+        let brk = AWCUIKitBrackets.intervals.filter { $0.end > ga && $0.start < gb }.reduce(0.0) { $0 + (Swift.min($1.end, gb) - Swift.max($1.start, ga)) }
+        return String(format: " [DG gap=%.1f@%.1f d=%.1f ph=%.1f brk=%.1f n=%d]", gap, ga - last, (ins.first ?? planned) - planned, ph, brk, ins.count)
+    }
+}

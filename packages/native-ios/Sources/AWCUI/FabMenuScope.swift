@@ -52,7 +52,7 @@ struct AWCFabMenuAnchorPresentation: Equatable {
     @MainActor func outsideClick(_ point:CGPoint) {
         for session in sessions.values where session.controller.isOpen {
             if frames[session.anchor]?.contains(point) != true && frames[session.id]?.contains(point) != true {
-                session.controller.beginClose()
+                session.anchorFocusQuiet=true;session.controller.beginClose()
             }
         }
     }
@@ -109,7 +109,7 @@ struct AWCFabMenuAnchorPresentation: Equatable {
     @MainActor func activateAnchor(source:AWCActivationMetadata.Source) {
         openingFocus=source != .pointer || anchorFocusedAtPress
         anchorFocusedAtPress=false
-        if controller.isPresented {controller.beginClose()}
+        if controller.isPresented {anchorFocusQuiet=source == .pointer;controller.beginClose()}
         else if !controller.showImmediatelyIfReady() {Task {await controller.show()}}
     }
     @MainActor private func opened(initial:Bool) {
@@ -125,7 +125,7 @@ struct AWCFabMenuAnchorPresentation: Equatable {
     }
     @MainActor private func closed() {
         focusGeneration &+= 1;focusTask?.cancel();focusTask=nil
-        activeID=nil;rovingID=nil;morph(open:false);focusAnchor()
+        activeID=nil;rovingID=nil;morph(open:false);focusAnchor(visible:!anchorFocusQuiet);anchorFocusQuiet=false
     }
     @MainActor private func morph(open:Bool) {
         guard let registry,!anchor.isEmpty else{return}
@@ -150,8 +150,13 @@ struct AWCFabMenuAnchorPresentation: Equatable {
         controller.detach();registry?.sessions[id]=nil;registry?.presentations[anchor]=nil;registry=nil
     }
     @MainActor func focused(_ id:String) {activeID=id;rovingID=nil}
-    @MainActor func focusAnchor() {
-        activeID=nil;rovingID=nil;_ = registry?.handles[anchor]?.requestFocus?()
+    /// A press on a non-focusable item blurs the focused element, as Chrome's mousedown on an inert target.
+    @MainActor func blurFocus() {for id in [anchor]+items.map(\.id) {registry?.handles[id]?.resignFocus?()}}
+    /// A quiet return (no focus indicator) after a pointer activation, as Chrome's :focus-visible heuristics.
+    @ObservationIgnored var anchorFocusQuiet=false
+    @MainActor func focusAnchor(visible:Bool=true) {
+        activeID=nil;rovingID=nil;let handle=registry?.handles[anchor]
+        _ = visible ? handle?.requestFocus?() : (handle?.requestPointerFocus?() ?? handle?.requestFocus?())
     }
     @MainActor func focusItem(_ index:Int,visible:Bool=true) {
         guard !items.isEmpty else{return}
@@ -159,7 +164,7 @@ struct AWCFabMenuAnchorPresentation: Equatable {
         activeID=id;rovingID=visible ? id:nil
         _ = registry?.handles[id]?.requestFocus?()
     }
-    @MainActor func activatedItem() {controller.beginClose();focusAnchor()}
+    @MainActor func activatedItem(pointer:Bool=false) {anchorFocusQuiet=pointer;controller.beginClose();focusAnchor(visible:!pointer)}
     @MainActor func key(_ id:String,_ key:String,shift:Bool,modified:Bool)->Bool {
         guard controller.isOpen else{return false}
         if id==anchor {
@@ -238,7 +243,7 @@ public struct AWCFabMenuScope<Content:View>:View {
                         if entry.session.controller.isPresented,let anchor=registry.frames[entry.session.anchor] {
                             // Source host while open: position fixed, inset 0 (the scope viewport).
                             Color.clear.frame(width:geometry.size.width,height:geometry.size.height).allowsHitTesting(false).accessibilityHidden(true)
-                                .awcInspect(nodeID:entry.id,name:"md-fab-menu overlay"){_ in ["display":"SwiftUI overlay","direction":.string(entry.rtl ? "rtl":"ltr")]}
+                                .awcInspect(nodeID:entry.id,part:"overlay",name:"md-fab-menu overlay"){_ in ["display":"SwiftUI overlay","direction":.string(entry.rtl ? "rtl":"ltr")]}
                             entry.content
                                 .environment(\.awcFabMenuRegistry,registry)
                                 .environment(\.awcFabMenuSession,entry.session)

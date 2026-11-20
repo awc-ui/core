@@ -4,8 +4,18 @@
 import { spawn } from 'node:child_process';
 import { createInterface } from 'node:readline';
 import path from 'node:path';
+import os from 'node:os';
+import { existsSync } from 'node:fs';
 
-export function macHost(root, binary = process.env.AWC_NATIVE_LIVE_RENDERER || path.join(root, 'apps/native-ios-playground/.build/debug/AWCLivePreview')) {
+/** The preview binary a capture needs (the same default the host uses). */
+export const liveBinary = root => process.env.AWC_NATIVE_LIVE_RENDERER || path.join(root, 'apps/native-ios-playground/.build/debug/AWCLivePreview');
+
+// S7-19-02 (story 9-42): every host command has a fixed limit in milliseconds; the message names it with the load at the failure.
+export const CONFIGURE_LIMIT_MS = 30000;
+
+export function macHost(root, binary = liveBinary(root)) {
+  // S7-19-01 (9-42): a missing binary is a named failure, never a silent host that answers nothing (spawn ENOENT of 9-27 job 026).
+  if (!existsSync(binary)) return { send: async () => ({ error: `preview binary missing: ${binary}` }), close() {}, missing: true };
   const child = spawn(binary, ['--stdio'], { stdio: ['pipe', 'pipe', 'pipe'] });
   const pending = new Map(); let next = 1; let closed = false; const stderr = [];
   child.stderr.on('data', d => { stderr.push(String(d)); if (stderr.length > 50) stderr.shift(); });
@@ -13,11 +23,13 @@ export function macHost(root, binary = process.env.AWC_NATIVE_LIVE_RENDERER || p
     let message; try { message = JSON.parse(line); } catch { return; }
     const resolve = pending.get(message.id); if (resolve) { pending.delete(message.id); resolve(message); }
   });
+  child.stdin.on('error', () => {});
+  child.on('error', e => { closed = true; for (const resolve of pending.values()) resolve({ error: `preview binary failed to start: ${e.code ?? e.message} (${binary})` }); pending.clear(); });
   child.on('exit', () => { closed = true; for (const resolve of pending.values()) resolve({ error: 'host exited', stderr: stderr.join('') }); pending.clear(); });
-  const send = (command, timeout = 30000) => new Promise(resolve => {
+  const send = (command, timeout = CONFIGURE_LIMIT_MS) => new Promise(resolve => {
     if (closed) return resolve({ error: 'host exited', stderr: stderr.join('') });
     const id = next++;
-    const timer = setTimeout(() => { pending.delete(id); resolve({ error: `timeout ${command.command}` }); }, timeout);
+    const timer = setTimeout(() => { pending.delete(id); resolve({ error: `timeout ${command.command} after ${timeout} ms (fixed limit; load1 ${os.loadavg()[0].toFixed(0)})` }); }, timeout);
     pending.set(id, value => { clearTimeout(timer); resolve(value); });
     child.stdin.write(JSON.stringify({ ...command, id }) + '\n');
   });
@@ -26,8 +38,10 @@ export function macHost(root, binary = process.env.AWC_NATIVE_LIVE_RENDERER || p
 
 /** One case: configure, read the tree, then Tab through the preview and record keyboard focus after each step. */
 export async function captureMac(host, request, { tabs = 0, update = null, settle = 0.35 } = {}) {
+  const t0 = Date.now();
   const configured = await host.send({ command: 'configure', ...request });
-  if (configured.error) return { error: configured.error, stderr: configured.stderr };
+  const configureMs = Date.now() - t0;   // measured for S7-19-02: the limit must follow from these numbers
+  if (configured.error) return { error: configured.error, stderr: configured.stderr, configureMs };
   await new Promise(r => setTimeout(r, settle * 1000));   // entry motions (sheets, dialogs) finish before the tree is read
   const snapshot = await host.send({ command: 'accessibility' });
   if (snapshot.error) return { error: snapshot.error, stderr: snapshot.stderr };
@@ -48,5 +62,5 @@ export async function captureMac(host, request, { tabs = 0, update = null, settl
   }
   // The first snapshot's pixels (before any Tab focus ring) feed the contrast check.
   const image = snapshot.image ? { scale: snapshot.image.scale, offset: [0, 0], cssPerUnit: 1 } : null, png = snapshot.image ? Buffer.from(snapshot.image.png, 'base64') : null;
-  return { platform: 'macos', image, png, announcements: snapshot.announcements ?? [], afterUpdate, tree: snapshot.windows, keyboardFocus: snapshot.keyboardFocus, axFocused: snapshot.axFocused ?? null, axTrusted: snapshot.axTrusted, node: snapshot.node, focus, inspection: configured.inspection ?? null };
+  return { platform: 'macos', image, png, announcements: snapshot.announcements ?? [], afterUpdate, tree: snapshot.windows, keyboardFocus: snapshot.keyboardFocus, axFocused: snapshot.axFocused ?? null, axTrusted: snapshot.axTrusted, node: snapshot.node, focus, inspection: configured.inspection ?? null, configureMs };
 }

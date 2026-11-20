@@ -34,6 +34,9 @@ export function tableRowNames(elements) {
   flush(); return names;
 }
 const compatible = (platform, webRole, nativeRole) => webRole === nativeRole || (ROLE_EQUIVALENTS[platform]?.[webRole] ?? []).includes(nativeRole);
+// Keyboard focus only: UIKit has no tab-panel role; a focusable panel is a semantic-group container (gate-7 R6-20).
+const FOCUS_EQUIVALENTS = { ios: { tabpanel: ['group'] } };
+const focusCompatible = (platform, webRole, nativeRole) => compatible(platform, webRole, nativeRole) || (FOCUS_EQUIVALENTS[platform]?.[webRole] ?? []).includes(nativeRole);
 const unexposed = (platform, webRole) => Array.isArray(ROLE_EQUIVALENTS[platform]?.[webRole]) && ROLE_EQUIVALENTS[platform][webRole].length === 0;
 
 function align(platform, web, native) {
@@ -66,7 +69,11 @@ export function compareCase(platform, webN, nativeN, { webFocus = [], nativeFocu
   // A focusable row the platform has no row element for is its keyboard stop (button / selectable item named by the row).
   const rowNames = unexposed(platform, 'row') ? tableRowNames(webN.elements) : new Set();
   const rowStop = e => ['button', 'option'].includes(e.role) && rowNames.has(ws(e.name));
-  const native = nativeN.elements.filter(e => !(platform === 'android' && ['status', 'alert'].includes(e.role) && !e.name) && !rowStop(e));
+  // A focusable gridcell the platform has no cell element for (UIKit / Compose: a data-table cell is a container item) is the
+  // button / selectable item that is its keyboard stop, named as the cell (md-date-picker days; story 1-5).
+  const cellNames = unexposed(platform, 'gridcell') ? new Set(webN.elements.filter(e => e.role === 'gridcell' && e.focusable).map(e => ws(e.name))) : new Set();
+  const cellStop = e => ['button', 'option'].includes(e.role) && cellNames.has(ws(e.name));
+  const native = nativeN.elements.filter(e => !(platform === 'android' && ['status', 'alert'].includes(e.role) && !e.name) && !rowStop(e) && !cellStop(e));
   const pairs = align(platform, web, native);
   const wm = new Set(pairs.map(p => p[0])), nm = new Set(pairs.map(p => p[1]));
   web.forEach((e, i) => { if (!wm.has(i)) findings.push({ kind: 'missing', web: brief(e), detail: `${e.role} "${e.name}" has no ${platform} counterpart` }); });
@@ -126,8 +133,9 @@ export function compareCase(platform, webN, nativeN, { webFocus = [], nativeFocu
     const key = f => f ? `${f.role}:${ws(f.name)}` : '∅';
     const fw = webFocus.map(key), fn = nativeFocus.map(key), head = fn.slice(0, fw.length);
     // A stop matches when the names are equal and the roles are the same or an accepted encoding of the Web role.
-    const same = (w, n) => !!w && !!n && ((ws(w.name) === ws(n.name) && compatible(platform, w.role, n.role))
-      || (w.role === 'row' && rowStop(n) && (!w.name || ws(w.name) === ws(n.name))));
+    const same = (w, n) => !!w && !!n && ((ws(w.name) === ws(n.name) && focusCompatible(platform, w.role, n.role))
+      || (w.role === 'row' && rowStop(n) && (!w.name || ws(w.name) === ws(n.name)))
+      || (w.role === 'gridcell' && cellStop(n) && ws(w.name) === ws(n.name)));
     if (webFocus.length && !webFocus.every((w, i) => same(w, nativeFocus[i]))) findings.push({ kind: 'focus', detail: `Tab order web [${fw.join(' | ')}] → ${platform} [${fn.join(' | ')}]` });
     else if (webFocus.length) { const extra = [...new Set(nativeFocus.filter(n => n && !webFocus.some(w => same(w, n))).map(key))]; if (extra.length) findings.push({ kind: 'focus', detail: `${platform} has extra Tab stops: ${extra.join(' | ')}` }); }
   }

@@ -1,0 +1,223 @@
+{
+ "tag": "md-slider",
+ "case": "default",
+ "html": "<md-slider data-ax-node=\"n0\" id=\"example-md-slider\"></md-slider>",
+ "props": {
+  "n0": {
+   "ariaLabelEnd": "",
+   "ariaLabelStart": "",
+   "controlled": false,
+   "density": 0,
+   "disabled": false,
+   "fullHeight": false,
+   "icon": "",
+   "insetIcon": false,
+   "labeled": true,
+   "max": 100,
+   "min": 0,
+   "name": "",
+   "nameEnd": "",
+   "nameStart": "",
+   "orientation": "horizontal",
+   "range": false,
+   "size": "xs",
+   "sliderAriaLabel": "Volume",
+   "step": 1,
+   "stops": false,
+   "value": 30,
+   "valueEnd": 100,
+   "valueEndText": "",
+   "valueIndicator": false,
+   "valueStart": 0,
+   "valueStartText": "",
+   "valueText": "",
+   "variant": "standard"
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   272
+  ],
+  "children": [
+   {
+    "role": "generic",
+    "name": "",
+    "ignored": false,
+    "invalid": "false",
+    "frame": [
+     16,
+     16,
+     608,
+     92
+    ],
+    "children": [
+     {
+      "role": "generic",
+      "name": "",
+      "ignored": false,
+      "frame": [
+       16,
+       64,
+       608,
+       44
+      ],
+      "children": [
+       {
+        "role": "generic",
+        "name": "",
+        "ignored": false,
+        "frame": [
+         16,
+         64,
+         608,
+         44
+        ],
+        "children": [
+         {
+          "role": "generic",
+          "name": "",
+          "ignored": false,
+          "frame": [
+           16,
+           78,
+           608,
+           16
+          ],
+          "children": [
+           {
+            "role": "generic",
+            "name": "",
+            "ignored": false,
+            "frame": [
+             204.390625,
+             78,
+             419.609375,
+             16
+            ]
+           },
+           {
+            "role": "generic",
+            "name": "",
+            "ignored": false,
+            "frame": [
+             16,
+             78,
+             176.390625,
+             16
+            ]
+           }
+          ]
+         },
+         {
+          "role": "generic",
+          "name": "",
+          "ignored": false,
+          "frame": [
+           196.390625,
+           64,
+           4,
+           44
+          ],
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "StaticText",
+              "name": "30",
+              "ignored": false,
+              "frame": [
+               191.203125,
+               31,
+               14.359375,
+               14
+              ],
+              "children": [
+               {
+                "role": "InlineTextBox",
+                "name": "30",
+                "ignored": false
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "slider",
+          "name": "Volume",
+          "ignored": false,
+          "value": 30,
+          "invalid": "false",
+          "focusable": true,
+          "settable": true,
+          "orientation": "horizontal",
+          "valuemin": 0,
+          "valuemax": 100,
+          "valuetext": "30",
+          "frame": [
+           16,
+           64,
+           608,
+           44
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [
+  {
+   "dom": "input",
+   "role": "slider",
+   "name": "Volume",
+   "frame": [
+    16,
+    64,
+    608,
+    44
+   ],
+   "props": {
+    "invalid": "false",
+    "focusable": true,
+    "focused": true,
+    "settable": true,
+    "orientation": "horizontal",
+    "valuemin": 0,
+    "valuemax": 100,
+    "valuetext": "30"
+   }
+  },
+  {
+   "outside": "ax-after"
+  }
+ ],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

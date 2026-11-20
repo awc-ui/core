@@ -94,8 +94,17 @@ struct TSRaster {
     static var host: NSHostingView<TableStatesFixture>!, window: NSWindow!
     static var checks = 0, failures: [String] = [], report: [[String: Any]] = [], gaps: [String] = []
     static let env = ProcessInfo.processInfo.environment
+    /// AWC_TABLE_TRACE: each phase is announced on stderr (interleaves with runtime warnings such as AttributeGraph cycles).
+    static let trace = env["AWC_TABLE_TRACE"] != nil
     static var data: [[AWCValue]] = []
-    static func check(_ ok: Bool, _ message: @autoclosure () -> String) { checks += 1; if !ok { let m = message(); failures.append(m); print("FAIL: " + m); fflush(stdout) } }
+    static func dgSuffix() -> String {
+        #if !canImport(AppKit)
+        return AWCDG.suffix()
+        #else
+        return ""
+        #endif
+    }
+    static func check(_ ok: Bool, _ message: @autoclosure () -> String) { checks += 1; if !ok { let m = message(); failures.append(m); print("FAIL: " + m + dgSuffix()); fflush(stdout) } }
     static func now() -> Double { CACurrentMediaTime() * 1000 }
     /// Runs the loop (events, layout, display) and records per-frame native samples.
     static var frames: [(t: Double, scroll: CGPoint?, container: CGPoint?)] = []
@@ -182,7 +191,13 @@ struct TSRaster {
         // The offscreen window takes key events through sendEvent (no NSApplication monitors): the table's container
         // scrollports see them first, as their local monitor would.
         #if os(macOS)
-        if !AWCTableScrollController.routeKeyDown(e) { window.sendEvent(e) }
+        // Tab from the document (no first responder) enters the content in document order, as the modal scope's local monitor does
+        // in an application (ModalScope.swift; the offscreen window has no monitors). Without a document-order root or a
+        // right-to-left row `enter` finds no order and AppKit's own loop takes the key (4-2: the loop used to be AppKit's here,
+        // which starts at the leftmost view and passed tb-sort-rtl [4] only because 3 Tabs end on the same label from either end).
+        if k == "Tab", flags.intersection([.control, .option, .command]).isEmpty, window.firstResponder == nil || window.firstResponder === window,
+           AWCDocumentTabOrder.enter(in: window, backward: flags.contains(.shift)) { /* handled */ }
+        else if !AWCTableScrollController.routeKeyDown(e) { window.sendEvent(e) }
         #else
         window.sendEvent(e)
         #endif
@@ -227,7 +242,6 @@ struct TSRaster {
         let cur = frozenScroll() ?? containerScroll() ?? .zero
         _ = state.scroller.scroll(x: Double(cur.x) + (state.rtl ? -dx : dx), y: Double(cur.y) + dy)
     }
-    static var selectSkipped = false
     static var lostFocus: String? = nil
     /// The page's blank click (4, 880) resets focus to the document start. iOS: the pointer only moves there (a touch
     /// outside the fixture reached the last touched control) and the first responder is cleared.
@@ -246,6 +260,11 @@ struct TSRaster {
         if let f = r as? AWCNativeButtonFocusView { return f.configuration?.id }
         var v: NSView? = r
         while let c = v { if !c.accessibilityIdentifier().isEmpty { return c.accessibilityIdentifier() }; v = c.superview }
+        // The rows-per-page md-select's own field (AppKit's field editor / the UIKit text field) is the select's tab stop.
+        if state.paginationID != "-", let rpp = m(state.paginationID, "rpp")?.bounds {
+            let f = r.convert(r.bounds, to: host), mid = CGPoint(x: f.midX, y: host.isFlipped ? f.midY : host.bounds.height - f.midY)
+            if rpp.insetBy(dx: -2, dy: -2).contains(mid) { return state.paginationID + "-rpp" }
+        }
         return "other:" + String(describing: type(of: r))
     }
     /// The web focus record → element kind (the family's tab stops and the page's).
@@ -366,6 +385,17 @@ struct TSRaster {
             default: return { if bodyRows().count > 2 { update(bodyRows()[2].id) { $0.properties["expanded"] = false } } }
             }
         }
+        if run == "tb-contract" {
+            switch label {
+            case "click-calories-default-desc": return { sortLabel("cal").map(click) }
+            case "click-dessert-custom-label", "click-dessert-again-desc": return { sortLabel("name").map(click) }
+            case "click-row-1-checkbox-not-selectable": return { cellCenter(1, 0).map(click) }
+            case "click-row-2-checkbox": return { cellCenter(2, 0).map(click) }
+            case "click-head-checkbox-select-all": return { find(state.nodes) { $0.tag == "md-checkbox" }.first.flatMap { center($0.id) }.map(click) }
+            case "click-lone-sort-label": return { sortLabel("lone").map(click) }
+            default: return leave
+            }
+        }
         if run.hasPrefix("tb-sort") {
             switch label {
             case "click-calories", "click-calories-again-desc", "click-calories-third": return { sortLabel("cal").map(click) }
@@ -391,9 +421,8 @@ struct TSRaster {
         if run == "tb-keyboard" {
             switch label {
             case "blank": return blank
-            // Without a keyboard-focusable native md-select (n2) the rows-per-page stop is missing: one press fewer.
             case "Shift+Tab-x10": return {
-                var seq: [String] = [nativeFocusKind()], presses = selectSkipped ? 9 : 10
+                var seq: [String] = [nativeFocusKind()], presses = 10
                 if nativeFocusKind() == "none", let after = focusView("after") {
                     // From outside the document Chrome's first Shift+Tab enters at the last control; AppKit's key loop starts at the
                     // first key view, so the harness enters at the last control itself.
@@ -409,7 +438,6 @@ struct TSRaster {
             case "ArrowRight": return { key("ArrowRight") }
             default:
                 // Tab-18: the page's tab order leaves the document after its last stop (#run); a native window wraps.
-                if label == "Tab-15" && selectSkipped { return {} }
                 if label == "Tab-18" { return { key("Tab"); if nativeFocusKind() != "none" && nativeFocusKind() != "after" { _ = window.makeFirstResponder(nil); gaps.append("tb-keyboard Tab-18: the window's key loop wraps; Chrome leaves the document (focus reset to none)") } } }
                 return { key("Tab") }
             }
@@ -498,7 +526,7 @@ struct TSRaster {
     }
     // MARK: Comparisons
     static let eventNames: Set<String> = ["mdSelectionChange", "mdRowSelectionChange", "mdRowClick", "mdRowExpandedChange", "mdSortChange", "mdPageChange", "mdRowsPerPageChange",
-                                          "mdPinChange", "mdColumnVisibilityChange", "mdChange", "mdClick"]
+                                          "mdPinChange", "mdColumnVisibilityChange", "mdChange", "mdClick", "mdSortRequest"]
     static func key(of name: String, _ d: AWCValue) -> String {
         switch name {
         case "mdChange": return "mdChange(\(d["checked"].bool ?? false))"
@@ -542,12 +570,7 @@ struct TSRaster {
         }
         for icon in ["first_page", "chevron_left", "chevron_right", "last_page", "rpp"] { if let b = m(state.paginationID + "-" + icon)?.bounds { out.append(b.insetBy(dx: -2, dy: -2)) } }
         if let b = m(state.paginationID, "rpp")?.bounds { out.append(b.insetBy(dx: -2, dy: -2)) }
-        // Chrome places the right-to-left custom thumb from the track's inline start translated by (1 − p)·travel (source defect);
-        // the native thumb follows the source's documented intent (starts at the right end, travels left): its track is masked.
-        if run == "tb-frozen-scroll-rtl", let t = m(state.tableID), let th = m(state.tableID, "hthumb") {
-            gaps.append("tb-frozen-scroll-rtl \(label): right-to-left h-thumb track masked (Chrome's translateX on the inline-start thumb is a source defect; native follows the documented intent)")
-            out.append(CGRect(x: t.bounds.minX, y: th.bounds.minY - 3, width: t.bounds.width, height: th.bounds.height + 6))
-        }
+        // (The right-to-left custom thumb is compared too: the source defect that pushed it out of its track is fixed, d5 2026-11.)
         if let t = m(state.tableID), (label.contains("loading") || label.contains("skeleton")) { out.append(CGRect(x: t.bounds.minX, y: t.bounds.minY + 57, width: t.bounds.width, height: Swift.max(0, t.bounds.height - 57))) }
         return out
     }
@@ -616,7 +639,7 @@ struct TSRaster {
                 last = s.value
             }
             #if os(macOS)
-            let cap = 120.0
+            let cap = 160.0   // 4-2: tb-toolbar-autobind [4] (KNOWN-CAUSES 19): the first render after the update lands up to 122 ms after the input under load; the curve itself is still scored at the same tolerance
             #else
             let cap = 200.0   // the simulator's HID touches reach the view 70–140 ms after the harness's input
             #endif
@@ -668,7 +691,7 @@ struct TSRaster {
         pump(400)
         _ = window.makeFirstResponder(nil); state.events = []; pump(50)
         let phases = r["phases"].array, webEvents = r["events"].array
-        selectSkipped = false; lostFocus = nil
+        lostFocus = nil
         var runOK = true
         for (i, ph) in phases.enumerated() {
             let label = ph["label"].string, tag = "\(label0) [\(i)] \(label)"
@@ -676,8 +699,15 @@ struct TSRaster {
             let start = ph["t"].number ?? 0, actEnd = ph["actEnd"].number ?? start
             let next = i + 1 < phases.count ? (phases[i + 1]["t"].number ?? start + 450) : ((ph["samples"].array.last?["t"].number ?? start + 400) + 30)
             let eventsBefore = state.events.count
+            if trace { FileHandle.standardError.write(Data("PHASE \(tag)\n".utf8)) }
             let act = action(name, label)
             let tAct = now()
+            #if !canImport(AppKit)
+            AWCDG.input(planned: tAct)
+            #endif
+            #if !canImport(AppKit)
+            AWCDG.start()
+            #endif
             act()
             refreshInspect()
             let t0 = now()
@@ -710,9 +740,6 @@ struct TSRaster {
             } else if let lost = lostFocus, wf == lost, nf == "none" {
                 // Consequence of the rule above: Chrome's focus is still on that (re-enabled) button.
                 gaps.append("\(tag): focus still on \(wf) in Chrome since it was disabled while focused (platform rule)")
-            } else if wf == "pagination:rpp-select" && nf != wf && name == "tb-keyboard" {
-                selectSkipped = true
-                gaps.append("\(tag): rows-per-page md-select is not a native tab stop yet (md-select native renderer, fork n2)")
             } else { check(wf == nf, "\(tag): focus \(nf) vs \(wf)") }
             // Motion (per frame, from the input).
             // The web's τ = 0 is the input's handling (actEnd); the offscreen AppKit harness can take a few frames to render the
@@ -771,7 +798,8 @@ struct TSRaster {
             }
         }
         // Sort labels and head checkbox.
-        let labels = find(state.nodes) { $0.tag == "md-table-sort-label" }
+        // The head's sort labels (the oracle's `head` cells); a label outside a table (tb-contract's lone label) is not one.
+        let labels = find(find(state.nodes) { $0.tag == "md-table-head" }) { $0.tag == "md-table-sort-label" }
         let webHead = w["head"].array.compactMap { c -> AWCValue? in c.array.count > 1 && c.array[1] != .null ? c.array[1] : nil }
         for (k, wl) in webHead.enumerated() where k < labels.count {
             guard let n = m(labels[k].id) else { continue }
@@ -803,13 +831,6 @@ struct TSRaster {
         for s in w["scroll"].array {
             let path = s["path"].string, left = abs(s["left"].number ?? 0), top = s["top"].number ?? 0
             let native: CGPoint? = path.contains("body-scroll") ? frozenScroll() : path.contains("scroll") ? containerScroll() : nil
-            #if os(iOS)
-            // UIKit has no default arrow-key scrolling of a scroll view around a focused control (the browser scrolls 40 px):
-            // decision log "iOS arrow scrolling" (AUDIT exception).
-            if tag.hasSuffix("] ArrowRight"), path.contains("md-table-container"), let nv = native, abs(Double(nv.x) - left) > 2 {
-                gaps.append("\(tag): iOS does not scroll the container on ArrowRight from a focused checkbox (no UIKit default; Chrome scrolls 40 px)"); continue
-            }
-            #endif
             if let nv = native { check(abs(Double(nv.x) - left) <= 2 && abs(Double(nv.y) - top) <= 2, "\(tag): scroll \(path) (\(nv.x), \(nv.y)) vs (\(left), \(top))") }
         }
         // Pinned cells' inline positions.
@@ -849,7 +870,8 @@ struct TSRaster {
             }
         }
         // Sort arrows: rotation (desc = 180°) and opacity.
-        let labels = find(state.nodes) { $0.tag == "md-table-sort-label" }
+        // The head's sort labels (the oracle's `head` cells); a label outside a table (tb-contract's lone label) is not one.
+        let labels = find(find(state.nodes) { $0.tag == "md-table-head" }) { $0.tag == "md-table-sort-label" }
         for (k, l) in labels.enumerated() {
             func headLabel(_ s: AWCValue) -> [AWCValue]? { let cells = s["head"].array.filter { $0.array.count > 1 && $0.array[1] != .null }; return k < cells.count ? cells[k].array[1].array : nil }
             let rot = samples.compactMap { s in headLabel(s).map { (tau(s), abs(angle($0[2].string)) / 180) } }

@@ -356,6 +356,60 @@ describe('md-list', () => {
       expect(items[1].rovingFocusVisible).toBe(false);
       expect(items[0]).not.toHaveClass('md-list-item--roving-focus-visible');
     });
+
+    /* gate-7 r3-25: an expandable row of a selection list is a roving stop (isItemFocusable), so its host carries the
+       roving tabindex while it is the active row. It used to render none; setFocus() stamped one that no render updated, which
+       left a second tab stop. */
+    it('keeps one host tab stop when a selection list roves over an expandable row', async () => {
+      const page = await create(`<md-list selection-mode="single-select">
+        <md-list-item headline="A"></md-list-item>
+        <md-list-item headline="D" expandable><md-list-item slot="expanded-content" headline="Child"></md-list-item></md-list-item>
+        <md-list-item headline="C"></md-list-item>
+      </md-list>`);
+      await page.waitForChanges();
+      const list = page.root as unknown as HTMLMdListElement;
+      const items = Array.from(page.root!.children).filter(el => el.tagName === 'MD-LIST-ITEM') as HTMLMdListItemElement[];
+      const stops = () => items.map(i => i.getAttribute('tabindex'));
+      // Not the active row: no host tabindex at all (a negative one on the shadow host would take its caret out of the Tab order).
+      expect(stops()).toEqual(['0', null, '-1']);
+      await list.activateNext();
+      await page.waitForChanges();
+      expect(stops()).toEqual(['-1', '0', '-1']);
+      await list.activateNext();
+      await page.waitForChanges();
+      expect(stops()).toEqual(['-1', null, '0']);
+      await list.activatePrevious();
+      await list.activatePrevious();
+      await page.waitForChanges();
+      expect(stops()).toEqual(['0', null, '-1']);
+    });
+
+    it('drops a tabindex setFocus() stamped on a row whose render owns none, once the row blurs', async () => {
+      // Outside selection lists the expandable row is no roving stop: its render owns no host tabindex.
+      const page = await create(`<md-list>
+        <md-list-item type="button" headline="A"></md-list-item>
+        <md-list-item headline="D" expandable></md-list-item>
+      </md-list>`);
+      await page.waitForChanges();
+      const items = Array.from(page.root!.children).filter(el => el.tagName === 'MD-LIST-ITEM') as HTMLMdListItemElement[];
+      await items[1].setFocus();
+      await page.waitForChanges();
+      expect(items[1].getAttribute('tabindex')).toBe('-1');
+      items[1].dispatchEvent(new Event('blur'));
+      await page.waitForChanges();
+      expect(items[1].getAttribute('tabindex')).toBeNull();
+    });
+
+    it('leaves the host of an expandable row without a tab stop outside selection lists', async () => {
+      const page = await create(`<md-list>
+        <md-list-item type="button" headline="A"></md-list-item>
+        <md-list-item headline="D" expandable></md-list-item>
+      </md-list>`);
+      await page.waitForChanges();
+      const items = Array.from(page.root!.children).filter(el => el.tagName === 'MD-LIST-ITEM') as HTMLMdListItemElement[];
+      // The caret is the control there; the row host is not a roving stop (md-list isItemFocusable: text row, no selection).
+      expect(items[1].getAttribute('tabindex')).toBeFalsy();
+    });
   });
 
   /* ----------------------------------------------------------

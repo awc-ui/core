@@ -10,7 +10,9 @@ import SwiftUI
     private(set) var ownsTouch = false
     @ObservationIgnored private var completedAt: CFTimeInterval = -1
     @ObservationIgnored private var generation = 0
-    func begin(at point: CGPoint) { generation &+= 1; origin = point; isDown = true; ownsTouch = true; completedAt = -1 }
+    /// Counts touch-downs (observed): a down and up delivered in one SwiftUI update leave `isDown` unchanged, the count still moves.
+    private(set) var pressSerial = 0
+    func begin(at point: CGPoint) { generation &+= 1; pressSerial &+= 1; origin = point; isDown = true; ownsTouch = true; completedAt = -1 }
     func end(completed: Bool) {
         isDown = false
         guard completed else { ownsTouch = false; return }
@@ -78,6 +80,8 @@ final class AWCTouchPressRouter: UIGestureRecognizer, UIGestureRecognizerDelegat
     private static var excluded = Set<ObjectIdentifier>()
     static let slop: CGFloat = 10
     static func install(in window: UIWindow) {
+        // iOS 18+: `AWCTouchPressRecognizer` on each bridged view takes the touch through SwiftUI's own hit test.
+        if #available(iOS 18.0, *) { return }
         guard !(window.gestureRecognizers ?? []).contains(where: { $0 is AWCTouchPressRouter }) else { return }
         let router = AWCTouchPressRouter(target: nil, action: nil)
         router.delegate = router; router.cancelsTouchesInView = false; router.delaysTouchesBegan = false; router.delaysTouchesEnded = false
@@ -128,7 +132,7 @@ final class AWCTouchPressRouter: UIGestureRecognizer, UIGestureRecognizerDelegat
             else {
                 let handler = target?.configuration?.touchPress, inside = target.map { $0.bounds.contains(touch.location(in: $0)) } ?? false
                 self.touch = nil; target = nil
-                handler?.ended(inside)
+                AWCInputDelivery.touchEndedAt = event.timestamp * 1000; handler?.ended(inside); AWCInputDelivery.touchEndedAt = nil
             }
         }
         finishIfIdle(event)
@@ -146,4 +150,87 @@ final class AWCTouchPressRouter: UIGestureRecognizer, UIGestureRecognizerDelegat
         touch.gestureRecognizers?.contains { $0 is UIPanGestureRecognizer && $0.view is UIScrollView && [.began, .changed, .ended].contains($0.state) } ?? false
     }
 }
+#endif
+
+// MARK: - iOS 18+: raw touches through SwiftUI's own hit test (gate-7 di)
+
+#if canImport(UIKit) && !canImport(AppKit)
+/// A UIKit recognizer that only reads touches: it never recognizes, delays, prevents or cancels anything, so SwiftUI keeps
+/// every gesture of its own. SwiftUI hands it a touch only where its own hit test puts that touch (occlusion by a scrim or
+/// any content above, `allowsHitTesting`, `contentShape`), and UIKit calls it inside `sendEvent`, before SwiftUI's update.
+class AWCPassiveTouchRecognizer: UIGestureRecognizer {
+    init() { super.init(target: nil, action: nil); cancelsTouchesInView = false; delaysTouchesBegan = false; delaysTouchesEnded = false }
+    override func canPrevent(_ preventedGestureRecognizer: UIGestureRecognizer) -> Bool { false }
+    override func canBePrevented(by preventingGestureRecognizer: UIGestureRecognizer) -> Bool { false }
+    func finishIfIdle(_ event: UIEvent) { if event.allTouches?.allSatisfy({ $0.phase == .ended || $0.phase == .cancelled }) ?? true { state = .failed } }
+    static func scrolling(_ touch: UITouch) -> Bool {
+        touch.gestureRecognizers?.contains { $0 is UIPanGestureRecognizer && $0.view is UIScrollView && [.began, .changed, .ended].contains($0.state) } ?? false
+    }
+}
+
+/// The focus bridge laid over a view (`awcFocusBridgeLayer`), so that view's touches reach the bridge's `touchPress`.
+@MainActor final class AWCTouchPressLink { weak var view: AWCNativeButtonFocusView? }
+private struct AWCTouchPressLinkKey: EnvironmentKey { static let defaultValue: AWCTouchPressLink? = nil }
+extension EnvironmentValues {
+    var awcTouchPressLink: AWCTouchPressLink? { get { self[AWCTouchPressLinkKey.self] } set { self[AWCTouchPressLinkKey.self] = newValue } }
+}
+
+/// iOS 18+ delivery of a focus bridge's `touchPress` (the role `AWCTouchPressRouter` plays on iOS 17): attached to the view
+/// under the bridge, so SwiftUI's hit test picks the touched controls (nested ones included, as Chrome's pointer events reach
+/// a control and its ancestors) and occlusion is decided by SwiftUI on every runtime. The router decided occlusion in UIKit,
+/// which iOS 26 cannot answer (its probe fell through to the hosting view and left the touch to SwiftUI's next update).
+final class AWCTouchPressRecognizer: AWCPassiveTouchRecognizer {
+    var link: AWCTouchPressLink?
+    private weak var touch: UITouch?
+    private weak var target: AWCNativeButtonFocusView?
+    private var start = CGPoint.zero
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
+        guard touch == nil, let first = touches.first, event.allTouches?.count == 1, let bridge = link?.view, bridge.window != nil,
+              let configuration = bridge.configuration, !configuration.inert, let handler = configuration.touchPress,
+              handler.began(first.location(in: bridge)) else { return }
+        touch = first; target = bridge; start = first.location(in: nil)
+    }
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent) {
+        guard let touch, touches.contains(touch) else { return }
+        let p = touch.location(in: nil)
+        if hypot(p.x - start.x, p.y - start.y) > AWCTouchPressRouter.slop || Self.scrolling(touch) { leave() }
+    }
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent) {
+        if let touch, touches.contains(touch) {
+            if Self.scrolling(touch) { leave() }
+            else {
+                let handler = target?.configuration?.touchPress, inside = target.map { $0.bounds.contains(touch.location(in: $0)) } ?? false
+                self.touch = nil; target = nil
+                AWCInputDelivery.touchEndedAt = event.timestamp * 1000; handler?.ended(inside); AWCInputDelivery.touchEndedAt = nil
+            }
+        }
+        finishIfIdle(event)
+    }
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent) {
+        if let touch, touches.contains(touch) { leave() }
+        finishIfIdle(event)
+    }
+    override func reset() { super.reset(); if touch != nil { leave() } }
+    private func leave() { let handler = target?.configuration?.touchPress; touch = nil; target = nil; handler?.cancelled() }
+}
+@available(iOS 18.0, *)
+struct AWCTouchPressGesture: UIGestureRecognizerRepresentable {
+    let link: AWCTouchPressLink
+    func makeUIGestureRecognizer(context: Context) -> AWCTouchPressRecognizer { let r = AWCTouchPressRecognizer(); r.link = link; return r }
+    func updateUIGestureRecognizer(_ recognizer: AWCTouchPressRecognizer, context: Context) { recognizer.link = link }
+    func handleUIGestureRecognizerAction(_ recognizer: AWCTouchPressRecognizer, context: Context) {}
+}
+/// `awcFocusBridgeLayer` on iOS: the bridge over the view, and (iOS 18+) the view's raw touches routed to it.
+struct AWCFocusBridgeTouchLayer<Bridge: View>: ViewModifier {
+    let bridge: Bridge
+    @State private var link = AWCTouchPressLink()
+    @ViewBuilder func body(content: Content) -> some View {
+        if #available(iOS 18.0, *) {
+            content.overlay { bridge.environment(\.awcTouchPressLink, link) }.gesture(AWCTouchPressGesture(link: link))
+        } else {
+            content.overlay { bridge }
+        }
+    }
+}
+
 #endif

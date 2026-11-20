@@ -133,6 +133,11 @@
       "name": "hasSlottedLabel",
       "type": "inferred",
       "initializer": "false"
+    },
+    {
+      "name": "rippleMounted",
+      "type": "inferred",
+      "initializer": "false"
     }
   ],
   "events": [
@@ -258,19 +263,19 @@
       "code": "DOM_QUERY",
       "severity": "warning",
       "message": "querySelector depends on browser semantics and requires a native adapter.",
-      "line": 132
+      "line": 136
     },
     {
       "code": "SHADOW_DOM",
       "severity": "warning",
       "message": "shadowRoot depends on browser semantics and requires a native adapter.",
-      "line": 132
+      "line": 136
     },
     {
       "code": "SLOT_INTROSPECTION",
       "severity": "warning",
       "message": "assignedNodes depends on browser semantics and requires a native adapter.",
-      "line": 136
+      "line": 140
     },
     {
       "code": "CANCELABLE_EVENT",
@@ -284,7 +289,7 @@
     "styleUrl": "md-breadcrumb-item.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "6d19940de0700e28aac4133af82b79a3ca7cf22af1bcd6fe5f9c489ae4b4cdcc"
+    "sha256": "9dc1ae629da2440e4f3cbaf6632ba3e6e4b07547d4f680b3eee39d970cf8e9b3"
   },
   "styles": [
     {
@@ -1094,9 +1099,18 @@
       "notes": [
         "A link crumb (href, not current, not disabled) or a static span; mdSelect { href, label, current, itemIndex, itemTotal } is cancelable and, unless prevented, the link opens through the host URL router (target honoured; rel has no native browsing-context effect).",
         "collapsed, itemIndex and itemTotal are managed by the trail (as the source sets them); a crumb outside a trail renders as the first crumb and is the current page only when authored.",
-        "Hover, press and keyboard focus (12 % layer, 3-point secondary ring) with the md-ripple wave; labels truncate at 32 ch with an ellipsis and keep the full accessible name."
+        "Hover, press and keyboard focus (12 % layer, 3-point secondary ring) with the md-ripple wave; labels truncate at 32 ch with an ellipsis and keep the full accessible name.",
+        "Typed ::part() targets (AWCBreadcrumbItemPartAppearance): separator (colour, font size), icon and label (colour), link (colour, underline in the link colour), static (colour, background, border) and state-layer (colour, fixed opacity)."
       ],
       "verification": "not-device-verified",
+      "visualParts": [
+        "separator",
+        "icon",
+        "label",
+        "static",
+        "link",
+        "state-layer"
+      ],
       "appearance": {
         "api": ".awcBreadcrumbsAppearance(AWCBreadcrumbsAppearance)",
         "fields": [
@@ -1140,9 +1154,18 @@
       "notes": [
         "A link crumb (href, not current, not disabled) or a static span; mdSelect { href, label, current, itemIndex, itemTotal } is cancelable and, unless prevented, the link opens through the host URL router (target honoured; rel has no native browsing-context effect).",
         "collapsed, itemIndex and itemTotal are managed by the trail (as the source sets them); a crumb outside a trail renders as the first crumb and is the current page only when authored.",
-        "Hover, press and keyboard focus (12 % layer, 3-point secondary ring) with the md-ripple wave; labels truncate at 32 ch with an ellipsis and keep the full accessible name."
+        "Hover, press and keyboard focus (12 % layer, 3-point secondary ring) with the md-ripple wave; labels truncate at 32 ch with an ellipsis and keep the full accessible name.",
+        "Typed ::part() targets (AWCBreadcrumbItemPartAppearance): separator (colour, font size), icon and label (colour), link (colour, underline in the link colour), static (colour, background, border) and state-layer (colour, fixed opacity)."
       ],
       "verification": "not-device-verified",
+      "visualParts": [
+        "separator",
+        "icon",
+        "label",
+        "static",
+        "link",
+        "state-layer"
+      ],
       "appearance": {
         "api": "AWCBreadcrumbsAppearanceScope(AWCBreadcrumbsAppearance)",
         "fields": [

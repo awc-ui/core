@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import dev.awc.nativeui.charts.*
 import kotlin.math.abs
 import kotlin.math.max
@@ -177,10 +178,22 @@ private fun chartKeyName(e: KeyEvent): String? = when (e.key) {
     }
     val host = ChartHostMetrics.of(kind, tokens, density)
     val pr = ChartProps(p)
-    val explicitHeight = if (kind == ChartKind.SPARKLINE) chartCssPixels(pr.str("height", "").ifEmpty { null }) ?: chartCssPixels(tokens["--md-sparkline-block-size"]) ?: 28.0
+    // The host's own inline layout CSS (`style="block-size:360px"` / `height:`) sizes it like the source's host CSS.
+    val styleHeight = p.str("style").split(';').firstNotNullOfOrNull { d -> d.split(':', limit = 2).takeIf { it.size == 2 && it[0].trim() in setOf("block-size", "height") }?.let { chartCssPixels(it[1].trim()) } }
+    val nodeId = p.str("id")
+    val headerPart = chartPart(AWCChartPart.HEADER, nodeId); val footerPart = chartPart(AWCChartPart.FOOTER, nodeId)
+    val canvasPart = chartPart(AWCChartPart.CANVAS, nodeId); val centerPart = chartPart(AWCChartPart.CENTER, nodeId)
+    val emptyPart = chartPart(AWCChartPart.EMPTY, nodeId); val loadingPart = chartPart(AWCChartPart.LOADING, nodeId)
+    val zoomPart = chartPart(AWCChartPart.ZOOM, nodeId)
+    val zoomParts = listOf(AWCChartPart.ZOOM_SLIDER, AWCChartPart.ZOOM_PAN, AWCChartPart.ZOOM_TRACK, AWCChartPart.ZOOM_WINDOW, AWCChartPart.ZOOM_HANDLE).associateWith { chartPart(it, nodeId) }
+    val explicitHeight = styleHeight ?: if (kind == ChartKind.SPARKLINE) chartCssPixels(pr.str("height", "").ifEmpty { null }) ?: chartCssPixels(tokens["--md-sparkline-block-size"]) ?: 28.0
                          else chartCssPixels(pr.str("height", "").ifEmpty { null }) ?: chartCssPixels(tokens["--${kind.prefix}-block-size"])
     val zoomSliderOn = (kind == ChartKind.LINE || kind == ChartKind.AREA || (kind == ChartKind.BAR && !pr.bool("polar"))) && pr.str("zoom", "none") in setOf("slider", "both")
+    // ::part(zoom) block padding adds to the strip's height (the plot shrinks by as much).
+    // The reserved zoom band (--_zoom-size). ::part(zoom) is absolutely positioned at the bottom with a content-box block-size:
+    // its vertical padding grows the strip upward over the plot without moving the plot.
     val zoomSize = chartCssPixels(tokens["--${kind.prefix}-zoom-size"]) ?: 28.0
+    val zoomPadV = (zoomPart.padding?.top ?: 0.0) + (zoomPart.padding?.bottom ?: 0.0)
     val loading = pr.bool("loading")
     val isEmpty = when (kind) { ChartKind.PIE -> awcList(pr.obj("data")).isEmpty() && !loading; ChartKind.SPARKLINE -> false; else -> awcList(pr.obj("series")).isEmpty() && !loading }
     val now = awcMotionClock({ ctl.animating }, version)
@@ -200,31 +213,40 @@ private fun chartKeyName(e: KeyEvent): String? = when (e.key) {
             // header / footer slots: in-flow blocks (margin-block 8px, collapsing) inside the padding, under the absolutely
             // positioned canvas, which covers the whole padding box (chart CSS) — so they share its top.
             if (slot != null && kind != ChartKind.SPARKLINE)
-                Column(Modifier.awcAt(host.padding.dp, (host.padding + 8).dp).width(plotW.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) { slot("header"); slot("footer") }
+                Column(Modifier.awcAt(host.padding.dp, (host.padding + 8).dp).width(plotW.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) { ChartPartText(headerPart) { slot("header") }; ChartPartText(footerPart) { slot("footer") } }
             if (plotW >= 2 && plotH >= 2) {
                 // `version` is passed down: the controller is a plain object, so its changes reach the (skippable) layers only this way.
-                ChartPlot(ctl, version, kind, tokens, faces, measurer, plotW, plotH, now, enabled = kind != ChartKind.SPARKLINE && !isEmpty, rtl = rtl, perform = ::perform,
+                CompositionLocalProvider(LocalAWCChartNodeId provides nodeId) { ChartPlot(ctl, version, kind, tokens, faces, measurer, plotW, plotH, now, enabled = kind != ChartKind.SPARKLINE && !isEmpty, rtl = rtl, perform = ::perform,
                     label = pr.str("labelPlot", if (kind == ChartKind.PIE) "Chart data. Use the arrow keys to move between slices, Home and End for the first and last, Escape to leave."
                                                 else "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave."),
-                    modifier = Modifier.offset(host.padding.dp, host.padding.dp))
-                if (zoomSliderOn) ChartZoomSlider(ctl, version, tokens, kind.prefix, rtl, pr, ::perform, Modifier.offset(host.padding.dp, (host.padding + plotH).dp).size(plotW.dp, zoomSize.dp))
+                    modifier = Modifier.offset(host.padding.dp, host.padding.dp)
+                        .then(canvasPart.opacity?.let { Modifier.alpha(it.toFloat()) } ?: Modifier)
+                        .then(canvasPart.backgroundColor?.let { Modifier.background(chartCssColor(it), RoundedCornerShape((canvasPart.cornerRadius ?: 0.0).dp)) } ?: Modifier)) }
+                if (zoomSliderOn) ChartZoomSlider(ctl, version, tokens, kind.prefix, rtl, pr, ::perform, Modifier.offset(host.padding.dp, (host.padding + plotH - zoomPadV).dp).size(plotW.dp, (zoomSize + zoomPadV).dp).tablePartBox(zoomPart, rtl), zoomParts)
             }
+            // The screen-reader data table (the Web's visually hidden table after the plot): TalkBack's table of the chart's data.
+            if (!isEmpty) chartDataTable(kind, pr, formatters)?.let { ChartDataTableNodes(it, Modifier.offset(host.padding.dp, max(0.0, h - host.padding - 1).dp)) }
             if (kind == ChartKind.PIE && slot != null) ctl.pie?.scene?.let { scene ->
                 // md-pie-chart's centre slot: centred on the ring's computed centre (getCenter(), canvas-relative, plus the
                 // padding), capped at the hole (getHoleBox()); physical coordinates in either direction.
                 val c = scene.pieCenterSlot ?: ChartPt(scene.plot.x + scene.plot.width / 2, scene.plot.y + scene.plot.height / 2)
                 val holeW = scene.pieHoleSize ?: 0.0; val holeH = scene.pieHoleHeight ?: 0.0
-                val ink = chartCssColor(tokens["--md-pie-chart-center-color"]?.takeIf { it.isNotBlank() } ?: chartToken(tokens, "--md-sys-color-on-surface", "#1C1B1F"))
+                val ink = chartCssColor(centerPart.color ?: tokens["--md-pie-chart-center-color"]?.takeIf { it.isNotBlank() } ?: chartToken(tokens, "--md-sys-color-on-surface", "#1C1B1F"))
                 CompositionLocalProvider(LocalContentColor provides ink) {
                     Box(Modifier.awcCenterAt((host.padding + c.x).dp, (host.padding + c.y).dp)
                         .widthIn(max = if (holeW > 0) holeW.dp else Dp.Infinity).heightIn(max = if (holeH > 0) holeH.dp else Dp.Infinity),
-                        contentAlignment = Alignment.Center) { slot("center") }
+                        contentAlignment = Alignment.Center) { Box(Modifier.tablePartBox(centerPart.copy(color = null), rtl)) { ChartPartText(centerPart.copy(color = null)) { slot("center") } } }
                 }
             }
             if (isEmpty || loading) {
-                Box(Modifier.matchParentSize().background(chartCssColor(host.emptyBackground), RoundedCornerShape(host.shape.dp)).padding(24.dp), contentAlignment = Alignment.Center) {
+                val lp = if (loading) loadingPart else emptyPart
+                val pad = lp.padding ?: AWCTableEdges(24.0, 24.0, 24.0, 24.0)
+                Box(Modifier.matchParentSize().then(lp.opacity?.let { Modifier.alpha(it.toFloat()) } ?: Modifier)
+                    .background(chartCssColor(lp.backgroundColor ?: host.emptyBackground), RoundedCornerShape((lp.cornerRadius ?: host.shape).dp))
+                    .padding(PaddingValues((if (rtl) pad.right else pad.left).dp, pad.top.dp, (if (rtl) pad.left else pad.right).dp, pad.bottom.dp)), contentAlignment = Alignment.Center) {
+                  CompositionLocalProvider(LocalAWCChartLayerInset provides pad.top.dp) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        val ink = chartCssColor(host.emptyColor)
+                        val ink = chartCssColor(lp.color ?: host.emptyColor)
                         if (loading) {
                             // The loader / loading slot replaces the built-in spinner and label only when it has content.
                             ChartSlotOrDefault(slot, if (slot != null) "loader" else "") {
@@ -238,10 +260,12 @@ private fun chartKeyName(e: KeyEvent): String? = when (e.key) {
                             }
                         } else {
                             CompositionLocalProvider(LocalContentColor provides ink) {
-                                ChartSlotOrDefault(slot, "empty") { Text(pr.str("labelEmpty", "No data to display"), color = ink, fontFamily = ChartRoboto) }
+                                ChartSlotOrDefault(slot, "empty") { Text(pr.str("labelEmpty", "No data to display"), color = ink, fontFamily = ChartRoboto,
+                                    fontSize = (lp.fontSize ?: chartCssPixels(tokens["--${kind.prefix}-empty-font-size"]) ?: 14.0).sp) }
                             }
                         }
                     }
+                  }
                 }
             }
             // The subtitle is the overlay's DOM text on the Web (drawn on the canvas here): exposed as text. Composed last: a
@@ -350,7 +374,7 @@ private fun chartKeyName(e: KeyEvent): String? = when (e.key) {
             HoverLayer(ctl, version, tokens, now, tip) { tip = it }
             val band = ctl.activePlot?.dragBand; val plot = ctl.activePlot?.scene?.plot
             if (band != null && abs(band.second - band.first) > 1 && plot != null) {
-                val bandColor = tokens["--${kind.prefix}-zoom-band-color"]?.takeIf { it.isNotBlank() } ?: chartWithAlpha(chartToken(tokens, "--md-sys-color-primary", "#6750A4"), 0.16)
+                val bandColor = chartPart(AWCChartPart.ZOOM_BAND, LocalAWCChartNodeId.current).backgroundColor ?: tokens["--${kind.prefix}-zoom-band-color"]?.takeIf { it.isNotBlank() } ?: chartWithAlpha(chartToken(tokens, "--md-sys-color-primary", "#6750A4"), 0.16)
                 val edge = chartCssColor(tokens["--${kind.prefix}-zoom-handle-color"]?.takeIf { it.isNotBlank() } ?: chartToken(tokens, "--md-sys-color-primary", "#6750A4"))
                 Box(Modifier.awcAt(min(band.first, band.second).dp, plot.y.dp).size(abs(band.second - band.first).dp, plot.height.dp).background(chartCssColor(bandColor))) {
                     Box(Modifier.align(Alignment.CenterStart).fillMaxHeight().width(1.dp).background(edge))
@@ -495,7 +519,8 @@ private fun chartActionKey(action: String, rtl: Boolean) = when {
 }
 
 /** The md-slider range the Web chart embeds as its zoom slider, with the pan grip over its window. */
-@Composable private fun ChartZoomSlider(ctl: ChartController, version: Int, tokens: Map<String, String>, prefix: String, rtl: Boolean, pr: ChartProps, perform: (() -> Unit) -> Unit, modifier: Modifier) {
+@Composable private fun ChartZoomSlider(ctl: ChartController, version: Int, tokens: Map<String, String>, prefix: String, rtl: Boolean, pr: ChartProps, perform: (() -> Unit) -> Unit, modifier: Modifier,
+                                         parts: Map<AWCChartPart, AWCTablePartStyle> = emptyMap()) {
     @Suppress("UNUSED_VARIABLE") val changed = version   // see HoverLayer
     val p = ctl.activePlot ?: return
     val px = LocalDensity.current.density
@@ -510,8 +535,10 @@ private fun chartActionKey(action: String, rtl: Boolean) = when {
         fun x(i: Int): Double { val f = i / last; return (if (rtl) 1 - f else f) * width }
         fun frac(px0: Double): Double { val raw = px0 / max(1.0, width); return min(max(if (rtl) 1 - raw else raw, 0.0), 1.0) }
         val lo = min(x(win.first), x(win.second)); val hi = max(x(win.first), x(win.second))
-        Box(Modifier.align(Alignment.CenterStart).fillMaxWidth().height(12.dp).background(chartCssColor(tok("track-color", "--md-sys-color-surface-container-highest", "#E6E0E9")), CircleShape))
-        Box(Modifier.align(AbsoluteAlignment.CenterLeft).absoluteOffset(lo.dp).width(max(0.0, hi - lo).dp).height(12.dp).background(chartCssColor(tok("window-color", "--md-sys-color-secondary-container", "#E8DEF8")), CircleShape)
+        // ::part(zoom-slider) (track, window, thumbs): its opacity is the slider's alone; ::part(zoom-pan) is its sibling above it.
+        Box(Modifier.matchParentSize().then(parts[AWCChartPart.ZOOM_SLIDER]?.opacity?.let { Modifier.alpha(it.toFloat()) } ?: Modifier)) {
+        Box(Modifier.align(Alignment.CenterStart).fillMaxWidth().height(12.dp).background(chartCssColor(parts[AWCChartPart.ZOOM_TRACK]?.backgroundColor ?: tok("track-color", "--md-sys-color-surface-container-highest", "#E6E0E9")), CircleShape))
+        Box(Modifier.align(AbsoluteAlignment.CenterLeft).absoluteOffset(lo.dp).width(max(0.0, hi - lo).dp).height(12.dp).background(chartCssColor(parts[AWCChartPart.ZOOM_WINDOW]?.backgroundColor ?: tok("window-color", "--md-sys-color-secondary-container", "#E8DEF8")), CircleShape)
             .pointerInput(win) {
                 awaitEachGesture {
                     val down = awaitFirstDown()
@@ -524,7 +551,7 @@ private fun chartActionKey(action: String, rtl: Boolean) = when {
                     perform { p.panEnd() }
                 }
             })
-        val handle = chartCssColor(tok("handle-color", "--md-sys-color-primary", "#6750A4"))
+        val handle = chartCssColor(parts[AWCChartPart.ZOOM_HANDLE]?.backgroundColor ?: tok("handle-color", "--md-sys-color-primary", "#6750A4"))
         for (isStart in listOf(true, false)) {
             val idx = if (isStart) win.first else win.second
             val label = if (isStart) pr.str("labelZoomStart", "Zoom range start") else pr.str("labelZoomEnd", "Zoom range end")
@@ -549,5 +576,8 @@ private fun chartActionKey(action: String, rtl: Boolean) = when {
                 Box(Modifier.size(4.dp, mh).background(handle, CircleShape))
             }
         }
+        }
+        // ::part(zoom-pan): the pan grip between the thumbs (inset 10 at both ends), above the slider (z-index 1).
+        parts[AWCChartPart.ZOOM_PAN]?.backgroundColor?.let { bg -> Box(Modifier.align(AbsoluteAlignment.CenterLeft).absoluteOffset((lo + 10).dp).size(max(0.0, hi - lo - 20).dp, mh).background(chartCssColor(bg))) }
     }
 }

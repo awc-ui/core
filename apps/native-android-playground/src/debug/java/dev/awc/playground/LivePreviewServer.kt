@@ -60,6 +60,7 @@ internal class LivePreviewServer(
     }
 
     private fun serve(socket: Socket) {
+        var reqInfo = "?"
         try {
             val input = BufferedInputStream(socket.getInputStream())
             val output = BufferedOutputStream(socket.getOutputStream())
@@ -100,12 +101,15 @@ internal class LivePreviewServer(
                 check(count > 0) { "Incomplete native request body." }
                 offset += count
             }
+            reqInfo = "${request[0]} ${request[1]} len=$length"
             when (request[0] to request[1]) {
                 "GET" to "/health" -> reply(output, 200, JSONObject().put("ready", true).put("platform", "android")
                     .put("renderer", "Jetpack Compose").put("protocol", 1))
                 "POST" to "/command" -> {
                     require(length > 0) { "Native command requires JSON." }
-                    reply(output, 200, command(JSONObject(body.toString(StandardCharsets.UTF_8))))
+                    val cmdJson = JSONObject(body.toString(StandardCharsets.UTF_8))
+                    val result = command(cmdJson)
+                    reply(output, 200, result)
                 }
                 "GET" to "/stream" -> {
                     val stream = Stream(socket, output, encoder)
@@ -115,7 +119,12 @@ internal class LivePreviewServer(
                 else -> reply(output, 404, JSONObject().put("error", "Unknown native endpoint."))
             }
         } catch (error: Exception) {
-            runCatching { reply(BufferedOutputStream(socket.getOutputStream()), 400, JSONObject().put("error", error.cause?.message ?: error.message ?: "Native request failed.")) }
+            // s7-11-01: a stage that outlives its 5 s wait (UI thread or PixelCopy starved by host load) throws a TimeoutException
+            // with no message; it used to surface as 400 "Native request failed.", as if the request were invalid. It is a server-side
+            // timeout: answer 504 and name the request, so a slow host can no longer be read as a bad request.
+            val timedOut = generateSequence<Throwable>(error) { it.cause }.any { it is java.util.concurrent.TimeoutException }
+            if (timedOut) android.util.Log.e("AWC400", "timeout req=$reqInfo thread=${Thread.currentThread().name}", error)
+            runCatching { reply(BufferedOutputStream(socket.getOutputStream()), if (timedOut) 504 else 400, JSONObject().put("error", if (timedOut) "Native preview did not answer within 5 s ($reqInfo)." else (error.cause?.message ?: error.message ?: "Native request failed."))) }
         } finally {
             sockets.remove(socket)
             runCatching { socket.close() }
@@ -124,7 +133,7 @@ internal class LivePreviewServer(
 
     private fun reply(output: BufferedOutputStream, status: Int, value: JSONObject) {
         val bytes = value.toString().toByteArray(StandardCharsets.UTF_8)
-        output.write(("HTTP/1.1 $status ${if (status == 200) "OK" else "Error"}\r\nContent-Type: application/json\r\n" +
+        output.write(("HTTP/1.1 $status ${when (status) { 200 -> "OK"; 504 -> "Gateway Timeout"; else -> "Error" }}\r\nContent-Type: application/json\r\n" +
             "Content-Length: ${bytes.size}\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n").toByteArray(StandardCharsets.US_ASCII))
         output.write(bytes)
         output.flush()

@@ -23,6 +23,7 @@ public struct AWCNativeView: View {
     var interactionStore: AWCInteractionStore { inheritedInteractionStore ?? ownedInteractionStore }
     @Environment(\.awcButtonAppearance) var buttonAppearance
     @Environment(\.awcIconButtonAppearance) var iconButtonAppearance
+    @Environment(\.awcFabRailSize) var fabRailSize
     @Environment(\.awcIconButtonScheme) var iconButtonScheme
     @Environment(\.awcSplitButtonAppearance) var splitButtonAppearance
     @Environment(\.awcPopupRegistry) var popupRegistry
@@ -46,6 +47,9 @@ public struct AWCNativeView: View {
     @Environment(\.awcTheme) var customTheme
     @Environment(\.openURL) var openURL
     @Environment(\.colorScheme) var colorScheme
+    @Environment(\.awcForcedColors) var forcedColors
+    @Environment(\.awcTextInk) var inheritedTextInk
+    @Environment(\.awcTextLineBox) var inheritedTextLineBox
     @Environment(\.awcFormState) var formState
     @Environment(\.awcFormRegistry) var formRegistry
     @Environment(\.awcFormOwnerID) var formOwnerID
@@ -66,10 +70,12 @@ public struct AWCNativeView: View {
         self.init(node: AWCNode(id: tag, tag: tag, properties: properties, children: children), onEvent: onEvent)
     }
     public var body: some View {
-        rendered
-            .foregroundStyle(theme.onSurface)
+        hostRendered
+            // A text node inherits its component's ink (CSS `color` inheritance); components that set none keep on-surface.
+            .modifier(AWCNativeForeground(style: node.tag == "#text" ? inheritedTextInk ?? theme.onSurface : theme.onSurface, inherit: AWCAuthoredElement.tags.contains(node.tag)))
+            .environment(\.awcTextInk, nil).environment(\.awcTextLineBox, nil)
             .tint(theme.primary)
-            .disabled(disabled && node.tag != "md-tooltip" && node.tag != "md-chip" && node.tag != "md-switch" && node.tag != "md-checkbox" && node.tag != "md-radio" && node.tag != "md-list-item" && node.tag != "md-menu-item" && node.tag != "md-sub-menu-item" && !(nativeGroupContext?.selection(node.id) != nil && !b("disabled")) && !(node.tag=="md-split-button" || node.tag=="md-segmented-button" || node.tag=="md-fab-menu-item" || (fabMenuRegistry != nil && node.tag=="md-fab" && !b("disabled")) || (node.tag=="md-button" && !b("disabled"))))
+            .disabled(disabled && node.tag != "md-tooltip" && node.tag != "md-chip" && node.tag != "md-switch" && node.tag != "md-checkbox" && node.tag != "md-radio" && node.tag != "md-list-item" && node.tag != "md-transfer-list" && !b("_retainFocus") && node.tag != "md-menu-item" && node.tag != "md-sub-menu-item" && !(nativeGroupContext?.selection(node.id) != nil && !b("disabled")) && !(node.tag=="md-split-button" || node.tag=="md-segmented-button" || node.tag=="md-fab-menu-item" || ((node.tag=="md-fab" || node.tag=="md-icon-button") && !b("disabled")) || (node.tag=="md-button" && !b("disabled"))))
             .accessibilityIdentifier(node.id)
             .modifier(AWCMenuAnchorAuto(id: node.id, label: { awcMenuAnchorName(node, local) }))
             .awcKeyViewEntry()
@@ -83,14 +89,20 @@ public struct AWCNativeView: View {
             .onChange(of: resolvedForm?.id) { _, _ in synchronizeFormRegistration() }
             .onChange(of: node.properties) { previous, value in
                 let menuOpen=local["open"],splitChecked=local["trailingChecked"],pickerValue=local["value"]
+                let autocompleteState=node.tag=="md-autocomplete" ? local : [:]
                 local = (AWCComponentCatalog.defaults[node.tag] ?? [:]).merging(value) { _, new in new }
                 if ["md-fab-menu","md-snackbar","md-tooltip"].contains(node.tag),previous["open"]==value["open"] {local["open"]=menuOpen}
                 if node.tag=="md-split-button",previous["trailingChecked"]==value["trailingChecked"] {local["trailingChecked"]=splitChecked}
                 // md-color-picker owns value and open once interaction wrote them; an unrelated property edit keeps them.
                 if node.tag=="md-color-picker" { if previous["value"]==value["value"] {local["value"]=pickerValue}; if previous["open"]==value["open"] {local["open"]=menuOpen} }
+                // md-autocomplete owns open, value and the typed text once interaction wrote them (the source's runtime state):
+                // an unrelated property edit (new options while the suggestions are open) keeps them.
+                if node.tag=="md-autocomplete" { for k in ["open","value","inputValue"] where previous[k]==value[k] { local[k]=autocompleteState[k] } }
                 synchronizeLinkedState();synchronizeFormRegistration()
                 interactionStore.labelTexts.register(node.id, node.authoredTextContent)
             }
+            // CSS document stacking (r3-19): a nested host rises with a lifted component of its subtree.
+            .modifier(AWCStackingHost(tag: node.tag))
     }
     func synchronizeLinkedState() {
         // md-tabs publishes its selection itself (AWCNativeTabs).
@@ -151,9 +163,16 @@ public struct AWCNativeView: View {
         emit("mdValidityChange", ["valid": .bool(isValid), "validationMessage": .string(isValid ? "" : s("valueMissingLabel", "This field is required")), "flags": ["valueMissing": .bool(!isValid)]])
     }
 
+    /// `:host([hidden]) { display: none !important }` is in every source stylesheet: a hidden host renders nothing
+    /// (no layout, focus or accessibility node); its properties and form state stay in `local`. The host-level
+    /// source `cursor` applies over the rendered component.
+    @ViewBuilder var hostRendered: some View {
+        // md-ripple keeps tracking its surface while hidden (the source attaches to the parent): it handles `hidden` itself.
+        if b("hidden") && node.tag != "md-ripple" { AWCHiddenHost(nodeID: node.id) /* R2-D11 */ } else { rendered.awcCursor(awcHostCursor(tag: node.tag, properties: local)) }
+    }
     @ViewBuilder var rendered: some View {
         switch node.tag {
-        case "#text": Text(s("text"))
+        case "#text": Text(awcBidiParagraph(s("text"), layoutDirection)).accessibilityLabel(s("text")).modifier(AWCInheritedLineBox(box: inheritedTextLineBox))
         case "#symbol": AWCMaterialSymbol(s("name"))
         case "md-button": nativeButton
         case "md-icon-button": nativeIconButton
@@ -173,11 +192,11 @@ public struct AWCNativeView: View {
         case "md-otp-field": nativeOTPField
         case "md-select": nativeSelect
         case "md-multi-select": nativeMultiSelect
-        case "md-autocomplete": optionPicker
+        case "md-autocomplete": nativeAutocomplete
         case "md-select-option": selectOption
         case "md-slider": slider
         case "md-rating": rating
-        case "md-date-picker": temporalPicker
+        case "md-date-picker": nativeDatePicker
         case "md-time-picker": nativeTimePicker
         case "md-color-picker": nativeColorPicker
         case "md-divider": divider
@@ -189,17 +208,17 @@ public struct AWCNativeView: View {
         case "md-progress-indicator": AWCNativeProgressIndicator(nodeID:node.id,properties:local,theme:theme,onComplete:{emit("mdComplete")})
         case "md-ripple": AWCNativeRippleNode(node: node)
         case "md-card": nativeCard
-        case "md-accordion": AWCNativeAccordionGroup(node: node, theme: theme, onEvent: onEvent)
-        case "md-accordion-item": AWCNativeAccordionStandaloneItem(node: node, theme: theme, onEvent: onEvent)
+        case "md-accordion": AWCNativeAccordionGroup(node: node, theme: theme.awcForced(forcedColors), onEvent: onEvent)
+        case "md-accordion-item": AWCNativeAccordionStandaloneItem(node: node, theme: theme.awcForced(forcedColors), onEvent: onEvent)
         case "md-list": nativeList
         case "md-list-item": nativeListItem
-        case "md-app-bar": toolbar
+        case "md-app-bar": nativeAppBar
         case "md-toolbar": nativeToolbar
         case "md-navigation-bar": nativeNavigationBar
-        case "md-navigation-rail": navigation
+        case "md-navigation-rail": nativeNavigationRail
         case "md-tabs": nativeTabs
         case "md-navigation-tab": nativeNavigationTab
-        case "md-navigation-rail-tab": navigationItem
+        case "md-navigation-rail-tab": nativeNavigationRailTab
         case "md-tab": nativeTab
         case "md-tab-panels": nativeTabPanels
         case "md-tab-panel": nativeTabPanel
@@ -215,15 +234,41 @@ public struct AWCNativeView: View {
         case "md-menu-item", "md-sub-menu-item", "md-menu-item-group": nativeMenuItem
         case "md-snackbar": snackbar
         case "md-tooltip": tooltip
-        case "md-search": search
+        case "md-search": nativeSearch
         case "md-table", "md-table-container", "md-table-head", "md-table-body", "md-table-foot", "md-table-row", "md-table-cell", "md-table-toolbar", "md-table-pagination", "md-table-sort-label", "md-table-expand-toggle": nativeTableFamily
-        case "md-transfer-list": transferList
+        case "md-transfer-list": nativeTransferList
         case "md-organization-chart": nativeOrgChart
         case "md-line-chart", "md-area-chart", "md-bar-chart", "md-pie-chart", "md-sparkline":
             // Dedicated renderer (Charts/NativeChartView.swift): the ported engine's scene, hover layer, tooltips, legend, zoom, keyboard.
             AWCNativeChartView(nodeID: node.id, tag: node.tag, properties: local,
                                slots: Dictionary(grouping: node.children.filter { $0.slot != nil }, by: { $0.slot ?? "" }), onEvent: onEvent)
+        // Plain authored HTML in a slot (div, span, p …): the inline style subset (AuthoredContent.swift).
+        case "div", "span", "p", "strong", "em", "b", "i", "small", "br": AWCAuthoredElement(node: node, onEvent: onEvent)
         default: Text("Unsupported native tag: \(node.tag)").foregroundStyle(.red)
         }
     }
 }
+
+private struct AWCTextInkKey: EnvironmentKey { static let defaultValue: Color? = nil }
+private struct AWCTextLineBoxKey: EnvironmentKey { static let defaultValue: CGSize? = nil }
+extension EnvironmentValues {
+    /// The `color` a component gives its plain text content (text nodes inherit it).
+    var awcTextInk: Color? { get { self[AWCTextInkKey.self] } set { self[AWCTextInkKey.self] = newValue } }
+    /// The CSS line box (font size, line height) a component gives its plain text content.
+    var awcTextLineBox: CGSize? { get { self[AWCTextLineBoxKey.self] } set { self[AWCTextLineBoxKey.self] = newValue } }
+}
+struct AWCInheritedLineBox: ViewModifier {
+    let box: CGSize?
+    @ViewBuilder func body(content: Content) -> some View {
+        if let box { content.modifier(AWCCSSLineBox(size: Double(box.width), line: Double(box.height))) } else { content }
+    }
+}
+
+/// A slotted text node's paragraph direction is its element's `dir` (Chrome: the inherited base direction), not the direction of its first
+/// strong character: "text." under dir=rtl shows ".text" (the full stop is resolved at the base direction's side). SwiftUI's Text takes the
+/// paragraph direction from the content, so the text starts with the base direction's invisible mark (story 5-3).
+func awcBidiParagraph(_ text: String, _ direction: LayoutDirection) -> String {
+    guard !text.isEmpty else { return text }
+    return (direction == .rightToLeft ? "\u{200F}" : "\u{200E}") + text
+}
+

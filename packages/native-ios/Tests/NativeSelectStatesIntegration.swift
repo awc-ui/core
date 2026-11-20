@@ -66,9 +66,13 @@ struct SelectStatesGrid {
 }
 // A key-capable offscreen window: keys reach the first responder through NSApp (as n3's field harnesses do).
 #if canImport(AppKit)
-final class SelectKeyWindow: NSWindow { override var canBecomeKey: Bool { true }; override var canBecomeMain: Bool { true } }
+// Shared harness (story 6-5): reports presses AppKit swallows while the window is not key; the host accepts first mouse.
+final class SelectKeyWindow: AWCHarnessWindow {}
+typealias SelectKeyWindowHost = AWCHarnessHost<SelectStatesFixture>
 #else
 typealias SelectKeyWindow = NSWindow
+typealias SelectKeyWindowHost = NSHostingView<SelectStatesFixture>
+@MainActor enum AWCHarnessInput { static var step = ""; static func watch(_ w: NSWindow) {}; static func takeLostInputs() -> [String] { [] }; static func summary() -> String { "" } }
 #endif
 /// A focusable 1 pt view after the fixture in the key-view loop.
 #if canImport(AppKit)
@@ -83,14 +87,22 @@ struct AWCTabSentinel: View { var body: some View { Color.clear } }
 #endif
 @main @MainActor enum NativeSelectStatesIntegration {
     static let state = SelectStatesState()
-    static var host: NSHostingView<SelectStatesFixture>!, window: SelectKeyWindow!
+    static var host: SelectKeyWindowHost!, window: SelectKeyWindow!
     static var checks = 0, failures: [String] = [], report: [[String: Any]] = []
     static var events: [(name: String, t: Double, detail: AWCValue)] = []
     static var t0 = 0.0
     static var options: [(id: String, label: String, value: String)] = []
-    static func check(_ ok: Bool, _ name: String) { checks += 1; if !ok { failures.append(name); print("FAIL: " + name); fflush(stdout) } }
+    static func dgSuffix() -> String {
+        #if !canImport(AppKit)
+        return AWCDG.suffix()
+        #else
+        return ""
+        #endif
+    }
+    static func check(_ ok: Bool, _ name: String) { checks += 1; if !ok { failures.append(name); print("FAIL: " + name + dgSuffix()); fflush(stdout) } }
     static func pump(_ d: Double) { let end = Date().addingTimeInterval(d); repeat { while let e = NSApp.nextEvent(matching: .any, until: .distantPast, inMode: .default, dequeue: true) { NSApp.sendEvent(e) }; host.layoutSubtreeIfNeeded(); host.displayIfNeeded(); _ = RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.002)) } while Date() < end }
     static func now() -> Double { CACurrentMediaTime() * 1000 - t0 }
+    static var pdActual = 0.0
     static func m(_ id: String, _ part: String? = nil) -> AWCNativeInspectionNode? { state.measurements.first { $0.id == id + ":component" + (part.map { "." + $0 } ?? "") } }
     static func event(_ kind: NSEvent.EventType, _ p: CGPoint) -> NSEvent {
         let point = host.convert(CGPoint(x: p.x, y: host.isFlipped ? p.y : host.bounds.height - p.y), to: nil)
@@ -127,19 +139,20 @@ struct AWCTabSentinel: View { var body: some View { Color.clear } }
             var p: CGPoint? = a["point"].array.count == 2 ? CGPoint(x: a["point"].array[0].number ?? 0, y: a["point"].array[1].number ?? 0) : center(a["target"].string)
             if a["kind"].string == "move", let r = m("m", "field")?.bounds { p = CGPoint(x: r.minX + (a["dx"].number ?? 0), y: r.minY + (a["dy"].number ?? 0)) }
             guard let p else { check(false, "target \(a["target"].string) not found"); return }
-            // Chrome's trusted click: move, press 67 ms later, release 33 ms after that (the oracle's CDP round trips).
-            let begin = now()
+            // Chrome's trusted click: move, press 67 ms later, release 33 ms after that (the oracle's CDP round trips). A point
+            // click (the outside press) has no separate move step in the oracle: press at 33 ms, release at 67 ms.
+            let begin = now(), press: Double = a["point"].array.count == 2 ? 33 : 67
             while now() < begin + 33 { pump(0.002) }; mouse(.mouseMoved, p)
             if a["kind"].string == "click" {
-                while now() < begin + 67 { pump(0.002) }
+                while now() < begin + press { pump(0.002) }
                 // AppKit text views track a press in a nested event loop (the read-only trigger is one): the release is
                 // posted from the main queue, which that loop also services, at Chrome's release time, so it ends the loop.
-                DispatchQueue.main.asyncAfter(deadline: .now() + max(0.001, (begin + 100 - now()) / 1000)) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + max(0.001, (begin + press + 33 - now()) / 1000)) {
                     state.pointer.update(phase: .up, location: p); NSApp.postEvent(event(.leftMouseUp, p), atStart: false)
                 }
                 // The press goes through the queue too (the menu scope's click observers are local event monitors).
                 state.pointer.update(phase: .down, location: p); NSApp.postEvent(event(.leftMouseDown, p), atStart: false)
-                while now() < begin + 104 { pump(0.002) }
+                while now() < begin + press + 37 { pump(0.002) }
                 if a["point"].array.count == 2 { window.makeFirstResponder(nil) }
             }
         case "key": key(a["key"].string)
@@ -161,7 +174,11 @@ struct AWCTabSentinel: View { var body: some View { Color.clear } }
         if (r as? NSView)?.accessibilityIdentifier() == "tab-sentinel" { return "body" }
         if r is NSText { return "field" }
         #else
-        if r is UITextField || r is UITextView { return "field" }
+        if r is UITextField || r is UITextView {
+            // iOS: the open select keeps the first responder on its field; the focused option row is logical.
+            if let c = state.registry.controllers["m::menu"], c.isOpen, !c.closing, c.logicalRowFocus, c.comboboxID == nil, let id = c.focusedID, let o = options.first(where: { $0.id == id }) { return "option:" + o.label }
+            return "field"
+        }
         #endif
         if let v = r as? NSView {
             let id = v.accessibilityIdentifier()
@@ -205,6 +222,9 @@ struct AWCTabSentinel: View { var body: some View { Color.clear } }
             ("m::opt\(i)", n.authoredTextContent.trimmingCharacters(in: .whitespacesAndNewlines), n.properties["value"]?.string ?? "") }
         state.c = r; state.epoch += 1; pump(0.6)
         t0 = CACurrentMediaTime() * 1000
+        #if !canImport(AppKit)
+        AWCDG.start()
+        #endif
         var phaseSamples: [[SelectSample]] = [], starts: [Double] = [], phaseShots: [[NSBitmapImageRep]] = []
         let phases = r["phases"].array
         for p in phases {
@@ -214,21 +234,31 @@ struct AWCTabSentinel: View { var body: some View { Color.clear } }
             if ProcessInfo.processInfo.environment["AWC_SELECT_EVENTS"] != nil { print("  phase \(p["label"].string) t=\(Int(now()))"); fflush(stdout) }
             let actual = now(); var samples: [SelectSample] = []
             var first = sample(); first.t -= actual; samples.append(first)
+            AWCHarnessInput.step = "\(name) \(p["label"].string)"
             act(p["act"])
+            for lost in AWCHarnessInput.takeLostInputs() { check(false, lost) }
             var shotTimes: [Double] = []; var at = lastWeb - start + 17
             while at < duration - 8 { shotTimes.append(at); at += 16 }; shotTimes.append(duration)
             var shotsTaken: [NSBitmapImageRep] = []
             let clip = SelectStatesFixture.rect(p["clip"]).intersection(host.bounds)
             let clipRect = host.isFlipped ? clip : CGRect(x: clip.minX, y: host.bounds.height - clip.maxY, width: clip.width, height: clip.height)
-            while now() < actual + duration || shotsTaken.count < shotTimes.count {
+            var shotIndex = 0
+            while now() < actual + duration || shotIndex < shotTimes.count {
                 pump(0.004); var s = sample(); s.t -= actual; samples.append(s)
-                if shotsTaken.count < shotTimes.count && now() >= actual + shotTimes[shotsTaken.count] {
-                    let b = host.bitmapImageRepForCachingDisplay(in: clipRect)!; host.cacheDisplay(in: clipRect, to: b); shotsTaken.append(b)
+                if shotIndex < shotTimes.count && now() >= actual + shotTimes[shotIndex] {
+                    let b = host.bitmapImageRepForCachingDisplay(in: clipRect)!; host.cacheDisplay(in: clipRect, to: b); shotIndex += 1
+                    // A frame identical to the last kept one adds nothing to the comparison (a settled phase; the oracle's
+                    // stalled phases have 300+ of them).
+                    #if canImport(AppKit)
+                    if let last = shotsTaken.last, last.pixelsWide == b.pixelsWide, last.pixelsHigh == b.pixelsHigh, last.bytesPerRow == b.bytesPerRow,
+                       let p0 = last.bitmapData, let p1 = b.bitmapData, memcmp(p0, p1, b.bytesPerRow * b.pixelsHigh) == 0 { continue }
+                    #endif
+                    shotsTaken.append(b)
                 }
             }
             phaseSamples.append(samples); starts.append(actual); phaseShots.append(shotsTaken)
         }
-        for (i, p) in phases.enumerated() { compare(name, p, phaseSamples[i], shots: phaseShots[i], dir: shots) }
+        for (i, p) in phases.enumerated() { pdActual = starts[i]; compare(name, p, phaseSamples[i], shots: phaseShots[i], dir: shots) }
         let webEvents = r["events"].array.filter { ($0["t"].number ?? 0) <= (phases.last.map { ($0["t"].number ?? 0) + ($0["ms"].number ?? 0) } ?? 0) }
         let names = events.map(\.name), webNames = webEvents.map { $0["name"].string }
         check(names == webNames, "\(name) events \(names) vs \(webNames)")
@@ -250,6 +280,9 @@ struct AWCTabSentinel: View { var body: some View { Color.clear } }
     }
     static func compare(_ name: String, _ p: AWCValue, _ samples: [SelectSample], shots: [NSBitmapImageRep], dir: URL) {
         let label = p["label"].string, web = p["samples"].array, tag = "\(name) \(label)"
+        #if !canImport(AppKit)
+        AWCDG.input(planned: t0 + (p["t"].number ?? 0))
+        #endif
         guard let end = samples.last, let w = web.last else { check(false, "\(tag) no samples"); return }
         check(end.open == (w["open"] == .bool(true)), "\(tag) open \(end.open)")
         check(end.value == w["value"].string, "\(tag) value \(end.value) vs \(w["value"].string)")
@@ -268,7 +301,15 @@ struct AWCTabSentinel: View { var body: some View { Color.clear } }
             check(end.roving == webRoving, "\(tag) roving row \(end.roving ?? "nil") vs \(webRoving ?? "nil")")
         }
         // Motion: every Chrome frame inside the native envelope (−40 / +34 ms plus the neighbour samples).
-        let start = 0.0
+        var start = 0.0
+        #if !canImport(AppKit)
+        if ProcessInfo.processInfo.environment["AWC_CMP"] != "none" { // AWCDLV: samples timed from the delivered input (default; AWC_CMP=none = planned input)
+            let fire: Double = t0 + pdActual
+            let arr: [Double] = (AWCShimTouch.keyArrivals + AWCShimTouch.deliveredAt).filter { $0 >= fire - 2 && $0 <= fire + 200 }
+            if let k = arr.min() { start = fire - k }
+            print("DLV sel \(tag) d=" + String(format: "%.1f", -start)); fflush(stdout)
+        }
+        #endif
         var checked = 0, bad = 0, worst = ""
         for s in web {
             let t = (s["t"].number ?? 0) - (p["t"].number ?? 0) - start
@@ -316,7 +357,7 @@ struct AWCTabSentinel: View { var body: some View { Color.clear } }
     }
     static func main() {
         _ = NSApplication.shared; NSApp.setActivationPolicy(.accessory)
-        host = NSHostingView(rootView: SelectStatesFixture(state: state, onEvent: { e in if e.name.hasPrefix("md") && e.nodeID == "m" { events.append((e.name, now(), e.detail)); if ProcessInfo.processInfo.environment["AWC_SELECT_EVENTS"] != nil { print("  event \(e.name) t=\(Int(now()))"); fflush(stdout) } } }))
+        host = SelectKeyWindowHost(rootView: SelectStatesFixture(state: state, onEvent: { e in if e.name.hasPrefix("md") && e.nodeID == "m" { events.append((e.name, now(), e.detail)); if ProcessInfo.processInfo.environment["AWC_SELECT_EVENTS"] != nil { print("  event \(e.name) t=\(Int(now()))"); fflush(stdout) } } }))
         window = SelectKeyWindow(contentRect: .init(x: -20000, y: -20000, width: 1200, height: 900), styleMask: [.borderless], backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false; window.colorSpace = .sRGB; window.acceptsMouseMovedEvents = true; window.contentView = host
         #if canImport(AppKit)
@@ -325,6 +366,7 @@ struct AWCTabSentinel: View { var body: some View { Color.clear } }
         window.appearance = NSAppearance(named: .aqua)
         #endif
         window.makeKeyAndOrderFront(nil); NSApp.activate(ignoringOtherApps: true); pump(0.8)
+        AWCHarnessInput.watch(window)
         let fixtures = URL(fileURLWithPath: #filePath).deletingLastPathComponent().appendingPathComponent("Fixtures")
         let only = ProcessInfo.processInfo.environment["AWC_SELECT_ONLY"]
         for (file, dir, reduced) in [("select-web-states.json", "select-web-states", false), ("select-web-states-reduced.json", "select-web-states-reduced", true)] {
@@ -333,6 +375,8 @@ struct AWCTabSentinel: View { var body: some View { Color.clear } }
             for r in oracle["runs"].array where only.map({ o in o.split(separator: ",").contains { r["name"].string.contains($0) } }) ?? true { run(r, shots: fixtures.appendingPathComponent(dir), reduced: reduced) }
         }
         if let out = ProcessInfo.processInfo.environment["AWC_SELECT_OUTPUT"] { try! JSONSerialization.data(withJSONObject: ["checks": checks, "failures": failures, "report": report], options: [.prettyPrinted, .sortedKeys]).write(to: URL(fileURLWithPath: out)) }
+        for lost in AWCHarnessInput.takeLostInputs() { check(false, lost) }
+        print(AWCHarnessInput.summary())
         print("Select native states: \(checks - failures.count)/\(checks) checks passed")
         window.close(); if !failures.isEmpty { exit(1) }
     }

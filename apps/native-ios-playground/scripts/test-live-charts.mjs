@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
+import {validateNativeInspection} from '../../native-playground/native-inspection.mjs';
 
 // Actual SwiftUI live host for md-line/area/bar/pie-chart and md-sparkline: typed hooks (defaults + local values), retained
 // property updates with the source types, and the methods with results through AWCChartController.
@@ -28,13 +29,15 @@ function host(){
   };
 }
 const node=(frame,name)=>frame.inspection?.nodes.find(item=>item.name===name&&item.metrics);
-const metric=(frame,name,key)=>{const n=node(frame,name);const v=n?.metrics?.[key];return v&&typeof v==='object'&&'value' in v?v.value:v;};
+const metric=(frame,name,key)=>{const n=node(frame,name);const v=n?.metrics?.[key];if(key==='padding'&&Array.isArray(v))return v.every(x=>x===v[0])?v[0]:v;return v&&typeof v==='object'&&'value' in v?v.value:v;};
+// Every frame passes the 4177 server's own inspection check (R5-01: a scalar padding was rejected as INVALID_LIVE_FRAME).
+const valid=reply=>{if(reply&&reply.inspection!==undefined){checks++;validateNativeInspection(reply.inspection,'ios');}return reply;};
 const color=(value,hex)=>{const s=String(value ?? '').toUpperCase().replace(/\s/g,'');const [r,g,b]=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16));return s.startsWith(hex.toUpperCase())||s.startsWith(`RGB(${r},${g},${b}`)||s.startsWith(`RGBA(${r},${g},${b}`);};
 let live;
-const configure=async (tag,fields={})=>{live?.close();live=host();return live.call({command:'configure',tag,width:640,dark:false,...fields});};
-const method=(name,args=[])=>live.call({command:'method',method:name,arguments:args});
-const update=properties=>live.call({command:'update',properties});
-const frame=()=>live.call({command:'frame'});
+const configure=async (tag,fields={})=>{live?.close();live=host();return valid(await live.call({command:'configure',tag,width:640,dark:false,...fields}));};
+const method=(name,args=[])=>live.call({command:'method',method:name,arguments:args}).then(valid);
+const update=properties=>live.call({command:'update',properties}).then(valid);
+const frame=()=>live.call({command:'frame'}).then(valid);
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 const series=[{label:'Revenue',data:[12,18,15,22,28,26]},{label:'Cost',data:[8,11,10,14,16,18]}],xAxis={data:['Jan','Feb','Mar','Apr','May','Jun']};
 try{

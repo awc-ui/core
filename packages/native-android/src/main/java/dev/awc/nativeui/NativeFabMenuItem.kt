@@ -20,6 +20,7 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.*
@@ -68,11 +69,13 @@ internal fun NativeFabMenuItem(source: Props,emit: EventSink,slot: Slot?) {
     val interactions=remember { MutableInteractionSource() }
     val pressed by interactions.collectIsPressedAsState()
     val hovered by interactions.collectIsHoveredAsState()
-    val reduced=!ValueAnimator.areAnimatorsEnabled()
+    val reduced=LocalAWCButtonReducedMotion.current ?: !ValueAnimator.areAnimatorsEnabled()
     val scope=rememberCoroutineScope()
     var keyRipple by remember { mutableStateOf<Job?>(null) }
     DisposableEffect(enabled) { onDispose { keyRipple?.cancel() } }
     var pointer by remember { mutableStateOf<AWCActivationMetadata?>(null) }
+    val focusManager=LocalFocusManager.current
+    val hardDisabledPress by rememberUpdatedState(source.bool("disabled"))
     val actions=LocalAWCAction.current
     val target=LocalAWCActionTarget.current
     val targetID=remember { java.util.UUID.randomUUID().toString() }
@@ -128,6 +131,7 @@ internal fun NativeFabMenuItem(source: Props,emit: EventSink,slot: Slot?) {
             awaitEachGesture {
                 val down=awaitFirstDown(false,PointerEventPass.Initial)
                 pointer=AWCActivationMetadata("pointer",down.position.x/density.density,down.position.y/density.density)
+                if(hardDisabledPress) focusManager.clearFocus(force=true)
                 do { val event=awaitPointerEvent(PointerEventPass.Final) } while(event.changes.any { it.pressed })
                 pointer=null
             }

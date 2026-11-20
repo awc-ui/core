@@ -27,6 +27,11 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -107,8 +112,12 @@ private fun sliderKey(e: KeyEvent): String? = when (e.key) {
     Key.MoveHome -> "Home"; Key.MoveEnd -> "End"; Key.PageUp -> "PageUp"; Key.PageDown -> "PageDown"; else -> null
 }
 
-@Composable internal fun NativeSliderView(p: Props, emit: EventSink) {
+/** The default inset glyph's layout id (anything else in the inset box is the inset-icon slot's content). */
+private object SliderInsetGlyph
+
+@Composable internal fun NativeSliderView(p: Props, emit: EventSink, content: Slot? = null) {
     // Theme tokens, then the typed hooks (AWCSliderAppearanceScope), then the host's inline `style` custom properties.
+    val sliderParts = LocalAWCSliderParts.current
     val tokens = awcSrEffectiveTokens(LocalAWCThemeTokens.current, LocalAWCSliderAppearance.current.hooks, p.str("style"))
     val density = LocalAWCNativeDensity.current
     val rtlEnv = LocalLayoutDirection.current == LayoutDirection.Rtl
@@ -123,8 +132,8 @@ private fun sliderKey(e: KeyEvent): String? = when (e.key) {
     // the component's own value writes live in the interaction — Compose hosts own their props).
     motion.reducedMotion = reduced
     s.onEvent = { e -> emit(e.name, e.detail) }
-    s.sync(SliderProps(p.num("min").toDouble(), p.num("max", 100f).toDouble(), p.num("step", 1f).toDouble(), p.num("value", 50f).toDouble(),
-        p.num("valueStart", 0f).toDouble(), p.num("valueEnd", 100f).toDouble(), p.bool("disabled"), p.str("variant", "standard"), p.bool("range"),
+    s.sync(SliderProps(p.srDouble("min"), p.srDouble("max", 100.0), p.srDouble("step", 1.0), p.srDouble("value", 50.0),
+        p.srDouble("valueStart", 0.0), p.srDouble("valueEnd", 100.0), p.bool("disabled"), p.str("variant", "standard"), p.bool("range"),
         p.bool("stops"), p.str("size", "xs"), p.str("orientation", "horizontal"), p.bool("valueIndicator"), p.bool("labeled"), p.bool("insetIcon"),
         p.bool("controlled"), p.str("dir") == "rtl" || (p.str("dir") != "ltr" && rtlEnv)))
 
@@ -153,12 +162,12 @@ private fun sliderKey(e: KeyEvent): String? = when (e.key) {
         val cw = if (s.vertical && !fill) 0.0 else maxWidth.value.toDouble()
         val ch = if (constraints.hasBoundedHeight) maxHeight.value.toDouble() else null
         @Suppress("UNUSED_VARIABLE") val v = version
-        val paint = SliderLayout.layout(s, theme, hooks, measurer, cw, ch, fullHeight, densityProp, motion, now)
-        SliderSurface(paint, s, p, ::perform)
+        val paint = SliderParts.applied(SliderLayout.layout(s, theme, SliderParts.hooks(hooks, sliderParts), measurer, cw, ch, fullHeight, densityProp, motion, now), sliderParts, s.vertical)
+        SliderSurface(paint, s, p, ::perform, content)
     }
 }
 
-@Composable private fun SliderSurface(paint: SliderPaint, s: SliderInteraction, p: Props, perform: (() -> Unit) -> Unit) {
+@Composable private fun SliderSurface(paint: SliderPaint, s: SliderInteraction, p: Props, perform: (() -> Unit) -> Unit, content: Slot? = null) {
     val px = LocalDensity.current.density
     var dragging by remember { mutableStateOf(false) }
     Box(Modifier.size(paint.width.dp, paint.height.dp).alpha(paint.opacity.toFloat())
@@ -214,9 +223,22 @@ private fun sliderKey(e: KeyEvent): String? = when (e.key) {
             }
         }
         paint.inset?.let { inset ->
-            Box(Modifier.awcSrAt(inset.rect.x.dp, inset.rect.y.dp).size(inset.rect.width.dp, inset.rect.height.dp).clearAndSetSemantics { }, contentAlignment = Alignment.Center) {
-                Text(p.str("icon", "volume_up"), color = srCssColorOf(inset.color), fontFamily = SliderSymbols,
-                    style = TextStyle(fontSize = with(LocalDensity.current) { inset.size.dp.toSp() }, lineHeight = with(LocalDensity.current) { inset.size.dp.toSp() }))
+            // R6-04: content in the inset-icon slot replaces the glyph (::slotted: centred in the inset box, inset-size font, the
+            // inset colour inherited); with nothing slotted the icon glyph shows.
+            val d = LocalDensity.current
+            val ink = srCssColorOf(inset.color)
+            Layout(content = {
+                if (content != null) CompositionLocalProvider(LocalContentColor provides ink,
+                    LocalTextStyle provides TextStyle(color = ink, fontSize = with(d) { inset.size.dp.toSp() })) { content("inset-icon") }
+                Box(Modifier.layoutId(SliderInsetGlyph)) {
+                    Text(p.str("icon", "volume_up"), color = ink, fontFamily = SliderSymbols,
+                        style = TextStyle(fontSize = with(d) { inset.size.dp.toSp() }, lineHeight = with(d) { inset.size.dp.toSp() }))
+                }
+            }, modifier = Modifier.awcSrAt(inset.rect.x.dp, inset.rect.y.dp).size(inset.rect.width.dp, inset.rect.height.dp).clearAndSetSemantics { }) { ms, c ->
+                val slotted = ms.filter { it.layoutId !== SliderInsetGlyph }
+                val shown = slotted.ifEmpty { ms.filter { it.layoutId === SliderInsetGlyph } }
+                val pls = shown.map { it.measure(Constraints(maxWidth = c.maxWidth, maxHeight = c.maxHeight)) }
+                layout(c.maxWidth, c.maxHeight) { pls.forEach { it.place((c.maxWidth - it.width) / 2, (c.maxHeight - it.height) / 2) } }
             }
         }
         for (ind in paint.indicators) {

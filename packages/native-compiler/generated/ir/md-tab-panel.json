@@ -79,13 +79,20 @@
       }
     ]
   },
-  "diagnostics": [],
+  "diagnostics": [
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 25
+    }
+  ],
   "source": {
     "file": "packages/core/src/components/md-tab-panel/md-tab-panel.tsx",
     "styleUrl": "md-tab-panel.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "931e91c9ac648c50d3ea7042a45f05559adc17e72af33456caaaf9ec62e02e4b"
+    "sha256": "b5c99a9fb9f48c88721f02e8d77f6862d93378e3f05cb23890e65b612b3bdebb"
   },
   "styles": [
     {

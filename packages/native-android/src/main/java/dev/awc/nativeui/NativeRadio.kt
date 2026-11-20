@@ -289,7 +289,8 @@ internal fun NativeRadio(p:Props,onEvent:EventSink,controlEvent:EventSink,slot:S
     val scope=rememberCoroutineScope();var pulse by remember { mutableIntStateOf(0) }
     fun emit(name:String,detail:Map<String,AWCValue>) {
         dispatchNativeAction(AWCActionEvent(name,"md-radio",detail,cancelable=false,targetID=target?.id ?: targetID),actions,target?.listeners?.invoke().orEmpty())
-        emitControl(name,detail)
+        // Void events (mdFocus / mdBlur: the source's CustomEvent<void>) carry a null detail, as on SwiftUI (R4-22).
+        emitControl(name,if(detail.isEmpty()) null else detail)
     }
     /** `handleClick`/arrow selection: check this radio (siblings are unchecked silently) and emit `mdChange {checked, value}`. */
     fun select() {

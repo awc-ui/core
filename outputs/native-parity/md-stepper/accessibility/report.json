@@ -1,0 +1,1171 @@
+{
+ "tag": "md-stepper",
+ "at": "2026-11-05T01:33:54.759Z",
+ "rows": [
+  {
+   "case": "horizontal",
+   "web": {
+    "elements": [
+     "navigation:Progress",
+     "status:",
+     "alert:",
+     "list:",
+     "listitem:",
+     "button:Step 1 of 3: Account, current",
+     "region:Account",
+     "listitem:",
+     "button:Step 2 of 3: Workspace",
+     "listitem:",
+     "button:Step 3 of 3: Review",
+     "button:Back",
+     "button:Continue"
+    ],
+    "texts": [
+     "Set up your account",
+     "Complete this section, then continue to the next step.",
+     "Set up your workspace",
+     "Set up your review"
+    ],
+    "focus": [
+     "button:Step 1 of 3: Account, current",
+     "button:Continue"
+    ],
+    "contrast": {
+     "measured": 7,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 6,
+     "webElements": 7,
+     "nativeElements": 6,
+     "elements": [
+      "group:Progress",
+      "button:Step 1 of 3: Account, current {\"expanded\":\"true\"}",
+      "button:Step 2 of 3: Workspace {\"disabled\":\"true\"}",
+      "button:Step 3 of 3: Review {\"disabled\":\"true\"}",
+      "button:Back {\"disabled\":\"true\"}",
+      "button:Continue"
+     ],
+     "texts": [
+      "Set up your account",
+      "Complete this section, then continue to the next step.",
+      "Set up your workspace",
+      "Set up your review"
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Step 1 of 3: Account, current",
+      "button:Continue",
+      "button:Step 1 of 3: Account, current",
+      "button:Continue",
+      "button:Step 1 of 3: Account, current",
+      "button:Continue"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "region",
+        "name": "Account"
+       },
+       "detail": "region \"Account\" has no macos counterpart",
+       "status": "expected",
+       "reason": "Decision 17: the panel is a named AXGroup (the step label) holding its content; tools/ax reads a named group without controls as its words (normalize.mjs leaf group), so a panel holding only text is compared as text."
+      },
+      {
+       "kind": "role",
+       "web": {
+        "role": "navigation",
+        "name": "Progress"
+       },
+       "native": {
+        "role": "group",
+        "name": "Progress"
+       },
+       "detail": "role navigation → group (\"Progress\")",
+       "status": "expected",
+       "reason": "Decision 16: Web <nav aria-label>. SwiftUI cannot give a container the AXLandmarkNavigation subrole: the stepper is the AXGroup named by `label` holding the headers, panels and Back / Continue in source order. The AppKit landmark bridge of md-breadcrumbs / md-navigation-bar re-hosts only focus elements, which would drop the panels' light-DOM content."
+      }
+     ],
+     "contrastMeasured": 6
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 6,
+     "nativeElements": 5,
+     "elements": [
+      "button:Step 1 of 3: Account, current",
+      "button:Step 2 of 3: Workspace {\"disabled\":\"true\"}",
+      "button:Step 3 of 3: Review {\"disabled\":\"true\"}",
+      "button:Back {\"disabled\":\"true\"}",
+      "button:Continue"
+     ],
+     "texts": [
+      "Complete this section, then continue to the next step."
+     ],
+     "focus": [
+      "button:Step 1 of 3: Account, current",
+      "button:Continue",
+      "∅",
+      "button:Step 1 of 3: Account, current",
+      "button:Continue",
+      "∅"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "navigation",
+        "name": "Progress"
+       },
+       "detail": "navigation \"Progress\" has no ios counterpart",
+       "status": "expected",
+       "reason": "Decision 16: UIKit exposes landmarks only as a container type, never as an element: the stepper is a labelled container (SwiftUI .contain) whose headers, panels and buttons VoiceOver reads in order."
+      },
+      {
+       "kind": "text-missing",
+       "detail": "text not exposed on ios: \"Set up your account workspace review\"",
+       "status": "expected",
+       "reason": "Decision 9: md-step.css `@media (max-width: 599px)` hides a horizontal row's supporting captions; natively the rule follows the screen width, and the iPhone / phone emulator screens are narrower than 600 (the Web capture runs at desktop width). The captions are not painted there, so they are not exposed."
+      },
+      {
+       "kind": "target",
+       "detail": "ios: button \"Continue\" target 89×40 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 6,
+     "nativeElements": 5,
+     "elements": [
+      "alert:",
+      "button:Step 1 of 3: Account, current {\"expanded\":\"true\"}",
+      "button:Step 2 of 3: Workspace {\"disabled\":\"true\",\"expanded\":\"false\"}",
+      "button:Step 3 of 3: Review {\"disabled\":\"true\",\"expanded\":\"false\"}",
+      "button:Back {\"disabled\":\"true\"}",
+      "button:Continue"
+     ],
+     "texts": [
+      "Progress",
+      "Set up your account",
+      "Complete this section, then continue to the next step.",
+      "Set up your workspace",
+      "Set up your review"
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Step 1 of 3: Account, current",
+      "button:Continue",
+      "button:Step 1 of 3: Account, current",
+      "button:Continue",
+      "button:Step 1 of 3: Account, current",
+      "button:Continue"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "navigation",
+        "name": "Progress"
+       },
+       "detail": "navigation \"Progress\" has no android counterpart",
+       "status": "expected",
+       "reason": "Decision 16: Compose has no landmark role: the stepper is a traversal group labelled by `label` (contentDescription), read before its steps."
+      },
+      {
+       "kind": "text-extra",
+       "detail": "android exposes text Web does not: \"Progress\"",
+       "status": "expected",
+       "reason": "Decision 16: the landmark label is the traversal group's contentDescription on Android (no landmark role), so it is reported as text."
+      }
+     ],
+     "contrastMeasured": 6,
+     "atf": {
+      "elements": 22,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "vertical",
+   "web": {
+    "elements": [
+     "navigation:Progress",
+     "status:",
+     "alert:",
+     "list:",
+     "listitem:",
+     "button:Step 1 of 3: Account, current",
+     "region:Account",
+     "button:Back",
+     "button:Continue",
+     "listitem:",
+     "button:Step 2 of 3: Workspace",
+     "listitem:",
+     "button:Step 3 of 3: Review"
+    ],
+    "texts": [
+     "Set up your account",
+     "Complete this section, then continue to the next step.",
+     "Set up your workspace",
+     "Set up your review"
+    ],
+    "focus": [
+     "button:Step 1 of 3: Account, current",
+     "button:Continue"
+    ],
+    "contrast": {
+     "measured": 7,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 7,
+     "webElements": 7,
+     "nativeElements": 7,
+     "elements": [
+      "group:Progress",
+      "button:Step 1 of 3: Account, current {\"expanded\":\"true\"}",
+      "group:Account",
+      "button:Back {\"disabled\":\"true\"}",
+      "button:Continue",
+      "button:Step 2 of 3: Workspace {\"disabled\":\"true\"}",
+      "button:Step 3 of 3: Review {\"disabled\":\"true\"}"
+     ],
+     "texts": [
+      "Set up your account",
+      "Complete this section, then continue to the next step.",
+      "Set up your workspace",
+      "Set up your review"
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Step 1 of 3: Account, current",
+      "button:Continue",
+      "button:Step 1 of 3: Account, current",
+      "button:Continue",
+      "button:Step 1 of 3: Account, current",
+      "button:Continue"
+     ],
+     "findings": [
+      {
+       "kind": "role",
+       "web": {
+        "role": "navigation",
+        "name": "Progress"
+       },
+       "native": {
+        "role": "group",
+        "name": "Progress"
+       },
+       "detail": "role navigation → group (\"Progress\")",
+       "status": "expected",
+       "reason": "Decision 16: Web <nav aria-label>. SwiftUI cannot give a container the AXLandmarkNavigation subrole: the stepper is the AXGroup named by `label` holding the headers, panels and Back / Continue in source order. The AppKit landmark bridge of md-breadcrumbs / md-navigation-bar re-hosts only focus elements, which would drop the panels' light-DOM content."
+      }
+     ],
+     "contrastMeasured": 6
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 6,
+     "nativeElements": 5,
+     "elements": [
+      "button:Step 1 of 3: Account, current",
+      "button:Back {\"disabled\":\"true\"}",
+      "button:Continue",
+      "button:Step 2 of 3: Workspace {\"disabled\":\"true\"}",
+      "button:Step 3 of 3: Review {\"disabled\":\"true\"}"
+     ],
+     "texts": [
+      "Set up your account",
+      "Complete this section, then continue to the next step.",
+      "Set up your workspace",
+      "Set up your review"
+     ],
+     "focus": [
+      "button:Step 1 of 3: Account, current",
+      "button:Continue",
+      "∅",
+      "button:Step 1 of 3: Account, current",
+      "button:Continue",
+      "∅"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "navigation",
+        "name": "Progress"
+       },
+       "detail": "navigation \"Progress\" has no ios counterpart",
+       "status": "expected",
+       "reason": "Decision 16: UIKit exposes landmarks only as a container type, never as an element: the stepper is a labelled container (SwiftUI .contain) whose headers, panels and buttons VoiceOver reads in order."
+      },
+      {
+       "kind": "target",
+       "detail": "ios: button \"Continue\" target 89×40 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 6,
+     "nativeElements": 5,
+     "elements": [
+      "button:Step 1 of 3: Account, current {\"expanded\":\"true\"}",
+      "button:Back {\"disabled\":\"true\"}",
+      "button:Continue",
+      "button:Step 2 of 3: Workspace {\"disabled\":\"true\",\"expanded\":\"false\"}",
+      "button:Step 3 of 3: Review {\"disabled\":\"true\",\"expanded\":\"false\"}"
+     ],
+     "texts": [
+      "Progress",
+      "Set up your account",
+      "Complete this section, then continue to the next step.",
+      "Set up your workspace",
+      "Set up your review"
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Step 1 of 3: Account, current",
+      "button:Continue",
+      "button:Step 1 of 3: Account, current",
+      "button:Continue",
+      "button:Step 1 of 3: Account, current",
+      "button:Continue"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "navigation",
+        "name": "Progress"
+       },
+       "detail": "navigation \"Progress\" has no android counterpart",
+       "status": "expected",
+       "reason": "Decision 16: Compose has no landmark role: the stepper is a traversal group labelled by `label` (contentDescription), read before its steps."
+      },
+      {
+       "kind": "text-extra",
+       "detail": "android exposes text Web does not: \"Progress\"",
+       "status": "expected",
+       "reason": "Decision 16: the landmark label is the traversal group's contentDescription on Android (no landmark role), so it is reported as text."
+      }
+     ],
+     "contrastMeasured": 6,
+     "atf": {
+      "elements": 21,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "dot-nonlinear",
+   "web": {
+    "elements": [
+     "navigation:Progress",
+     "status:",
+     "alert:",
+     "list:",
+     "listitem:",
+     "button:Step 1 of 3: Account, current",
+     "region:Account",
+     "listitem:",
+     "button:Step 2 of 3: Workspace",
+     "listitem:",
+     "button:Step 3 of 3: Review",
+     "button:Back",
+     "button:Continue"
+    ],
+    "texts": [
+     "Set up your account",
+     "Set up your workspace",
+     "Set up your review"
+    ],
+    "focus": [
+     "button:Step 1 of 3: Account, current",
+     "button:Step 2 of 3: Workspace",
+     "button:Step 3 of 3: Review",
+     "button:Continue"
+    ],
+    "contrast": {
+     "measured": 14,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 6,
+     "webElements": 7,
+     "nativeElements": 6,
+     "elements": [
+      "group:Progress",
+      "button:Step 1 of 3: Account, current {\"expanded\":\"true\"}",
+      "button:Step 2 of 3: Workspace",
+      "button:Step 3 of 3: Review",
+      "button:Back {\"disabled\":\"true\"}",
+      "button:Continue"
+     ],
+     "texts": [
+      "Set up your account",
+      "Complete this section, then continue to the next step.",
+      "Set up your workspace",
+      "Set up your review"
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Step 1 of 3: Account, current",
+      "button:Step 2 of 3: Workspace",
+      "button:Step 3 of 3: Review",
+      "button:Continue",
+      "button:Step 1 of 3: Account, current",
+      "button:Step 2 of 3: Workspace"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "region",
+        "name": "Account"
+       },
+       "detail": "region \"Account\" has no macos counterpart",
+       "status": "expected",
+       "reason": "Decision 17: the panel is a named AXGroup (the step label) holding its content; tools/ax reads a named group without controls as its words (normalize.mjs leaf group), so a panel holding only text is compared as text."
+      },
+      {
+       "kind": "role",
+       "web": {
+        "role": "navigation",
+        "name": "Progress"
+       },
+       "native": {
+        "role": "group",
+        "name": "Progress"
+       },
+       "detail": "role navigation → group (\"Progress\")",
+       "status": "expected",
+       "reason": "Decision 16: Web <nav aria-label>. SwiftUI cannot give a container the AXLandmarkNavigation subrole: the stepper is the AXGroup named by `label` holding the headers, panels and Back / Continue in source order. The AppKit landmark bridge of md-breadcrumbs / md-navigation-bar re-hosts only focus elements, which would drop the panels' light-DOM content."
+      },
+      {
+       "kind": "text-extra",
+       "detail": "macos exposes text Web does not: \"Complete this section, then continue to the next step.\"",
+       "status": "expected",
+       "reason": "Decision 18: Chrome 153 intermittently leaves an open panel's slotted content out of the accessibility tree (an ignored slot without children) while painting it — the md-accordion-item behaviour fa-051 fixed in the source; the same capture includes it on other runs. Native always exposes the visible panel content."
+      }
+     ],
+     "contrastMeasured": 12
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 6,
+     "nativeElements": 5,
+     "elements": [
+      "button:Step 1 of 3: Account, current",
+      "button:Step 2 of 3: Workspace",
+      "button:Step 3 of 3: Review",
+      "button:Back {\"disabled\":\"true\"}",
+      "button:Continue"
+     ],
+     "texts": [
+      "Complete this section, then continue to the next step."
+     ],
+     "focus": [
+      "button:Step 1 of 3: Account, current",
+      "button:Step 2 of 3: Workspace",
+      "button:Step 3 of 3: Review",
+      "button:Continue",
+      "∅",
+      "button:Step 1 of 3: Account, current"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "navigation",
+        "name": "Progress"
+       },
+       "detail": "navigation \"Progress\" has no ios counterpart",
+       "status": "expected",
+       "reason": "Decision 16: UIKit exposes landmarks only as a container type, never as an element: the stepper is a labelled container (SwiftUI .contain) whose headers, panels and buttons VoiceOver reads in order."
+      },
+      {
+       "kind": "text-missing",
+       "detail": "text not exposed on ios: \"Set up your account workspace review\"",
+       "status": "expected",
+       "reason": "Decision 9: md-step.css `@media (max-width: 599px)` hides a horizontal row's supporting captions; natively the rule follows the screen width, and the iPhone / phone emulator screens are narrower than 600 (the Web capture runs at desktop width). The captions are not painted there, so they are not exposed."
+      },
+      {
+       "kind": "text-extra",
+       "detail": "ios exposes text Web does not: \"Complete this section, then continue to the next step.\"",
+       "status": "expected",
+       "reason": "Decision 18: Chrome 153 intermittently leaves an open panel's slotted content out of the accessibility tree (an ignored slot without children) while painting it — the md-accordion-item behaviour fa-051 fixed in the source; the same capture includes it on other runs. Native always exposes the visible panel content."
+      },
+      {
+       "kind": "target",
+       "detail": "ios: button \"Continue\" target 89×40 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 6,
+     "nativeElements": 5,
+     "elements": [
+      "alert:",
+      "button:Step 1 of 3: Account, current {\"expanded\":\"true\"}",
+      "button:Step 2 of 3: Workspace {\"expanded\":\"false\"}",
+      "button:Step 3 of 3: Review {\"expanded\":\"false\"}",
+      "button:Back {\"disabled\":\"true\"}",
+      "button:Continue"
+     ],
+     "texts": [
+      "Progress",
+      "Set up your account",
+      "Complete this section, then continue to the next step.",
+      "Set up your workspace",
+      "Set up your review"
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Step 1 of 3: Account, current",
+      "button:Step 2 of 3: Workspace",
+      "button:Step 3 of 3: Review",
+      "button:Continue",
+      "button:Step 1 of 3: Account, current",
+      "button:Step 2 of 3: Workspace"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "navigation",
+        "name": "Progress"
+       },
+       "detail": "navigation \"Progress\" has no android counterpart",
+       "status": "expected",
+       "reason": "Decision 16: Compose has no landmark role: the stepper is a traversal group labelled by `label` (contentDescription), read before its steps."
+      },
+      {
+       "kind": "text-extra",
+       "detail": "android exposes text Web does not: \"Progress Complete this section, then continue to the next step.\"",
+       "status": "expected",
+       "reason": "Decision 18: Chrome 153 intermittently leaves an open panel's slotted content out of the accessibility tree (an ignored slot without children) while painting it — the md-accordion-item behaviour fa-051 fixed in the source; the same capture includes it on other runs. Native always exposes the visible panel content."
+      }
+     ],
+     "contrastMeasured": 12,
+     "atf": {
+      "elements": 22,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "mobile",
+   "web": {
+    "elements": [
+     "navigation:Progress",
+     "status:",
+     "alert:",
+     "list:",
+     "listitem:",
+     "button:Step 1 of 3: Account, current",
+     "region:Account",
+     "listitem:",
+     "button:Step 2 of 3: Workspace",
+     "listitem:",
+     "button:Step 3 of 3: Review",
+     "button:Back",
+     "button:Continue"
+    ],
+    "texts": [
+     "Set up your account",
+     "Complete this section, then continue to the next step.",
+     "Set up your workspace",
+     "Set up your review"
+    ],
+    "focus": [
+     "button:Step 1 of 3: Account, current",
+     "button:Continue"
+    ],
+    "contrast": {
+     "measured": 8,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 6,
+     "webElements": 7,
+     "nativeElements": 6,
+     "elements": [
+      "group:Progress",
+      "button:Step 1 of 3: Account, current {\"expanded\":\"true\"}",
+      "button:Step 2 of 3: Workspace {\"disabled\":\"true\"}",
+      "button:Step 3 of 3: Review {\"disabled\":\"true\"}",
+      "button:Back {\"disabled\":\"true\"}",
+      "button:Continue"
+     ],
+     "texts": [
+      "Set up your account",
+      "Complete this section, then continue to the next step.",
+      "Set up your workspace",
+      "Set up your review"
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Step 1 of 3: Account, current",
+      "button:Continue",
+      "button:Step 1 of 3: Account, current"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "region",
+        "name": "Account"
+       },
+       "detail": "region \"Account\" has no macos counterpart",
+       "status": "expected",
+       "reason": "Decision 17: the panel is a named AXGroup (the step label) holding its content; tools/ax reads a named group without controls as its words (normalize.mjs leaf group), so a panel holding only text is compared as text."
+      },
+      {
+       "kind": "role",
+       "web": {
+        "role": "navigation",
+        "name": "Progress"
+       },
+       "native": {
+        "role": "group",
+        "name": "Progress"
+       },
+       "detail": "role navigation → group (\"Progress\")",
+       "status": "expected",
+       "reason": "Decision 16: Web <nav aria-label>. SwiftUI cannot give a container the AXLandmarkNavigation subrole: the stepper is the AXGroup named by `label` holding the headers, panels and Back / Continue in source order. The AppKit landmark bridge of md-breadcrumbs / md-navigation-bar re-hosts only focus elements, which would drop the panels' light-DOM content."
+      }
+     ],
+     "contrastMeasured": 6
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 6,
+     "nativeElements": 5,
+     "elements": [
+      "button:Step 1 of 3: Account, current",
+      "button:Step 2 of 3: Workspace {\"disabled\":\"true\"}",
+      "button:Step 3 of 3: Review {\"disabled\":\"true\"}",
+      "button:Back {\"disabled\":\"true\"}",
+      "button:Continue"
+     ],
+     "texts": [
+      "Complete this section, then continue to the next step."
+     ],
+     "focus": [
+      "button:Step 1 of 3: Account, current",
+      "button:Continue",
+      "∅"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "navigation",
+        "name": "Progress"
+       },
+       "detail": "navigation \"Progress\" has no ios counterpart",
+       "status": "expected",
+       "reason": "Decision 16: UIKit exposes landmarks only as a container type, never as an element: the stepper is a labelled container (SwiftUI .contain) whose headers, panels and buttons VoiceOver reads in order."
+      },
+      {
+       "kind": "text-missing",
+       "detail": "text not exposed on ios: \"Set up your account workspace review\"",
+       "status": "expected",
+       "reason": "Decision 9: md-step.css `@media (max-width: 599px)` hides a horizontal row's supporting captions; natively the rule follows the screen width, and the iPhone / phone emulator screens are narrower than 600 (the Web capture runs at desktop width). The captions are not painted there, so they are not exposed."
+      },
+      {
+       "kind": "target",
+       "detail": "ios: button \"Continue\" target 89×40 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 6,
+     "nativeElements": 5,
+     "elements": [
+      "alert:",
+      "button:Step 1 of 3: Account, current {\"expanded\":\"true\"}",
+      "button:Step 2 of 3: Workspace {\"disabled\":\"true\",\"expanded\":\"false\"}",
+      "button:Step 3 of 3: Review {\"disabled\":\"true\",\"expanded\":\"false\"}",
+      "button:Back {\"disabled\":\"true\"}",
+      "button:Continue"
+     ],
+     "texts": [
+      "Progress",
+      "Set up your account",
+      "Complete this section, then continue to the next step.",
+      "Set up your workspace",
+      "Set up your review"
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Step 1 of 3: Account, current",
+      "button:Continue",
+      "button:Step 1 of 3: Account, current"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "navigation",
+        "name": "Progress"
+       },
+       "detail": "navigation \"Progress\" has no android counterpart",
+       "status": "expected",
+       "reason": "Decision 16: Compose has no landmark role: the stepper is a traversal group labelled by `label` (contentDescription), read before its steps."
+      },
+      {
+       "kind": "text-extra",
+       "detail": "android exposes text Web does not: \"Progress\"",
+       "status": "expected",
+       "reason": "Decision 16: the landmark label is the traversal group's contentDescription on Android (no landmark role), so it is reported as text."
+      }
+     ],
+     "contrastMeasured": 6,
+     "atf": {
+      "elements": 22,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "readonly",
+   "web": {
+    "elements": [
+     "navigation:Progress",
+     "status:",
+     "alert:",
+     "list:",
+     "listitem:",
+     "region:Account",
+     "listitem:",
+     "listitem:",
+     "button:Back",
+     "button:Continue"
+    ],
+    "texts": [
+     "Set up your account",
+     "Complete this section, then continue to the next step.",
+     "Workspace",
+     "Set up your workspace",
+     "Review",
+     "Set up your review"
+    ],
+    "focus": [
+     "button:Continue"
+    ],
+    "contrast": {
+     "measured": 9,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 4,
+     "nativeElements": 3,
+     "elements": [
+      "group:Progress",
+      "button:Back {\"disabled\":\"true\"}",
+      "button:Continue"
+     ],
+     "texts": [
+      "Account Set up your account",
+      "Account",
+      "Complete this section, then continue to the next step.",
+      "Workspace Set up your workspace",
+      "Review Set up your review"
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Continue",
+      "button:Continue",
+      "button:Continue"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "navigation",
+        "name": "Progress"
+       },
+       "detail": "navigation \"Progress\" has no macos counterpart",
+       "status": "expected",
+       "reason": "Decision 17: with no header buttons (readonly) the comparator pairs the Web region with the stepper AXGroup (decision 16), leaving the landmark unpaired."
+      },
+      {
+       "kind": "name",
+       "web": {
+        "role": "region",
+        "name": "Account"
+       },
+       "native": {
+        "role": "group",
+        "name": "Progress"
+       },
+       "detail": "region name \"Account\" → \"Progress\"",
+       "status": "expected",
+       "reason": "Decision 17: the same pairing; the panel itself is the named AXGroup read as its words."
+      },
+      {
+       "kind": "text-extra",
+       "detail": "macos exposes text Web does not: \"Account\"",
+       "status": "expected",
+       "reason": "Decision 17: the open panel is the named AXGroup \"Account\" read as its words, so its name is a word on macOS; Web carries the same name as the region's name."
+      }
+     ],
+     "contrastMeasured": 6
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 3,
+     "nativeElements": 2,
+     "elements": [
+      "button:Back {\"disabled\":\"true\"}",
+      "button:Continue"
+     ],
+     "texts": [
+      "Account Set up your account",
+      "Workspace Set up your workspace",
+      "Review Set up your review",
+      "Complete this section, then continue to the next step."
+     ],
+     "focus": [
+      "button:Continue",
+      "∅",
+      "button:Continue"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "navigation",
+        "name": "Progress"
+       },
+       "detail": "navigation \"Progress\" has no ios counterpart",
+       "status": "expected",
+       "reason": "Decision 16: UIKit exposes landmarks only as a container type, never as an element: the stepper is a labelled container (SwiftUI .contain) whose headers, panels and buttons VoiceOver reads in order."
+      },
+      {
+       "kind": "target",
+       "detail": "ios: button \"Continue\" target 89×40 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 3,
+     "nativeElements": 2,
+     "elements": [
+      "alert:",
+      "button:Back {\"disabled\":\"true\"}",
+      "button:Continue"
+     ],
+     "texts": [
+      "Progress",
+      "Account Set up your account",
+      "Complete this section, then continue to the next step.",
+      "Workspace Set up your workspace",
+      "Review Set up your review"
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Continue",
+      "button:Continue",
+      "button:Continue"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "navigation",
+        "name": "Progress"
+       },
+       "detail": "navigation \"Progress\" has no android counterpart",
+       "status": "expected",
+       "reason": "Decision 16: Compose has no landmark role: the stepper is a traversal group labelled by `label` (contentDescription), read before its steps."
+      },
+      {
+       "kind": "text-extra",
+       "detail": "android exposes text Web does not: \"Progress\"",
+       "status": "expected",
+       "reason": "Decision 16: the landmark label is the traversal group's contentDescription on Android (no landmark role), so it is reported as text."
+      }
+     ],
+     "contrastMeasured": 6,
+     "atf": {
+      "elements": 19,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

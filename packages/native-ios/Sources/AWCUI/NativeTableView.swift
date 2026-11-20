@@ -66,6 +66,10 @@ struct AWCNativeTable: View {
     @Environment(\.accessibilityReduceMotion) private var systemReduced
     @Environment(\.awcTableReducedMotion) private var reducedOverride
     @Environment(\.awcTableForcedColors) private var forcedColors
+    @Environment(\.awcTableParts) private var partRules
+    @Environment(\.awcTablePartTargets) private var partTargets
+    /// This table's rule for one of its ::part() targets.
+    func part(_ p: AWCTablePart) -> AWCTablePartStyle { .resolve(p, node.id, partRules, partTargets, forced: forcedColors) }
     @Environment(\.awcNativeDensity) private var inheritedDensity
     /// Host-supplied pointer (Laboratory live previews, tests) in the "awc-native-preview" space.
     @Environment(\.awcNativePointerState) private var pointer
@@ -98,6 +102,7 @@ struct AWCNativeTable: View {
                                       selection: selectionMode, pinIcon: s("pinIcon"), sortBy: sortBy, sortOrder: sortOrder)
         env.vibrant = container.vibrant
         env.vars = vars
+        env.parts = partRules; env.partTargets = partTargets
         env.requestSort = { column, defaultOrder in requestSort(column, defaultOrder) }
         env.toggleRow = { id in toggle(id, rows) }
         env.rowClick = { id in if let row = rows.first(where: { $0.id == id }) { rowClick(row) } }
@@ -260,9 +265,12 @@ struct AWCNativeTable: View {
         let _ = connect(rows)
         VStack(alignment: .leading, spacing: 0) {
             if !s("caption").isEmpty {
-                AWCListText(text: s("caption"), size: 14, lineHeight: 20, weight: 500, tracking: 0.1, color: palette.color("on-surface-variant"))
-                    .padding(.vertical, 12).padding(.horizontal, m.padInline)
+                let cap = part(.caption)
+                AWCListText(text: s("caption"), size: cap.size(over: 14), lineHeight: 20, weight: cap.weight(over: 500), tracking: cap.letterSpacing ?? 0.1, color: cap.color(over: palette.color("on-surface-variant")))
+                    .padding(cap.edges(EdgeInsets(top: 12, leading: m.padInline, bottom: 12, trailing: m.padInline), rtl: rtl))
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .background { cap.backgroundView }
+                    .opacity(cap.opacity ?? 1)
                     .accessibilityHidden(true)
             }
             if b("frozenHeader") { frozen(rows, env) } else { grid(rows, env) }
@@ -327,6 +335,8 @@ struct AWCNativeTable: View {
         let shown = model.shown, gridRows = model.rows, items = model.items
         let hover = hoveredRow(shown)
         let floors = headerFloors(shown)
+        // 9-16 (S7-15-01): the FLIP is prepared in this same pass (no onChange, which cost a second body and layout pass before the glide began).
+        let _ = prepareFlip(shown)
         // Frozen grids are `min-inline-size: max(100%, min-width)` (no max-content floor).
         let minWidth = AWCTableTemplate.length(s("minWidth")) ?? hooks.minWidth ?? (b("frozenHeader") ? 0 : nil)
         AWCTableGridLayout(tracks: tracks(rows), rows: gridRows, minWidth: minWidth, rtl: rtl,
@@ -347,12 +357,13 @@ struct AWCNativeTable: View {
                     .zIndex(item.z)
             }
         }
+        .background(alignment: .top) { gridPartBackground(rows, env) }
+        .opacity(b("frozenHeader") ? 1 : (part(.grid).opacity ?? 1))
         .awcCheckboxAppearance(env.metrics.compact ? .init(touchTargetSize: 32) : .init())
         // Expanded zone: opens on the spatial spring (500 ms), closes on the exit curve (200 ms) — md-table-row.css.
         // (Only for the same rows: a reorder or a page change is the FLIP's, not an expansion.)
         .animation(reduced ? nil : expandAnimation(shown.map(\.id), gridRows.map(\.expandedFraction)), value: zip(shown.map(\.id), gridRows.map(\.expandedFraction)).map { "\($0)=\($1)" })
         // FLIP (md-table.tsx armMotion → captureFlip): rows jump to the new order, then each glides from its old box.
-        .onChange(of: shown.filter { $0.group == .body }.map(\.id)) { old, new in startFlip(old, new) }
         .onGeometryChange(for: CGRect.self) { $0.frame(in: .named("awc-native-preview")) } action: { geometry.frame = $0 }
         .onContinuousHover(coordinateSpace: .local) { phase in
             switch phase {
@@ -377,6 +388,12 @@ struct AWCNativeTable: View {
     }
     /// captureFlip: the body-row change right after a sort / pagination event (or animateNextChange) plays — survivors that
     /// moved more than 6 px glide back from their old box, rows that appeared fade and drop in (18 ms stagger, capped at 6).
+    func prepareFlip(_ shown: [AWCTableRowEntry]) {
+        let new = shown.filter { $0.group == .body }.map(\.id), old = runtime.lastFlipIDs
+        guard new != old else { return }
+        runtime.lastFlipIDs = new
+        startFlip(old, new)
+    }
     func startFlip(_ old: [String], _ new: [String]) {
         guard !reduced, s("motion") != "none", runtime.armedUntil > CACurrentMediaTime(), !old.isEmpty, old != new else { return }
         func tops(_ ids: [String]) -> [String: Double] { var y = 0.0, out: [String: Double] = [:]; for id in ids { out[id] = y; y += runtime.rowPitch[id] ?? 53 }; return out }
@@ -476,7 +493,7 @@ struct AWCNativeTable: View {
                 AWCTableCellView(cell: cell, row: shown[r], rowIndex: r, env: env, pinned: pinned, selected: runtime.isSelected(shown[r]),
                                  hovered: hover == shown[r].id, theme: theme,
                                  checkboxState: checkboxState(shown[r], rows), onCheckbox: { checked in checkbox(shown[r], checked, rows) },
-                                 expanded: runtime.isExpanded(shown[r]), onEvent: onEvent, column: column, span: span)
+                                 expanded: runtime.isExpanded(shown[r]), onEvent: onEvent, column: column, span: span, ariaRowIndex: ariaRowIndex(shown[r], shown))
                     .modifier(AWCTableFlipEffect(flip: runtime.flips[shown[r].id], probe: nil, motion: nil))
             }
         case .skeleton:
@@ -526,6 +543,16 @@ struct AWCNativeTable: View {
 
     /// `frozen-header`: the head stays put while the body scrolls on both axes inside --md-table-body-max-h; custom overlay
     /// bars (scrollbar="overlay") or the platform's indicators in a reserved gutter (scrollbar="gutter").
+    /// `::part(grid)` paints behind the body rows (head / foot rows and pinned cells keep their own surfaces); with a frozen
+    /// header the head rows sit in the source's separate `::part(header-grid)`.
+    @ViewBuilder func gridPartBackground(_ rows: [AWCTableRowEntry], _ env: AWCTableEnvironment) -> some View {
+        let g = part(.grid), hg = part(.headerGrid)
+        let headH = b("frozenHeader") ? CGFloat(Double(rows.filter { $0.group == .head }.count) * (env.metrics.headHeight + 1)) : 0
+        VStack(spacing: 0) {
+            if headH > 0 { hg.backgroundView.opacity(hg.opacity ?? 1).frame(height: headH) }
+            g.backgroundView
+        }
+    }
     @ViewBuilder func frozen(_ rows: [AWCTableRowEntry], _ env: AWCTableEnvironment) -> some View {
         let m = env.metrics
         let headBox = Double(rows.filter { $0.group == .head }.count) * (m.headHeight + 1)
@@ -606,10 +633,13 @@ struct AWCNativeTable: View {
                 if !gutter && overflowY && bodyHeight > 0 {
                     let thumb = Swift.max(24, bodyHeight * bodyHeight / Swift.max(1, bodyContent))
                     let travel = bodyHeight - thumb, progress = Double(frozenOffset.y) / Swift.max(1, bodyContent - bodyHeight)
+                    let track = part(.vscrollbar), knob = part(.vscrollbarThumb)
                     ZStack(alignment: .top) {
-                        Capsule().fill(scrollThumb(env, vertical: true)).frame(width: 8, height: thumb).offset(y: travel * Swift.min(1, progress))
+                        RoundedRectangle(cornerRadius: knob.cornerRadius ?? 4, style: .circular).fill(knob.fill(over: scrollThumb(env, vertical: true))).frame(width: 8, height: thumb)
+                            .opacity(knob.opacity ?? 1).offset(y: travel * Swift.min(1, progress))
                     }
                     .frame(width: 8, height: bodyHeight, alignment: .top)
+                    .background { track.backgroundView }.opacity(track.opacity ?? 1)
                     .padding(.top, headBox).padding(.trailing, 3)
                     .allowsHitTesting(false).accessibilityHidden(true)
                 }
@@ -622,7 +652,10 @@ struct AWCNativeTable: View {
                     let travel = (track - thumb) * Swift.min(1, progress)
                     // A host-supplied pointer (Laboratory, tests) releases the thumb with its own pointer-up, ahead of the gesture's end.
                     let pressed = thumbPressed && (pointer?.isPointerDown ?? true)
-                    Capsule().fill(pressed && !env.forcedColors ? env.palette.color("on-surface-variant") : scrollThumb(env, vertical: false)).frame(width: thumb, height: 8)
+                    let knob = part(.hscrollbarThumb)
+                    RoundedRectangle(cornerRadius: knob.cornerRadius ?? 4, style: .circular)
+                        .fill(knob.fill(over: pressed && !env.forcedColors ? env.palette.color("on-surface-variant") : scrollThumb(env, vertical: false))).frame(width: thumb, height: 8)
+                        .opacity(knob.opacity ?? 1)
                         .awcTableMotion("thumb:" + node.id, pressed ? 1 : 0, motion)
                         .awcInspect(nodeID: node.id, part: "hthumb", name: "hthumb") { _ in ["pressed": .bool(pressed)] }
                         .animation(reduced ? nil : .timingCurve(0.31, 0.94, 0.34, 1, duration: 0.15), value: pressed)
@@ -637,7 +670,9 @@ struct AWCNativeTable: View {
                             .onEnded { _ in thumbDragStart = nil; thumbPressed = false })
                 }
                 .environment(\.layoutDirection, .leftToRight)
-                .frame(height: 10).padding(.vertical, 2).padding(.horizontal, 8)
+                .frame(height: 10)
+                .background { part(.hscrollbar).backgroundView }.opacity(part(.hscrollbar).opacity ?? 1)
+                .padding(.vertical, 2).padding(.horizontal, 8)
                 .accessibilityHidden(true)
             }
         }
@@ -656,6 +691,7 @@ struct AWCNativeTable: View {
         // `loader` (or the older `loading`) replaces the progress line and scrim; `loader` wins when both are given.
         let loader = node.children.filter { $0.slot == "loader" }, legacy = node.children.filter { $0.slot == "loading" }
         let custom = loader.isEmpty ? legacy : loader
+        Group {
         if !custom.isEmpty {
             VStack(alignment: .leading, spacing: 0) { ForEach(custom) { AWCTableSlotContent(node: $0, theme: theme, color: palette.color("on-surface"), metrics: m, onEvent: onEvent) } }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -666,6 +702,7 @@ struct AWCNativeTable: View {
             // The scrim follows the progress line in the source's DOM order, so it dims the line too.
             ZStack(alignment: .topLeading) {
                 AWCNativeProgressIndicator(nodeID: node.id + "-progress", properties: ["variant": "linear", "indeterminate": true, "ariaLabel": "Loading"], theme: theme, onComplete: {})
+                    .awcTablePartBox(part(.progress))
                     .frame(width: box.size.width).offset(y: top)
                 Rectangle().fill(AWCTableColor.color(AWCTableColor.mix(palette.hex("surface"), 0.55, nil)))
                     .frame(width: box.size.width, height: Swift.max(0, box.size.height - top)).offset(y: top)
@@ -673,18 +710,23 @@ struct AWCNativeTable: View {
         }
         .accessibilityHidden(true)
         }
+        }
+        .awcTablePartBox(part(.loading))
     }
     @ViewBuilder func emptyState(_ m: AWCTableMetrics) -> some View {
-        let slotted = node.children.filter { $0.slot == "empty" }
+        let slotted = node.children.filter { $0.slot == "empty" }, e = part(.empty)
+        let fg = e.color(over: palette.color("on-surface-variant"))
         VStack(spacing: 0) {
             if slotted.isEmpty {
-                AWCListText(text: "No data", size: m.fontSize, lineHeight: m.lineHeight, weight: 400, tracking: 0.25, color: palette.color("on-surface-variant"), alignment: .center)
+                AWCListText(text: "No data", size: e.size(over: m.fontSize), lineHeight: m.lineHeight, weight: e.weight(over: 400), tracking: e.letterSpacing ?? 0.25, color: fg, alignment: .center)
             } else {
-                ForEach(slotted) { AWCTableSlotContent(node: $0, theme: theme, color: palette.color("on-surface-variant"), metrics: m, onEvent: onEvent) }
+                ForEach(slotted) { AWCTableSlotContent(node: $0, theme: theme, color: fg, metrics: m, onEvent: onEvent) }
             }
         }
-        .padding(.vertical, 32).padding(.horizontal, m.padInline)
+        .padding(e.edges(EdgeInsets(top: 32, leading: m.padInline, bottom: 32, trailing: m.padInline), rtl: rtl))
         .frame(maxWidth: .infinity, minHeight: hooks.emptyMinHeight ?? 160)
+        .background { e.backgroundView }
+        .opacity(e.opacity ?? 1)
         .accessibilityElement(children: .combine)
     }
 }

@@ -1,0 +1,643 @@
+{
+ "tag": "md-navigation-rail",
+ "at": "2026-11-08T17:59:46.428Z",
+ "rows": [
+  {
+   "case": "default",
+   "web": {
+    "elements": [
+     "navigation:Navigation",
+     "tablist:Navigation",
+     "tab:Home",
+     "tab:Saved",
+     "tab:Settings"
+    ],
+    "texts": [],
+    "focus": [
+     "tab:Home"
+    ],
+    "contrast": {
+     "measured": 3,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 5,
+     "nativeElements": 5,
+     "elements": [
+      "navigation:Navigation",
+      "tablist:Navigation",
+      "tab:Home {\"selected\":\"true\"}",
+      "tab:Saved",
+      "tab:Settings"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "tab:Home"
+     ],
+     "findings": [],
+     "contrastMeasured": 3
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 4,
+     "nativeElements": 3,
+     "elements": [
+      "button:Home {\"selected\":\"true\"}",
+      "button:Saved",
+      "button:Settings"
+     ],
+     "texts": [],
+     "focus": [
+      "button:Home"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "navigation",
+        "name": "Navigation"
+       },
+       "detail": "navigation \"Navigation\" has no ios counterpart",
+       "status": "expected",
+       "reason": "Web nav landmark around the tablist. UIKit exposes landmarks only as a container type, never as an element: the rail is a labelled container (SwiftUI .contain, the rail label) whose destinations VoiceOver reads as tabs (button + selected trait), as md-navigation-bar."
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 4,
+     "nativeElements": 3,
+     "elements": [
+      "tab:Home {\"selected\":\"true\"}",
+      "tab:Saved",
+      "tab:Settings"
+     ],
+     "texts": [
+      "Navigation"
+     ],
+     "announcements": [],
+     "focus": [
+      "tab:Home"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "navigation",
+        "name": "Navigation"
+       },
+       "detail": "navigation \"Navigation\" has no android counterpart",
+       "status": "expected",
+       "reason": "Web nav landmark. Compose has no landmark role: the rail is a traversal group labelled by its label (contentDescription), read before its destinations (Role.Tab + selected), as md-navigation-bar."
+      },
+      {
+       "kind": "text-extra",
+       "detail": "android exposes text Web does not: \"Navigation\"",
+       "status": "expected",
+       "reason": "The nav landmark / tablist name (aria-label). Compose has neither role: the traversal group carries the label as its contentDescription, read before the destinations, so the checker reports it as text (as md-tabs)."
+      }
+     ],
+     "contrastMeasured": 3,
+     "atf": {
+      "elements": 25,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "expanded",
+   "web": {
+    "elements": [
+     "navigation:Navigation",
+     "button:Toggle navigation",
+     "tablist:Navigation",
+     "tab:Home",
+     "tab:Saved",
+     "tab:Settings"
+    ],
+    "texts": [],
+    "focus": [
+     "button:Toggle navigation",
+     "tab:Home"
+    ],
+    "contrast": {
+     "measured": 5,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 6,
+     "webElements": 6,
+     "nativeElements": 6,
+     "elements": [
+      "navigation:Navigation",
+      "button:Toggle navigation {\"expanded\":\"true\"}",
+      "tablist:Navigation",
+      "tab:Home {\"selected\":\"true\"}",
+      "tab:Saved",
+      "tab:Settings"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "button:Toggle navigation",
+      "tab:Home"
+     ],
+     "findings": [],
+     "contrastMeasured": 5
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 4,
+     "webElements": 5,
+     "nativeElements": 4,
+     "elements": [
+      "button:Toggle navigation",
+      "button:Home {\"selected\":\"true\"}",
+      "button:Saved",
+      "button:Settings"
+     ],
+     "texts": [],
+     "focus": [
+      "button:Toggle navigation",
+      "button:Home"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "navigation",
+        "name": "Navigation"
+       },
+       "detail": "navigation \"Navigation\" has no ios counterpart",
+       "status": "expected",
+       "reason": "Web nav landmark around the tablist. UIKit exposes landmarks only as a container type, never as an element: the rail is a labelled container (SwiftUI .contain, the rail label) whose destinations VoiceOver reads as tabs (button + selected trait), as md-navigation-bar."
+      },
+      {
+       "kind": "target",
+       "detail": "ios: button \"Toggle navigation\" target 40×40 below 44pt",
+       "status": "info"
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 4,
+     "webElements": 5,
+     "nativeElements": 4,
+     "elements": [
+      "button:Toggle navigation {\"expanded\":\"true\"}",
+      "tab:Home {\"selected\":\"true\"}",
+      "tab:Saved",
+      "tab:Settings"
+     ],
+     "texts": [
+      "Navigation"
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Toggle navigation",
+      "tab:Home"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "navigation",
+        "name": "Navigation"
+       },
+       "detail": "navigation \"Navigation\" has no android counterpart",
+       "status": "expected",
+       "reason": "Web nav landmark. Compose has no landmark role: the rail is a traversal group labelled by its label (contentDescription), read before its destinations (Role.Tab + selected), as md-navigation-bar."
+      },
+      {
+       "kind": "text-extra",
+       "detail": "android exposes text Web does not: \"Navigation\"",
+       "status": "expected",
+       "reason": "The nav landmark / tablist name (aria-label). Compose has neither role: the traversal group carries the label as its contentDescription, read before the destinations, so the checker reports it as text (as md-tabs)."
+      }
+     ],
+     "contrastMeasured": 5,
+     "atf": {
+      "elements": 30,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "horizontal",
+   "web": {
+    "elements": [
+     "navigation:Navigation",
+     "tablist:Navigation",
+     "tab:Home",
+     "tab:Saved",
+     "tab:Settings"
+    ],
+    "texts": [],
+    "focus": [
+     "tab:Home"
+    ],
+    "contrast": {
+     "measured": 3,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 5,
+     "nativeElements": 5,
+     "elements": [
+      "navigation:Navigation",
+      "tablist:Navigation",
+      "tab:Home {\"selected\":\"true\"}",
+      "tab:Saved",
+      "tab:Settings"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "tab:Home"
+     ],
+     "findings": [],
+     "contrastMeasured": 3
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 4,
+     "nativeElements": 3,
+     "elements": [
+      "button:Home {\"selected\":\"true\"}",
+      "button:Saved",
+      "button:Settings"
+     ],
+     "texts": [],
+     "focus": [
+      "button:Home"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "navigation",
+        "name": "Navigation"
+       },
+       "detail": "navigation \"Navigation\" has no ios counterpart",
+       "status": "expected",
+       "reason": "Web nav landmark around the tablist. UIKit exposes landmarks only as a container type, never as an element: the rail is a labelled container (SwiftUI .contain, the rail label) whose destinations VoiceOver reads as tabs (button + selected trait), as md-navigation-bar."
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 4,
+     "nativeElements": 3,
+     "elements": [
+      "tab:Home {\"selected\":\"true\"}",
+      "tab:Saved",
+      "tab:Settings"
+     ],
+     "texts": [
+      "Navigation"
+     ],
+     "announcements": [],
+     "focus": [
+      "tab:Home"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "navigation",
+        "name": "Navigation"
+       },
+       "detail": "navigation \"Navigation\" has no android counterpart",
+       "status": "expected",
+       "reason": "Web nav landmark. Compose has no landmark role: the rail is a traversal group labelled by its label (contentDescription), read before its destinations (Role.Tab + selected), as md-navigation-bar."
+      },
+      {
+       "kind": "text-extra",
+       "detail": "android exposes text Web does not: \"Navigation\"",
+       "status": "expected",
+       "reason": "The nav landmark / tablist name (aria-label). Compose has neither role: the traversal group carries the label as its contentDescription, read before the destinations, so the checker reports it as text (as md-tabs)."
+      }
+     ],
+     "contrastMeasured": 3,
+     "atf": {
+      "elements": 25,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "labels-none",
+   "web": {
+    "elements": [
+     "navigation:Navigation",
+     "tablist:Navigation",
+     "tab:Home",
+     "tab:Saved",
+     "tab:Settings"
+    ],
+    "texts": [],
+    "focus": [
+     "tab:Home"
+    ],
+    "contrast": {
+     "measured": 3,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 5,
+     "webElements": 5,
+     "nativeElements": 5,
+     "elements": [
+      "navigation:Navigation",
+      "tablist:Navigation",
+      "tab:Home {\"selected\":\"true\"}",
+      "tab:Saved",
+      "tab:Settings"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "tab:Home"
+     ],
+     "findings": [],
+     "contrastMeasured": 3
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 4,
+     "nativeElements": 3,
+     "elements": [
+      "button:Home {\"selected\":\"true\"}",
+      "button:Saved",
+      "button:Settings"
+     ],
+     "texts": [],
+     "focus": [
+      "button:Home"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "navigation",
+        "name": "Navigation"
+       },
+       "detail": "navigation \"Navigation\" has no ios counterpart",
+       "status": "expected",
+       "reason": "Web nav landmark around the tablist. UIKit exposes landmarks only as a container type, never as an element: the rail is a labelled container (SwiftUI .contain, the rail label) whose destinations VoiceOver reads as tabs (button + selected trait), as md-navigation-bar."
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 4,
+     "nativeElements": 3,
+     "elements": [
+      "tab:Home {\"selected\":\"true\"}",
+      "tab:Saved",
+      "tab:Settings"
+     ],
+     "texts": [
+      "Navigation"
+     ],
+     "announcements": [],
+     "focus": [
+      "tab:Home"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "navigation",
+        "name": "Navigation"
+       },
+       "detail": "navigation \"Navigation\" has no android counterpart",
+       "status": "expected",
+       "reason": "Web nav landmark. Compose has no landmark role: the rail is a traversal group labelled by its label (contentDescription), read before its destinations (Role.Tab + selected), as md-navigation-bar."
+      },
+      {
+       "kind": "text-extra",
+       "detail": "android exposes text Web does not: \"Navigation\"",
+       "status": "expected",
+       "reason": "The nav landmark / tablist name (aria-label). Compose has neither role: the traversal group carries the label as its contentDescription, read before the destinations, so the checker reports it as text (as md-tabs)."
+      }
+     ],
+     "contrastMeasured": 3,
+     "atf": {
+      "elements": 22,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

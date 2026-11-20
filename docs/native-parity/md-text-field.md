@@ -1,6 +1,6 @@
 # md-text-field native checkpoint
 
-Status: **installed in canonical 2026-10-31 (n3-051); gates 2–3 and accessibility run on macOS SwiftUI, the iOS simulator and the
+Status: **installed in canonical 2026-10-31 (n3-051); follow-ups 2026-11-05 (n3-078); gates 2–3 and accessibility run on macOS SwiftUI, the iOS simulator and the
 Android emulator** against Mac Chrome 153 oracles. Open items are listed under Remaining. Independent final audit pending. Source contract:
 [md-text-field-source-review.md](md-text-field-source-review.md); plan: [md-text-field-native-plan.md](md-text-field-native-plan.md).
 The field is also the input primitive of md-number-field, md-otp-field, md-search (n1) and the select family (n2).
@@ -11,7 +11,7 @@ The field is also the input primitive of md-number-field, md-otp-field, md-searc
 | --- | --- | --- |
 | Renderer | `AWCNativeView(tag: "md-text-field", …)` (`NativeTextField.swift`, `FieldTextInput.swift`, `TextFieldModel.swift`, `TextFieldStyle.swift`) | `AWCComponent("md-text-field", …)` (`NativeTextField.kt`) |
 | The 17 `--md-text-field-*` hooks | `AWCTextFieldAppearance` + `.awcTextFieldAppearance(_:for:)` | `AWCTextFieldAppearance` + `AWCTextFieldAppearanceScope` |
-| `::part()` colours (container, label, input + caret, supporting-text, counter) | `AWCTextFieldPartAppearance` + `.awcTextFieldPartAppearance(_:for:)` | `AWCTextFieldPartAppearance` + `AWCTextFieldPartAppearanceScope` |
+| `::part()` rules (container, label, input + caret, supporting-text, counter colours; the chips box's background and gap) | `AWCTextFieldPartAppearance` + `.awcTextFieldPartAppearance(_:for:)` | `AWCTextFieldPartAppearance` + `AWCTextFieldPartAppearanceScope` |
 | Methods `setFocus`, `select`, `getInputElement`, `getValidity`, `setCustomValidity`, `checkValidity`, `reportValidity` | `AWCTextFieldController` + `.awcTextFieldController(_:for:)` | `AWCTextFieldController` + `AWCTextFieldControllerScope` |
 | `formatter` / `parser` function props | `AWCTextFieldFormatting` + `.awcTextFieldFormatting(_:for:)` | `AWCTextFieldFormatting` + `AWCTextFieldFormattingScope` |
 | Reduced motion override | `.awcFieldReducedMotion(_:)` | `AWCFieldReducedMotionScope` |
@@ -31,14 +31,14 @@ indicator, outline, colour and state-layer transitions (reduced motion: none).
 ## Evidence
 
 Oracles: Mac Chrome 153 (headless, DPR 1, trusted CDP input), `outputs/native-parity/md-text-field/web-oracle-mac/` (job n3-001):
-406 paint cases (theme × direction × variant × density × 14 states, every hook alone and together, `::part`) and 13 interaction
+415 paint cases (theme × direction × variant × density × 14 states, every hook alone and together, `::part` incl. chips rows (n3-065), supporting rows (n3-074)) and 13 interaction
 runs, each also with reduced motion. Step base: `outputs/native-parity/md-text-field/source-tests/tf-step-check.json`.
 
 | Platform | Paint | States (events, end states, per-frame motion) | Jobs |
 | --- | --- | --- | --- |
-| macOS SwiftUI | 12,409 / 12,409 | 2,026 / 2,026 (n3-052); open: the tf-multiline-autogrow press sometimes focuses nothing (n3-047, n3-054) | n3-052, n3-054, n3-055 |
-| iOS simulator (AWC-n3, iOS 26.3.1) | 12,383 / 12,385 (open: text rows of the two density −4 LTR prefix/suffix cases, 3 rows lower) | 2,025 / 2,025 | n3-052, n3-054 |
-| Android emulator (emulator-5560) | 11,066 / 11,066 | 954 / 954 | n3-A029 |
+| macOS SwiftUI | 12,700 / 12,700 | 2,026 / 2,026 | n3-079, n3-080 |
+| iOS simulator (AWC-n3, iOS 26.3.1) | 12,676 / 12,676 | 2,026 / 2,026 | n3-076, n3-079 |
+| Android emulator (emulator-5560) | 11,333 / 11,333 | 954 / 954 | n3-A035, n3-A036 |
 
 Paint compares the measured boxes, colours, typography and every flat pixel of the case's clip with Chrome's capture, and the
 first / last ink row of the input box (glyph placement). States compare the md* events in order with their details, the
@@ -53,7 +53,7 @@ motion is compared from UIKit's focus moment (focus on tap release, decision 7).
 Studio module (`text-field-appearance.js`: the 17 hooks and the `::part` colours), registry and theme options, render
 validation, retained updates of every property except the formatter / parser closures, the seven methods with results,
 method and part examples, policies (iOS / Android: all properties, events, methods and slots), SwiftUI live host
-(`test-live-textfield.mjs`) 22/22 (canonical, n3-051), Android host (`LivePreviewTextFieldHostTest`) passes (n3-A029).
+(`test-live-textfield.mjs`) 22/22 (n3-080), Android host (`LivePreviewTextFieldHostTest`) passes (n3-A036).
 
 ## Accessibility (tools/ax)
 
@@ -66,9 +66,12 @@ Recorded platform conventions (tools/ax expectations): on Android the supporting
 See "Decisions (autonomous, 2026-10-27, reversible)" in the source review: text inset, password toggle labels, English
 button labels, clearing events, mdSearch on every field, the combobox role, iOS focus on touch release, the step base.
 
+- 6-3 (2026-11-14): macOS Shift+Tab out of a field in a window without a document-order root moved forward (the field editor's
+  own Shift+Tab uses AppKit's previous-key-view chain, unset for views SwiftUI adds after the window was shown; n2-083). The field's
+  `insertBacktab` (and a Tab that arrives with Shift held) now selects the previous key view of the same geometric loop
+  (`AWCDocumentTabOrder.movePrevious(from:)`). Test: `NativeTextFieldStatesIntegration` Shift+Tab check (`AWC_TF_ONLY=shift-tab`),
+  Before / field / After buttons: backward `field, Before, After, field`, forward `field, After, Before, field`.
+
 ## Remaining
 
-- macOS: tf-multiline-autogrow — a press sometimes focuses nothing on the TextKit 1 text view (n3-047, n3-054; n3-052 passed);
-  n3-055 records what AppKit hit.
-- iOS paint: the density −4 LTR prefix/suffix cases ink 3 rows lower than Chrome inside the input box.
 - Independent final audit.

@@ -75,6 +75,7 @@ private struct AWCStepperAppearanceKey: EnvironmentKey { static let defaultValue
 private struct AWCStepperControllerKey: EnvironmentKey { static let defaultValue: AWCStepperController? = nil }
 private struct AWCStepperReducedMotionKey: EnvironmentKey { static let defaultValue: Bool? = nil }
 private struct AWCStepperSettledKey: EnvironmentKey { static let defaultValue = false }
+private struct AWCViewportWidthKey: EnvironmentKey { static let defaultValue: Double? = nil }
 public extension EnvironmentValues {
     var awcStepperAppearance: AWCStepperAppearance { get { self[AWCStepperAppearanceKey.self] } set { self[AWCStepperAppearanceKey.self] = newValue } }
     var awcStepperController: AWCStepperController? { get { self[AWCStepperControllerKey.self] } set { self[AWCStepperControllerKey.self] = newValue } }
@@ -82,6 +83,10 @@ public extension EnvironmentValues {
     var awcStepperReducedMotion: Bool? { get { self[AWCStepperReducedMotionKey.self] } set { self[AWCStepperReducedMotionKey.self] = newValue } }
     /// Renders steppers below settled — every transition and keyframe animation at its end (snapshots, still previews).
     var awcStepperSettled: Bool { get { self[AWCStepperSettledKey.self] } set { self[AWCStepperSettledKey.self] = newValue } }
+    /// The viewport width (CSS px = pt) that md-step.css's `@media (max-width: 599px)` compact row reads (Web: the layout viewport, md-step.css:608).
+    /// nil = the hosting width: on iOS the width of the window scene the view lives in (split view and Stage Manager included), on macOS 1200
+    /// (a window is not a viewport). Tests set it to the oracle's viewport.
+    var awcViewportWidth: Double? { get { self[AWCViewportWidthKey.self] } set { self[AWCViewportWidthKey.self] = newValue } }
 }
 private struct AWCStepperAppearanceModifier: ViewModifier {
     let value: AWCStepperAppearance
@@ -170,7 +175,8 @@ struct AWCStepperFrame: Layout {
                 guard i < first.steps.count, let pn = first.steps[i].panel else { continue }
                 input.panelInnerHeights[i] = Double(subviews[k].sizeThatFits(.init(width: pn.contentWidth, height: nil)).height)
             case .slot:
-                input.slotHeight = Double(subviews[k].sizeThatFits(.init(width: width, height: nil)).height)
+                let sp = input.stepperParts[.content]?.padding      // ::part(content) padding: the slot lays out inside it
+                input.slotHeight = Double(subviews[k].sizeThatFits(.init(width: Swift.max(0, width - (sp?.left ?? 0) - (sp?.right ?? 0)), height: nil)).height)
             case .navBack:
                 let b = subviews[k].sizeThatFits(.unspecified)
                 input.buttonWidths = (Double(b.width), input.buttonWidths?.next ?? 0)
@@ -202,9 +208,11 @@ struct AWCStepperFrame: Layout {
             case .panel(let i):
                 if i < p.steps.count, let pn = p.steps[i].panel, pn.visible {
                     // The panel clips its content (the sizer is overflow: hidden while the grid row animates).
-                    place(k, AWCStepperRect(x: pn.contentOrigin.x, y: pn.rect.y, width: pn.contentWidth, height: pn.rect.height))
+                    // ::part(content) padding: the body (the clipping sizer) sits in the content box.
+                    let ins = p.steps[i].panelInset
+                    place(k, AWCStepperRect(x: pn.contentOrigin.x, y: pn.rect.y + ins.top, width: pn.contentWidth, height: Swift.max(0, pn.rect.height - ins.top - ins.bottom)))
                 } else { place(k, AWCStepperRect(x: 0, y: 0, width: 0, height: 0)) }
-            case .slot: place(k, p.content)
+            case .slot: place(k, p.slot ?? p.content)
             case .navBack: place(k, p.navButtons?.back ?? .zero)
             case .navNext: place(k, p.navButtons?.next ?? .zero)
             }
@@ -239,12 +247,41 @@ struct AWCStepPanelBody: Layout {
 
 // MARK: - View
 
+/// md-stepper: on macOS the content sits in a navigation landmark (R6-13, decision 16): an AppKit container (role group, subrole
+/// AXLandmarkNavigation, named by `label`) around a nested hosting view; a standalone md-step has none.
 struct AWCNativeStepper: View {
+    let node: AWCNode
+    let properties: [String: AWCValue]
+    let theme: AWCTheme
+    var standalone = false
+    let setActive: (Int) -> Void
+    let dispatch: (String, String, String, AWCValue, Bool) -> Bool
+    let renderChild: (AWCNode) -> AnyView
+    @Environment(\.layoutDirection) private var outerDirection
+    var body: some View {
+        #if canImport(AppKit)
+        if standalone { content(nested: false) }
+        else {
+            AWCNestedLandmark(label: { let v = properties["label"]?.string ?? ""; return v.isEmpty ? "Progress" : v }(), identifier: node.id) { content(nested: true) }
+        }
+        #else
+        content(nested: false)
+        #endif
+    }
+    private func content(nested: Bool) -> AWCNativeStepperContent {
+        AWCNativeStepperContent(node: node, properties: properties, theme: theme, standalone: standalone, nested: nested, setActive: setActive,
+                                dispatch: dispatch, renderChild: renderChild, directionOverride: nested ? outerDirection : nil)
+    }
+}
+
+struct AWCNativeStepperContent: View {
     let node: AWCNode
     let properties: [String: AWCValue]
     let theme: AWCTheme
     /// A standalone md-step (no stepper): rendered like the source with its data-* defaults.
     var standalone = false
+    /// Inside the macOS landmark: the landmark is the labelled container.
+    var nested = false
     let setActive: (Int) -> Void
     /// (name, tag, nodeID, detail, cancelable) → false when prevented.
     let dispatch: (String, String, String, AWCValue, Bool) -> Bool
@@ -253,11 +290,18 @@ struct AWCNativeStepper: View {
     @Environment(\.awcStepperController) private var controller
     @Environment(\.awcThemeTokens) private var envTokens
     @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.layoutDirection) private var direction
+    @Environment(\.layoutDirection) private var environmentDirection
+    /// The outer view's direction when the content sits in the nested landmark host: the nested hosting view reports its own
+    /// (the locale's) layout direction on updates, so the outer direction is passed explicitly (story 5-3, jobs 023 to 026).
+    var directionOverride: LayoutDirection? = nil
+    private var direction: LayoutDirection { directionOverride ?? environmentDirection }
     @Environment(\.awcNativeDensity) private var inheritedDensity
     @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
     @Environment(\.awcStepperReducedMotion) private var reducedOverride
     @Environment(\.awcStepperSettled) private var settled
+    @Environment(\.awcViewportWidth) private var viewportOverride
+    @Environment(\.awcStepperParts) private var stepperParts
+    @Environment(\.awcStepParts) private var stepParts
     @StateObject private var rt = AWCStepperRuntime()
     @State private var internalDispatcher = AWCEventDispatcher(id: "md-stepper-internal", handler: { _ in })
 
@@ -330,15 +374,23 @@ struct AWCNativeStepper: View {
 
     private var tokens: [String: String] { envTokens.isEmpty ? AWCTheme.generated(dark: colorScheme == .dark).tokens : envTokens }
 
+    /// Hosting width when no `awcViewportWidth` is set: the foreground window scene's width on iOS, 1200 on macOS.
+    private var hostingViewportWidth: Double {
+        #if os(iOS)
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        let scene = scenes.first { $0.activationState == .foregroundActive } ?? scenes.first
+        return Double(scene?.coordinateSpace.bounds.width ?? UIScreen.main.bounds.width)
+        #else
+        return 1200
+        #endif
+    }
+
     func input(now: Double) -> AWCStepperLayoutInput {
         var i = AWCStepperLayoutInput(width: 480)
         i.rtl = direction == .rightToLeft; i.dark = colorScheme == .dark
         i.globalDensity = inheritedDensity; i.tokens = tokens; i.hooks = hooks
-        #if os(iOS)
-        i.viewportWidth = Double(UIScreen.main.bounds.width)
-        #else
-        i.viewportWidth = 1200
-        #endif
+        i.stepParts = stepParts; i.stepperParts = stepperParts
+        i.viewportWidth = viewportOverride ?? hostingViewportWidth
         return i
     }
 
@@ -354,8 +406,7 @@ struct AWCNativeStepper: View {
             frame(m, base: base, now: now)
         }
         .environment(\.layoutDirection, .leftToRight)   // the layout mirrors RTL itself
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel(standalone ? "" : m.p.label)
+        .modifier(AWCStepperContainer(nested: nested, label: standalone ? "" : m.p.label))
         .modifier(AWCStepperAnnouncer(live: m.live, errorLive: m.errorLive))
         .awcInspect(nodeID: node.id, name: node.tag) { size in
             ["width": .number(Double(size.width)), "height": .number(Double(size.height)), "active": .number(Double(m.active)),
@@ -387,7 +438,8 @@ struct AWCNativeStepper: View {
         let withPanel = steps.indices.filter { m.renderPanel($0) }
         let showNav = m.p.nav && m.count > 0 && ((m.p.variant != "mobile" && m.p.orientation == "horizontal") || m.p.variant == "mobile")
         AWCStepperFrame(roles: roles(steps.count, withPanel, slot: !slotNodes.isEmpty, nav: showNav && !standalone), compute: { [rt, reduced, settled] inp in
-            AWCStepperLayout.layout(rt.model, inp, measure: rt.measure, motion: settled ? nil : rt.motion, now: now, reduced: reduced, pointer: rt.pointer)
+            AWCStepperParts.applied(AWCStepperLayout.layout(rt.model, inp, measure: rt.measure, motion: settled ? nil : rt.motion, now: now, reduced: reduced, pointer: rt.pointer),
+                                    step: inp.stepParts, stepper: inp.stepperParts)
         }, base: base, store: rt, now: now) {
             AWCStepperChrome(rt: rt, now: now, reduced: reduced)
             // Source order (reading and keyboard order): header i, its panel, then the next header.
@@ -395,7 +447,8 @@ struct AWCNativeStepper: View {
                 header(i, m)
                 if withPanel.contains(i) { panel(i, steps[i], m) }
             }
-            if !slotNodes.isEmpty { VStack(alignment: .leading, spacing: 0) { ForEach(slotNodes) { renderChild($0) } } }
+            // The slotted content flows in the host's direction (the stepper mirrors only its own boxes).
+            if !slotNodes.isEmpty { VStack(alignment: .leading, spacing: 0) { ForEach(slotNodes) { renderChild($0) } }.environment(\.layoutDirection, direction) }
             if showNav && !standalone {
                 navButton("back", label: m.p.backLabel, filled: false, enabled: m.backEnabled, loading: false) { moveFocus { rt.model.footerBack() } }
                 navButton("next", label: m.isFinishStep ? m.p.finishLabel : m.p.nextLabel, filled: true, enabled: m.continueEnabled, loading: m.p.loading) {
@@ -508,7 +561,7 @@ struct AWCNativeStepper: View {
             let content = contentNodes(step)
             if !content.isEmpty { VStack(alignment: .leading, spacing: 0) { ForEach(content) { renderChild($0) } }.frame(maxWidth: .infinity, alignment: .leading) }
             if actions {
-                HStack(spacing: e.theme.spacing("gap-sm", rung: e.s, 8)) {
+                HStack(spacing: stepParts[.actions]?.gap ?? e.theme.spacing("gap-sm", rung: e.s, 8)) {
                     actionButton(i, back: true, label: m.p.backLabel, enabled: shown && i != 0 && !m.p.loading, density: e.s) { moveFocus { rt.model.stepBack(i) } }
                     actionButton(i, back: false, label: m.isLast(i) ? m.p.finishLabel : m.p.nextLabel, enabled: shown && m.continueEnabled, density: e.s) {
                         moveFocus { rt.model.stepNext(i) }
@@ -516,9 +569,10 @@ struct AWCNativeStepper: View {
                 }.frame(maxWidth: .infinity, alignment: .leading)
             }
         }
+        .environment(\.layoutDirection, direction)   // panel content and the Back / Continue row flow in the host's direction
         .clipped()
         // The panel's opacity, md-step-content-enter (a lazy panel's mount) and md-step-enter (the step's mount).
-        .opacity(i < rt.paint.steps.count ? (rt.paint.steps[i].panel?.opacity ?? 1) * rt.paint.steps[i].contentOpacity * rt.paint.steps[i].hostOpacity : 1)
+        .opacity(shown ? max(0.002, i < rt.paint.steps.count ? (rt.paint.steps[i].panel?.opacity ?? 1) * rt.paint.steps[i].contentOpacity * (nested ? 1 : rt.paint.steps[i].hostOpacity) : 1) : 0)  // SwiftUI drops a view at opacity 0 from the accessibility tree: a shown panel never reaches exactly 0 (0.2 of a level, invisible)
         .offset(y: i < rt.paint.steps.count ? rt.paint.steps[i].contentDY : 0)
         .disabled(!shown)
         .accessibilityElement(children: .contain)
@@ -556,6 +610,26 @@ struct AWCStepperChrome: View {
     var body: some View {
         Canvas { ctx, size in
             let p = rt.paint
+            // ::part(list / content / nav / mobile-nav) and md-step ::part(content) backgrounds, under everything else.
+            func bg(_ r: AWCStepperRect?, _ c: AWCStepperRGBA?) {
+                guard let r, let c, !r.isEmpty else { return }
+                ctx.fill(Path(CGRect(x: r.x, y: r.y, width: r.width, height: r.height)), with: .color(Color(awcStepper: c)))
+            }
+            // A wrapper part's box (story 5-3): the background under the border, both following the radius (outer radius at the border edge).
+            func box(_ ctx: GraphicsContext, _ b: AWCStepperBox?, _ rr: AWCStepperRect, ink: AWCStepperRGBA) {
+                guard let b, !rr.isEmpty else { return }
+                let r = CGRect(x: rr.x, y: rr.y, width: rr.width, height: rr.height), rad = Swift.min(b.radius, Double(Swift.min(r.width, r.height)) / 2)
+                if let c = b.background { ctx.fill(RoundedRectangle(cornerRadius: rad, style: .circular).path(in: r), with: .color(Color(awcStepper: c))) }
+                if b.borderWidth > 0 {
+                    let w = b.borderWidth
+                    ctx.stroke(RoundedRectangle(cornerRadius: Swift.max(0, rad - w / 2), style: .circular).path(in: r.insetBy(dx: w / 2, dy: w / 2)),
+                               with: .color(Color(awcStepper: b.borderColor ?? ink)), lineWidth: w)
+                }
+            }
+            let ink = (r: 0.11, g: 0.106, b: 0.122, a: 1.0)
+            bg(p.list, p.listBackground); bg(p.content, p.contentBackground); bg(p.nav, p.navBackground); bg(p.mobileNav, p.mobileNavBackground)
+            if let mb = p.mobileProgressBox, let mr = p.mobileProgress { box(ctx, mb, mr, ink: ink) }
+            for s in p.steps { if let pn = s.panel, pn.visible, var c = s.panelBackground { c.a *= pn.opacity * s.hostOpacity; bg(pn.rect, c) } }
             for s in p.steps where !s.inner.isEmpty {
                 if let c = s.connector, !c.rect.isEmpty {
                   ctx.drawLayer { ctx in
@@ -579,21 +653,38 @@ struct AWCStepperChrome: View {
                 let ind = CGRect(x: s.indicator.x, y: s.indicator.y, width: s.indicator.width, height: s.indicator.height)
               ctx.drawLayer { ctx in
                 ctx.opacity = s.hostOpacity
+                box(ctx, s.innerBox, s.inner, ink: ink)
                 if let ring = s.focusRing {
-                    ctx.fill(Circle().path(in: ind.insetBy(dx: -5, dy: -5)), with: .color(Color(awcStepper: ring.outer)))
-                    ctx.fill(Circle().path(in: ind.insetBy(dx: -2, dy: -2)), with: .color(Color(awcStepper: ring.inner)))
+                    // The ring is the indicator's box-shadow: it follows the indicator's border-radius (50% unless a part sets one).
+                    func ringShape(_ extra: Double) -> Path {
+                        let r = ind.insetBy(dx: -extra, dy: -extra)
+                        guard let ib = s.indicatorBox, ib.radius > 0 else { return Circle().path(in: r) }
+                        return RoundedRectangle(cornerRadius: Swift.min(ib.radius + extra, Double(r.width) / 2), style: .circular).path(in: r)
+                    }
+                    ctx.fill(ringShape(5), with: .color(Color(awcStepper: ring.outer)))
+                    ctx.fill(ringShape(2), with: .color(Color(awcStepper: ring.inner)))
                 }
-                ctx.drawLayer { l in
-                    l.opacity = s.indicatorOpacity
+                // GraphicsContext.opacity applies per drawing operation: the group's fade goes on the parent of an isolated layer
+                // (Chrome fades the composited indicator, so the box background must not tint the bubble).
+                ctx.drawLayer { lo in
+                  lo.opacity = s.indicatorOpacity
+                  lo.drawLayer { l in
+                    box(l, s.indicatorBox, s.indicator, ink: ink)      // the indicator's own box fades with it (opacity .38 when disabled)
                     if s.stateLayerVisible && s.stateOpacity > 0 {
                         var c = s.stateColor; c.a *= s.stateOpacity
-                        l.fill(Circle().path(in: ind), with: .color(Color(awcStepper: c)))
+                        let sl = CGRect(x: s.stateLayer.x, y: s.stateLayer.y, width: s.stateLayer.width, height: s.stateLayer.height)
+                        l.fill(Ellipse().path(in: sl), with: .color(Color(awcStepper: c)))
                     }
                     let b = CGRect(x: s.bubble.x, y: s.bubble.y, width: s.bubble.width, height: s.bubble.height)
-                    if let h = s.halo, h.spread > 0 {
-                        l.fill(Circle().path(in: b.insetBy(dx: -h.spread * s.scale, dy: -h.spread * s.scale)), with: .color(Color(awcStepper: h.color)))
+                    // ::part(bubble / dot) border-radius (scaled with the bubble; the halo's box-shadow follows it, spread added).
+                    func shape(_ r: CGRect, _ extra: Double) -> Path {
+                        guard let br = s.bubbleRadius else { return Circle().path(in: r) }
+                        return RoundedRectangle(cornerRadius: Swift.min(br * s.scale + extra, Double(r.width) / 2), style: .circular).path(in: r)
                     }
-                    l.fill(Circle().path(in: b), with: .color(Color(awcStepper: s.bubbleColor)))
+                    if let h = s.halo, h.spread > 0 {
+                        l.fill(shape(b.insetBy(dx: -h.spread * s.scale, dy: -h.spread * s.scale), h.spread * s.scale), with: .color(Color(awcStepper: h.color)))
+                    }
+                    l.fill(shape(b, 0), with: .color(Color(awcStepper: s.bubbleColor)))
                     if let fg = s.bubbleText {
                         if let n = s.number {
                             let t = l.resolve(Text(n).font(awcStepperFont(size: s.bubbleFontSize * s.scale, weight: 500)).foregroundColor(Color(awcStepper: fg)))
@@ -608,19 +699,25 @@ struct AWCStepperChrome: View {
                             }
                         }
                     }
+                  }
                 }
                 if let tr = s.text {
+                    // A vertical step's text column ends before its indicator in RTL.
+                    let rtlText = tr.x + tr.width <= s.indicator.x + 0.5
                     ctx.drawLayer { l in
                         l.opacity = s.textOpacity
+                        box(l, s.textBox, tr, ink: ink)
                         for line in s.lines {
                             let lead = awcStepperHalfLeading(size: line.fontSize, lineHeight: line.lineHeight)
                             for (k, t) in (line.wrapped.isEmpty ? [line.text] : line.wrapped).enumerated() {
                                 let text = Text(t).font(awcStepperFont(size: line.fontSize, weight: line.weight > 500 ? 700 : line.weight, italic: line.italic))
-                                    .foregroundColor(Color(awcStepper: line.color))
+                                    .tracking(line.letterSpacing).foregroundColor(Color(awcStepper: line.color))
                                 let r = l.resolve(text)
                                 let w = Double(r.measure(in: CGSize(width: 10_000, height: 10_000)).width)
-                                // Each line centred in a horizontal step's text column, start-aligned in a vertical one.
-                                let x = rt.model.p.orientation == "horizontal" ? line.rect.x + (line.rect.width - w) / 2 : line.rect.x
+                                // Each line centred in a horizontal step's text column, start-aligned in a vertical one
+                                // (text-align: start — each line ends at the column's right edge in RTL).
+                                let x = rt.model.p.orientation == "horizontal" ? line.rect.x + (line.rect.width - w) / 2
+                                    : rtlText ? line.rect.x + line.rect.width - w : line.rect.x
                                 l.draw(r, at: CGPoint(x: x, y: line.rect.y + Double(k) * line.lineHeight + lead), anchor: .topLeading)
                             }
                         }
@@ -648,7 +745,7 @@ func awcStepperFont(size: Double, weight: Double, italic: Bool = false) -> Font 
     _ = AWCNativeFonts.labelFamily(regular: true)
     let name = weight > 500 ? "Roboto-Bold" : weight > 400 ? "Roboto-Medium" : "Roboto-Regular"
     var f = CTFontCreateWithName(name as CFString, size, nil)
-    if italic, let o = CTFontCreateCopyWithSymbolicTraits(f, size, nil, .traitItalic, .traitItalic) { f = o }
+    if italic { var m = CGAffineTransform(a: 1, b: 0, c: 0.25, d: 1, tx: 0, ty: 0); f = CTFontCreateWithName(name as CFString, size, &m) }   // synthetic oblique (Skia's 1/4 skew)
     return Font(f)
 }
 
@@ -708,5 +805,13 @@ extension AWCNativeView {
         AWCNativeStepper(node: node, properties: [:], theme: theme, standalone: true, setActive: { _ in },
                          dispatch: { name, tag, id, detail, _ in emit(name, detail); return true },
                          renderChild: { child($0) })
+    }
+}
+
+/// The stepper's labelled container (not inside the macOS landmark, which is the labelled container there).
+private struct AWCStepperContainer: ViewModifier {
+    let nested: Bool, label: String
+    @ViewBuilder func body(content: Content) -> some View {
+        if nested { content } else { content.accessibilityElement(children: .contain).accessibilityLabel(label) }
     }
 }

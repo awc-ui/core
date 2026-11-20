@@ -149,6 +149,8 @@ export function normalizeIOS(list) {
   const elements = [], texts = [];
   for (const n of list ?? []) {
     const t = new Set(n.traits ?? []); const label = ws(n.label); const value = ws(n.value ?? '');
+    // The chart descriptor of a plot element (probe chartData): VoiceOver's chart details, read as the data table's text.
+    if (Array.isArray(n.chartData) && n.chartData.length) texts.push(ws(n.chartData.join(' ')));
     let role = null;
     // WebKit exposes a listbox option as static text (+ selected); AWC's keyboard focus surface for an option does the same.
     if (t.has('staticText') && /FocusView$/.test(n.class ?? '')) role = 'option';

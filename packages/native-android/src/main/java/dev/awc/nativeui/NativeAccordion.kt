@@ -1,5 +1,6 @@
 package dev.awc.nativeui
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -263,8 +264,10 @@ internal fun accordionDispatch(name:String,tag:String,detail:AWCValue,targetID:S
     val panelWidth=minOf(appearance.floatingWidth ?: 360.0,viewportWidth-16.0).coerceAtLeast(0.0)
     val panelShape=appearance.floatingRadius ?: AWCCornerShape.uniform(accordionTokenLength(tokens,"--md-sys-shape-corner-large",16.0))
     val panelBackground=appearance.floatingBackground?.let(::statusDotColor) ?: colors.surfaceContainerLow
-    val panelRest=appearance.floatingElevation?.map { it.resolved() } ?: NativeShadowLayer.parse(tokens["--md-sys-elevation-3"])
-    val panelActive=appearance.floatingElevationActive?.map { it.resolved() } ?: NativeShadowLayer.parse(tokens["--md-sys-elevation-5"])
+    // forced-colors: the floating panel's box-shadow is forced to none; `border: 1px solid CanvasText`.
+    val forcedPalette=awcForcedColors()
+    val panelRest=if(forcedPalette!=null) emptyList() else appearance.floatingElevation?.map { it.resolved() } ?: NativeShadowLayer.parse(tokens["--md-sys-elevation-3"])
+    val panelActive=if(forcedPalette!=null) emptyList() else appearance.floatingElevationActive?.map { it.resolved() } ?: NativeShadowLayer.parse(tokens["--md-sys-elevation-5"])
     val panelTiming=NativeAccordionReorderMotion.Timing(
         if(reduced || configuration.transition=="none") 0.0 else accordionCSSDuration(tokens["--md-sys-motion-spring-effects-default-duration"]) ?: 200.0,
         accordionCSSCubicBezier(tokens["--md-sys-motion-spring-effects-default-easing"]) ?: listOf(.34,.8,.34,1.0))
@@ -279,23 +282,28 @@ internal fun accordionDispatch(name:String,tag:String,detail:AWCValue,targetID:S
         if(draggedID==null) { if(owner.motion.differs(null,emptyList(),emptyMap(),null)) owner.endMotion() }
         else if(owner.motion.differs(draggedID,state.items.map { it.id },siblingTargets,placeholder?.top)) owner.requestMotion()
     }
-    val groupModifier=(if(floating) Modifier
+    val groupCursor=if(chassisDragging) AWCCursorStyle.Grabbing else null
+    val groupModifier=Modifier.awcCursor(groupCursor,stable=true).then(if(floating) Modifier
             .accordionFloatingPlacement({ viewport?.origin ?: androidx.compose.ui.geometry.Offset.Zero },{ state.x },{ state.y },(panelWidth*screenDensity).roundToInt())
             .accordionShadow(panelShape,{ NativeShadowLayer.interpolate(panelRest,panelActive,owner.panelElevation.presented(owner.frameMillis).also { owner.motionVersion }) },false)
             .clip(panelShape).background(panelBackground,panelShape)
             .inspectAWCNode(inspection,"floating-panel","floating-panel")
+            .then(if(forcedPalette!=null) Modifier.border(1.dp,awcColor(forcedPalette.canvasText,Color.White),panelShape).awcBorderInset(1.dp) else Modifier)
         else Modifier.fillMaxWidth()
             .then(if(outlined) Modifier.accordionShadow(chassisShape,chassisShadow,false).clip(chassisShape).border(1.dp,outline,chassisShape) else Modifier))
         .onGloballyPositioned { owner.rootBounds=it.boundsInRoot();owner.density=screenDensity }
         .then(AccordionGroupMarkerElement(owner))
-    Layout(content={
+    val layerID=remember { "floating-panel#"+System.identityHashCode(owner) }
+    val panel:@Composable ()->Unit={ Layout(content={
         if(placeholder!=null) {
-            val color=appearance.dropPlaceholderColor?.let(::statusDotColor) ?: colors.primaryContainer.copy(alpha=colors.primaryContainer.alpha*.45f)
-            val stroke=appearance.dropPlaceholderOutlineColor?.let(::statusDotColor) ?: colors.primary.copy(alpha=colors.primary.alpha*.55f)
-            val shape=appearance.dropPlaceholderShape ?: chassisShape
+            // ::part(drop-placeholder) declarations win over the hooks (outer part rules over the inner sheet).
+            val pp=LocalAWCAccordionParts.current[AWCAccordionPart.DropPlaceholder]?.normalized() ?: AWCAccordionPartAppearance()
+            val color=(pp.backgroundColor ?: appearance.dropPlaceholderColor)?.let(::statusDotColor) ?: colors.primaryContainer.copy(alpha=colors.primaryContainer.alpha*.45f)
+            val stroke=(pp.borderColor ?: appearance.dropPlaceholderOutlineColor)?.let(::statusDotColor) ?: colors.primary.copy(alpha=colors.primary.alpha*.55f)
+            val shape=pp.cornerShape ?: appearance.dropPlaceholderShape ?: chassisShape
             Box(Modifier.layoutId(AccordionPlaceholderID).inspectAWCNode(inspection,"drop-placeholder","drop-placeholder")
-                .alpha((appearance.dropPlaceholderOpacity ?: 1.0).toFloat()).background(color,shape)
-                .accordionDashedBorder(shape,appearance.dropPlaceholderOutlineWidth ?: 2.0,stroke).clearAndSetSemantics {})
+                .alpha((pp.opacity ?: appearance.dropPlaceholderOpacity ?: 1.0).toFloat()).background(color,shape)
+                .accordionDashedBorder(shape,pp.borderWidth ?: appearance.dropPlaceholderOutlineWidth ?: 2.0,stroke).clearAndSetSemantics {})
         }
         CompositionLocalProvider(LocalNativeAccordionOwner provides owner,LocalAWCAction provides ownerDispatcher,LocalAWCActionTarget provides null) {
             slot?.invoke("")
@@ -321,7 +329,9 @@ internal fun accordionDispatch(name:String,tag:String,detail:AWCValue,targetID:S
             slots.forEachIndexed { k,i-> ordered[i]=children.first { (it.layoutId as? NativeAccordionChild)?.state===display[k] } }
         val placeables=ordered.map { it.measure(Constraints(minWidth=inner,maxWidth=inner)) }
         val gapPx=if(outlined) 0 else (gap*density).roundToInt()
-        val height=placeables.sumOf { it.height }+gapPx*(placeables.size-1).coerceAtLeast(0)+2*border
+        // Hidden items (`display: none`) keep their slot in coordination but take no space and no gap.
+        val shown=ordered.map { (it.layoutId as? NativeAccordionChild)?.state?.hidden!=true }
+        val height=placeables.filterIndexed { i,_->shown[i] }.sumOf { it.height }+gapPx*(shown.count { it }-1).coerceAtLeast(0)+2*border
         val ghostPlaceable=if(ghost!=null && placeholder!=null) ghost.measure(Constraints.fixed(inner,(placeholder.height*density).roundToInt().coerceAtLeast(0))) else null
         layout(width,height) {
             // Placement reads the frame clock: transitions re-place without recomposition.
@@ -336,8 +346,11 @@ internal fun accordionDispatch(name:String,tag:String,detail:AWCValue,targetID:S
                 val dragged=id!=null && state.draggedItemID==id
                 val offset=if(id==null || !dragging) 0f else if(dragged) state.draggedOffset.toFloat() else owner.motion.offset(id,now).toFloat()
                 placeables[i].placeRelative(border,y+(offset*density).roundToInt(),if(dragged) 10f else 1f)
-                y+=placeables[i].height+gapPx
+                if(shown[i]) y+=placeables[i].height+gapPx
             }
         }
-    }
+    } }
+    // Mechanism 2 (r3-19): under an AWCModalScope the floating panel is an entry of the scope's overlay (no ancestor clips it, it orders
+    // against sheets and dialogs by z-index); a zero-size placeholder stays in the flow. Without a scope it stays in place (mechanism 1).
+    AccordionFloatingLayer(floating,layerID,(zIndex ?: 1000)+0.001,panel)
 }

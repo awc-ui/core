@@ -16,6 +16,17 @@ struct AWCCardModel: Equatable {
         hidden = p["hidden"]?.bool ?? false; density = p["density"]?.number
     }
     var effectivelyDisabled: Bool { disabled || softDisabled }
+    /// md-card.css cursor cascade: `:host(.md-card--interactive)` pointer, `--draggable` grab, `--interactive.--draggable`
+    /// grab (higher specificity), `--dragged` grabbing, `--disabled` default, `--interactive[soft-disabled]` default.
+    func cursor(dragged: Bool) -> AWCCursorStyle? {
+        // `:host(.md-card--disabled) { pointer-events: none }`: a hard-disabled interactive card has no own cursor.
+        if interactive && disabled && !softDisabled { return nil }
+        var best: (spec: Int, order: Int, style: AWCCursorStyle)?
+        func rule(_ on: Bool, _ spec: Int, _ order: Int, _ style: AWCCursorStyle) { if on, best.map({ ($0.spec, $0.order) < (spec, order) }) ?? true { best = (spec, order, style) } }
+        rule(interactive, 2, 1, .pointer); rule(dragEnabled, 2, 2, .grab); rule(interactive && dragEnabled, 3, 3, .grab)
+        rule(dragged, 2, 4, .grabbing); rule(disabledClass, 2, 5, .default); rule(interactive && softDisabled, 3, 6, .default)
+        return best?.style
+    }
     /// `.md-card--disabled` (visual disabled) applies only to interactive cards.
     var disabledClass: Bool { interactive && effectivelyDisabled }
     /// `:host(.md-card--interactive[soft-disabled])`: pointer events stay on, state layer hidden.
@@ -33,6 +44,7 @@ struct AWCCardStates: Equatable, Hashable { var hover = false, focusVisible = fa
 /// The source cascade, rule by rule in specificity and source order.
 struct AWCCardStyle {
     let model: AWCCardModel, appearance: AWCCardAppearance, parts: AWCCardPartAppearance, tokens: [String: String]
+    var forced: AWCForcedColorPalette? = nil
     func token(_ name: String, _ fallback: String) -> String { tokens["--md-sys-color-" + name] ?? fallback }
     func elevation(_ level: Int) -> [AWCBoxShadow] { AWCBoxShadow.source(tokens["--md-sys-elevation-\(level)"] ?? "none") ?? [] }
     static func mix(_ hex: String, _ alpha: Double) -> String {
@@ -50,7 +62,7 @@ struct AWCCardStyle {
         if model.disabledClass && (s.hover || s.active || s.focusVisible) { o = 0 }  // disabled overrides
         return o
     }
-    var layerVisible: Bool { model.hasStateLayer && !model.softClass }
+    var layerVisible: Bool { model.hasStateLayer && !model.softClass && forced == nil }
     func shadow(_ s: AWCCardStates) -> [AWCBoxShadow] {
         if model.disabledClass { return [] }            // !important
         let elevated = model.variant == "elevated"
@@ -63,14 +75,15 @@ struct AWCCardStyle {
         return e
     }
     var containerColor: String {
+        if let forced { return forced.buttonFace }
         if model.disabledClass { return Self.mix(onSurface, 0.12) }
         return appearance.containerColor ?? token(model.variant == "filled" ? "surface-container-highest" : model.variant == "outlined" ? "surface" : "surface-container-low",
                                                   model.variant == "filled" ? "#E6E0E9" : model.variant == "outlined" ? "#FFFBFE" : "#F7F2FA")
     }
-    var contentColor: String { model.disabledClass ? Self.mix(onSurface, 0.38) : onSurface }
+    var contentColor: String { forced.map { model.disabledClass ? $0.grayText : $0.buttonText } ?? (model.disabledClass ? Self.mix(onSurface, 0.38) : onSurface) }
     func outlineColor(_ s: AWCCardStates) -> String {
         if let part = parts.outlineColor { return part }
-        var c = appearance.outlineColor ?? token("outline-variant", "#CAC4D0")
+        var c = forced?.buttonText ?? appearance.outlineColor ?? token("outline-variant", "#CAC4D0")
         if s.dragged { c = token("outline-variant", "#CAC4D0") }
         if model.disabledClass { c = Self.mix(onSurface, 0.12) }
         if model.hasStateLayer && s.focusVisible { c = onSurface }
@@ -78,7 +91,9 @@ struct AWCCardStyle {
     }
     var outlineWidth: Double { parts.outlineWidth ?? appearance.outlineWidth ?? 1 }
     var stateLayerColor: String { parts.stateLayerColor ?? appearance.stateLayerColor ?? onSurface }
-    var focusRingColor: String { token("secondary", "#625B71") }
+    var focusRingColor: String { forced?.highlight ?? token("secondary", "#625B71") }
+    /// forced-colors: `border: 1px solid ButtonText` (GrayText when disabled) on the host.
+    var forcedBorder: String? { forced.map { model.disabledClass ? $0.grayText : $0.buttonText } }
 }
 
 /// Composed-content interactivity (`INTERACTIVE_CONTENT_SELECTOR`), from the authored node tree.
@@ -228,6 +243,7 @@ struct AWCNativeCard<Content: View>: View {
     @Environment(\.accessibilityReduceMotion) private var systemReduced
     @Environment(\.awcCardReducedMotion) private var reducedOverride
     @Environment(\.layoutDirection) private var direction
+    @Environment(\.awcForcedColors) private var forced
     @State private var focusHandle = AWCButtonFocusHandle()
     @State private var hovered = false
     @State private var frame: CGRect = .zero
@@ -254,7 +270,7 @@ struct AWCNativeCard<Content: View>: View {
     private var model: AWCCardModel { AWCCardModel(properties: node.properties) }
     private var appearance: AWCCardAppearance { inheritedAppearance.merging(appearanceTargets[node.id] ?? .init()) }
     private var parts: AWCCardPartAppearance { inheritedParts.merging(partTargets[node.id] ?? .init()) }
-    private var style: AWCCardStyle { .init(model: model, appearance: appearance, parts: parts, tokens: theme.tokens) }
+    private var style: AWCCardStyle { .init(model: model, appearance: appearance, parts: parts, tokens: theme.tokens, forced: forced) }
     private var density: Double { AWCNativeDensity.resolve(model.density, inherited: inheritedDensity) }
     private var reduced: Bool { reducedOverride ?? systemReduced }
     private var actsAsButton: Bool { model.actsAsButton(interactiveContent: interactiveContent) }
@@ -287,7 +303,9 @@ struct AWCNativeCard<Content: View>: View {
             let now = CACurrentMediaTime() * 1000
             TimelineView(.animation(paused: !running(now))) { _ in card(CACurrentMediaTime() * 1000) }
                 // translate() is physical: SwiftUI mirrors an x offset under right-to-left.
-                .offset(x: direction == .rightToLeft ? -offset.width : offset.width, y: offset.height).zIndex(dragging ? 1000 : 0)
+                .offset(x: direction == .rightToLeft ? -offset.width : offset.width, y: offset.height)
+                // `z-index: 1000` while dragging stacks against the document (r3-19): the hosts above rise with it.
+                .modifier(AWCStackingLift(own: dragging ? 1000 : 0, publish: true))
                 .onChange(of: targets, initial: true) { _, next in apply(next) }
                 .task(id: targets) { await Task.yield(); if !Task.isCancelled { apply(targets) } }
                 .onChange(of: model) { _, next in if next.effectivelyDisabled || !next.dragEnabled { cancelDrag() } }
@@ -314,7 +332,7 @@ struct AWCNativeCard<Content: View>: View {
                 guard context.event.name == "mdClick", context.targetID != node.id, model.interactive, !model.effectivelyDisabled,
                       let source = context.activation?.source, source == .keyboard || source == .accessibility else { return }
                 emit("mdClick", ["type": "click", "isTrusted": true, "button": 0, "detail": 0, "clientX": 0, "clientY": 0])
-            }) { content() }
+            }) { content().environment(\.awcTextInk, ink).environment(\.awcTextLineBox, CGSize(width: fontSize, height: lineHeight)) }
         }
         .font(AWCNativeFonts.label(size: fontSize, weight: 400)).tracking(0.25).lineSpacing(max(0, lineHeight - fontSize * 1.171875))
         .foregroundStyle(ink)
@@ -334,6 +352,7 @@ struct AWCNativeCard<Content: View>: View {
             }
         }
         .compositingGroup().clipShape(shape)
+        .modifier(AWCForcedHostBorder(width: 1, color: style.forcedBorder, fill: style.forced?.buttonFace, corners: corners))
         .background { AWCNativeBoxShadow(corners: corners, layers: shadow, placement: .outer) }
         .overlay { if ring { shape.inset(by: -3.5).stroke(Color(awcHex: style.focusRingColor), lineWidth: 3).allowsHitTesting(false) } }
         .contentShape(shape)
@@ -353,11 +372,13 @@ struct AWCNativeCard<Content: View>: View {
                     touchPress: .init(began: { p in
                         guard !model.pointerInert else { return false }
                         pressed = true; pressOrigin = p; _ = focusHandle.requestPointerFocus?(); return true
-                    }, ended: { _ in pressed = false }, cancelled: {})))
+                    }, ended: { _ in pressed = false }, cancelled: {}), grabbed: model.dragEnabled ? dragging : nil))
             }
         }
         .accessibilityElement(children: actsAsButton ? .ignore : .contain)
         .accessibilityHidden(actsAsButton)
+        .awcContainerAccessibility(identifier: node.id, model.dragEnabled && !actsAsButton ? .init(grabbed: dragging) : nil)
+        .awcCursor(model.cursor(dragged: dragging))
         .awcInspect(nodeID: node.id, name: "md-card") { _ in
             func rgba(_ c: Color) -> AWCValue { let r = c.resolve(in: EnvironmentValues()); return .array([.number(Double(r.red)), .number(Double(r.green)), .number(Double(r.blue)), .number(Double(r.opacity))]) }
             return ["renderTime": .number(t), "layerOpacity": .number(style.layerVisible ? opacity : -1),

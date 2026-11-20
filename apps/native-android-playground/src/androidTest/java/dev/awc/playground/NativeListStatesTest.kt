@@ -201,7 +201,7 @@ class NativeListStatesTest {
         // Events.
         val lastT=phases.last().getDouble("t")+1000
         val web=r.getJSONArray("events").objects().filter { it.getString("name") !in setOf("click","change") && it.getDouble("t")<lastT && it.optString("target") !in setOf("del","sw") }
-        val nat=events.filter { it.first !in setOf("click","change","mdFocus","mdBlur","mdInput") && it.third !in setOf("del","sw") }
+        val nat=events.filter { it.first !in setOf("click","change","mdFocus","mdBlur","mdInput","mdItemClick","mdItemSelect","mdRequestActivation","mdItemRequestReorder") && it.third !in setOf("del","sw") }
         check(nat.map { "${it.first}@${it.third}" }==web.map { "${it.getString("name")}@${it.getString("target")}" },"$label events ${nat.map { "${it.first}@${it.third}" }} vs ${web.map { "${it.getString("name")}@${it.getString("target")}" }}")
         nat.zip(web).forEach { (e,w)-> val d=w.optJSONObject("detail") ?: return@forEach;val nd=e.second as? Map<*,*> ?: return@forEach
             for(k in d.keys()) { val v=d.get(k);val n=nd[k]

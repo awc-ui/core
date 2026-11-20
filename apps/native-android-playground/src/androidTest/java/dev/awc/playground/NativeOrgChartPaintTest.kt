@@ -72,6 +72,13 @@ class NativeOrgChartPaintTest {
         c.optJSONObject("props")?.optJSONArray("selectedIds")?.let { a-> p["selectedIds"]=List(a.length()) { a.getString(it) } }
         return p
     }
+    /** The case's `md-organization-chart::part(x) { … }` rules (R5-06). */
+    private fun parts(html:String):Map<AWCOrgChartPart,AWCOrgChartPartAppearance> {
+        val css=Regex("<style>(.*?)</style>",RegexOption.DOT_MATCHES_ALL).find(html)?.groupValues?.get(1) ?: return emptyMap()
+        val out=HashMap<AWCOrgChartPart,AWCOrgChartPartAppearance>()
+        for(m in Regex("::part\\(([a-z-]+)\\)\\s*\\{([^}]*)\\}").findAll(css)) AWCOrgChartPart.of(m.groupValues[1])?.let { p-> out[p]=(out[p] ?: AWCTablePartStyle()).merging(AWCTablePartStyle.css(m.groupValues[2])) }
+        return out
+    }
     private fun ancestorDensity(html:String)=Regex("data-density=\"(-?[\\d.]+)\"").find(html)?.groupValues?.get(1)?.toDoubleOrNull()
 
     private fun content() { compose.setContent { CompositionLocalProvider(LocalDensity provides Density(1f,1f)) {
@@ -80,11 +87,11 @@ class NativeOrgChartPaintTest {
             val host=c.getJSONObject("tree").getJSONObject("rect");val html=c.getString("html")
             Box(Modifier.absoluteOffset(host.getDouble("x").dp,host.getDouble("y").dp).wrapContentSize(androidx.compose.ui.AbsoluteAlignment.TopLeft,unbounded=true).width(host.getDouble("width").dp)) {
                 CompositionLocalProvider(LocalLayoutDirection provides if(c.optString("dir")=="rtl") LayoutDirection.Rtl else LayoutDirection.Ltr) {
-                    AWCDensityScope(ancestorDensity(html) ?: 0.0) { AWCOrgChartAppearanceScope(hooks(html)) { AWCOrgChartInspectionScope({ probe=it }) {
+                    AWCDensityScope(ancestorDensity(html) ?: 0.0) { AWCOrgChartAppearanceScope(hooks(html)) { AWCOrgChartPartAppearanceScope(parts(html)) { AWCOrgChartInspectionScope({ probe=it }) {
                         val emptyText=if(html.contains("slot=\"empty\"")) Regex("slot=\"empty\">([^<]*)<").find(html)?.groupValues?.get(1) ?: "" else null
                         val slot:(@Composable (String)->Unit)?=if(emptyText==null) null else ({ name:String-> if(name=="empty") AWCSlotText(emptyText) })
                         AWCComponent("md-organization-chart",props(c),content=slot)
-                    } } }
+                    } } } }
                 }
             }
         } } } }
@@ -98,12 +105,14 @@ class NativeOrgChartPaintTest {
     @Test fun organizationChartMatchesChromePaint() {
         content()
         val oracle=CardWeb.document("OrgChartWebPaint.json")
-        for(c in oracle.getJSONArray("cases").objects()) paint(c)
+        for(c in oracle.getJSONArray("cases").objects()) paint(c,"OrgChartWebPaint")
+        // ::part() subset (oc-paint.html?subset=parts, R5-06).
+        runCatching { CardWeb.document("OrgChartWebPaintParts.json") }.getOrNull()?.let { parts-> for(c in parts.getJSONArray("cases").objects()) paint(c,"OrgChartWebPaintParts") }
         AccordionEvidence.log("orgchart-paint",JSONObject().put("checks",checks).put("failures",failures.size).put("failureList",JSONArray(failures.take(300))).put("report",report))
         assertTrue("${failures.size} of $checks failed:\n"+failures.take(60).joinToString("\n"),failures.isEmpty())
     }
 
-    private fun paint(c:JSONObject) {
+    private fun paint(c:JSONObject,shots:String) {
         val name=c.getString("name");probe=null
         // The previous case's hover must not carry over: the pointer rests away from every chart.
         compose.onRoot().performMouseInput { moveTo(Offset(1060f,1180f)) }
@@ -137,7 +146,7 @@ class NativeOrgChartPaintTest {
         }
         val clip=c.getJSONObject("clip")
         val nat=grid1x(compose.onRoot().captureToImage().toPixelMap(),clip.getInt("x"),clip.getInt("y"),clip.getInt("width"),clip.getInt("height"))
-        val web=CardWeb.webGrid("OrgChartWebPaint/$name.png",clip)
+        val web=CardWeb.webGrid("$shots/$name.png",clip)
         // The harness's own "before" probe (60×24 button, margin-block-end 8) at the start edge above the chart.
         val probeRect=if(c.getString("html").contains("class=\"probe\"")) listOf(Rect((if(c.optString("dir")=="rtl") hx+host.getDouble("width")-60 else hx).toFloat(),(hy-32).toFloat(),
             (if(c.optString("dir")=="rtl") hx+host.getDouble("width") else hx+60).toFloat(),(hy-8).toFloat())) else emptyList()

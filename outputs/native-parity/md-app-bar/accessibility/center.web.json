@@ -1,0 +1,242 @@
+{
+ "tag": "md-app-bar",
+ "case": "center",
+ "html": "<md-app-bar data-ax-node=\"n0\" id=\"example-md-app-bar\"><md-icon-button data-ax-node=\"n1\" slot=\"trailing\" aria-label=\"Search\"></md-icon-button></md-app-bar>",
+ "props": {
+  "n0": {
+   "density": 0,
+   "headline": "Your workspace",
+   "leadingIcon": "menu",
+   "leadingIconLabel": "Open navigation",
+   "scrolled": false,
+   "searchAriaLabel": "",
+   "searchDisabled": false,
+   "searchPlaceholder": "Search",
+   "searchValue": "",
+   "subtitle": "12 unread",
+   "titleAlignment": "center",
+   "variant": "small"
+  },
+  "n1": {
+   "icon": "search"
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   272
+  ],
+  "children": [
+   {
+    "role": "banner",
+    "name": "",
+    "ignored": false,
+    "frame": [
+     16,
+     16,
+     608,
+     64
+    ],
+    "children": [
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true,
+      "children": [
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true,
+        "children": [
+         {
+          "role": "button",
+          "name": "Open navigation",
+          "ignored": false,
+          "focusable": true,
+          "frame": [
+           20,
+           24,
+           48,
+           48
+          ],
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             }
+            ]
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true,
+        "children": [
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "StaticText",
+            "name": "Your workspace",
+            "ignored": false,
+            "frame": [
+             242.140625,
+             24,
+             155.71875,
+             25
+            ],
+            "children": [
+             {
+              "role": "InlineTextBox",
+              "name": "Your workspace",
+              "ignored": false
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "StaticText",
+            "name": "12 unread",
+            "ignored": false,
+            "frame": [
+             288.015625,
+             55,
+             63.96875,
+             16
+            ],
+            "children": [
+             {
+              "role": "InlineTextBox",
+              "name": "12 unread",
+              "ignored": false
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true,
+        "children": [
+         {
+          "role": "button",
+          "name": "Search",
+          "ignored": false,
+          "focusable": true,
+          "frame": [
+           572,
+           24,
+           48,
+           48
+          ],
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true
+             }
+            ]
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [
+  {
+   "dom": "md-icon-button",
+   "role": "button",
+   "name": "Open navigation",
+   "frame": [
+    20,
+    24,
+    48,
+    48
+   ],
+   "props": {
+    "focusable": true,
+    "focused": true
+   }
+  },
+  {
+   "dom": "md-icon-button",
+   "role": "button",
+   "name": "Search",
+   "frame": [
+    572,
+    24,
+    48,
+    48
+   ],
+   "props": {
+    "focusable": true,
+    "focused": true
+   }
+  }
+ ],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

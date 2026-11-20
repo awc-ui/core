@@ -1,70 +1,71 @@
 # md-button — gate-7 independent audit
 
-Reviewer: gate-7 reviewer r1, 2026-10-31 ([protocol](../../../../audit/AUDIT-PROTOCOL.md)). Everything below was re-run by r1 on the
-snapshot `work/audit/r1-tree` (canonical tree at 2026-10-31 00:15 UTC after 42 install jobs, latest `fx-072-install-orgchart-apk`; hash
-manifest `work/audit/r1/snap/manifest.sha256`), except the Laboratory probes, which use the running 4177 server (canonical). Job logs:
-`work/claude-runner/done/r1-*.log`; outputs: `work/audit/r1/runs/`; gate-1 matrices: `work/audit/r1/matrix/`; defects:
-[`work/audit/DEFECTS.md`](../../../../audit/DEFECTS.md) (section r1). Mac load average during the runs: 110–940 on 16 cores.
-None of these components has a `checkpoint.json`, so freshness rests on these re-runs (R1-10).
+Reviewer: gate-7 reviewer r1. Round 1: 2026-10-31 (all seven FAIL, defects R1-01…R1-11 in
+[`work/audit/DEFECTS.md`](../../../../audit/DEFECTS.md), section r1). **Re-check (round 2): 2026-11-09**, after the fixes marked FIXED there
+(fx-089-install-button-family, di-054-install-residual-harness, d4-016-install-r104, n3-051). Everything was re-run by r1 on a fresh snapshot
+`work/audit/r1-tree` of the canonical tree taken 2026-11-09 13:42 UTC (latest installs n5-057, n2-082, d6-049, di-054, fx-090, fx-089; hash
+manifest `work/audit/r1/v2/snap/manifest.sha256`); the Laboratory probes use the running 4177 server. Timing runs went through
+`tools/slot.sh timing 4`; Mac load average 5–12. Job logs `work/claude-runner/done/r1-02[0-6]*.log`, `r1-A02[0-6]*.log`; outputs
+`work/audit/r1/v2/` (swift/, ios/, android/, lab/, web/, ax/, examples/, gate1/). Simulators: AWC-r1 (iPhone 17 Pro, iOS 26.3.1) and
+AWC-r1-ios18 (iPhone 16 Pro, iOS 18.6); Android emulator-5564 (AwcNative6, API 36).
 
-## Verdict: FAIL
+The seven `checkpoint.json` files (fx-089, 2026-11-07) are already stale against this snapshot (shared `AWCNativeView.swift`,
+`NativeFocusBridge.swift`, `AWCComponent.kt` changed for all seven; also `NativeFab.swift`/`.kt`, `NativeIconButton.swift`), and they record
+iOS states failures themselves (fab 32, group 2, icon 4, segmented 3, split 1; md-button's has no results): the counts below are r1's re-runs.
+The coordinator's note that fx-092/fx-093 confirmed the family checkpoints does not match the logs: fx-091 found its own iOS gate unmet and
+did not queue fx-092 (no fx-092 job exists in `claude-runner/done`), and fx-093 exited "fx-092 exit '': no records".
 
-Blocking findings: **R1-01** (iOS 18.6 states 636/645; iOS 26.3 intermittent `click2`), **R1-02** (form submit/reset composition: Android
-test fails, Swift behaviour fixture traps — cause in md-text-field, n3), **R1-04** (no retained Laboratory property updates). Non-blocking:
-R1-09 (stale doc statements), R1-10 (no checkpoint.json; no md-button example evidence before this audit). The core renderer evidence
-(Chrome 153 paint + states + reduced motion on macOS, iOS 26.3 and Android) re-runs at the claimed counts.
+## Verdict (re-check 2026-11-09): PASS
 
-## Gate 1 — source contract
+All round-1 findings for md-button are verified fixed: **R1-01** (iOS states 645/645 on iOS 26.3 and twice on iOS 18.6), **R1-02** (form
+submit/reset: Android `NativeButtonBehaviorTest` 5/5 + `NativeAutomaticFormTest` 6/6, `NativeBehaviorViewIntegration` 35/35 on macOS and iOS),
+**R1-04** (retained Laboratory updates), R1-09/R1-10 (docs refreshed; a checkpoint exists — stale now, see header). No exception is
+proposed or needed. Non-blocking: R1-14 (bracket span limit in the iOS harness), R1-10 note (md-button's checkpoint has no results section).
 
-Contract re-extracted from `md-button.tsx`/`.css`: 24 properties, 2 events (`mdClick` cancelable, `mdChange`), 0 methods, 4 slots, 6 parts,
-28 CSS hooks = 64 rows ([matrix](../../../../audit/r1/matrix/md-button.md)). Every row has a SwiftUI and a Compose implementation, a
-Laboratory exposure (property editors from the catalog — both platforms declare all members; 28 appearance fields + the `stateLayerOpacity`
-`::part()` field in `button-appearance.js`) and at least one test (Chrome paint/states fixtures, ButtonMain, Android paint/interaction and
-unit tests). The source review's decision (link-mode focus mirrored by a host class) is recorded with its revert path. Native equivalents
-declared in the iOS policy (HTML_FORM, CANCELABLE_EVENT, DOM_GLOBAL, SHADOW_DOM, DOM_QUERY): the HTML_FORM effect (submit/reset) is exactly
-what R1-02 shows as currently unverified. Gate 1: met; gate-4 evidence for `type` is the open item.
+## Component notes
 
-## Re-run counts (claimed → r1)
+- Gate 1: contract unchanged (24 properties, 2 events, 0 methods, 4 slots, 6 parts, 28 hooks = 64 rows); r1's regenerated matrix
+  (`work/audit/r1/v2/gate1/matrix/md-button.md`) has no empty column.
+- Gates 2/4/5: Chrome 153 paint 1086 / states 645 on macOS, iOS 26.3 (645, one `BRACKET` match: pointer-filled-xl click2) and iOS 18.6
+  (645 ×2, one `BRACKET`); Android 712 / 645; behaviour composition fixed (above). Web e2e 23/23.
+- Gate 3: retained `variant` update applied on both hosts (frame changes); `mdClick` detail `{value, toggle, selected, href, target}`; 15 + 15
+  md-button examples compile.
+- Gate 6: iOS runtime above; tools/ax 8 cases, 0 open.
 
-| Suite | Claimed | r1 macOS (r1-002) | r1 iOS 26.3 AWC-r1 (r1-006/008/012) | r1 Android emulator-5564 (r1-A001) |
+## Shared re-check results (all seven tags)
+
+| Suite | macOS (r1-022) | iOS 26.3 (r1-023) | iOS 18.6 (r1-023) | Android (r1-A021) |
 |---|---|---|---|---|
-| Chrome paint, 317 button + 37 FAB cases | 1086 / iOS 1086×3 / Android 712 | **1086/1086** | **1086/1086** | **712/712** (`NativeButtonPaintTest`) |
-| Chrome states, 35 + 5 reduced runs | 645 / iOS 645, 645, **636 (18.6)** / Android 645 | **645/645** | 644/645, 645/645, 644/645, 644/645 (4 runs: r1-006, r1-008 ×2, r1-012) | **645/645** (`NativeButtonInteractionTest`) |
-| iOS 18.6 states (iPhone 16 Pro) | 636/645 (fi r8o) | — | **641/645, 642/645** (r1-012, new simulator AWC-r1-ios18, iPhone 16 Pro iOS 18.6) | — |
-| Button appearance view | 24 | **24/24** | **24/24** | `NativeButtonAppearanceTest` 7/7 |
-| Focus view | 68 | **68/68** | **68/68** | `NativeButtonFocusTest` 8/8, `FocusAppearance` 2/2 |
-| Inspection view | 88 | **88/88** | **88/88** | `NativeButtonInspectionTest` 4/4 |
-| ButtonMain script (shared metric/appearance/slot/action) | 1073 | **1073/1073** | **1073/1073** | unit `NativeButtonContractTest` 6, `NativeButtonBehaviorTest` 6, `NativeButtonFocusTest` 4, `AWCButtonAppearanceTest` 3 — all pass (195/195 module) |
-| BehaviorMain script | 164 | **164/164** | **164/164** | — |
-| Behaviour view (forms, routing) | no count (traps) | **traps at check 6/36** | (fi: traps) | `NativeButtonBehaviorTest` **4/5** — form validation fails (R1-02) |
-| Other Android device classes | — | — | — | Parity 8/8, ExpressiveMetrics 2/2, IconAlignment 1/1, KeyboardMorph 6/6 |
-| Button appearance hosts script | 2 | **2/2** | — | — |
-| Web | spec+e2e 280/280 (group+split incl.) | spec 610/610 (11 suites of the 9 r1 tags), e2e md-button **21/21** (r1-009) | | |
+| Chrome 153 family paint (`NativeButtonFamilyPaintIntegration` / `NativeButtonFamilyPaintTest`) | **974/974** | **974/974** | — | **974/974** |
+| Chrome 153 family states + reduced motion (`NativeButtonFamilyStatesIntegration` / `NativeButtonFamilyStatesTest`) | **26826/26826** | 24530/24577 (47 fail) | 25710/25732 (22 fail) | **18241/18241** |
+| md-button Chrome paint / states | **1086/1086**, **645/645** | **1086/1086**, **645/645** | **645/645**, **645/645** | **712/712**, **645/645** |
+| View suites (appearance 24, focus 68, inspection 88, icon 284, group 87, fab 94, fab-menu 19 + 134 + 27, segmented 370, split 945, behaviour 35) | all pass | all pass | — | 133/133 device methods (22 classes incl. `LivePreviewButtonFamilyHostTest` 9, `LivePreviewHostTest` 19, `NativeButtonBehaviorTest` 5, `NativeAutomaticFormTest` 6) |
+| Contract mains (ButtonMain 1073, BehaviorMain 164) | pass | pass | — | native-ui unit 195/195 |
+| Live SwiftUI hosts (fab, fab-menu 24, icon-button, button-group, segmented 12, split 13, preview) + button-hosts 2 | all pass | — | — | — |
+| Web (r1-024) | spec 612/612 (11 suites of the 9 tags); e2e button 23, group 8, fab 29, fab-menu 18, item 5, icon 4, segmented 10, set 3, split 12 — all pass; native-compiler 12/12; Studio 865/868 (the 3 failures are md-*-chart / md-organization-chart tests, outside this family) | | | |
+| tools/ax (r1-025, r1-A023) | 30 cases on macOS, iOS and Android: 0 open findings, 0 accepted expectations; reports identical to the installed ones | | | |
+| Copied examples (r1-022, r1-A022/A026) | r1 generic generator 84 + fork generators 67 per platform: 13 Swift files typecheck (exit 0); 13 Kotlin files compile in the playground app (`:app:compileDebugKotlin`; 44 `r1ex` classes built 2026-11-09 16:46) | | | |
+| Laboratory (r1-024) | retained `update` → 200 on all 14 sessions (7 tags × SwiftUI/Android); clicks emit the source events with child identity (group: `md-button`/`segment-0` on both hosts); `setMenuIcon`, `show`/`whenClosed`/`close` fulfilled with `mdOpen`/`mdClose`; open md-fab-menu `component` = item stack 164×152 on both; default md-split-button 232.5×56 SwiftUI / 232×56 Android vs Web 232.219 | | | |
 
-Every failing check is a `click2` flat-pixel shot (one frame off Chrome's capture window), a different case in each run: iOS 26.3 fails one
-shot in 3 of 4 runs (pointer-filled-xl, link-filled-sm, pointer-tonal-sm-dark), iOS 18.6 fails 3–4 shots per run (r1 reproduces fi's
-636/645 class). Load averages were 400–940; ios-harness.md "Open items 1" documents the mechanism (click taken from SwiftUI's gesture update
-outside `AWCTouchPressRouter`).
+iOS family-states failures by tag (r1-023): **md-fab** 26.3: 33 extend/collapse motion boxes + 5 `click2` shots (fab-pointer-large mean 8.25,
+>6: 7860/17297, one frame in the window); 18.6: 12 motion boxes + 3 `click2`; **md-button-group** `bg-disabled-child/enter` box 221.73 vs Chrome
+219.45–220.11 (26.3 ×3, 18.6 ×1); **md-icon-button** `click2` (26.3: ib-pointer-filled, ib-pointer-xl; 18.6: ib-pointer-dark-filled,
+ib-pointer-toggle-filled); **md-segmented-button** `click2` (26.3: seg-pointer-select; 18.6: seg-pointer-select, -no-checkmark, -rtl,
+reduced/seg-pointer-select); **md-split-button** 26.3: split-pointer-leading-filled/click2, split-pointer-trailing-rtl/click2 (>6: 1404),
+split-keyboard/enter (mean 2.88, >6: 3961); 18.6: none. **md-fab-menu: none on either runtime.** Console logs:
+`work/audit/r1/v2/ios/console-g7v2-{i-buttonfamilystates,o-familystates}.log`.
 
-## Gate 3 — Laboratory
-
-Through the 4177 server (r1-003, r1-010): SwiftUI and Android sessions open; a pointer click returns one `mdClick` with the source detail
-`{value, toggle, selected, href, target}` on both; a property edit (outlined, md) applied by opening a new session changes the frame and the
-inspected border (0 → 1). The retained `update` command is refused for md-button on both hosts (**R1-04**). Copied examples: r1 generated the
-md-button usage/theme/copied-recipe/event/slot/part examples (15 Swift + 15 Kotlin, `work/audit/r1/examples/generic/ButtonR1.*`) — Swift
-typecheck exit 0 (r1-005), Kotlin `:app:compileDebugKotlin` BUILD SUCCESSFUL (r1-A003). Studio 807/807 and native-compiler 12/12 (r1-009).
-
-## Gate 6 — runtime and accessibility
-
-tools/ax re-run (r1-007 macOS/Web/iOS, r1-A005 Android): 8 cases, **0 open findings, 0 accepted expectations** on macOS, iOS and Android;
-the report is identical to the installed one apart from its timestamp. Conventions used by the comparator (iOS toggle as switch trait,
-Tab walk ending at ∅ on iOS, iOS 40 pt targets reported as info) are platform encodings, not hidden defects. iOS runtime: see R1-01.
+Harness corrections reviewed (gate 5): ios-harness.md items 46 (blend of two straddling frames, `BRACKET`) and 47 (iOS md-button captures two
+display frames past Chrome's window) are iOS-only, documented with probes (`NativeIOSTimelineDateProbe`) and keep the pixel thresholds; r1
+accepts them as capture corrections, not exceptions — with one limit filed as R1-14 (a bracket may span frames 42.5 ms apart when the captures
+in between are identical). The family states fixture on canonical still uses fx's p4 midpoint candidate (all platforms); di's port (p5,
+fx-092) was never installed.
 
 ## Exceptions
 
-None proposed. Reviewed "known differences": Android whole-pixel content placement (border box compared to 1 dp) is an explained raster
-difference; the "`::part(state-layer)` opacity has no Laboratory control" note is stale (R1-09).
+None accepted or pending for this component (round-1 proposals: md-fab-menu's two were rejected and the behaviours were since made equal).
 
 ## Findings
 
-R1-01, R1-02, R1-04 (blocking); R1-09, R1-10 (non-blocking). Details and suggested fixes: [DEFECTS.md](../../../../audit/DEFECTS.md).
+Open and verified items with evidence and suggested fixes: [DEFECTS.md](../../../../audit/DEFECTS.md) (section r1, re-check lines dated
+2026-11-09). Round-1 record of this audit: `work/audit/r1/docs/md-button.md`.

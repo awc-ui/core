@@ -1848,7 +1848,15 @@
         "Opens its slotted md-menu as a flyout beside the row: hover intent with openDelay / closeDelay, ArrowRight, Enter and Space open it with focus on its first row, ArrowLeft and Escape return to the row; the caret rotates as the source and mirrors in RTL.",
         "collapse() closes the flyout at once (no exit motion) through AWCMenuScopeState.menu(id).collapse(row:) / collapse(rowID)."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "state-layer",
+        "leading-icon",
+        "content",
+        "headline",
+        "supporting-text",
+        "badge"
+      ]
     },
     "android": {
       "status": "adapter-implemented",
@@ -1881,7 +1889,15 @@
         "Opens its slotted md-menu as a flyout beside the row: hover intent with openDelay / closeDelay, ArrowRight, Enter and Space open it with focus on its first row, ArrowLeft and Escape return to the row; the caret rotates as the source and mirrors in RTL.",
         "collapse() closes the flyout at once (no exit motion) through AWCMenuScopeState.menu(id).collapse(row:) / collapse(rowID)."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "state-layer",
+        "leading-icon",
+        "content",
+        "headline",
+        "supporting-text",
+        "badge"
+      ]
     }
   }
 }

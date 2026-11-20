@@ -198,3 +198,8 @@ export const validChartMethodValue = value => typeof value === 'string' && value
 
 // Hook-profile helpers for other components' appearance modules.
 export { profile as hookProfile, extraField as hookExtraField, EXTRA as HOOK_EXTRA_KINDS };
+
+/** The charts' typed part targets (::part names; AWCChartPart natively, gate-7 r5 R5-06). */
+export const CARTESIAN_CHART_PARTS = Object.freeze(["header", "canvas", "empty", "loading", "footer", "zoom", "zoom-slider", "zoom-pan", "zoom-band", "zoom-track", "zoom-window", "zoom-handle"]);
+export const CHART_PARTS = Object.freeze({ 'md-line-chart': CARTESIAN_CHART_PARTS, 'md-area-chart': CARTESIAN_CHART_PARTS, 'md-bar-chart': CARTESIAN_CHART_PARTS,
+  'md-pie-chart': Object.freeze(["header", "canvas", "center", "empty", "loading", "footer"]), 'md-sparkline': Object.freeze(['canvas']) });

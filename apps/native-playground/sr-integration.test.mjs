@@ -18,10 +18,13 @@ const irs = Object.fromEntries(await Promise.all(TAGS.map(async tag => [tag, awa
 const component = tag => ({ ...irs[tag], support: { ios: ios[tag], android: android[tag] } });
 const profileOf = tag => tag === 'md-slider' ? sliderAppearance : ratingAppearance;
 
+// Hooks the stylesheet reads that the CEM does not list (R6-11: the labeled host's value-indicator reserve, oracle case
+// hook-value-indicator-reserve) — typed natively and in the Laboratory as well.
+const STYLESHEET_HOOKS = { 'md-slider': [], 'md-rating': [] };
 test('the hooks cover each IR and both released policies', () => {
   for (const tag of TAGS) {
     const ir = irs[tag], fields = profileOf(tag).fields;
-    assert.deepEqual(fields.map(f => f.cssProperty).sort(), ir.cssProperties.map(p => p.name).sort(), tag);
+    assert.deepEqual(fields.map(f => f.cssProperty).sort(), [...ir.cssProperties.map(p => p.name), ...STYLESHEET_HOOKS[tag]].sort(), tag);
     for (const [platform, p] of [['ios', ios[tag]], ['android', android[tag]]]) {
       assert.deepEqual(p.appearance.fields, fields.map(f => f.name), `${platform} ${tag}`);
       for (const kind of ['properties', 'methods', 'events', 'slots']) assert.deepEqual(p[kind], ir[kind].map(x => x.name), `${platform} ${tag} ${kind}`);
@@ -31,15 +34,20 @@ test('the hooks cover each IR and both released policies', () => {
     assert.equal(registry.key, tag === 'md-slider' ? 'sliderAppearance' : 'ratingAppearance', tag);
     assert.deepEqual(registry.groups.flatMap(([, names]) => names).sort(), fields.map(f => f.name).sort(), tag);
   }
-  assert.deepEqual(ios['md-slider'].unsupportedSlots, ['inset-icon']);
-  assert.deepEqual(android['md-slider'].unsupportedSlots, ['inset-icon']);
+  // R6-04: the inset-icon slot is rendered natively; R6-03: typed parts.
+  assert.deepEqual(ios['md-slider'].unsupportedSlots, []);
+  assert.deepEqual(android['md-slider'].unsupportedSlots ?? [], []);
+  for (const policy of [ios, android]) {
+    assert.deepEqual(policy['md-slider'].visualParts, ['surface', 'track', 'track-active', 'track-inactive', 'thumb-knob', 'value-indicator', 'inset']);
+    assert.deepEqual(policy['md-rating'].visualParts, ['items', 'item', 'icon-filled', 'icon-empty', 'state-layer', 'value-label']);
+  }
 });
 
 test('hook values normalize, render as CSS and round-trip through the inputs', () => {
   const slider = { trackHeight: 24, activeColor: '#C62828', valueFontWeight: 700, valueFontFamily: 'Roboto Flex', thumbWidth: 6 };
   assert.deepEqual(sliderAppearance.css(slider), { '--md-slider-active-color': '#C62828', '--md-slider-track-height': '24px', '--md-slider-thumb-width': '6px', '--md-slider-value-font-family': 'Roboto Flex', '--md-slider-value-font-weight': '700' });
   for (const f of SLIDER_APPEARANCE_FIELDS) if (slider[f.name] !== undefined) assert.deepEqual(sliderAppearance.parseInput(f.name, sliderAppearance.formatInput(f.name, slider[f.name])), slider[f.name], f.name);
-  assert.equal(SLIDER_APPEARANCE_FIELDS.length, 23);
+  assert.equal(SLIDER_APPEARANCE_FIELDS.length, 24);
   for (const bad of [{ trackHeight: -1 }, { activeColor: 'red' }, { bogus: 1 }]) assert.throws(() => sliderAppearance.normalize(bad), { code: 'INVALID_SLIDER_APPEARANCE' }, JSON.stringify(bad));
   const rating = { itemSize: 32, focusRingOffset: -2, valueLabelFont: '500 16px/24px Roboto', popScale: 1.3, duration: 300, activeColor: '#FFB300' };
   const rc = ratingAppearance.css(rating);

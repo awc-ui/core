@@ -2008,80 +2008,144 @@
     "ios": {
       "status": "adapter-implemented",
       "properties": [
-        "active",
         "icon",
         "label",
+        "active",
+        "disabled",
         "badge",
         "badgeValue",
         "href",
+        "target",
         "value",
         "labelVisibility",
-        "disabled"
-      ],
-      "events": [
-        "mdTabClick"
-      ],
-      "methods": [],
-      "slots": [
-        "icon"
-      ],
-      "unsupportedProperties": [
-        "target",
         "expanded",
         "density"
       ],
-      "unsupportedEvents": [
+      "events": [
+        "mdTabClick",
         "mdSubmenuToggle"
       ],
-      "unsupportedMethods": [
+      "methods": [
         "clearSubmenuSelection"
       ],
-      "unsupportedSlots": [
+      "slots": [
+        "icon",
         "submenu"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Submenu expansion not implemented."
+        "Rendered by its rail (geometry, state and motion) or, outside a rail, as a single destination with its own active state; activation emits mdTabClick { value } and follows href / target through the host URL router; a slotted md-menu opens as the destination's dropdown (mdSubmenuToggle) and its selection marks the destination child-selected.",
+        "The indicator pill, the icon (FILL 0 → 1 when active, or the slotted icon), the label (with its labels-selected reveal), the badge (dot or large, 999+), the state layers, focus ring and md-ripple, all on the source transitions (effects-fast 150 ms; none under reduced motion).",
+        "The 18 destination hooks through .awcNavigationRailTabAppearance(…) / AWCNavigationRailTabAppearanceScope; every exported part through the typed part appearances (per destination with for: / id); clearSubmenuSelection() through AWCNavigationRailController (by destination index).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: paint and geometry of every configuration (variants, label visibility, density, slots, the modal overlay, the horizontal bar, overflow, badges, links, a dropdown destination, every hook and every exported part), the interaction states and motion (pointer, keyboard, the expand / collapse transition with the destinations' FLIP, reduced motion) and the events."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "indicator",
+        "label",
+        "icon-wrapper",
+        "icon",
+        "state-layer",
+        "caret",
+        "anchor"
+      ],
+      "appearance": {
+        "api": ".awcNavigationRailTabAppearance(AWCNavigationRailTabAppearance)",
+        "fields": [
+          "activeIconColor",
+          "activeLabelColor",
+          "badgeColor",
+          "badgeContentColor",
+          "caretDuration",
+          "focusRingColor",
+          "focusStateLayerOpacity",
+          "iconColor",
+          "iconSize",
+          "indicatorColor",
+          "indicatorHeight",
+          "indicatorShape",
+          "indicatorWidth",
+          "labelColor",
+          "labelTypography",
+          "minHeight",
+          "pressStateLayerOpacity",
+          "stateLayerColor"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "active",
-        "badge",
-        "badgeValue",
-        "disabled",
         "icon",
         "label",
-        "labelVisibility"
-      ],
-      "events": [
-        "mdTabClick"
-      ],
-      "methods": [],
-      "slots": [
-        "submenu"
-      ],
-      "unsupportedProperties": [
+        "active",
+        "disabled",
+        "badge",
+        "badgeValue",
         "href",
         "target",
         "value",
+        "labelVisibility",
         "expanded",
         "density"
       ],
-      "unsupportedEvents": [
+      "events": [
+        "mdTabClick",
         "mdSubmenuToggle"
       ],
-      "unsupportedMethods": [
+      "methods": [
         "clearSubmenuSelection"
       ],
-      "unsupportedSlots": [
-        "icon"
+      "slots": [
+        "icon",
+        "submenu"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Rendered by its rail (geometry, state and motion) or, outside a rail, as a single destination with its own active state; activation emits mdTabClick { value } and follows href / target through the host URL router; a slotted md-menu opens as the destination's dropdown (mdSubmenuToggle) and its selection marks the destination child-selected.",
+        "The indicator pill, the icon (FILL 0 → 1 when active, or the slotted icon), the label (with its labels-selected reveal), the badge (dot or large, 999+), the state layers, focus ring and md-ripple, all on the source transitions (effects-fast 150 ms; none under reduced motion).",
+        "The 18 destination hooks through .awcNavigationRailTabAppearance(…) / AWCNavigationRailTabAppearanceScope; every exported part through the typed part appearances (per destination with for: / id); clearSubmenuSelection() through AWCNavigationRailController (by destination index).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: paint and geometry of every configuration (variants, label visibility, density, slots, the modal overlay, the horizontal bar, overflow, badges, links, a dropdown destination, every hook and every exported part), the interaction states and motion (pointer, keyboard, the expand / collapse transition with the destinations' FLIP, reduced motion) and the events."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "indicator",
+        "label",
+        "icon-wrapper",
+        "icon",
+        "state-layer",
+        "caret",
+        "anchor"
+      ],
+      "appearance": {
+        "api": "AWCNavigationRailTabAppearanceScope(AWCNavigationRailTabAppearance)",
+        "fields": [
+          "activeIconColor",
+          "activeLabelColor",
+          "badgeColor",
+          "badgeContentColor",
+          "caretDuration",
+          "focusRingColor",
+          "focusStateLayerOpacity",
+          "iconColor",
+          "iconSize",
+          "indicatorColor",
+          "indicatorHeight",
+          "indicatorShape",
+          "indicatorWidth",
+          "labelColor",
+          "labelTypography",
+          "minHeight",
+          "pressStateLayerOpacity",
+          "stateLayerColor"
+        ]
+      }
     }
   }
 }

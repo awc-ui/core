@@ -1,8 +1,11 @@
+import { nativeSelectMethod, selectMethodArguments, selectMethodValue } from './select-appearance.js';
 import { nativeToolbarMethod } from './toolbar-appearance.js';
+import { nativeRailMethod, railMethodArguments } from './rail-appearance.js';
 import { PICKER_ITEM_METHODS, PICKER_VALIDITY_METHODS } from './picker-appearance.js';
 import { nativeStepperMethod, stepperMethodArguments } from './stepper-appearance.js';
 import { nativeSrMethod, srMethodArguments } from './sr-appearance.js';
 import { nativeTableMethod, tableMethodArguments, tableMethodValue } from './table-appearance.js';
+import { nativeAutocompleteMethod, autocompleteMethodArguments, autocompleteMethodValue } from './autocomplete-appearance.js';
 import { nativeChartMethod, chartMethodArguments, validChartMethodValue } from './chart-appearance.js';
 /** Explicit wire contracts; capabilities still come from native adapter metadata. */
 export const nativeLifecycleMethod = (tag, method) => tag === 'md-menu' && ['show', 'close', 'whenClosed'].includes(method)
@@ -10,7 +13,8 @@ export const nativeLifecycleMethod = (tag, method) => tag === 'md-menu' && ['sho
   || tag === 'md-bottom-sheet' && ['show', 'close'].includes(method)
   || ['md-snackbar', 'md-tooltip'].includes(tag) && ['show', 'hide'].includes(method);
 /** Synchronous item methods: the retained native item is toggled or focused in place. */
-export const nativeItemMethod = (tag, method) => tag === 'md-menu' && method === 'reposition' || tag === 'md-sub-menu-item' && method === 'collapse'
+export const nativeItemMethod = (tag, method) => tag === 'md-transfer-list' && ['moveSelectedRight', 'moveSelectedLeft'].includes(method)
+  || tag === 'md-menu' && method === 'reposition' || tag === 'md-sub-menu-item' && method === 'collapse'
   || tag === 'md-accordion-item' && ['toggle', 'focusHeader'].includes(method)
   || tag === 'md-list' && ['activateNext', 'activatePrevious', 'selectItem', 'getSelectedIndices'].includes(method)
   || tag === 'md-list-item' && ['setFocus', 'focusItem', 'toggle', 'expand', 'collapse'].includes(method)
@@ -21,7 +25,8 @@ export const nativeItemMethod = (tag, method) => tag === 'md-menu' && method ===
   || tag === 'md-navigation-bar' && ['select', 'focusTab'].includes(method)
   || tag === 'md-navigation-tab' && method === 'focusEl';
 /** Synchronous selection-control methods (validation and focus) through the native controller. */
-export const nativeSelectionMethod = (tag, method) => Boolean(PICKER_VALIDITY_METHODS[tag]?.includes(method)) || tag === 'md-otp-field' && ['setFocus', 'clear', 'getValidity', 'setCustomValidity', 'checkValidity', 'reportValidity'].includes(method)
+export const nativeSelectionMethod = (tag, method) => tag === 'md-search' && ['show', 'close', 'toggle', 'focusInput'].includes(method)
+  || Boolean(PICKER_VALIDITY_METHODS[tag]?.includes(method)) || tag === 'md-otp-field' && ['setFocus', 'clear', 'getValidity', 'setCustomValidity', 'checkValidity', 'reportValidity'].includes(method)
   || tag === 'md-number-field' && ['setFocus', 'select', 'stepUp', 'stepDown', 'getValidity', 'checkValidity', 'reportValidity', 'setCustomValidity'].includes(method)
   || tag === 'md-text-field' && ['setFocus', 'select', 'getValidity', 'checkValidity', 'reportValidity', 'setCustomValidity'].includes(method)
   || tag === 'md-switch' && ['setFocus', 'getValidity', 'checkValidity', 'reportValidity', 'setCustomValidity'].includes(method)
@@ -31,8 +36,11 @@ export const nativeMethodSupported = (tag, method, policy) => tag === 'md-fab' &
   || Boolean(nativeStepperMethod(tag, method) && policy?.methods?.includes(method) && !policy?.unsupportedMethods?.includes(method))
   || Boolean(nativeSrMethod(tag, method) && policy?.methods?.includes(method) && !policy?.unsupportedMethods?.includes(method))
   || Boolean(nativeTableMethod(tag, method) && policy?.methods?.includes(method) && !policy?.unsupportedMethods?.includes(method))
+  || Boolean(nativeAutocompleteMethod(tag, method) && policy?.methods?.includes(method) && !policy?.unsupportedMethods?.includes(method))
+  || Boolean(nativeSelectMethod(tag, method) && policy?.methods?.includes(method) && !policy?.unsupportedMethods?.includes(method))
   || Boolean(nativeChartMethod(tag, method) && policy?.methods?.includes(method) && !policy?.unsupportedMethods?.includes(method))
   || Boolean(nativeToolbarMethod(tag, method) && policy?.methods?.includes(method) && !policy?.unsupportedMethods?.includes(method))
+  || Boolean(nativeRailMethod(tag, method) && policy?.methods?.includes(method) && !policy?.unsupportedMethods?.includes(method))
   || Boolean(nativeSelectionMethod(tag, method) && policy?.methods?.includes(method) && !policy?.unsupportedMethods?.includes(method))
   || Boolean(nativeItemMethod(tag, method) && policy?.methods?.includes(method) && !policy?.unsupportedMethods?.includes(method))
   || Boolean(nativeLifecycleMethod(tag, method) && policy?.methods?.includes(method) && !policy?.unsupportedMethods?.includes(method));
@@ -53,10 +61,26 @@ export function nativeMethodCommand(tag, method, args, invocation) {
     if (invocation !== undefined || !dataArray(args)) throw invalid(`${method} requires an argument array.`);
     return { command: 'method', method, arguments: srMethodArguments(tag, method, args) };
   }
+  // md-autocomplete methods with results (AWCAutocompleteController): loadOptions(options), getLabels(values), validity.
+  if (nativeAutocompleteMethod(tag, method)) {
+    if (invocation !== undefined || !dataArray(args)) throw invalid(`${method} requires an argument array.`);
+    return { command: 'method', method, arguments: autocompleteMethodArguments(tag, method, args) };
+  }
   // md-table / md-table-row / md-table-pagination methods (AWCTableController / AWCTablePaginationController), some with results.
   if (nativeTableMethod(tag, method)) {
     if (invocation !== undefined || !dataArray(args)) throw invalid(`${method} requires an argument array.`);
     return { command: 'method', method, arguments: tableMethodArguments(tag, method, args) };
+  }
+  // md-select / md-multi-select (AWCSelectController / AWCMultiSelectController): open / close, focus, reset, options, query, labels, validity.
+  if (nativeSelectMethod(tag, method)) {
+    if (invocation !== undefined || !dataArray(args)) throw invalid(`${method} requires an argument array.`);
+    return { command: 'method', method, arguments: selectMethodArguments(tag, method, args) };
+  }
+  // md-navigation-rail expand / collapse / toggle / focusTab(index), md-navigation-rail-tab clearSubmenuSelection()
+  // (AWCNavigationRailController): no results.
+  if (nativeRailMethod(tag, method)) {
+    if (invocation !== undefined || !dataArray(args)) throw invalid(`${method} requires an argument array.`);
+    return { command: 'method', method, arguments: railMethodArguments(method, args) };
   }
   // md-toolbar setFocus() (AWCToolbarController): no arguments, no result.
   if (nativeToolbarMethod(tag, method)) {
@@ -166,6 +190,10 @@ export function nativeMethodValue(value) {
   const malformed = () => { throw Object.assign(new Error('The native host returned an invalid method result.'), { code: 'INVALID_METHOD_RESULT' }); };
   // Table results: getSelection() → { count, total, values, all, indeterminate }; pinColumn() → start, end or null.
   const table = tableMethodValue(value); if (table) return table.value;
+  // md-autocomplete getLabels() → { value: label }.
+  const labels = autocompleteMethodValue(value); if (labels) return labels.value;
+  // md-select getLabels() → { value: label }.
+  const select = selectMethodValue(value); if (select) return select.value;
   if (typeof value === 'boolean') return value;
   if (typeof value === 'string') { if (!validChartMethodValue(value)) malformed(); return value; }
   if (Array.isArray(value)) { if (value.length > 1024 || !value.every(item => Number.isSafeInteger(item) && item >= 0)) malformed(); return [...value]; }

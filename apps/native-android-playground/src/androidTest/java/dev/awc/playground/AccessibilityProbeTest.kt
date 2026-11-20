@@ -81,7 +81,7 @@ class AccessibilityProbeTest {
         n.viewIdResourceName?.let { o.put("viewId", it) }
         n.rangeInfo?.let { o.put("range", JSONObject().put("type", it.type).put("min", it.min.toDouble()).put("max", it.max.toDouble()).put("current", it.current.toDouble())) }
         n.collectionInfo?.let { o.put("collection", JSONObject().put("rows", it.rowCount).put("columns", it.columnCount).put("selectionMode", it.selectionMode)) }
-        n.collectionItemInfo?.let { o.put("collectionItem", JSONObject().put("row", it.rowIndex).put("column", it.columnIndex).put("selected", it.isSelected).put("heading", it.isHeading)) }
+        n.collectionItemInfo?.let { o.put("collectionItem", JSONObject().put("row", it.rowIndex).put("column", it.columnIndex).put("selected", it.isSelected).put("heading", it.isHeading).put("rowSpan", it.rowSpan).put("columnSpan", it.columnSpan)) }
         val skip = setOf(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS, AccessibilityNodeInfo.ACTION_SELECT, AccessibilityNodeInfo.ACTION_CLEAR_SELECTION)
         val actions = n.actionList.filter { it.id !in skip }.map { a -> JSONObject().put("id", a.id).put("name", actionName(a.id)).also { j -> a.label?.let { j.put("label", it.toString()) } } }
         if (actions.isNotEmpty()) o.put("actions", JSONArray(actions))

@@ -587,9 +587,12 @@ function parseTsx(source) {
 /*  CSS Parsing                                                        */
 /* ------------------------------------------------------------------ */
 
+/** Components whose public hooks use a shorter prefix than their tag (md-organization-chart → --md-org-chart-*). */
+const HOOK_PREFIX_ALIASES = new Map([['md-organization-chart', '--md-org-chart-']]);
+
 function parseCss(source, tagName) {
   const slug = tagName.replace(/^md-/, '');
-  const prefix = `--md-${slug}-`;
+  const prefix = HOOK_PREFIX_ALIASES.get(tagName) ?? `--md-${slug}-`;
   const cssCustomProps = [];
   const slotDescriptions = {};
   const partDescriptions = {};

@@ -1,6 +1,6 @@
 {
  "tag": "md-tooltip",
- "at": "2026-10-29T11:11:40.613Z",
+ "at": "2026-11-05T01:32:20.813Z",
  "rows": [
   {
    "case": "plain",
@@ -13,7 +13,7 @@
      "button:Hover or focus me"
     ],
     "contrast": {
-     "measured": 2,
+     "measured": 0,
      "findings": []
     }
    },
@@ -33,7 +33,7 @@
       "button:Hover or focus me"
      ],
      "findings": [],
-     "contrastMeasured": 2
+     "contrastMeasured": 0
     },
     "ios": {
      "status": "pass",
@@ -111,16 +111,6 @@
        "class": "android.view.ViewGroup"
       },
       {
-       "type": "TYPE_WINDOW_STATE_CHANGED",
-       "via": "system",
-       "text": [
-        "AWC Native"
-       ],
-       "contentDescription": "",
-       "changes": 0,
-       "class": "dev.awc.playground.LivePreviewActivity"
-      },
-      {
        "type": "TYPE_VIEW_FOCUSED",
        "via": "window",
        "text": [],
@@ -135,6 +125,16 @@
        "contentDescription": "",
        "changes": 1,
        "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
       }
      ]
     }
@@ -151,7 +151,7 @@
      "button:Hover or focus me"
     ],
     "contrast": {
-     "measured": 2,
+     "measured": 0,
      "findings": []
     }
    },
@@ -171,7 +171,7 @@
       "button:Hover or focus me"
      ],
      "findings": [],
-     "contrastMeasured": 2
+     "contrastMeasured": 0
     },
     "ios": {
      "status": "pass",

@@ -30,6 +30,17 @@ let awcSRTestsDir = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
                 }
                 print("md-slider paint.json: \(ok)/\(cases.count)")
             }
+            // gate 7: typed parts, the inset-icon slot and the hooks without a case (Chrome 153, fa-073 / fa-074).
+            if i == 0, let data = try? Data(contentsOf: URL(fileURLWithPath: dir).appendingPathComponent("paint-extra2.json")),
+               let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any], let cases = root["cases"] as? [[String: Any]] {
+                var ok = 0
+                for c in cases {
+                    let diffs = SliderPaintCase(c).run()
+                    total += 1
+                    if diffs.isEmpty { ok += 1; passed += 1 } else { print("FAIL \(c["name"] ?? "?") (paint-extra2.json)"); diffs.prefix(10).forEach { print("   " + $0) } }
+                }
+                print("md-slider paint-extra2.json: \(ok)/\(cases.count)")
+            }
             if i == 1, !((try? Data(contentsOf: URL(fileURLWithPath: dir).appendingPathComponent("paint.json"))).flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }?["cases"] is [[String: Any]]) {
                 print("missing \(dir)/paint.json"); total += 1
             }
@@ -43,9 +54,22 @@ let awcSRTestsDir = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
                 }
                 print("md-rating paint.json: \(ok)/\(cases.count)")
             }
-            for file in ["states.json", "states-reduced.json", "lifecycle.json"] {
+            if i == 1, let data = try? Data(contentsOf: URL(fileURLWithPath: dir).appendingPathComponent("paint-extra2.json")),
+               let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any], let cases = root["cases"] as? [[String: Any]] {
+                var ok = 0
+                for c in cases {
+                    let diffs = RatingPaintCase(c).run()
+                    total += 1
+                    if diffs.isEmpty { ok += 1; passed += 1 } else { print("FAIL \(c["name"] ?? "?") (paint-extra2.json)"); diffs.prefix(10).forEach { print("   " + $0) } }
+                }
+                print("md-rating paint-extra2.json: \(ok)/\(cases.count)")
+            }
+            // R6-11: the rating hook runs (states-extra*.json) when the oracle folder has them.
+            for file in ["states.json", "states-reduced.json", "lifecycle.json"] + (i == 1 ? ["states-extra.json", "states-extra-reduced.json"] : []) {
                 guard let data = try? Data(contentsOf: URL(fileURLWithPath: dir).appendingPathComponent(file)),
-                      let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any], let runs = root["runs"] as? [[String: Any]] else { print("missing \(dir)/\(file)"); total += 1; continue }
+                      let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any], let runs = root["runs"] as? [[String: Any]] else {
+                    if file.hasPrefix("states-extra") { continue }
+                    print("missing \(dir)/\(file)"); total += 1; continue }
                 var ok = 0
                 for (k, c) in runs.enumerated() {
                     let diffs = i == 0 ? SliderReplay(c, last: k == runs.count - 1, reduced: file.contains("reduced")).run() : RatingReplay(c, reduced: file.contains("reduced")).run()
@@ -587,8 +611,10 @@ func sliderTreeDiff(_ tree: [String: Any], _ p: AWCSliderPaint, _ d: (String) ->
     eqR("host", host, AWCSliderRect(x: ox, y: oy, width: p.width, height: p.height))
     let hs = tree["style"] as? [String: Any] ?? [:]
     eqN("paddingTop", px(hs["paddingTop"]), p.paddingTop); eqN("paddingLeft", px(hs["paddingLeft"]), p.paddingLeft); eqN("paddingRight", px(hs["paddingRight"]), p.paddingRight)
-    eqN("opacity", Double(hs["opacity"] as? String ?? "1") ?? 1, p.opacity)
     let parts = tree["parts"] as? [[String: Any]] ?? []
+    // The surface part's own opacity (::part(surface)) composites with the host's.
+    let surfaceOpacity = (parts.first { ($0["part"] as? String) == "surface" }?["opacity"] as? String).flatMap(Double.init) ?? 1
+    eqN("opacity", (Double(hs["opacity"] as? String ?? "1") ?? 1) * surfaceOpacity, p.opacity)
     func part(_ k: String) -> [[String: Any]] { parts.filter { ($0["part"] as? String) == k } }
     func radii(_ m: [String: Any]) -> AWCSliderRadii { AWCSliderRadii(tl: px(m["borderTopLeftRadius"]), tr: px(m["borderTopRightRadius"]), br: px(m["borderBottomRightRadius"]), bl: px(m["borderBottomLeftRadius"])) }
     if let t = part("track").first { eqR("track", rectOf(t["rect"]), at(p.track)); eqN("trackRadius", px(t["borderTopLeftRadius"]), p.trackRadius) }
@@ -659,17 +685,41 @@ final class SliderPaintCase {
         s.valueIndicator = a("value-indicator") != nil; s.labeled = a("labeled") != nil; s.insetIcon = a("inset-icon") != nil
         s.rtl = (c["dir"] as? String) == "rtl"
         s.load(value: num("value", 50), valueStart: num("value-start", 0), valueEnd: num("value-end", 100))
-        let hooks = sliderHooks(a("style") ?? "")
+        let parts = awcSliderCaseParts(html)
+        let hooks = AWCSliderParts.hooks(sliderHooks(a("style") ?? ""), parts)
         var density = 0.0
         if name.hasPrefix("density-scale-"), let n = Double(String(name.dropFirst("density-scale-".count).prefix(1))) { density = -n }
         let theme = WebTokens.theme(dark: (c["theme"] as? String) == "dark", density: density)
         let boxH: Double? = name.hasPrefix("vertical-full-height-") ? Double(name.split(separator: "-").last ?? "") : nil
         let width = (c["width"] as? NSNumber)?.doubleValue ?? 480
-        let p = AWCSliderLayout.layout(s, theme: theme, hooks: hooks, containerWidth: boxH != nil ? 0 : width, containerHeight: boxH,
-                                       fullHeight: a("full-height") != nil, densityProp: a("density").flatMap { Int($0) })
+        let p = AWCSliderParts.applied(AWCSliderLayout.layout(s, theme: theme, hooks: hooks, containerWidth: boxH != nil ? 0 : width, containerHeight: boxH,
+                                       fullHeight: a("full-height") != nil, densityProp: a("density").flatMap { Int($0) }), parts, vertical: s.vertical)
         sliderTreeDiff(c["tree"] as? [String: Any] ?? [:], p) { diffs.append($0) }
         return diffs
     }
+}
+
+/// The case's `data-fa-parts` (the ::part rules the Chrome page applied) as typed part appearances.
+func awcCaseParts(_ html: String, _ tag: String) -> [String: AWCAccordionPartAppearance] {
+    guard let r = html.range(of: "data-fa-parts='"), let e = html[r.upperBound...].firstIndex(of: "'"),
+          let all = try? JSONSerialization.jsonObject(with: Data(html[r.upperBound..<e].utf8)) as? [String: [String: [String: String]]],
+          let parts = all[tag] else { return [:] }
+    func px(_ v: String?) -> Double? { v.flatMap { Double($0.replacingOccurrences(of: "px", with: "").trimmingCharacters(in: .whitespaces)) } }
+    func hex(_ v: String?) -> String? { v.map { $0.trimmingCharacters(in: .whitespaces).uppercased() } }
+    return parts.mapValues { d in
+        let radius = px(d["border-radius"]).map { AWCCornerShape(AWCCornerRadius(AWCCornerLength(points: $0))) }
+        let pad = px(d["padding"]).map { AWCAccordionInsets(top: $0, right: $0, bottom: $0, left: $0) }
+        return AWCAccordionPartAppearance(color: hex(d["color"]), backgroundColor: hex(d["background-color"]), cornerShape: radius, padding: pad,
+                                          width: px(d["width"]), height: px(d["height"]), opacity: d["opacity"].flatMap(Double.init), gap: px(d["gap"]),
+                                          fontSize: px(d["font-size"]), lineHeight: px(d["line-height"]), fontWeight: d["font-weight"].flatMap(Double.init),
+                                          letterSpacing: px(d["letter-spacing"]))
+    }
+}
+func awcRatingCaseParts(_ html: String) -> [AWCRatingPart: AWCAccordionPartAppearance] {
+    Dictionary(uniqueKeysWithValues: awcCaseParts(html, "md-rating").compactMap { k, v in AWCRatingPart(rawValue: k).map { ($0, v) } })
+}
+func awcSliderCaseParts(_ html: String) -> [AWCSliderPart: AWCAccordionPartAppearance] {
+    Dictionary(uniqueKeysWithValues: awcCaseParts(html, "md-slider").compactMap { k, v in AWCSliderPart(rawValue: k).map { ($0, v) } })
 }
 
 // MARK: md-rating paint.json
@@ -721,7 +771,7 @@ final class RatingPaintCase {
         if name.hasPrefix("density-scale-"), let n = Double(String(name.dropFirst("density-scale-".count).prefix(1))) { density = -n }
         let outlineEmpty = a("outline-empty").map { $0 != "false" } ?? true
         let icon = a("icon") ?? "star"
-        let p = AWCRatingLayout.layout(r, theme: ratingTheme(dark: (c["theme"] as? String) == "dark", density: density), hooks: ratingHooks(a("style") ?? ""),
+        let p = AWCRatingLayout.layout(r, theme: ratingTheme(dark: (c["theme"] as? String) == "dark", density: density), hooks: AWCRatingParts.hooks(ratingHooks(a("style") ?? ""), awcRatingCaseParts(html)),
                                        size: a("size") ?? "md", icon: icon, emptyIcon: a("empty-icon") ?? "star", outlineEmpty: outlineEmpty,
                                        showValueLabel: a("show-value-label") != nil, densityProp: a("density").flatMap { Int($0) })
         let tree = c["tree"] as? [String: Any] ?? [:]
@@ -766,7 +816,7 @@ final class RatingPaintCase {
             let clip = pcts.first ?? -1
             let fromLeft = clipS.hasPrefix("inset(0px 0px 0px ")
             if abs(clip - it.clipPct) > 1e-6 || (clip > 0 && fromLeft != it.clipFromLeft) { diffs.append("item[\(i)] clip web \(clipS) native \(it.clipPct)") }
-            eqC("item[\(i)] fg", fg["color"] as? String ?? "", p.activeColor); eqC("item[\(i)] bg", bg["color"] as? String ?? "", p.inactiveColor)
+            eqC("item[\(i)] fg", fg["color"] as? String ?? "", p.iconColor ?? p.activeColor); eqC("item[\(i)] bg", bg["color"] as? String ?? "", p.inactiveColor)
             if (fg["text"] as? String) != p.icon { diffs.append("item[\(i)] icon web \(fg["text"] ?? "") native \(p.icon)") }
             if (bg["text"] as? String) != p.emptyIcon { diffs.append("item[\(i)] empty icon web \(bg["text"] ?? "") native \(p.emptyIcon)") }
             let fvs = bg["fvs"] as? String ?? ""

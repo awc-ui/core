@@ -13,7 +13,7 @@ export function webPresentation(tag, html, node) {
         : `<div style="position:relative;width:48px;height:48px">${anchor('demo-status-dot-anchor')}${html}</div>`;
     case 'md-ripple':   // the recipe's token-styled button surface (AWCRippleExampleSurface on the native hosts)
       return `<button type="button" style="position:relative;overflow:hidden;padding:16px 24px;border:0;border-radius:16px;background:var(--md-sys-color-surface-container-highest);color:var(--md-sys-color-on-surface);font:500 14px/20px Roboto,sans-serif;letter-spacing:.1px">Tap to see the ripple${html}</button>`;
-    case 'md-time-picker': case 'md-color-picker':   // LivePreviewPicker / the SwiftUI host: 24 px in from the viewport's top-leading corner
+    case 'md-date-picker': case 'md-time-picker': case 'md-color-picker':   // LivePreviewPicker / the SwiftUI host: 24 px in from the viewport's top-leading corner
       return `<div style="padding:24px">${html}</div>`;
     case 'md-divider':
       return `<div style="width:300px;height:96px;display:flex;align-items:center;justify-content:center">${html}</div>`;

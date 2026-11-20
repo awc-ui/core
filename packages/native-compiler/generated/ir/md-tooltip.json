@@ -1035,7 +1035,7 @@
         "Source mdOpen/mdClose events have null detail and are cancelable, non-bubbling and non-composed: same-tree capture and target listeners run; cancellation does not undo committed visibility.",
         "Public typed slots, part styles and measured overlay coordinates replace DOM selectors, shadow slots and computed CSS. Arbitrary native content keeps its own handlers and explicitly authored layout.",
         "The native overlay scope must cover the intended viewport. Hover/focus delays, grace periods, RTL placement, flipping, clamping, Escape ownership and retained updates are implemented.",
-        "macOS SwiftUI/AppKit renderer and live-host verification is recorded; iOS SDK, simulator/device and VoiceOver execution remain unavailable and unverified."
+        "macOS SwiftUI/AppKit, iOS simulator (iPhone and iPad on iOS 26.3, iPhone on iOS 18.6; docs/native-parity/ios-harness.md) and Android emulator renderers are verified against the Chrome oracles; their accessibility trees are compared with Chrome's on all three platforms by tools/ax (docs/native-parity/accessibility.md). Spoken VoiceOver/TalkBack output is not automated."
       ],
       "verification": "not-device-verified",
       "visualParts": [

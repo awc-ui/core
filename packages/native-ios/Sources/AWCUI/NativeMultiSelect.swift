@@ -1,4 +1,5 @@
 import SwiftUI
+import QuartzCore
 
 // MARK: Appearance (the `--md-multi-select-*` hooks)
 
@@ -37,6 +38,10 @@ public struct AWCMultiSelectAppearance: Equatable, Sendable {
     public var emptyColor: String?, emptyPadding: [Double]?, emptyFont: AWCMultiSelectFont?
     public var loadingPadding: Double?, loaderSize: Double?, spinnerSize: Double?, inlineChipsBlockStart: Double?
     public init() {}
+    /// The hook map (`["chip-height": "28px"]`): the CSS custom properties without their `--md-multi-select-` prefix.
+    public init(_ hooks: [String: String]) {
+        self.init(css: Dictionary(hooks.map { ($0.key.hasPrefix("--") ? $0.key : "--md-multi-select-" + $0.key, $0.value) }, uniquingKeysWith: { _, b in b }))
+    }
     static let keys: [String] = ["width", "min-width", "trigger-width", "frame-gap", "chip-gap", "chip-height", "chip-radius", "chip-outline", "caret-color", "caret-size",
                                  "caret-box-size", "clear-color", "clear-bg", "clear-hover-bg", "clear-size", "clear-icon-size", "clear-radius", "clear-focus-ring-color",
                                  "clear-focus-ring-width", "clear-focus-ring-offset", "option-icon-color", "option-icon-size", "search-bg", "search-color",
@@ -172,6 +177,9 @@ public extension View {
     @ObservationIgnored var lastEmit: String?
     @ObservationIgnored var lastValidityKey: String?
     @ObservationIgnored var openedByKey = false
+    /// Time (CACurrentMediaTime ms) of the last open/close write by an input handler: the caret rotation starts there (6-6).
+    @ObservationIgnored var openWriteAt: Double = 0
+    @ObservationIgnored var openSynced: Bool?
     @ObservationIgnored var valueNow: [String] = []
     @ObservationIgnored var validityNow = AWCConstraintValidity.validState
     @ObservationIgnored var optionsNow: [AWCSelectOptionData] = []
@@ -209,8 +217,12 @@ struct AWCNativeMultiSelect: View {
     @State private var fieldFrame: CGRect = .zero
     @State private var clearFrame: CGRect = .zero
     @State private var inlineFrame: CGRect = .zero
+    /// The positioned chips box in the frame's space (re-reported after the trigger for chip-position top / left).
+    @State private var chipsBox: CGRect = .zero
     @State private var clearHover = false
     @FocusState private var clearFocused: Bool
+    /// The clear button's AWC focus surface (a Tab stop, as the Web's <button>).
+    @State private var clearHandle = AWCButtonFocusHandle()
 
     private func s(_ k: String, _ d: String = "") -> String { local[k]?.string.nonEmpty ?? d }
     private func b(_ k: String, _ d: Bool = false) -> Bool { local[k]?.bool ?? d }
@@ -267,6 +279,13 @@ struct AWCNativeMultiSelect: View {
             menu
         }
         .frame(minWidth: CGFloat(minW), maxWidth: a.width.map { CGFloat(max($0, minW)) } ?? .infinity, alignment: .leading)
+        // `part=live-region` (role="status", visually hidden): the count is a readable text while there is one (6-7); no pixels, no layout space.
+        .overlay(alignment: .topLeading) {
+            if !countText.isEmpty {
+                Text(countText).font(.system(size: 1)).foregroundStyle(Color.clear).lineLimit(1).fixedSize()
+                    .frame(width: 1, height: 1, alignment: .topLeading).clipped().allowsHitTesting(false)
+            }
+        }
         .awcInspect(nodeID: node.id, name: "md-multi-select") { _ in
             ["value": .array(value.map { .string($0) }), "open": .bool(open), "focused": .bool(rt.focused), "valid": .bool(validity.valid), "validationMessage": .string(validationMessage)]
         }
@@ -281,6 +300,8 @@ struct AWCNativeMultiSelect: View {
         .onChange(of: fieldFrame) { _, f in observeClicks(f) }
         .onChange(of: clearFrame) { _, _ in observeClicks(fieldFrame) }
         .onChange(of: value, initial: true) { _, v in rt.valueNow = v }
+        // The polite live region (`part=live-region`): the selection count on every change (not the initial content).
+        .onChange(of: value) { _, v in awcMultiSelectAnnounce(v.isEmpty ? "None selected" : "\(v.count) selected") }
         .onChange(of: options, initial: true) { _, o in rt.optionsNow = o }
     }
 
@@ -307,6 +328,17 @@ struct AWCNativeMultiSelect: View {
                 VStack(alignment: .leading, spacing: gap) { trigger; if showChips { chips } }
             }
         }
+        .coordinateSpace(name: "awc-multi-frame-\(node.id)")
+        // The inner md-text-field has a `chips` part of its own under the same id, and the last one in view order is the one
+        // inspected: with the chips before the trigger (top / left) this box is reported again after it.
+        .overlay {
+            if showChips, position == "top" || position == "left", chipsBox.width > 0 {
+                Color.clear.frame(width: chipsBox.width, height: chipsBox.height)
+                    .allowsHitTesting(false).accessibilityHidden(true)
+                    .awcInspect(nodeID: node.id, part: "chips", name: "chips")
+                    .position(x: chipsBox.midX, y: chipsBox.midY)
+            }
+        }
         .awcInspect(nodeID: node.id, part: "frame", name: "frame")
     }
     private var chipAppearance: AWCChipHookAppearance {
@@ -331,6 +363,9 @@ struct AWCNativeMultiSelect: View {
         // Bottom / top: a block-level flex row (the full frame width); left / right: flex 0 1 auto beside the trigger.
         .frame(maxWidth: position == "left" || position == "right" ? nil : .infinity, alignment: .leading)
         .layoutPriority(position == "left" || position == "right" ? 0 : 1)
+        .onGeometryChange(for: CGRect.self) { $0.frame(in: .named("awc-multi-frame-\(node.id)")) } action: { chipsBox = $0 }
+        // `.md-multi-select__chips`: role="group" named "<label> — selected".
+        .accessibilityElement(children: .contain).accessibilityLabel(s("label").isEmpty ? "Selected" : "\(s("label")) — selected")
         .awcInspect(nodeID: node.id, part: "chips", name: "chips")
     }
 
@@ -373,7 +408,7 @@ struct AWCNativeMultiSelect: View {
             .modifier(AWCSelectScopeFrame(registry: registry) { fieldFrame = $0 })
             .overlay { AWCSelectClickCatcher(exclude: fieldFrame.width > 0 ? ((showClear ? [clearFrame] : []) + (inline && !selected.isEmpty ? [inlineFrame] : []))
                                                 .map { $0.offsetBy(dx: -fieldFrame.minX, dy: -fieldFrame.minY) } : [],
-                                             press: { _ = field.setFocus() }, click: { toggleOpen() }) }
+                                             press: { pressFocus() }, click: { toggleOpen() }, release: { releaseFocus() }) }
             .awcInspect(nodeID: node.id, part: "field", name: "field")
     }
     /// The compact button trigger (md-button outlined xs with the trigger icon); the selection shows as chips beside it.
@@ -408,7 +443,7 @@ struct AWCNativeMultiSelect: View {
             } else {
                 HStack(spacing: 0) {
                     if showClear { clearButton }
-                    AWCSelectCaret(nodeID: node.id, open: open, reduced: reduced, size: a.caretSize ?? 24, color: a.caretColor ?? tint, glyph: s("dropdownIcon", "arrow_drop_down"),
+                    AWCSelectCaret(nodeID: node.id, since: rt.openWriteAt, open: open, reduced: reduced, size: a.caretSize ?? 24, color: a.caretColor ?? tint, glyph: s("dropdownIcon", "arrow_drop_down"),
                                    slot: node.children(inSlot: "dropdown-icon"), child: { child($0, { _ in }) })
                         .frame(width: a.caretBoxSize ?? 24, height: a.caretBoxSize ?? 24)
                         .awcInspect(nodeID: node.id, part: "caret", name: "caret")
@@ -442,16 +477,20 @@ struct AWCNativeMultiSelect: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .focusable().focused($clearFocused)
         .overlay {
-            if clearFocused {
+            if clearHandle.isFocusVisible {
                 let w = a.clearFocusRingWidth ?? 2, off = a.clearFocusRingOffset ?? 1
                 RoundedRectangle(cornerRadius: radius + off + w / 2).strokeBorder(Color(awcHex: a.clearFocusRingColor ?? token("--md-sys-color-primary", "#6750A4")), lineWidth: w)
                     .padding(-(off + w)).allowsHitTesting(false)
             }
         }
         .onHover { clearHover = $0 }
-        .accessibilityLabel(s("clearLabel", "Clear selection"))
+        // A real <button> on the Web: a Tab stop named by `clear-label`, in AWC's key-view loop on AppKit and UIKit.
+        .accessibilityHidden(true)
+        .awcFocusBridgeLayer {
+            AWCNativeButtonFocusBridge(configuration: .init(id: node.id + "::clear", label: s("clearLabel", "Clear selection"), policy: AWCButtonAccessibilityPolicy(properties: [:]),
+                                                           group: nil, cell: nil, handle: clearHandle, focusChanged: { _ in }, activate: { clearValue() }))
+        }
         .modifier(AWCSelectScopeFrame(registry: registry) { clearFrame = $0 })
         .awcInspect(nodeID: node.id, part: "clear", name: "clear")
     }
@@ -481,6 +520,7 @@ struct AWCNativeMultiSelect: View {
         .background(alignment: .topLeading) { if !wrap { measureRow(all, gap: gap) } }
         .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { f in rt.inlineStart = direction == .rightToLeft ? f.maxX : f.minX }
         .modifier(AWCSelectScopeFrame(registry: registry) { inlineFrame = $0 })
+        .accessibilityElement(children: .contain).accessibilityLabel(s("label").isEmpty ? "Selected" : "\(s("label")) — selected")
         .awcInspect(nodeID: node.id, part: "chips", name: "chips")
     }
     /// The display row's width: from its start to the trailing cluster (the row is flex 1 1 auto in the field's chip area).
@@ -558,6 +598,10 @@ struct AWCNativeMultiSelect: View {
         if let d = local["density"]?.number { p["density"] = .number(d) }
         // "Select all" (pinned in the header) precedes the options in the roving order, as in the source's DOM.
         if b("showSelectAll") && !b("loading") && !options.isEmpty { p["headerRows"] = .array([.string(node.id + "::selectAll")]) }
+        // The controller drives open / close (with the exit); the node mirrors its state so another model change while open
+        // (emptyText, headerRows, …) is not read as a host close (AWCNativeMenu.sync: `open` absent = false). Outside a scope the
+        // menu renders in flow and follows the host's `open`.
+        p["open"] = .bool(registry.map { $0.controllers[menuID]?.isOpen ?? false } ?? open)
         let menuNode = AWCNode(id: menuID, tag: "md-menu", properties: p, children: rows)
         let byID = Dictionary(listOptions.enumerated().map { ("\(node.id)::opt\($0.offset)", $0.element.value) }, uniquingKeysWith: { a, _ in a })
         return AWCNativeView(node: menuNode) { e in
@@ -645,14 +689,38 @@ struct AWCNativeMultiSelect: View {
         guard let registry, frame.width > 0, !buttonTrigger else { return }
         registry.observeClicks(node.id, frame: frame, exclude: showClear ? [clearFrame] : []) { toggleOpen() }
     }
-    private func toggleOpen() { guard !isDisabled else { return }; set("open", .bool(!open)) }
+    /// iOS: the press shows the focus at once (Chrome pointerdown) and moves the UIKit responder after the release (6-6 021:
+    /// becomeFirstResponder 13-89 ms on the press held back the release 33 ms later and the open with it).
+    private func pressFocus() {
+        #if os(iOS)
+        field.markFocused()
+        #else
+        _ = field.setFocus()
+        #endif
+    }
+    /// iOS: the UIKit responder follows after the md-menu open motion (6-6 031/032, KNOWN-CAUSES row 28: a cold
+    /// becomeFirstResponder inside the 150 ms open left the surface without frames). Reduce Motion: next main turn.
+    /// Skipped when the first responder changed meanwhile (another field, or the close already focused the field).
+    private func releaseFocus() {
+        #if os(iOS)
+        let before = AWCFirstResponderProbe.current()
+        let move = { [field] in if AWCFirstResponderProbe.current() === before { _ = field.setFocus() } }
+        if reduced { DispatchQueue.main.async(execute: move) } else { DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: move) }
+        #endif
+    }
+    private func toggleOpen() { guard !isDisabled else { return }; let next = !open; set("open", .bool(next)); syncMenu(next) }
     /// `@Watch('open')`: the host's open state drives the menu (auto-focus off while filterable: the search field takes focus).
+    /// Input handlers call it at once, as the Web watcher runs with the property write; `.onChange(of: open)` covers the rest.
     private func syncMenu(_ o: Bool, attempt: Int = 0) {
+        if attempt == 0 && rt.openSynced != o { rt.openSynced = o; rt.openWriteAt = CACurrentMediaTime() * 1000 }
         guard let registry else { return }
         guard let c = registry.controllers[menuID] else {
             if attempt < 20 { DispatchQueue.main.async { syncMenu(o, attempt: attempt + 1) } }
             return
         }
+        #if os(iOS)
+        if o { c.logicalRowFocus = !b("filterable") }
+        #endif
         if o { if !c.isOpen || c.closing { c.show(autoFocus: !b("filterable"), keyboard: rt.openedByKey) } }
         else if c.isOpen && !c.closing { c.close() }
         rt.openedByKey = false
@@ -703,8 +771,15 @@ struct AWCNativeMultiSelect: View {
     /// md-multi-select `handleKeyDown` for keys in the trigger (keys inside the menu belong to the menu).
     private func fieldKey(_ key: String, _ composing: Bool) -> Bool {
         guard !isDisabled, !composing else { return false }
-        if !open && ["ArrowDown", "ArrowUp", "Enter", " "].contains(key) { rt.openedByKey = true; set("open", true); return true }
-        if open && key == "Escape" { set("open", false); _ = field.setFocus(); return true }
+        if !open && ["ArrowDown", "ArrowUp", "Enter", " "].contains(key) { rt.openedByKey = true; set("open", true); syncMenu(true); return true }
+        #if os(iOS)
+        // iOS: the field keeps the first responder while the menu is open; the focused option row is logical (MenuController.logicalRowFocus).
+        if open, let c = registry?.controllers[menuID], c.logicalRowFocus, c.comboboxID == nil, c.isOpen, !c.closing, let id = c.focusedID {
+            if key == "Enter" || key == " " { c.rows[id]?.keyActivate(key == " " ? "Space" : "Enter"); return true }
+            return c.key(key, from: id, shift: false, modified: false)
+        }
+        #endif
+        if open && key == "Escape" { set("open", false); syncMenu(false); _ = field.setFocus(); return true }
         return false
     }
 }
@@ -757,6 +832,7 @@ struct AWCMultiSearchField: View {
             if text.isEmpty {
                 Text(placeholder).font(AWCNativeFonts.label(size: 16, regular: true)).lineLimit(1).allowsHitTesting(false)
                     .foregroundStyle(Color(awcHex: a.searchPlaceholderColor ?? t["--md-sys-color-on-surface-variant"] ?? "#49454F"))
+                    .accessibilityHidden(true)   // the input's placeholder attribute: not accessibility text
             }
             TextField("", text: $text).textFieldStyle(.plain).font(AWCNativeFonts.label(size: 16, regular: true)).focused($focused)
                 .foregroundStyle(Color(awcHex: a.searchColor ?? t["--md-sys-color-on-surface"] ?? "#1D1B20")).accessibilityLabel(label)
@@ -773,11 +849,31 @@ struct AWCMultiSearchField: View {
 }
 
 /// Focuses the native focus view whose accessibility identifier is `id` (an md-chip's remove button: `<chip id>.remove`) in the
-/// key window. UIKit: no programmatic chip focus (the trigger keeps focus).
+/// key window (AppKit) or the app's windows (UIKit: the `AWCKeyView` with that identifier becomes first responder).
 @MainActor func awcFocusNativeView(_ id: String) {
     #if canImport(AppKit)
     func find(_ v: NSView) -> NSView? { if v.accessibilityIdentifier() == id { return v }; for c in v.subviews { if let f = find(c) { return f } }; return nil }
     for w in NSApp.windows { if let root = w.contentView, let v = find(root) { w.makeFirstResponder(v); return } }
+    #else
+    func find(_ v: UIView) -> UIView? {
+        if v.accessibilityIdentifier == id, (v as? AWCKeyView)?.awcAcceptsFirstResponder == true { return v }
+        for c in v.subviews { if let f = find(c) { return f } }
+        return nil
+    }
+    for scene in UIApplication.shared.connectedScenes { for w in (scene as? UIWindowScene)?.windows ?? [] { if let v = find(w) { _ = v.becomeFirstResponder(); return } } }
+    #endif
+}
+
+/// md-multi-select's polite live region: a polite announcement (macOS AXAnnouncementRequested below high priority, iOS an
+/// announcement at the default priority).
+@MainActor func awcMultiSelectAnnounce(_ text: String) {
+    #if os(macOS)
+    NSAccessibility.post(element: NSApp as Any, notification: .announcementRequested,
+                         userInfo: [.announcement: text, .priority: NSAccessibilityPriorityLevel.medium.rawValue])
+    #else
+    var s = AttributedString(text)
+    s.accessibilitySpeechAnnouncementPriority = .default
+    AccessibilityNotification.Announcement(s).post()
     #endif
 }
 

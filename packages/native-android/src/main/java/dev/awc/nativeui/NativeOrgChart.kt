@@ -237,7 +237,9 @@ private val OrgRoboto = FontFamily(Font(R.font.awc_roboto_regular, FontWeight.No
     val tokens = LocalAWCThemeTokens.current
     val appearance = LocalAWCOrgChartAppearance.current
     val density = resolveAWCDensity(p["density"], LocalAWCNativeDensity.current)
-    val metrics = remember(density, appearance) { OrgChartMetrics(density, appearance) }
+    // The chart's ::part() declarations (OrgChartParts.kt): the shared rules under this chart's own.
+    val parts = orgChartParts(p.str("id"))
+    val metrics = remember(density, appearance, parts) { OrgChartMetrics(density, appearance, parts) }
     val systemReduced = rememberAWCAccessibilityAppearance().first
     val reduce = LocalAWCOrgChartReducedMotion.current ?: systemReduced
     val duration = if(reduce) 0.0 else metrics.duration; val hold = if(reduce) 0.0 else 100.0
@@ -292,10 +294,14 @@ private val OrgRoboto = FontFamily(Font(R.font.awc_roboto_regular, FontWeight.No
     if(roots.isEmpty()) {
         // `role=status`: the `empty` slot or the default "No data" (body-medium 14px, on-surface-variant, padding 32/16).
         val slots = LocalAWCSlots.current
-        Box(Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = (metrics.toggle / 2 + 10).dp).padding(horizontal = 16.dp, vertical = 32.dp)
+        // ::part(viewport) is the box around ::part(empty): each part's background, radius, opacity and padding; ::part(empty) the text.
+        val e = parts[AWCOrgChartPart.EMPTY]; val vp = parts[AWCOrgChartPart.VIEWPORT]; val es = e.fontSize ?: 14.0
+        Box(Modifier.fillMaxWidth().tablePartSurface(vp).padding(vp.paddingOr(PaddingValues(start = 8.dp, end = 8.dp, top = 8.dp, bottom = (metrics.toggle / 2 + 10).dp), rtl))
+            .tablePartSurface(e).padding(e.paddingOr(PaddingValues(horizontal = 16.dp, vertical = 32.dp), rtl))
             .semantics { liveRegion = LiveRegionMode.Polite }, contentAlignment = Alignment.TopCenter) {
             OrgChartEmptySlot(slots, slot) {
-                BasicText("No data", style = TextStyle(color = hexColor(token("on-surface-variant", "#49454F")), fontSize = 14.sp, lineHeight = 16.sp, fontFamily = OrgRoboto,
+                BasicText("No data", style = TextStyle(color = e.colorOver(hexColor(token("on-surface-variant", "#49454F"))), fontSize = es.sp, lineHeight = orgNormalLine(es).sp,
+                    fontFamily = OrgPartRoboto, fontWeight = orgFaceWeight(e.fontWeight ?: 400.0), letterSpacing = (e.letterSpacing ?: 0.0).sp,
                     platformStyle = PlatformTextStyle(includeFontPadding = false), lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None)))
             }
         }
@@ -354,6 +360,20 @@ private val OrgRoboto = FontFamily(Font(R.font.awc_roboto_regular, FontWeight.No
             }
             return doubleArrayOf(o, s, bx, by)
         }
+        /** The part opacities around a tree item: its branch (and branch-on-path), every group and branch above it, the tree. A part
+         *  opacity makes the element a stacking group: its descendants (cards, togglers, connectors) fade with it. */
+        fun fade(id: String): Double {
+            if(!parts.fades) return 1.0
+            val byId = layout.items.associateBy { it.node.id }
+            var out = 1.0; var cur: String? = id
+            while(cur != null) { val item = byId[cur] ?: break
+                out *= parts.branch(item.onPath).opacity ?: 1.0
+                out *= if(item.parent != null) parts[AWCOrgChartPart.GROUP].opacity ?: 1.0 else parts[AWCOrgChartPart.TREE].opacity ?: 1.0
+                cur = item.parent }
+            return out
+        }
+        /** A connector fades with its owner: a branch's ::before / ::after with the branch, a group's drop and trail run with the group. */
+        fun connectorFade(b: OrgChartBorderBox): Double = if(!parts.fades) 1.0 else b.branch?.let { fade(it) } ?: b.owner?.let { (parts[AWCOrgChartPart.GROUP].opacity ?: 1.0) * fade(it) } ?: 1.0
         val connector = hexColor(appearance.connectorColor ?: token("outline-variant", "#CAC4D0")); val selectedLine = hexColor(appearance.selectedColor ?: token("primary", "#6750A4"))
         fun snapshotAt(now: Double) = OrgChartSnapshot(state.focused, layout.items.map { item ->
             val n = item.node; val v = visuals[n.id]!!
@@ -364,7 +384,7 @@ private val OrgRoboto = FontFamily(Font(R.font.awc_roboto_regular, FontWeight.No
         }, layout.groups.keys.sorted().map { id -> val k = keyframe(id, now); OrgChartSnapshot.Group(id, k[0], k[1], k[2], k[3], layout.groups[id]!!) }, layout.hostHeight, now)
         inspector?.invoke(OrgChartProbe({ snapshotAt(state.frame) }, { id: String -> focusNode(id, true) }, { now: Double -> snapshotAt(now) }))
         // Web role="tree" named by `label`: a collection of the visible tree items (rows), each a collection item.
-        Box(Modifier.fillMaxWidth().height(layout.hostHeight.dp).semantics { contentDescription = label; collectionInfo = CollectionInfo(layout.items.size, 1); isTraversalGroup = true }
+        Box(Modifier.fillMaxWidth().height(layout.hostHeight.dp).tablePartSurface(parts[AWCOrgChartPart.VIEWPORT]).semantics { contentDescription = label; collectionInfo = CollectionInfo(layout.items.size, 1); isTraversalGroup = true }
             .horizontalScroll(scroll, enabled = layout.contentWidth > W + 0.5)) {
             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                 Box(Modifier.size(layout.contentWidth.dp, layout.hostHeight.dp)
@@ -380,15 +400,26 @@ private val OrgRoboto = FontFamily(Font(R.font.awc_roboto_regular, FontWeight.No
                     // Connectors (pseudo-element borders) with their group's motion.
                     Canvas(Modifier.size(layout.contentWidth.dp, layout.hostHeight.dp)) {
                         @Suppress("UNUSED_VARIABLE") val f = state.frame
-                        for(b in layout.connectors) { val m = motion(b.owner); if(m[0] > 0) drawBorderBox(b, dx, m, connector, selectedLine) }
+                        // ::part(tree) / ::part(branch) / ::part(branch-on-path) / ::part(group) backgrounds in tree order, under the connectors.
+                        val tree = parts[AWCOrgChartPart.TREE]; val g = parts[AWCOrgChartPart.GROUP]
+                        tree.backgroundColor?.let { drawPartBox(layout.tree, dx, doubleArrayOf(tree.opacity ?: 1.0, 1.0, 0.0, 0.0), tableColor(it), tree.cornerRadius ?: 0.0) }
+                        for(item in layout.items) {
+                            val bs = parts.branch(item.onPath)
+                            bs.backgroundColor?.let { val m = motion(item.groupID); m[0] *= fade(item.node.id); drawPartBox(item.branch, dx, m, tableColor(it), bs.cornerRadius ?: 0.0) }
+                            val box = item.group
+                            if(box != null) g.backgroundColor?.let { val m = motion(item.node.id); m[0] *= (g.opacity ?: 1.0) * fade(item.node.id); drawPartBox(box, dx, m, tableColor(it), g.cornerRadius ?: 0.0) }
+                        }
+                        for(b in layout.connectors) { val m = motion(b.owner); m[0] *= connectorFade(b); if(m[0] > 0) drawBorderBox(b, dx, m, connector, selectedLine) }
                     }
                     layout.items.forEachIndexed { index, item -> key(item.node.id) {
                         val n = item.node; val v = visuals[n.id]!!
                         Box(Modifier.zIndex(state.z(n.id, hold).toFloat())) {
                             OrgChartCard(item, index, n, v, model, metrics, dx, rtl, state, duration, { motion(item.groupID) }, tokens, appearance, ::selectedHex, ::hexColor,
                                 onPress = { focusNode(n.id, false) }, onActivate = { state.pointerCommit = true; select(n) },
-                                onKey = { k -> orgKey(k, n, model, layout, rtl, collapsible, ::focusNode, ::toggleFold, ::select) })
-                            if(item.toggle != null) OrgChartToggle(item, n, model, metrics, dx, p, density, { motion(item.groupID) }, tokens) { state.pointerCommit = true; toggleFold(n, true) }
+                                onKey = { k -> orgKey(k, n, model, layout, rtl, collapsible, ::focusNode, ::toggleFold, ::select) }, parts = parts, fade = fade(n.id))
+                            // The toggler sits inside its card: it fades with the card's ::part(node) opacity too.
+                            if(item.toggle != null) OrgChartToggle(item, n, model, metrics, dx, p, density, { motion(item.groupID) }, tokens, parts,
+                                fade(n.id) * (parts.node(model.isSelected(n)).opacity ?: 1.0)) { state.pointerCommit = true; toggleFold(n, true) }
                         }
                     } }
                 }
@@ -415,6 +446,15 @@ private fun orgKey(k: String, n: OrgChartNode, model: OrgChartModel, layout: Org
         else -> return false
     }
     return true
+}
+
+/** A ::part() list box's background (tree, group, branch) under the connectors, with its group's motion (opacity, scale, bx, by). */
+private fun DrawScope.drawPartBox(r: OrgRect, dx: Double, m: DoubleArray, color: Color, radius: Double) {
+    if(m[0] <= 0) return
+    val s = m[1].toFloat(); val px = density
+    withTransform({ translate((m[2] * px).toFloat(), (m[3] * px).toFloat()); scale(s, s, Offset.Zero) }) {
+        drawRoundRect(color, Offset(((r.x + dx) * px).toFloat(), (r.y * px).toFloat()), Size((r.w * px).toFloat(), (r.h * px).toFloat()), CornerRadius((radius * px).toFloat()), alpha = m[0].toFloat())
+    }
 }
 
 /** One pseudo-element border box: an even-odd ring (outer minus inner rounded rect), each side in its colour role. */
@@ -445,10 +485,14 @@ private fun DrawScope.drawBorderBox(b: OrgChartBorderBox, dx: Double, m: DoubleA
 
 @Composable private fun OrgChartCard(item: OrgChartLayout.Item, index: Int, n: OrgChartNode, v: OrgChartVisual, model: OrgChartModel, m: OrgChartMetrics, dx: Double, rtl: Boolean,
                                      state: OrgChartState, duration: Double, motion: () -> DoubleArray, tokens: Map<String, String>, appearance: AWCOrgChartAppearance,
-                                     selectedHex: (OrgChartNode) -> String, hexColor: (String) -> Color, onPress: () -> Unit, onActivate: () -> Unit, onKey: (String) -> Boolean) {
+                                     selectedHex: (OrgChartNode) -> String, hexColor: (String) -> Color, onPress: () -> Unit, onActivate: () -> Unit, onKey: (String) -> Boolean,
+                                     parts: OrgChartParts = OrgChartParts(), fade: Double = 1.0) {
     val c = item.card; val selectable = model.isSelectable(n)
-    val shape = remember(m.radius) { AWCCornerShape.uniform(m.radius) }
-    val background = hexColor(appearance.nodeColor ?: tokens["--md-sys-color-surface-container-low"] ?: "#F7F2FA")
+    // ::part(node) / ::part(node-selected): the card's fill, radius, opacity and padding (the layout sized it with that padding).
+    val ns = parts.node(model.isSelected(n)); val radius = ns.cornerRadius ?: m.radius; val sl = parts[AWCOrgChartPart.STATE_LAYER]
+    val pad = m.padding(model.isSelected(n)); val bw = m.border(model.isSelected(n))
+    val shape = remember(radius) { AWCCornerShape.uniform(radius) }
+    val background = ns.backgroundColor?.let { tableColor(it) } ?: hexColor(appearance.nodeColor ?: tokens["--md-sys-color-surface-container-low"] ?: "#F7F2FA")
     val ringColor = hexColor(appearance.focusRingColor ?: tokens["--md-sys-color-secondary"] ?: "#625B71")
     val accent = n.accent?.takeIf { Regex("^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$").matches(it) }
     val ringVisible = state.focused == n.id && state.showFocus[n.id] == true
@@ -457,14 +501,14 @@ private fun DrawScope.drawBorderBox(b: OrgChartBorderBox, dx: Double, m: DoubleA
     Box(Modifier
         .absoluteOffset((c.x + dx).dp, c.y.dp).size(c.w.dp, c.h.dp)
         .graphicsLayer { @Suppress("UNUSED_VARIABLE") val f = state.frame
-            val mo = motion(); alpha = mo[0].toFloat()
+            val mo = motion(); alpha = (mo[0] * (ns.opacity ?: 1.0) * fade).toFloat()
             // p' = s·p + b about the content origin, expressed about this card's top-left.
             transformOrigin = TransformOrigin(0f, 0f); scaleX = mo[1].toFloat(); scaleY = mo[1].toFloat()
             translationX = ((mo[2] - (1 - mo[1]) * (c.x + dx)) * density).toFloat(); translationY = ((mo[3] - (1 - mo[1]) * c.y) * density).toFloat() }
         .accordionShadow(shape, { @Suppress("UNUSED_VARIABLE") val f = state.frame; OrgChartVisual.layers(state.value(n.id + ".shadow", duration) ?: v.shadow) }, false)
         .drawWithContent {
             val t = state.value(n.id + ".border", duration) ?: v.border
-            val r = CornerRadius((m.radius * density).toFloat())
+            val r = CornerRadius((radius * density).toFloat())
             drawRoundRect(background, cornerRadius = r)
             val bw = (v.borderWidth * density).toFloat()
             drawRoundRect(Color(t[0].toFloat(), t[1].toFloat(), t[2].toFloat(), t[3].toFloat()), topLeft = Offset(bw / 2, bw / 2), size = Size(size.width - bw, size.height - bw),
@@ -499,19 +543,23 @@ private fun DrawScope.drawBorderBox(b: OrgChartBorderBox, dx: Double, m: DoubleA
             traversalIndex = index.toFloat()
         }) {
         // In-flow text, the positioned state layer + md-ripple, then md-avatar (its host is `position: relative`) above them.
-        OrgChartCardText(n, m, rtl, tokens, hexColor)
+        OrgChartCardText(n, m, rtl, tokens, hexColor, pad, bw, parts)
+        // ::part(state-layer): its colour, and an opacity that replaces the hover / pressed / selected ones.
         Box(Modifier.fillMaxSize().padding(v.borderWidth.dp)
-            .then(if(selectable) Modifier.awcRipple(cornerRadius = max(0.0, m.radius - v.borderWidth).dp, appearance = AWCRippleAppearance(color = selectedHex(n))) else Modifier)
-            .drawBehind { val o = state.value(n.id + ".layer", duration)?.first() ?: v.layer
-                if(o > 0) drawRoundRect(hexColor(v.layerColor).copy(alpha = o.toFloat()), cornerRadius = CornerRadius(((m.radius - v.borderWidth) * density).toFloat().coerceAtLeast(0f))) }
+            .then(if(selectable) Modifier.awcRipple(cornerRadius = max(0.0, radius - v.borderWidth).dp, appearance = AWCRippleAppearance(color = selectedHex(n))) else Modifier)
+            .drawBehind { val o = sl.opacity ?: (state.value(n.id + ".layer", duration)?.first() ?: v.layer); val lc = sl.backgroundColor?.let { tableColor(it) } ?: hexColor(v.layerColor)
+                if(o > 0) drawRoundRect(lc.copy(alpha = (lc.alpha * o).toFloat()), cornerRadius = CornerRadius(((radius - v.borderWidth) * density).toFloat().coerceAtLeast(0f))) }
             .clearAndSetSemantics { })
-        Box(Modifier.fillMaxSize().padding(horizontal = (m.padInline + m.outline).dp), contentAlignment = if(rtl) Alignment.CenterEnd else Alignment.CenterStart) {
-            Box(Modifier.size(m.avatar.dp).drawWithContent { drawContent()
+        Box(Modifier.fillMaxSize().padding(start = (pad.left + bw).dp, top = (pad.top + bw).dp, end = (pad.right + bw).dp, bottom = (pad.bottom + bw).dp),
+            contentAlignment = if(rtl) Alignment.CenterEnd else Alignment.CenterStart) {
+            // ::part(avatar) fades the avatar with its accent ring; ::part(avatar-image) is md-avatar's image part.
+            Box(Modifier.size(m.avatar.dp).graphicsLayer { alpha = (parts[AWCOrgChartPart.AVATAR].opacity ?: 1.0).toFloat() }.drawWithContent { drawContent()
                 if(accent != null) { val w = (2 * density); drawCircle(hexColor(accent.uppercase()), radius = size.minDimension / 2 + w / 2, style = Stroke(w)) } }
                 .clearAndSetSemantics { }) {
                 AWCAvatarAppearanceScope(AWCAvatarAppearance(containerColor = tokens["--md-sys-color-primary-container"] ?: "#EADDFF", labelColor = tokens["--md-sys-color-on-primary-container"] ?: "#21005D")) {
                     CompositionLocalProvider(LocalLayoutDirection provides if(rtl) LayoutDirection.Rtl else LayoutDirection.Ltr) {
-                        AWCComponent("md-avatar", mapOf("src" to n.avatar, "initials" to n.avatarInitials, "name" to n.name, "size" to "medium", "shape" to "circle", "colorFromName" to false, "density" to m.density))
+                        AWCAvatarPartAppearanceScope(AWCAvatarPartAppearance(imageOpacity = parts[AWCOrgChartPart.AVATAR_IMAGE].opacity)) {
+                            AWCComponent("md-avatar", mapOf("src" to n.avatar, "initials" to n.avatarInitials, "name" to n.name, "size" to "medium", "shape" to "circle", "colorFromName" to false, "density" to m.density)) }
                     }
                 }
             }
@@ -521,18 +569,24 @@ private fun DrawScope.drawBorderBox(b: OrgChartBorderBox, dx: Double, m: DoubleA
 
 /** The text column beside the avatar's slot, start-aligned in the card's direction; `text-overflow: ellipsis` cuts at the
  *  line's end edge, so a run whose own direction differs from the card's is cut at its head. */
-@Composable private fun OrgChartCardText(n: OrgChartNode, m: OrgChartMetrics, rtl: Boolean, tokens: Map<String, String>, hexColor: (String) -> Color) {
+@Composable private fun OrgChartCardText(n: OrgChartNode, m: OrgChartMetrics, rtl: Boolean, tokens: Map<String, String>, hexColor: (String) -> Color,
+                                         pad: AWCTableEdges, bw: Double, parts: OrgChartParts) {
+    val np = parts[AWCOrgChartPart.NAME]; val tp = parts[AWCOrgChartPart.TITLE]
     fun cut(s: String) = if(OrgChartText.isRtl(s) == rtl) TextOverflow.Ellipsis else TextOverflow.StartEllipsis
     val lh = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None)
     CompositionLocalProvider(LocalLayoutDirection provides if(rtl) LayoutDirection.Rtl else LayoutDirection.Ltr) {
-        Row(Modifier.fillMaxSize().padding(horizontal = (m.padInline + m.outline).dp, vertical = (m.padBlock + m.outline).dp).clearAndSetSemantics { },
+        Row(Modifier.fillMaxSize().padding(start = ((if(rtl) pad.right else pad.left) + bw).dp, top = (pad.top + bw).dp, end = ((if(rtl) pad.left else pad.right) + bw).dp,
+            bottom = (pad.bottom + bw).dp).clearAndSetSemantics { },
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(m.gap.dp)) {
             Spacer(Modifier.size(m.avatar.dp))
             Column(Modifier.weight(1f, fill = false), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                BasicText(n.name, Modifier.height(m.nameLine.dp), maxLines = 1, softWrap = false, overflow = cut(n.name), style = TextStyle(color = hexColor(tokens["--md-sys-color-on-surface"] ?: "#1C1B1F"),
-                    fontFamily = OrgRoboto, fontWeight = FontWeight.Bold, fontSize = m.nameSize.sp, lineHeight = m.nameLine.sp, lineHeightStyle = lh, platformStyle = PlatformTextStyle(includeFontPadding = false)))
-                if(n.title.isNotEmpty()) BasicText(n.title, Modifier.height(m.titleLine.dp), maxLines = 1, softWrap = false, overflow = cut(n.title), style = TextStyle(color = hexColor(tokens["--md-sys-color-on-surface-variant"] ?: "#49454F"),
-                    fontFamily = OrgRoboto, fontWeight = FontWeight.Normal, fontSize = m.titleSize.sp, lineHeight = m.titleLine.sp, lineHeightStyle = lh, platformStyle = PlatformTextStyle(includeFontPadding = false)))
+                // ::part(name) / ::part(title): colour, font (size, weight, letter-spacing) and opacity of each run.
+                BasicText(n.name, Modifier.height(m.nameLine.dp).graphicsLayer { alpha = (np.opacity ?: 1.0).toFloat() }, maxLines = 1, softWrap = false, overflow = cut(n.name),
+                    style = TextStyle(color = np.colorOver(hexColor(tokens["--md-sys-color-on-surface"] ?: "#1C1B1F")), fontFamily = OrgPartRoboto, fontWeight = orgFaceWeight(np.fontWeight ?: 600.0),
+                        fontSize = (np.fontSize ?: m.nameSize).sp, letterSpacing = (np.letterSpacing ?: 0.0).sp, lineHeight = m.nameLine.sp, lineHeightStyle = lh, platformStyle = PlatformTextStyle(includeFontPadding = false)))
+                if(n.title.isNotEmpty()) BasicText(n.title, Modifier.height(m.titleLine.dp).graphicsLayer { alpha = (tp.opacity ?: 1.0).toFloat() }, maxLines = 1, softWrap = false, overflow = cut(n.title),
+                    style = TextStyle(color = tp.colorOver(hexColor(tokens["--md-sys-color-on-surface-variant"] ?: "#49454F")), fontFamily = OrgPartRoboto, fontWeight = orgFaceWeight(tp.fontWeight ?: 400.0),
+                        fontSize = (tp.fontSize ?: m.titleSize).sp, letterSpacing = (tp.letterSpacing ?: 0.0).sp, lineHeight = m.titleLine.sp, lineHeightStyle = lh, platformStyle = PlatformTextStyle(includeFontPadding = false)))
             }
         }
     }
@@ -540,13 +594,16 @@ private fun DrawScope.drawBorderBox(b: OrgChartBorderBox, dx: Double, m: DoubleA
 
 /** md-tooltip (bottom, the expand/collapse label) around an md-icon-button (xs, tonal, round, aria-hidden, out of the tab order). */
 @Composable private fun OrgChartToggle(item: OrgChartLayout.Item, n: OrgChartNode, model: OrgChartModel, m: OrgChartMetrics, dx: Double, p: Props, density: Double,
-                                       motion: () -> DoubleArray, tokens: Map<String, String>, onToggle: () -> Unit) {
+                                       motion: () -> DoubleArray, tokens: Map<String, String>, parts: OrgChartParts, fade: Double, onToggle: () -> Unit) {
+    val tg = parts[AWCOrgChartPart.TOGGLE]
     val t = item.toggle!!; val expanded = model.isExpanded(n)
     val tip = if(expanded) p.str("collapseLabel", "Collapse").ifEmpty { "Collapse" } else p.str("expandLabel", "Expand").ifEmpty { "Expand" }
     val toggleNow by rememberUpdatedState(onToggle)
     Box(Modifier.absoluteOffset((t.x + dx).dp, t.y.dp).size(t.w.dp, t.h.dp).zIndex(3f)
-        .graphicsLayer { val mo = motion(); alpha = mo[0].toFloat(); transformOrigin = TransformOrigin(0f, 0f); scaleX = mo[1].toFloat(); scaleY = mo[1].toFloat()
+        .graphicsLayer { val mo = motion(); alpha = (mo[0] * (tg.opacity ?: 1.0) * fade).toFloat(); transformOrigin = TransformOrigin(0f, 0f); scaleX = mo[1].toFloat(); scaleY = mo[1].toFloat()
             translationX = ((mo[2] - (1 - mo[1]) * (t.x + dx)) * this.density).toFloat(); translationY = ((mo[3] - (1 - mo[1]) * t.y) * this.density).toFloat() }
+        // ::part(toggle) is the md-icon-button host: its background (clipped to its radius) behind the button.
+        .drawBehind { tg.backgroundColor?.let { drawRoundRect(tableColor(it), cornerRadius = CornerRadius(((tg.cornerRadius ?: 0.0) * density).toFloat())) } }
         .clearAndSetSemantics { }) {
         AWCIconButtonAppearanceScope(AWCIconButtonAppearance(containerColor = tokens["--md-sys-color-surface-container-high"] ?: "#ECE6F0", iconSize = m.toggle * 0.66, width = m.toggle, height = m.toggle)) {
             AWCComponent("md-tooltip", mapOf("text" to tip, "position" to "bottom"), content = { slot -> if(slot == "") AWCComponent("md-icon-button",

@@ -159,9 +159,23 @@ are **pending acceptance**, not waived.
 * **Frozen bodies:** rows scrolled out of a frozen body stay in the macOS table structure through their identity (rows /
   cells are tied to their table / row ids, not to what is visible).
 
+## Status 2026-11-15 (story 4-2)
+
+* Installed (job 4-2-md-table-open-items-101, byte identity ok): macOS tb-sort-rtl / tb-keyboard Tab handling (moveNext, test harness Tab-from-document), iOS click-prev focus (focus-promote patch), Android FLIP re-arm guard 2 px, pagination accessibility (hide only re-exposed parts, inline order, LiveRenderer host Tab).
+* Lab evidence three times: macOS states 3859/3859, paint 7397/7397; iOS states 3862/3862, paint 7397/7397; Android NativeTableStatesTest and paint pass; tools/ax macOS 11 table tags 0 open.
+* Canonical after install: paint 7397/7397 (x3 incl. 101); states 3859/3859 once, otherwise 3858/3859 with the load-dependent `tb-toolbar-autobind [4]` fade start (KNOWN-CAUSES 19).
+* Still open: rowSpan > 1 assertion (R5-12), coverage rows without a native assertion (R5-13 coverage part).
+
 ## Evidence
 
 `outputs/native-parity/md-table/`: `source-tests/`, `source-changes/`, `web-reference/`, `web-oracle/` (Mac),
 `web-oracle-cloud/` (provisional), `native-swift/<run>/` (run logs, reports, captures), `native-ios/`, `native-android/`
 (XML, device JSON, logcat), `accessibility/`, `laboratory/examples/`, `checkpoint.json`. Jobs:
 `work/claude-runner/done/n4-*.sh` and `.log`; install `work/n4-lab/install/` (n4-030).
+
+## Web role comparison (story 9-16, 2026-11-18)
+The Web host role of md-table is `treegrid` when some row has `[expandable]` at the table's last `syncRows`, otherwise `table`. For the fixture it settles on `treegrid`; a capture taken before the reflected attribute lands reads `table` (Web source defect S9-16-01, source unchanged). The comparison with native (role, names, focus) uses the settled role: tools/ax `web.mjs` waits for it before every md-table capture.
+
+## One frame, rare (story 9-41, 2026-11-20, user decision 2026-11-19 rule (e))
+
+Check: `NativeTableStatesIntegration` tb-sort-ltr [3] and tb-sort-rtl [3] click-dessert, motion order:n0.1.1 / n0.1.0, iPhone 26.3. 1 Web frame (16 ms, 4.00) fails when the native clock is shifted by 16.7 ms (unshifted 5 to 9 frames: the native motion starts one frame behind the compared time, input to t0 47 to 68 ms). Rate: sort-ltr [3] 7 of 75 runs, sort-rtl [3] 4 of 75 on iPhone 26.3 (each below 1 in 5); iOS 18.6 0 of 10. +33 ms mutation of the sort motion: 3 of 3 fail (9-41 job 001-mut33). Not covered by this line: tb-contract [0] (two misses of 5 frames when shifted), tb-sort-rtl [3] on iPad, selection-motion late start and lost clicks (S9-16-03/04). The test is unchanged; a +17 ms start delay passes the table suite (the +-33 ms probe window and the 90 percent frame rule absorb it) and a crossing-offset check cannot tell it from unmodified runs.

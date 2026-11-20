@@ -1,6 +1,6 @@
 # FAB migration audit
 
-Status: native implementation, focused Web/macOS SwiftUI/Android checks and Laboratory browser checkpoints passed. iOS execution and the separate final audit remain pending.
+Status: native implementation, focused Web/macOS SwiftUI/Android checks and Laboratory browser checkpoints passed. iOS simulator execution (iPhone 17 Pro iOS 26.3, iPhone 16 Pro iOS 18.6, gate 6) passed; the gate-7 verdict is in AUDIT.md.
 
 ## Source and implementation
 
@@ -33,9 +33,13 @@ paint runs ([md-button.md](md-button.md)).
 
 Native points/dp, physical-pixel rounding, text shaping and elevation rasterization are measured platform boundaries. CSS selectors and DOM MouseEvent objects have typed appearance and native event counterparts. FAB Menu's anchor choreography is verified with that separate component, not inferred from standalone `setMenuIcon`.
 
-This environment has no iOS SDK, simulator or connected iOS device. Actual macOS SwiftUI checks do not certify UIKit input, iOS rendering or VoiceOver. The independent final cross-component audit remains an explicit gate.
+iOS simulator execution is recorded below (gate 6); the simulator suites do not exercise VoiceOver itself. The independent final cross-component audit remains an explicit gate.
 
 <!-- fi:ios-gate6:start -->
+## Reduced motion (gate-7 decision)
+
+Under `prefers-reduced-motion: reduce` the FAB has no motion: besides the host and state-layer transitions, the extend/collapse label morph (max-inline-size, margin, opacity) and the menu-icon cross-fade are now covered by the REDUCED MOTION block (`md-fab.reduced-motion.e2e.ts`). SwiftUI and Compose honour the same setting (system, or the AWC reduced-motion override); Chrome 153 reduced record `fab-extend-motion-*`. md-ripple's wave keeps its own rule (it ignores reduced motion on every platform).
+
 ## iOS simulator execution (gate 6)
 
 The same fixtures and Chrome oracles as the macOS runs, compiled for the simulator by the [iOS parity harness](ios-harness.md)

@@ -47,6 +47,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.*
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -73,7 +74,7 @@ import kotlin.math.roundToInt
 /** The md-multi-select hooks (`--md-multi-select-*`); lengths are dp (= CSS px), colours `#RRGGBB[AA]`; paddings are CSS
  *  shorthands resolved to (top, end, bottom, start). */
 @Immutable data class AWCMultiSelectAppearance(val css:Map<String,String> = emptyMap()) {
-    private fun raw(k:String)=css["--md-multi-select-$k"]?.trim()?.takeIf { it.isNotEmpty() }
+    private fun raw(k:String)=(css["--md-multi-select-$k"] ?: css[k])?.trim()?.takeIf { it.isNotEmpty() }
     private fun px(k:String)=raw(k)?.replace("px","")?.trim()?.toDoubleOrNull()?.takeIf { it>=0 }
     private fun c(k:String)=raw(k)?.takeIf { Regex("^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$").matches(it) }
     private fun box(k:String):List<Double>? { val n=raw(k)?.split(Regex("\\s+"))?.mapNotNull { it.replace("px","").toDoubleOrNull() } ?: return null
@@ -91,7 +92,9 @@ import kotlin.math.roundToInt
     val emptyColor get()=c("empty-color");val emptyPadding get()=box("empty-padding");val emptyFont get()=raw("empty-font")?.let(AWCMultiSelectFont::parse)
     val loadingPadding get()=px("loading-padding");val loaderSize get()=px("loader-size");val spinnerSize get()=px("spinner-size")
     val inlineChipsBlockStart get()=px("inline-chips-block-start")
-    fun merge(o:AWCMultiSelectAppearance)=AWCMultiSelectAppearance(css+o.css)
+    /** Also takes the hook map without the prefix (`mapOf("chip-height" to "28px")`); merging normalizes the keys. */
+    fun merge(o:AWCMultiSelectAppearance)=AWCMultiSelectAppearance(long(css)+long(o.css))
+    private fun long(m:Map<String,String>)=m.mapKeys { (k,_)-> if(k.startsWith("--")) k else "--md-multi-select-$k" }
     companion object {
         /** CSS custom properties as authored on the host (`--md-multi-select-chip-height: 28px`). */
         fun fromCss(css:Map<String,String>)=AWCMultiSelectAppearance(css.filterKeys { it.startsWith("--md-multi-select-") })
@@ -272,8 +275,9 @@ internal fun awcMultiValue(v:AWCValue):List<String> = when(v) {
         // The display row runs from its start to the trailing cluster (flex 1 1 auto in the field's chip area).
         val avail=if(rt.inlineStart!=0f && rt.trailingStart!=0f) ((if(rtl) rt.inlineStart-rt.trailingStart else rt.trailingStart-rt.inlineStart)/d-4f).takeIf { it>0 } else null
         AWCChipAppearanceScope(chipAppearance) {
-            Box(Modifier.padding(top=if(wrap) (a.inlineChipsBlockStart ?: 4.0).dp else 0.dp).then(if(avail!=null) Modifier.width((if(wrap) avail+4f else avail).dp) else Modifier)
-                .onGloballyPositioned { val b=it.boundsInRoot();rt.inlineStart=if(rtl) b.right else b.left }.inspectAWCNode(inspection,"chips","chips").then(if(wrap) Modifier else Modifier.clipToBounds())) {
+            // The inspected box includes the block-start padding (Chrome's border box).
+            Box(Modifier.inspectAWCNode(inspection,"chips","chips").padding(top=if(wrap) (a.inlineChipsBlockStart ?: 4.0).dp else 0.dp).then(if(avail!=null) Modifier.width((if(wrap) avail+4f else avail).dp) else Modifier)
+                .onGloballyPositioned { val b=it.boundsInRoot();rt.inlineStart=if(rtl) b.right else b.left }.then(if(wrap) Modifier else Modifier.clipToBounds())) {
                 if(wrap) AWCMultiChipsFlow(chipGap,chipGap,true) { selected.forEachIndexed { k,o-> key(o.value) { Chip(o,k,"chip",Modifier.inspectAWCNode(inspection,"chip-$k","chip")) } } }
                 else {
                     // Intrinsic chip widths (hidden "+total" measure chip included), then as many leading chips as fit with a
@@ -375,6 +379,15 @@ internal fun awcMultiValue(v:AWCValue):List<String> = when(v) {
     val host=Modifier.let { if(a.width!=null) it.width(maxOf(a.width!!,minW).dp) else it.fillMaxWidth() }.widthIn(min=minW.dp)
     Column(host) {
         Box(Modifier.fillMaxWidth().inspectAWCNode(inspection,"frame","frame")) {
+            // The polite live region (`part=live-region`): "N selected" / "None selected", announced on every change.
+            // As Web: the region is unnamed and its text is the message; empty (nothing selected yet) it has nothing to read (6-7).
+            var everSelected by remember { mutableStateOf(false) }
+            if(value.isNotEmpty()) everSelected=true
+            val liveText=if(value.isNotEmpty()) "${value.size} selected" else if(everSelected) "None selected" else ""
+            if(liveText.isNotEmpty()) Box(Modifier.layout { m,_-> val pl=m.measure(androidx.compose.ui.unit.Constraints.fixed(1,1));layout(0,0) { pl.place(0,0) } }
+                .semantics { liveRegion=LiveRegionMode.Polite }) {
+                androidx.compose.material3.Text(liveText,Modifier.fillMaxSize(),color=androidx.compose.ui.graphics.Color.Transparent,fontSize=1.sp,maxLines=1,softWrap=false)
+            }
             when(position) {
                 "top"->Column(verticalArrangement=Arrangement.spacedBy(topGap.dp)) { if(showChips) chips();trigger() }
                 "left","right"->Row(horizontalArrangement=Arrangement.spacedBy(gap.dp),verticalAlignment=Alignment.CenterVertically) {
@@ -390,7 +403,7 @@ internal fun awcMultiValue(v:AWCValue):List<String> = when(v) {
         val showNoResults=!p.bool("loading") && q.isNotEmpty() && listOptions.isEmpty()
         CompositionLocalProvider(LocalNativeMenuCollector provides inspection?.collector) {
         AWCComponent("md-menu",buildMap { put("id",menuID);put("anchor",anchorID);put("placement",p.str("placement","bottom-start"));put("matchAnchorWidth",p.bool("matchTriggerWidth",true))
-                put("emptyText","");put("autoFocus",!p.bool("filterable"));put("listbox",true);put("listLabel",accessibleName.ifEmpty { "Options" });p["maxHeight"]?.let { put("maxHeight",it) }
+                put("emptyText","");if(registry==null) put("open",open);put("autoFocus",!p.bool("filterable"));put("listbox",true);put("listLabel",accessibleName.ifEmpty { "Options" });p["maxHeight"]?.let { put("maxHeight",it) }
                 if(density!=null) put("density",density) },
             onEvent={ n,_-> when(n) { "mdOpen"->{ if(!open) open=true;if(rt.lastEmit!="open") { rt.lastEmit="open";emit("mdOpen",null) };if(p.bool("filterable")) rt.searchFocus++ }
                 "mdClose"->{ if(open) open=false;if(rt.query.isNotEmpty()) rt.query="";if(rt.lastEmit!="close") { rt.lastEmit="close";emit("mdClose",null) } } } }) { s->
@@ -485,8 +498,8 @@ private val MultiRoboto=androidx.compose.ui.text.font.FontFamily(androidx.compos
         .background(awcColor(a.searchBackground ?: tokens["--md-sys-color-surface-container"] ?: "#F3EDF7",Color.White))
         .drawBehind { drawRect(border,topLeft=Offset(0f,size.height-bw.dp.toPx()),size=androidx.compose.ui.geometry.Size(size.width,bw.dp.toPx())) }
         .padding(start=pad[3].dp,end=pad[1].dp,top=pad[0].dp,bottom=(pad[2]+bw).dp)) {
-        if(rt.query.isEmpty()) BasicText(p.str("searchPlaceholder","Search…"),style=style.copy(color=awcColor(a.searchPlaceholderColor ?: tokens["--md-sys-color-on-surface-variant"] ?: "#49454F",Color.Gray)),maxLines=1)
-        BasicTextField(rt.query,{ rt.query=it },Modifier.fillMaxWidth().height(19.dp).focusRequester(focus).semantics { contentDescription=p.str("filterLabel").ifEmpty { if(p.str("label").isEmpty()) "Filter options" else "Filter ${p.str("label")}" } },
+        if(rt.query.isEmpty()) BasicText(p.str("searchPlaceholder","Search…"),Modifier.clearAndSetSemantics { },style=style.copy(color=awcColor(a.searchPlaceholderColor ?: tokens["--md-sys-color-on-surface-variant"] ?: "#49454F",Color.Gray)),maxLines=1)
+        BasicTextField(rt.query,{ rt.query=it },Modifier.fillMaxWidth().height(19.dp).focusRequester(focus).semantics { contentDescription=p.str("filterLabel").ifEmpty { if(p.str("label").isEmpty()) "Filter options" else "Filter ${p.str("label")}" };stateDescription="expanded";collapse { rt.close();true } },
             textStyle=style,singleLine=true,cursorBrush=SolidColor(style.color))
     }
 }

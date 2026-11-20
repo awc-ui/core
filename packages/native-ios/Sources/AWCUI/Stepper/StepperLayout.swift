@@ -206,6 +206,27 @@ public struct AWCStepperTheme {
 /// Resolved values for one element: its density scale and rung, tokens and hooks.
 struct AWCStepperEnv {
     let s: Double, theme: AWCStepperTheme, hooks: AWCStepperHooks
+    /// `md-step::part(...)` rules (typed): the metric ones are layout inputs.
+    var parts: [AWCStepPart: AWCAccordionPartAppearance] = [:]
+    /// Layout runs in LTR and is mirrored afterwards: a physical left / right padding swaps sides in RTL.
+    var rtl = false
+    /// Border + padding of a wrapper part (`def`: the source's own padding when the part sets none; a part `padding` replaces all four edges).
+    func insets(_ k: AWCStepPart, _ def: AWCStepperInsets = AWCStepperInsets()) -> AWCStepperInsets {
+        let a = parts[k], bw = a?.borderWidth ?? 0
+        var p = def
+        if let q = a?.padding { p = rtl ? AWCStepperInsets(t: q.top, r: q.left, b: q.bottom, l: q.right) : AWCStepperInsets(t: q.top, r: q.right, b: q.bottom, l: q.left) }
+        return AWCStepperInsets(t: p.t + bw, r: p.r + bw, b: p.b + bw, l: p.l + bw)
+    }
+    /// Border + padding of `md-stepper::part(mobile-progress)` (stepper part rules ride on the step environment's rtl flag).
+    func mobileProgressInsets(_ input: AWCStepperLayoutInput) -> AWCStepperInsets {
+        let a = input.stepperParts[.mobileProgress], bw = a?.borderWidth ?? 0
+        guard let q = a?.padding else { return AWCStepperInsets(t: bw, r: bw, b: bw, l: bw) }
+        return input.rtl ? AWCStepperInsets(t: q.top + bw, r: q.left + bw, b: q.bottom + bw, l: q.right + bw)
+                         : AWCStepperInsets(t: q.top + bw, r: q.right + bw, b: q.bottom + bw, l: q.left + bw)
+    }
+    func pad(_ k: AWCStepPart) -> (top: Double, right: Double, bottom: Double, left: Double) {
+        let p = parts[k]?.padding; return (p?.top ?? 0, p?.right ?? 0, p?.bottom ?? 0, p?.left ?? 0)
+    }
     func sp(_ name: String, _ d: Double) -> Double { theme.spacing(name, rung: s, d) }
     func c(_ hook: String, _ role: String, _ d: String) -> AWCStepperRGBA {
         hooks.step(hook).flatMap(awcStepperColor) ?? theme.color(role, d)
@@ -239,11 +260,27 @@ public struct AWCStepPartPaint {
     public var rect = AWCStepperRect.zero
 }
 
+/// A wrapper part's CSS box (story 5-3: md-step `inner` / `indicator` / `text`, md-stepper `mobile-progress`): the paint of the
+/// box inside the border box the layout gives it (background under the border, both following the radius).
+public struct AWCStepperBox {
+    public var background: AWCStepperRGBA? = nil, borderColor: AWCStepperRGBA? = nil
+    public var borderWidth = 0.0, radius = 0.0
+    public init() {}
+}
+/// Border + padding per physical edge (the distance from a wrapper's border box to its content box).
+struct AWCStepperInsets {
+    var t = 0.0, r = 0.0, b = 0.0, l = 0.0
+    var h: Double { l + r }
+    var v: Double { t + b }
+}
+
 public struct AWCStepPaint {
     public var index = 0
     public var hostRect = AWCStepperRect.zero
     public var inner = AWCStepperRect.zero, indicator = AWCStepperRect.zero, stateLayer = AWCStepperRect.zero, bubble = AWCStepperRect.zero
     public var indicatorOpacity = 1.0
+    /// ::part(inner / indicator / text) boxes (nil: no background and no border).
+    public var innerBox: AWCStepperBox? = nil, indicatorBox: AWCStepperBox? = nil, textBox: AWCStepperBox? = nil
     /// The focus ring (2px surface + 5px secondary box-shadow) on the indicator.
     public var focusRing: (inner: AWCStepperRGBA, outer: AWCStepperRGBA)? = nil
     public var stateLayerVisible = true, stateOpacity = 0.0, stateColor: AWCStepperRGBA = (0, 0, 0, 0)
@@ -261,12 +298,17 @@ public struct AWCStepPaint {
     public var text: AWCStepperRect? = nil, textOpacity = 1.0
     public struct Line { public var part: String, rect: AWCStepperRect, color: AWCStepperRGBA, fontSize: Double, lineHeight: Double, weight: Double, text: String, lines: Int, italic: Bool
         /// The text broken into its painted lines (the horizontal label clamps at 2 with an ellipsis).
-        public var wrapped: [String] = [] }
+        public var wrapped: [String] = []
+        /// CSS letter-spacing (::part rules only).
+        public var letterSpacing = 0.0 }
     public var lines: [Line] = []
     public var connector: (rect: AWCStepperRect, color: AWCStepperRGBA, fill: Double, fillColor: AWCStepperRGBA, vertical: Bool)? = nil
     public var hasLeadingConnector = false
     public var panel: (rect: AWCStepperRect, opacity: Double, visible: Bool, gridRows: Double?, contentOrigin: (x: Double, y: Double), contentWidth: Double)? = nil
     public var actions: AWCStepperRect? = nil
+    /// ::part(bubble) / ::part(dot) corner radius (nil: full); ::part(content) background and padding (physical edges).
+    public var bubbleRadius: Double? = nil, panelBackground: AWCStepperRGBA? = nil
+    public var panelInset: (top: Double, right: Double, bottom: Double, left: Double) = (0, 0, 0, 0)
     public var disabled = false, readonly = false, reachableControl = true
     public var hasPanel = false, renderPanel = false
 }
@@ -275,12 +317,19 @@ public struct AWCStepperPaint {
     public var host = AWCStepperRect.zero
     public var list: AWCStepperRect? = nil, content = AWCStepperRect.zero
     public var nav: AWCStepperRect? = nil, mobileNav: AWCStepperRect? = nil, mobileProgress: AWCStepperRect? = nil
+    /// ::part(mobile-progress) box.
+    public var mobileProgressBox: AWCStepperBox? = nil
     public var navButtons: (back: AWCStepperRect, next: AWCStepperRect)? = nil
     public var mobileDots: [(rect: AWCStepperRect, color: AWCStepperRGBA, scale: Double)] = []
     public var mobileText: (rect: AWCStepperRect, text: String, color: AWCStepperRGBA)? = nil
     public var steps: [AWCStepPaint] = []
     public var hideList = false
     public var buttonDensity = 0.0
+    /// The slotted content's box inside `content` (its padding and the slotted child's top margin).
+    public var slot: AWCStepperRect? = nil
+    /// ::part(list / content / nav / mobile-nav) background colours.
+    public var listBackground: AWCStepperRGBA? = nil, contentBackground: AWCStepperRGBA? = nil
+    public var navBackground: AWCStepperRGBA? = nil, mobileNavBackground: AWCStepperRGBA? = nil
 }
 
 /// Inputs from the host and its children.
@@ -303,6 +352,9 @@ public struct AWCStepperLayoutInput {
     public var hooks = AWCStepperHooks()
     /// Widths of the built-in nav buttons (Back, Continue/Finish) when the host measured them; else from md-button's sm metrics.
     public var buttonWidths: (back: Double, next: Double)? = nil
+    /// `md-step::part(...)` / `md-stepper::part(...)` rules (typed, as AWCAccordionPartAppearance).
+    public var stepParts: [AWCStepPart: AWCAccordionPartAppearance] = [:]
+    public var stepperParts: [AWCStepperPart: AWCAccordionPartAppearance] = [:]
     public init(width: Double) { self.width = width }
 }
 
@@ -316,11 +368,11 @@ public enum AWCStepperLayout {
 
     struct Text { var w: Double, h: Double, items: [(part: String, w: Double, h: Double, fs: Double, lh: Double, weight: Double, text: String, lines: Int, wrapped: [String])] }
 
-    static func wrap(_ text: String, _ fs: Double, _ weight: Double, _ avail: Double, _ measure: AWCStepperMeasure) -> [String] {
+    static func wrap(_ text: String, _ fs: Double, _ weight: Double, _ avail: Double, _ measure: AWCStepperMeasure, _ ls: Double = 0) -> [String] {
         var lines: [String] = [], cur = ""
         for w in text.split(separator: " ", omittingEmptySubsequences: false).map(String.init) {
             let cand = cur.isEmpty ? w : cur + " " + w
-            if !cur.isEmpty && awcStepperLUCeil(measure(cand, fs, weight, 0)) > avail + 1e-9 { lines.append(cur); cur = w } else { cur = cand }
+            if !cur.isEmpty && awcStepperLUCeil(measure(cand, fs, weight, ls)) > avail + 1e-9 { lines.append(cur); cur = w } else { cur = cand }
         }
         if !cur.isEmpty { lines.append(cur) }
         return lines
@@ -330,29 +382,38 @@ public enum AWCStepperLayout {
         let s = m.steps[i]
         var labFs = Swift.max(11, 14 + 0.5 * e.s), labLh = Swift.max(16, 20 + e.s)
         if compact && horizontal { labFs = 12; labLh = 16 }
-        let capFs = Swift.max(10, 12 + 0.5 * e.s), capLh = Swift.max(14, 16 + 0.5 * e.s)
-        let weight: Double = m.isActive(i) ? 600 : 500
-        let fontWeight: Double = weight > 500 ? 700 : 500
+        // ::part(label / optional / description) rules come from the outer tree: they win over the state and @media rules.
+        let lp = e.parts[.label]
+        labFs = lp?.fontSize ?? labFs; labLh = lp?.lineHeight ?? labLh
+        let labLs = lp?.letterSpacing ?? 0
+        let capFs0 = Swift.max(10, 12 + 0.5 * e.s), capLh0 = Swift.max(14, 16 + 0.5 * e.s)
+        func cap(_ k: AWCStepPart) -> (fs: Double, lh: Double, w: Double, ls: Double) {
+            let a = e.parts[k]; return (a?.fontSize ?? capFs0, a?.lineHeight ?? capLh0, a?.fontWeight ?? 400, a?.letterSpacing ?? 0)
+        }
+        let weight: Double = lp?.fontWeight ?? (m.isActive(i) ? 600 : 500)
+        let fontWeight: Double = weight > 500 ? 700 : weight > 400 ? 500 : 400
         let supporting = s.error && !s.errorText.isEmpty ? s.errorText : s.description
         let opt = s.optional ? m.p.optionalWord : ""
         var items: Text = Text(w: 0, h: 0, items: [])
         if !s.label.isEmpty {
-            var w = awcStepperLUCeil(measure(s.label, labFs, fontWeight, 0)), lines = 1, wrapped = [s.label]
+            var w = awcStepperLUCeil(measure(s.label, labFs, fontWeight, labLs)), lines = 1, wrapped = [s.label]
             if w > avail {
-                let ls = wrap(s.label, labFs, fontWeight, avail, measure); lines = horizontal ? Swift.min(2, ls.count) : ls.count; w = avail
+                let ls = wrap(s.label, labFs, fontWeight, avail, measure, labLs); lines = horizontal ? Swift.min(2, ls.count) : ls.count; w = avail
                 wrapped = Array(ls.prefix(lines)); if ls.count > lines, let last = wrapped.popLast() { wrapped.append(last + "…") }
             }
             items.items.append(("label", w, Double(lines) * labLh, labFs, labLh, weight, s.label, lines, wrapped))
         }
         let captions = !(compact && horizontal)      // the compact row hides the optional / supporting captions
         if !opt.isEmpty && captions {
-            let w = awcStepperLUCeil(measure(opt, capFs, 400, 0))
-            items.items.append(("optional", Swift.min(w, avail), capLh, capFs, capLh, 400, opt, 1, [opt]))
+            let c = cap(.optional)
+            let w = awcStepperLUCeil(measure(opt, c.fs, c.w, c.ls))
+            items.items.append(("optional", Swift.min(w, avail), c.lh, c.fs, c.lh, c.w, opt, 1, [opt]))
         }
         if !supporting.isEmpty && captions {
-            var w = awcStepperLUCeil(measure(supporting, capFs, 400, 0)), lines = 1, wrapped = [supporting]
-            if w > avail { wrapped = wrap(supporting, capFs, 400, avail, measure); lines = wrapped.count; w = avail }
-            items.items.append(("description", w, Double(lines) * capLh, capFs, capLh, 400, supporting, lines, wrapped))
+            let c = cap(.description)
+            var w = awcStepperLUCeil(measure(supporting, c.fs, c.w, c.ls)), lines = 1, wrapped = [supporting]
+            if w > avail { wrapped = wrap(supporting, c.fs, c.w, avail, measure, c.ls); lines = wrapped.count; w = avail }
+            items.items.append(("description", w, Double(lines) * c.lh, c.fs, c.lh, c.w, supporting, lines, wrapped))
         }
         guard !items.items.isEmpty else { return nil }
         items.w = items.items.map(\.w).max() ?? 0
@@ -452,30 +513,38 @@ public enum AWCStepperLayout {
         return Indicator(size: size, h: dot ? 10 : size, ring: e.hooks.px("indicator-ring") ?? Swift.max(4, 8 + e.s))
     }
 
-    struct Header { var inner: AWCStepperRect, pad: Double, pin: Double, gap: Double, indw: Double, ind: Indicator, text: Text? }
+    /// `ii` / `xi` / `ti`: border + padding of the `inner` / `indicator` / `text` boxes; `iw` / `ih` and `tw` / `th`: the indicator's and
+    /// the text's border boxes (the source's sizes are content-box: border and padding add to them).
+    struct Header { var inner: AWCStepperRect, pad: Double, pin: Double, gap: Double, indw: Double, ind: Indicator, text: Text?
+        var ii = AWCStepperInsets(), xi = AWCStepperInsets(), ti = AWCStepperInsets(), iw = 0.0, ih = 0.0, tw = 0.0, th = 0.0 }
     static func header(_ m: AWCStepperModel, _ i: Int, _ e: AWCStepperEnv, colw: Double, compact: Bool, measure: AWCStepperMeasure) -> Header {
         let ind = indicator(m, e, compact: compact, horizontal: true)
         let pad = Swift.max(0, 4 + e.s), pin = compact ? e.sp("inset-xs", 4) : e.sp("inset-sm", 8)
         let gap = compact ? e.sp("gap-xs", 4) : Swift.max(2, 6 + e.s), indw = ind.h + 2 * ind.ring
-        let tm = textMetrics(m, i, e, avail: colw - 2 * pin, horizontal: true, compact: compact, measure: measure)
-        let cw = Swift.max(indw, tm?.w ?? 0)
-        let iw = Swift.min(colw, cw + 2 * pin), ih = pad + indw + (tm.map { gap + $0.h } ?? 0)
-        return Header(inner: AWCStepperRect(x: awcStepperHalf(colw - iw), y: 0, width: iw, height: ih), pad: pad, pin: pin, gap: gap, indw: indw, ind: ind, text: tm)
+        let ii = e.insets(.inner, AWCStepperInsets(t: pad, r: pin, b: 0, l: pin)), xi = e.insets(.indicator), ti = e.insets(.text)
+        let tm = textMetrics(m, i, e, avail: colw - ii.h - ti.h, horizontal: true, compact: compact, measure: measure)
+        let IW = indw + xi.h, IH = indw + xi.v, TW = (tm?.w ?? 0) + ti.h, TH = (tm?.h ?? 0) + ti.v
+        let cw = Swift.max(IW, tm != nil ? TW : 0)
+        let iw = Swift.min(colw, cw + ii.h), ih = ii.t + IH + (tm != nil ? gap + TH : 0) + ii.b
+        return Header(inner: AWCStepperRect(x: awcStepperHalf(colw - iw), y: 0, width: iw, height: ih), pad: pad, pin: pin, gap: gap, indw: indw, ind: ind, text: tm,
+                      ii: ii, xi: xi, ti: ti, iw: IW, ih: IH, tw: TW, th: TH)
     }
 
     static func parts(_ m: AWCStepperModel, _ i: Int, _ e: AWCStepperEnv, _ v: Visual, inner: AWCStepperRect, ind: AWCStepperRect, ih: Indicator,
-                      textX: Double, textY: Double, tm: Text?, horizontal: Bool) -> AWCStepPaint {
+                      textX: Double, textY: Double, tm: Text?, horizontal: Bool, xi: AWCStepperInsets = AWCStepperInsets(), textBox: AWCStepperRect? = nil) -> AWCStepPaint {
         var p = AWCStepPaint()
         p.index = i
         let dis = m.effectivelyDisabled(i), ro = m.p.readonly
         p.disabled = dis; p.readonly = ro; p.hasPanel = m.hasPanel(i); p.renderPanel = m.renderPanel(i)
         p.inner = inner; p.indicator = ind; p.indicatorOpacity = dis ? 0.38 : 1
         if m.focusVisible == i && !ro { p.focusRing = (e.theme.color("surface", "#FEF7FF"), e.theme.color("secondary", "#625B71")) }
-        p.stateLayerVisible = !(dis || ro); p.stateLayer = p.stateLayerVisible ? ind : .zero
+        // The state layer is `inset: 0` of the indicator: its padding box (inside the border).
+        let ibw = e.parts[.indicator]?.borderWidth ?? 0
+        p.stateLayerVisible = !(dis || ro); p.stateLayer = p.stateLayerVisible ? AWCStepperRect(x: ind.x + ibw, y: ind.y + ibw, width: ind.width - 2 * ibw, height: ind.height - 2 * ibw) : .zero
         p.stateOpacity = v.state; p.stateColor = v.stateColor
         p.dot = m.p.indicator == "dot"
         let h = ih.h
-        let bx = ind.x + awcStepperHalf(ind.width - h), by = ind.y + awcStepperHalf(ind.height - h)
+        let bx = ind.x + xi.l + awcStepperHalf(ind.width - xi.h - h), by = ind.y + xi.t + awcStepperHalf(ind.height - xi.v - h)
         p.scale = v.scale; p.transformNone = v.transformNone
         p.glyphScale = v.glyphScale; p.glyphOpacity = v.glyphOpacity; p.hostOpacity = v.hostOpacity
         p.contentOpacity = v.contentOpacity; p.contentDY = v.contentDY
@@ -487,14 +556,15 @@ public enum AWCStepperLayout {
         p.glyph = g; p.number = p.dot || g != nil ? nil : String(i + 1)
         p.glyphFilled = m.isActive(i) || m.steps[i].completed || m.steps[i].error
         if let tm {
-            p.text = AWCStepperRect(x: textX, y: textY, width: tm.w, height: tm.h); p.textOpacity = dis ? 0.38 : 1
+            p.text = textBox ?? AWCStepperRect(x: textX, y: textY, width: tm.w, height: tm.h); p.textOpacity = dis ? 0.38 : 1
             var y = textY
             for it in tm.items {
                 let w = horizontal ? it.w : tm.w
                 let x = textX + (horizontal ? awcStepperHalf(tm.w - w) : 0)
                 let color = it.part == "label" ? v.label : it.part == "optional" ? v.optional : v.description
                 p.lines.append(.init(part: it.part, rect: AWCStepperRect(x: x, y: y, width: w, height: it.h), color: color, fontSize: it.fs,
-                                     lineHeight: it.lh, weight: it.weight, text: it.text, lines: it.lines, italic: it.part == "optional", wrapped: it.wrapped))
+                                     lineHeight: it.lh, weight: it.weight, text: it.text, lines: it.lines, italic: it.part == "optional", wrapped: it.wrapped,
+                                     letterSpacing: AWCStepPart(rawValue: it.part).flatMap { e.parts[$0]?.letterSpacing } ?? 0))
                 y += it.h + 2
             }
         }
@@ -506,13 +576,13 @@ public enum AWCStepperLayout {
         let p = m.p, n = m.count, W = input.width
         let sd = awcStepperDensity(p.density, input.globalDensity)
         let theme = AWCStepperTheme(tokens: input.tokens)
-        let senv = AWCStepperEnv(s: sd, theme: theme, hooks: input.hooks)
+        let senv = AWCStepperEnv(s: sd, theme: theme, hooks: input.hooks, parts: input.stepParts, rtl: input.rtl)
         let horizontal = p.orientation == "horizontal", mobile = p.variant == "mobile"
         let compact = input.viewportWidth < 600
         // `:host(.md-stepper--mobile) .md-stepper__list { display: none }` loses to the panel-mode grid rule (higher
         // specificity): a mobile stepper whose steps carry content still shows its header row.
         let hideList = mobile && !(horizontal && m.panelMode == "step")
-        let envs = m.steps.map { AWCStepperEnv(s: awcStepperDensity($0.density, sd), theme: theme, hooks: input.hooks.merging(style: $0.style)) }
+        let envs = m.steps.map { AWCStepperEnv(s: awcStepperDensity($0.density, sd), theme: theme, hooks: input.hooks.merging(style: $0.style), parts: input.stepParts, rtl: input.rtl) }
         let vis = (0..<n).map { resolve(m, $0, envs[$0], pointer: pointer, motion: motion, now: now, reduced: reduced) }
         var out = AWCStepperPaint()
         out.hideList = hideList
@@ -534,9 +604,12 @@ public enum AWCStepperLayout {
             for i in 0..<n {
                 let hd = hds[i], colx = hideList ? 0 : xs[i], colw = hideList ? W : cols[i], e = envs[i]
                 let inner = hd.inner.offset(colx, 0)
-                let ind = AWCStepperRect(x: inner.x + awcStepperHalf(inner.width - hd.indw), y: inner.y + hd.pad, width: hd.indw, height: hd.indw)
-                let tx = inner.x + hd.pin + (hd.text.map { awcStepperHalf(inner.width - 2 * hd.pin - $0.w) } ?? 0)
-                var sp = parts(m, i, e, vis[i], inner: inner, ind: ind, ih: hd.ind, textX: tx, textY: ind.y + hd.indw + hd.gap, tm: hd.text, horizontal: true)
+                // Border boxes of the indicator and the text, centred in the inner box's content box (flex column, align-items: center).
+                let cx0 = inner.x + hd.ii.l, cwid = inner.width - hd.ii.h
+                let ind = AWCStepperRect(x: cx0 + awcStepperHalf(cwid - hd.iw), y: inner.y + hd.ii.t, width: hd.iw, height: hd.ih)
+                let tbox = hd.text.map { _ in AWCStepperRect(x: cx0 + awcStepperHalf(cwid - hd.tw), y: ind.y + hd.ih + hd.gap, width: hd.tw, height: hd.th) }
+                var sp = parts(m, i, e, vis[i], inner: inner, ind: ind, ih: hd.ind, textX: (tbox?.x ?? 0) + hd.ti.l, textY: (tbox?.y ?? 0) + hd.ti.t, tm: hd.text, horizontal: true,
+                               xi: hd.xi, textBox: tbox)
                 if !m.isLast(i) {
                     let th = e.hooks.px("connector-thickness") ?? Swift.max(2, 4 + 0.5 * e.s)
                     let gap = compact ? 8 : Swift.max(4, 10 + e.s)
@@ -561,11 +634,14 @@ public enum AWCStepperLayout {
             } else if m.panelMode == "step" {
                 var row2 = 0.0
                 for i in 0..<n where m.renderPanel(i) {
-                    let e = envs[i], inner = panelInner(i, true), h = awcStepperLU(inner * vis[i].panel)
+                    let e = envs[i], inner = panelInner(i, true), track = awcStepperLU(inner * vis[i].panel), cp = e.pad(.content)
+                    let h = track + cp.top + cp.bottom      // ::part(content) padding sits outside the grid track (even collapsed)
                     row2 = Swift.max(row2, h)
                     let top = e.hooks.px("panel-padding-block-start") ?? e.sp("inset-lg", 16)
+                    // Physical padding: in RTL the mirror maps the right inset back to the left edge.
                     steps[i].panel = (AWCStepperRect(x: 0, y: row1, width: W, height: h), vis[i].panelOpacity, vis[i].panelVisible,
-                                      m.p.lazy ? nil : h, (0, row1 + top), W)
+                                      m.p.lazy ? nil : track, (input.rtl ? cp.right : cp.left, row1 + cp.top + top), Swift.max(0, W - cp.left - cp.right))
+                    steps[i].panelInset = cp
                 }
                 listH = row1 + row2
             } else { listH = row1 }
@@ -575,14 +651,22 @@ public enum AWCStepperLayout {
                 let e = envs[i], v = vis[i]
                 let ind = indicator(m, e, compact: false, horizontal: false)
                 let indw = ind.h + 2 * ind.ring, gap = e.sp("gap-md", 12)
-                let tm = textMetrics(m, i, e, avail: W - 8 - indw - gap, horizontal: false, compact: false, measure: measure)
-                let ih = Swift.max(indw, tm?.h ?? 0), iw = 8 + indw + (tm.map { gap + $0.w } ?? 0)
+                // `inner`: padding-inline-start 8px unless a part sets the padding; `indicator` / `text` boxes add their own border + padding.
+                let ii = e.insets(.inner, AWCStepperInsets(t: 0, r: 0, b: 0, l: 8)), xi = e.insets(.indicator), ti = e.insets(.text)
+                let IW = indw + xi.h, IH = indw + xi.v
+                let tm = textMetrics(m, i, e, avail: W - ii.h - IW - gap - ti.h, horizontal: false, compact: false, measure: measure)
+                let TW = (tm?.w ?? 0) + ti.h, TH = (tm?.h ?? 0) + ti.v
+                let ch = Swift.max(IH, tm != nil ? TH : 0)
+                let ih = ii.t + ch + ii.b, iw = ii.l + IW + (tm != nil ? gap + TW : 0) + ii.r
                 let inner = AWCStepperRect(x: 0, y: y, width: iw, height: ih)
-                let indR = AWCStepperRect(x: 8, y: y + awcStepperHalf(ih - indw), width: indw, height: indw)
-                var sp = parts(m, i, e, v, inner: inner, ind: indR, ih: ind, textX: 8 + indw + gap, textY: y + (tm.map { awcStepperHalf(ih - $0.h) } ?? 0), tm: tm, horizontal: false)
+                let indR = AWCStepperRect(x: ii.l, y: y + ii.t + awcStepperHalf(ch - IH), width: IW, height: IH)
+                let tbox = tm.map { _ in AWCStepperRect(x: ii.l + IW + gap, y: y + ii.t + awcStepperHalf(ch - TH), width: TW, height: TH) }
+                var sp = parts(m, i, e, v, inner: inner, ind: indR, ih: ind, textX: (tbox?.x ?? 0) + ti.l, textY: (tbox?.y ?? 0) + ti.t, tm: tm, horizontal: false,
+                               xi: xi, textBox: tbox)
                 let pb = m.isLast(i) ? 0 : e.sp("inset-lg", 16)
                 let ms = 8 + ind.h + 2 * ind.ring + gap
-                let panelH = m.renderPanel(i) ? awcStepperLU(panelInner(i, false) * v.panel) : 0
+                let cp = e.pad(.content), track = m.renderPanel(i) ? awcStepperLU(panelInner(i, false) * v.panel) : 0
+                let panelH = m.renderPanel(i) ? track + cp.top + cp.bottom : 0     // ::part(content) padding: outside the grid track
                 let hostH = ih + panelH + pb
                 sp.hasLeadingConnector = i > 0
                 if !m.isLast(i) {
@@ -592,9 +676,11 @@ public enum AWCStepperLayout {
                 }
                 if m.renderPanel(i) {
                     let cr = AWCStepperRect(x: ms, y: y + ih, width: W - ms, height: panelH)
-                    sp.panel = (cr, v.panelOpacity, v.panelVisible, m.p.lazy ? nil : panelH, (ms, cr.y + e.sp("inset-xs", 4)), W - ms)
+                    let cx = ms + (input.rtl ? cp.right : cp.left), cw = Swift.max(0, W - ms - cp.left - cp.right)
+                    sp.panel = (cr, v.panelOpacity, v.panelVisible, m.p.lazy ? nil : track, (cx, cr.y + cp.top + e.sp("inset-xs", 4)), cw)
+                    sp.panelInset = cp
                     if m.navActions(i) {
-                        sp.actions = AWCStepperRect(x: ms, y: cr.y + e.sp("inset-xs", 4) + contentH(i) + e.sp("gap-lg", 16), width: W - ms, height: buttonHeight(e.s))
+                        sp.actions = AWCStepperRect(x: cx, y: cr.y + cp.top + e.sp("inset-xs", 4) + contentH(i) + e.sp("gap-lg", 16), width: cw, height: buttonHeight(e.s))
                     }
                 }
                 sp.hostRect = AWCStepperRect(x: 0, y: y, width: W, height: hostH)
@@ -606,32 +692,45 @@ public enum AWCStepperLayout {
         var hostOff = 0.0
         out.list = hideList ? nil : AWCStepperRect(x: 0, y: 0, width: W, height: listH)
         var cy = hideList ? 0 : listH
+        let sc = input.stepperParts[.content]?.padding, scT = sc?.top ?? 0, scR = sc?.right ?? 0, scB = sc?.bottom ?? 0, scL = sc?.left ?? 0
         if let slot = input.slotHeight {
             let mg = senv.sp("inset-xl", 24)
-            if hideList { hostOff = mg; out.content = AWCStepperRect(x: 0, y: 0, width: W, height: slot) }   // the margin collapses through the host
-            else { out.content = AWCStepperRect(x: 0, y: cy + mg, width: W, height: slot) }
-            cy = out.content.y + slot
-        } else { out.content = AWCStepperRect(x: 0, y: cy, width: W, height: 0) }
+            // ::part(content) padding: a top padding stops the slotted child's margin collapsing through the content box.
+            if scT > 0 { out.content = AWCStepperRect(x: 0, y: cy, width: W, height: scT + mg + slot + scB) }
+            else if hideList { hostOff = mg; out.content = AWCStepperRect(x: 0, y: 0, width: W, height: slot + scB) }   // the margin collapses through the host
+            else { out.content = AWCStepperRect(x: 0, y: cy + mg, width: W, height: slot + scB) }
+            out.slot = AWCStepperRect(x: input.rtl ? scR : scL, y: out.content.y + (scT > 0 ? scT + mg : 0), width: Swift.max(0, W - scL - scR), height: slot)
+            cy = out.content.y + out.content.height
+        } else { out.content = AWCStepperRect(x: 0, y: cy, width: W, height: scT + scB); cy += scT + scB }
         let bh = buttonHeight(sd)
         let backW = input.buttonWidths?.back ?? buttonWidth(p.backLabel, sd, measure: measure)
         let nextW = input.buttonWidths?.next ?? buttonWidth(m.isFinishStep ? p.finishLabel : p.nextLabel, sd, measure: measure)
         if p.nav && !mobile && horizontal && n > 0 {
             let ny = cy + Swift.max(4, 20 + 2 * sd)
-            out.nav = AWCStepperRect(x: 0, y: ny, width: W, height: bh)
+            let np = input.stepperParts[.nav]?.padding, nT = np?.top ?? 0, nB = np?.bottom ?? 0
+            let endX = W - ((input.rtl ? np?.left : np?.right) ?? 0)      // flex-end at the inline-end padding edge
+            out.nav = AWCStepperRect(x: 0, y: ny, width: W, height: nT + bh + nB)
             let g = senv.sp("gap-sm", 8)
-            out.navButtons = (AWCStepperRect(x: W - nextW - g - backW, y: ny, width: backW, height: bh), AWCStepperRect(x: W - nextW, y: ny, width: nextW, height: bh))
-            cy = ny + bh
+            out.navButtons = (AWCStepperRect(x: endX - nextW - g - backW, y: ny + nT, width: backW, height: bh), AWCStepperRect(x: endX - nextW, y: ny + nT, width: nextW, height: bh))
+            cy = ny + nT + bh + nB
         }
         if p.nav && mobile && n > 0 {
             let my = cy + senv.sp("gap-lg", 16), g = senv.sp("gap-sm", 8)
-            out.mobileNav = AWCStepperRect(x: 0, y: my, width: W, height: bh)
+            let mp = input.stepperParts[.mobileNav]?.padding, mT = mp?.top ?? 0, mB = mp?.bottom ?? 0
+            let mS = (input.rtl ? mp?.right : mp?.left) ?? 0, mE = (input.rtl ? mp?.left : mp?.right) ?? 0
             let ph: Double = p.indicator == "dot" ? 8 : 20
-            let prog = AWCStepperRect(x: backW + g, y: my + awcStepperHalf(bh - ph), width: W - backW - nextW - 2 * g, height: ph)
+            // ::part(mobile-progress) box: border + padding grow the progress box around its caption / dots (the row is as tall as its tallest item).
+            let pi = senv.mobileProgressInsets(input)
+            let boxH = pi.v + ph, rowH = Swift.max(bh, boxH)
+            out.mobileNav = AWCStepperRect(x: 0, y: my, width: W, height: mT + rowH + mB)
+            let prog = AWCStepperRect(x: mS + backW + g, y: my + mT + awcStepperHalf(rowH - boxH), width: W - mS - mE - backW - nextW - 2 * g, height: boxH)
             out.mobileProgress = prog
-            out.navButtons = (AWCStepperRect(x: 0, y: my, width: backW, height: bh), AWCStepperRect(x: W - nextW, y: my, width: nextW, height: bh))
+            let pcx = prog.x + pi.l, pcw = prog.width - pi.h, pcy = prog.y + pi.t
+            let by = my + mT + awcStepperHalf(rowH - bh)
+            out.navButtons = (AWCStepperRect(x: mS, y: by, width: backW, height: bh), AWCStepperRect(x: W - mE - nextW, y: by, width: nextW, height: bh))
             if p.indicator == "dot" {
                 let total = Double(n) * 8 + Double(Swift.max(0, n - 1)) * g
-                var x = prog.x + awcStepperHalf(prog.width - total)
+                var x = pcx + awcStepperHalf(pcw - total)
                 for i in 0..<n {
                     let activeDot = i == m.active, done = i < m.active || m.steps[i].completed
                     let color = activeDot || done ? (input.hooks.step("active-color").flatMap(awcStepperColor) ?? theme.color("primary", "#6750A4"))
@@ -639,20 +738,20 @@ public enum AWCStepperLayout {
                     var c: [Double] = [color.r, color.g, color.b, color.a], sc = activeDot && !reduced ? 1.5 : 1
                     if let motion { c = motion.animate("dot\(i).bg", c, now: now, duration: reduced ? 0.01 : 200, ease: AWCStepperEasing.effects)
                                     sc = motion.animate("dot\(i).scale", [sc], now: now, duration: reduced ? 0.01 : 500, ease: AWCStepperEasing.spatial)[0] }
-                    out.mobileDots.append((AWCStepperRect(x: x, y: prog.y, width: 8, height: 8), (c[0], c[1], c[2], c[3]), sc))
+                    out.mobileDots.append((AWCStepperRect(x: x, y: pcy, width: 8, height: 8), (c[0], c[1], c[2], c[3]), sc))
                     x += 8 + g
                 }
             } else {
                 let t = "\(p.stepWord) \(m.active + 1) \(p.ofWord) \(n)"
                 let tw = awcStepperLUCeil(measure(t, 14, 500, 0))
-                out.mobileText = (AWCStepperRect(x: prog.x + awcStepperHalf(prog.width - tw), y: prog.y, width: tw, height: 20), t, theme.color("on-surface-variant", "#49454F"))
+                out.mobileText = (AWCStepperRect(x: pcx + awcStepperHalf(pcw - tw), y: pcy, width: tw, height: 20), t, theme.color("on-surface-variant", "#49454F"))
             }
-            cy = my + bh
+            cy = my + mT + rowH + mB
         }
         out.host = AWCStepperRect(x: 0, y: hostOff, width: W, height: cy)
         // RTL mirrors every box about the host; the mobile-slot margin moves the host's contents down.
         func fix(_ r: AWCStepperRect) -> AWCStepperRect { r.isEmpty ? r : (input.rtl ? r.mirrored(W) : r).offset(0, hostOff) }
-        out.list = out.list.map(fix); out.content = fix(out.content); out.nav = out.nav.map(fix); out.mobileNav = out.mobileNav.map(fix); out.mobileProgress = out.mobileProgress.map(fix)
+        out.list = out.list.map(fix); out.content = fix(out.content); out.slot = out.slot.map(fix); out.nav = out.nav.map(fix); out.mobileNav = out.mobileNav.map(fix); out.mobileProgress = out.mobileProgress.map(fix)
         if let b = out.navButtons { out.navButtons = (fix(b.back), fix(b.next)) }
         out.mobileDots = out.mobileDots.map { (fix($0.rect), $0.color, $0.scale) }
         if let t = out.mobileText { out.mobileText = (fix(t.rect), t.text, t.color) }

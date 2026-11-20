@@ -44031,7 +44031,8 @@
 "y": 48,
 "width": 219.03125,
 "height": 32
-}
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
 },
 "support": null,
 "counter": null,
@@ -47808,7 +47809,8 @@
 "y": 36,
 "width": 219.03125,
 "height": 32
-}
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
 },
 "support": null,
 "counter": null,
@@ -49949,6 +49951,1519 @@
 }
 ],
 "inputValue": "Input text"
+},
+{
+"name": "tf-parts-chips-filled",
+"theme": "light",
+"dir": "ltr",
+"width": 360,
+"props": {
+"variant": "filled",
+"label": "Tags"
+},
+"slots": [
+{
+"slot": "chips",
+"kind": "chip",
+"label": "Alpha"
+},
+{
+"slot": "chips",
+"kind": "chip",
+"label": "Beta"
+},
+{
+"slot": "chips",
+"kind": "chip",
+"label": "Gamma"
+}
+],
+"hooks": {},
+"focus": false,
+"globalDensity": null,
+"clip": {
+"x": 16,
+"y": 16,
+"width": 376,
+"height": 80
+},
+"host": {
+"x": 24,
+"y": 24,
+"width": 360,
+"height": 64
+},
+"classes": "tfc md-text-field md-text-field--filled hydrated md-text-field--with-chips md-text-field--floating",
+"container": {
+"rect": {
+"x": 24,
+"y": 24,
+"width": 360,
+"height": 64
+},
+"backgroundColor": "rgb(230, 224, 233)",
+"borderTopLeftRadius": "4px",
+"borderTopRightRadius": "4px",
+"borderBottomRightRadius": "0px",
+"borderBottomLeftRadius": "0px",
+"paddingLeft": "23px",
+"paddingRight": "23px",
+"paddingTop": "8px"
+},
+"label": {
+"rect": {
+"x": 47,
+"y": 32,
+"width": 25.96875,
+"height": 16
+},
+"color": "rgb(73, 69, 79)",
+"fontSize": "12px",
+"lineHeight": "16px",
+"text": "Tags"
+},
+"input": {
+"rect": {
+"x": 361,
+"y": 52,
+"width": 0,
+"height": 24
+},
+"color": "rgb(28, 27, 31)",
+"fontSize": "16px",
+"lineHeight": "24px",
+"letterSpacing": "0.5px"
+},
+"chips": {
+"rect": {
+"x": 47,
+"y": 48,
+"width": 310,
+"height": 32
+},
+"backgroundColor": "rgb(225, 245, 254)"
+},
+"support": null,
+"counter": null,
+"indicator": {
+"rect": {
+"x": 24,
+"y": 87,
+"width": 360,
+"height": 1
+},
+"backgroundColor": "rgb(73, 69, 79)",
+"opacity": "1"
+},
+"fieldset": null,
+"legend": null,
+"stateLayer": {
+"rect": {
+"x": 24,
+"y": 24,
+"width": 360,
+"height": 64
+},
+"backgroundColor": "rgb(28, 27, 31)",
+"opacity": "0"
+},
+"prefix": null,
+"suffix": null,
+"buttons": [],
+"children": [
+{
+"tag": "md-chip",
+"rect": {
+"x": 47,
+"y": 48,
+"width": 68.546875,
+"height": 32
+},
+"slot": null
+},
+{
+"tag": "md-chip",
+"rect": {
+"x": 127.546875,
+"y": 48,
+"width": 60.953125,
+"height": 32
+},
+"slot": null
+},
+{
+"tag": "md-chip",
+"rect": {
+"x": 200.5,
+"y": 48,
+"width": 81.53125,
+"height": 32
+},
+"slot": null
+}
+],
+"parts": {
+"chipsBackgroundColor": "#E1F5FE",
+"chipsGap": 12.0
+},
+"ax": [
+{
+"role": "button",
+"name": "Run"
+},
+{
+"role": "button",
+"name": "Alpha"
+},
+{
+"role": "button",
+"name": "Beta"
+},
+{
+"role": "button",
+"name": "Gamma"
+},
+{
+"role": "textbox",
+"name": "Tags",
+"readonly": false,
+"multiline": false,
+"required": false
+}
+],
+"inputValue": ""
+},
+{
+"name": "tf-parts-chips-outlined",
+"theme": "light",
+"dir": "ltr",
+"width": 360,
+"props": {
+"variant": "outlined",
+"label": "Tags"
+},
+"slots": [
+{
+"slot": "chips",
+"kind": "chip",
+"label": "Alpha"
+},
+{
+"slot": "chips",
+"kind": "chip",
+"label": "Beta"
+},
+{
+"slot": "chips",
+"kind": "chip",
+"label": "Gamma"
+}
+],
+"hooks": {},
+"focus": false,
+"globalDensity": null,
+"clip": {
+"x": 16,
+"y": 16,
+"width": 376,
+"height": 72
+},
+"host": {
+"x": 24,
+"y": 24,
+"width": 360,
+"height": 56
+},
+"classes": "tfc md-text-field md-text-field--outlined hydrated md-text-field--with-chips md-text-field--floating",
+"container": {
+"rect": {
+"x": 24,
+"y": 24,
+"width": 360,
+"height": 56
+},
+"backgroundColor": "rgba(0, 0, 0, 0)",
+"borderTopLeftRadius": "4px",
+"borderTopRightRadius": "4px",
+"borderBottomRightRadius": "4px",
+"borderBottomLeftRadius": "4px",
+"paddingLeft": "23px",
+"paddingRight": "23px",
+"paddingTop": "8px"
+},
+"label": {
+"rect": {
+"x": 47,
+"y": 16,
+"width": 25.96875,
+"height": 16
+},
+"color": "rgb(73, 69, 79)",
+"fontSize": "12px",
+"lineHeight": "16px",
+"text": "Tags"
+},
+"input": {
+"rect": {
+"x": 361,
+"y": 40,
+"width": 0,
+"height": 24
+},
+"color": "rgb(28, 27, 31)",
+"fontSize": "16px",
+"lineHeight": "24px",
+"letterSpacing": "0.5px"
+},
+"chips": {
+"rect": {
+"x": 47,
+"y": 36,
+"width": 310,
+"height": 32
+},
+"backgroundColor": "rgb(225, 245, 254)"
+},
+"support": null,
+"counter": null,
+"indicator": null,
+"fieldset": {
+"rect": {
+"x": 24,
+"y": 24,
+"width": 360,
+"height": 56
+},
+"borderTopColor": "rgb(121, 116, 126)",
+"borderTopWidth": "1px"
+},
+"legend": {
+"rect": {
+"x": 43,
+"y": 24.5,
+"width": 33.96875,
+"height": 0
+},
+"fontSize": "12px"
+},
+"stateLayer": null,
+"prefix": null,
+"suffix": null,
+"buttons": [],
+"children": [
+{
+"tag": "md-chip",
+"rect": {
+"x": 47,
+"y": 36,
+"width": 68.546875,
+"height": 32
+},
+"slot": null
+},
+{
+"tag": "md-chip",
+"rect": {
+"x": 127.546875,
+"y": 36,
+"width": 60.953125,
+"height": 32
+},
+"slot": null
+},
+{
+"tag": "md-chip",
+"rect": {
+"x": 200.5,
+"y": 36,
+"width": 81.53125,
+"height": 32
+},
+"slot": null
+}
+],
+"parts": {
+"chipsBackgroundColor": "#E1F5FE",
+"chipsGap": 12.0
+},
+"ax": [
+{
+"role": "button",
+"name": "Run"
+},
+{
+"role": "button",
+"name": "Alpha"
+},
+{
+"role": "button",
+"name": "Beta"
+},
+{
+"role": "button",
+"name": "Gamma"
+},
+{
+"role": "textbox",
+"name": "Tags",
+"readonly": false,
+"multiline": false,
+"required": false
+}
+],
+"inputValue": ""
+},
+{
+"name": "tf-parts-chips-wrap",
+"theme": "light",
+"dir": "ltr",
+"width": 320,
+"props": {
+"label": "Tags",
+"chipsWrap": true
+},
+"slots": [
+{
+"slot": "chips",
+"kind": "chip",
+"label": "Alpha"
+},
+{
+"slot": "chips",
+"kind": "chip",
+"label": "Beta"
+},
+{
+"slot": "chips",
+"kind": "chip",
+"label": "Gamma"
+},
+{
+"slot": "chips",
+"kind": "chip",
+"label": "Delta"
+},
+{
+"slot": "chips",
+"kind": "chip",
+"label": "Epsilon"
+},
+{
+"slot": "chips",
+"kind": "chip",
+"label": "Zeta"
+}
+],
+"hooks": {},
+"focus": false,
+"globalDensity": null,
+"clip": {
+"x": 16,
+"y": 16,
+"width": 336,
+"height": 154
+},
+"host": {
+"x": 24,
+"y": 24,
+"width": 320,
+"height": 138
+},
+"classes": "tfc md-text-field md-text-field--filled hydrated md-text-field--with-chips md-text-field--floating",
+"container": {
+"rect": {
+"x": 24,
+"y": 24,
+"width": 320,
+"height": 138
+},
+"backgroundColor": "rgb(230, 224, 233)",
+"borderTopLeftRadius": "4px",
+"borderTopRightRadius": "4px",
+"borderBottomRightRadius": "0px",
+"borderBottomLeftRadius": "0px",
+"paddingLeft": "23px",
+"paddingRight": "23px",
+"paddingTop": "8px"
+},
+"label": {
+"rect": {
+"x": 47,
+"y": 32,
+"width": 25.96875,
+"height": 16
+},
+"color": "rgb(73, 69, 79)",
+"fontSize": "12px",
+"lineHeight": "16px",
+"text": "Tags"
+},
+"input": {
+"rect": {
+"x": 47,
+"y": 130,
+"width": 274,
+"height": 24
+},
+"color": "rgb(28, 27, 31)",
+"fontSize": "16px",
+"lineHeight": "24px",
+"letterSpacing": "0.5px"
+},
+"chips": {
+"rect": {
+"x": 47,
+"y": 48,
+"width": 274,
+"height": 76
+},
+"backgroundColor": "rgb(225, 245, 254)"
+},
+"support": null,
+"counter": null,
+"indicator": {
+"rect": {
+"x": 24,
+"y": 161,
+"width": 320,
+"height": 1
+},
+"backgroundColor": "rgb(73, 69, 79)",
+"opacity": "1"
+},
+"fieldset": null,
+"legend": null,
+"stateLayer": {
+"rect": {
+"x": 24,
+"y": 24,
+"width": 320,
+"height": 138
+},
+"backgroundColor": "rgb(28, 27, 31)",
+"opacity": "0"
+},
+"prefix": null,
+"suffix": null,
+"buttons": [],
+"children": [
+{
+"tag": "md-chip",
+"rect": {
+"x": 47,
+"y": 48,
+"width": 68.546875,
+"height": 32
+},
+"slot": null
+},
+{
+"tag": "md-chip",
+"rect": {
+"x": 127.546875,
+"y": 48,
+"width": 60.953125,
+"height": 32
+},
+"slot": null
+},
+{
+"tag": "md-chip",
+"rect": {
+"x": 200.5,
+"y": 48,
+"width": 81.53125,
+"height": 32
+},
+"slot": null
+},
+{
+"tag": "md-chip",
+"rect": {
+"x": 47,
+"y": 92,
+"width": 64.921875,
+"height": 32
+},
+"slot": null
+},
+{
+"tag": "md-chip",
+"rect": {
+"x": 123.921875,
+"y": 92,
+"width": 78.5625,
+"height": 32
+},
+"slot": null
+},
+{
+"tag": "md-chip",
+"rect": {
+"x": 214.484375,
+"y": 92,
+"width": 60.421875,
+"height": 32
+},
+"slot": null
+}
+],
+"parts": {
+"chipsBackgroundColor": "#E1F5FE",
+"chipsGap": 12.0
+},
+"ax": [
+{
+"role": "button",
+"name": "Run"
+},
+{
+"role": "button",
+"name": "Alpha"
+},
+{
+"role": "button",
+"name": "Beta"
+},
+{
+"role": "button",
+"name": "Gamma"
+},
+{
+"role": "button",
+"name": "Delta"
+},
+{
+"role": "button",
+"name": "Epsilon"
+},
+{
+"role": "button",
+"name": "Zeta"
+},
+{
+"role": "textbox",
+"name": "Tags",
+"readonly": false,
+"multiline": false,
+"required": false
+}
+],
+"inputValue": ""
+},
+{
+"name": "tf-parts-chips-wrap-default",
+"theme": "light",
+"dir": "ltr",
+"width": 320,
+"props": {
+"label": "Tags",
+"chipsWrap": true
+},
+"slots": [
+{
+"slot": "chips",
+"kind": "chip",
+"label": "Alpha"
+},
+{
+"slot": "chips",
+"kind": "chip",
+"label": "Beta"
+},
+{
+"slot": "chips",
+"kind": "chip",
+"label": "Gamma"
+},
+{
+"slot": "chips",
+"kind": "chip",
+"label": "Delta"
+},
+{
+"slot": "chips",
+"kind": "chip",
+"label": "Epsilon"
+},
+{
+"slot": "chips",
+"kind": "chip",
+"label": "Zeta"
+}
+],
+"hooks": {},
+"focus": false,
+"globalDensity": null,
+"clip": {
+"x": 16,
+"y": 16,
+"width": 336,
+"height": 146
+},
+"host": {
+"x": 24,
+"y": 24,
+"width": 320,
+"height": 130
+},
+"classes": "md-text-field md-text-field--filled hydrated md-text-field--with-chips md-text-field--floating",
+"container": {
+"rect": {
+"x": 24,
+"y": 24,
+"width": 320,
+"height": 130
+},
+"backgroundColor": "rgb(230, 224, 233)",
+"borderTopLeftRadius": "4px",
+"borderTopRightRadius": "4px",
+"borderBottomRightRadius": "0px",
+"borderBottomLeftRadius": "0px",
+"paddingLeft": "23px",
+"paddingRight": "23px",
+"paddingTop": "8px"
+},
+"label": {
+"rect": {
+"x": 47,
+"y": 32,
+"width": 25.96875,
+"height": 16
+},
+"color": "rgb(73, 69, 79)",
+"fontSize": "12px",
+"lineHeight": "16px",
+"text": "Tags"
+},
+"input": {
+"rect": {
+"x": 47,
+"y": 122,
+"width": 274,
+"height": 24
+},
+"color": "rgb(28, 27, 31)",
+"fontSize": "16px",
+"lineHeight": "24px",
+"letterSpacing": "0.5px"
+},
+"chips": {
+"rect": {
+"x": 47,
+"y": 48,
+"width": 274,
+"height": 68
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"support": null,
+"counter": null,
+"indicator": {
+"rect": {
+"x": 24,
+"y": 153,
+"width": 320,
+"height": 1
+},
+"backgroundColor": "rgb(73, 69, 79)",
+"opacity": "1"
+},
+"fieldset": null,
+"legend": null,
+"stateLayer": {
+"rect": {
+"x": 24,
+"y": 24,
+"width": 320,
+"height": 130
+},
+"backgroundColor": "rgb(28, 27, 31)",
+"opacity": "0"
+},
+"prefix": null,
+"suffix": null,
+"buttons": [],
+"children": [
+{
+"tag": "md-chip",
+"rect": {
+"x": 47,
+"y": 48,
+"width": 68.546875,
+"height": 32
+},
+"slot": null
+},
+{
+"tag": "md-chip",
+"rect": {
+"x": 119.546875,
+"y": 48,
+"width": 60.953125,
+"height": 32
+},
+"slot": null
+},
+{
+"tag": "md-chip",
+"rect": {
+"x": 184.5,
+"y": 48,
+"width": 81.53125,
+"height": 32
+},
+"slot": null
+},
+{
+"tag": "md-chip",
+"rect": {
+"x": 47,
+"y": 84,
+"width": 64.921875,
+"height": 32
+},
+"slot": null
+},
+{
+"tag": "md-chip",
+"rect": {
+"x": 115.921875,
+"y": 84,
+"width": 78.5625,
+"height": 32
+},
+"slot": null
+},
+{
+"tag": "md-chip",
+"rect": {
+"x": 198.484375,
+"y": 84,
+"width": 60.421875,
+"height": 32
+},
+"slot": null
+}
+],
+"parts": null,
+"ax": [
+{
+"role": "button",
+"name": "Run"
+},
+{
+"role": "button",
+"name": "Alpha"
+},
+{
+"role": "button",
+"name": "Beta"
+},
+{
+"role": "button",
+"name": "Gamma"
+},
+{
+"role": "button",
+"name": "Delta"
+},
+{
+"role": "button",
+"name": "Epsilon"
+},
+{
+"role": "button",
+"name": "Zeta"
+},
+{
+"role": "textbox",
+"name": "Tags",
+"readonly": false,
+"multiline": false,
+"required": false
+}
+],
+"inputValue": ""
+},
+{
+"name": "tf-support-blank",
+"theme": "light",
+"dir": "ltr",
+"width": 320,
+"props": {
+"variant": "outlined",
+"label": "Date",
+"value": "05/11/2026",
+"supportingText": " "
+},
+"slots": [],
+"hooks": {},
+"focus": false,
+"globalDensity": null,
+"clip": {
+"x": 16,
+"y": 16,
+"width": 336,
+"height": 76
+},
+"host": {
+"x": 24,
+"y": 24,
+"width": 320,
+"height": 60
+},
+"classes": "md-text-field md-text-field--outlined md-text-field--floating hydrated",
+"container": {
+"rect": {
+"x": 24,
+"y": 24,
+"width": 320,
+"height": 56
+},
+"backgroundColor": "rgba(0, 0, 0, 0)",
+"borderTopLeftRadius": "4px",
+"borderTopRightRadius": "4px",
+"borderBottomRightRadius": "4px",
+"borderBottomLeftRadius": "4px",
+"paddingLeft": "23px",
+"paddingRight": "23px",
+"paddingTop": "8px"
+},
+"label": {
+"rect": {
+"x": 47,
+"y": 16,
+"width": 24.703125,
+"height": 16
+},
+"color": "rgb(73, 69, 79)",
+"fontSize": "12px",
+"lineHeight": "16px",
+"text": "Date"
+},
+"input": {
+"rect": {
+"x": 47,
+"y": 40,
+"width": 274,
+"height": 24
+},
+"color": "rgb(28, 27, 31)",
+"fontSize": "16px",
+"lineHeight": "24px",
+"letterSpacing": "0.5px"
+},
+"chips": null,
+"support": {
+"rect": {
+"x": 40,
+"y": 84,
+"width": 0,
+"height": 0
+},
+"color": "rgb(73, 69, 79)",
+"fontSize": "12px"
+},
+"counter": null,
+"indicator": null,
+"fieldset": {
+"rect": {
+"x": 24,
+"y": 24,
+"width": 320,
+"height": 56
+},
+"borderTopColor": "rgb(121, 116, 126)",
+"borderTopWidth": "1px"
+},
+"legend": {
+"rect": {
+"x": 43,
+"y": 24.5,
+"width": 32.703125,
+"height": 0
+},
+"fontSize": "12px"
+},
+"stateLayer": null,
+"prefix": null,
+"suffix": null,
+"buttons": [],
+"children": [],
+"parts": null,
+"ax": [
+{
+"role": "button",
+"name": "Run"
+},
+{
+"role": "textbox",
+"name": "Date",
+"value": "05/11/2026",
+"readonly": false,
+"multiline": false,
+"required": false
+}
+],
+"inputValue": "05/11/2026"
+},
+{
+"name": "tf-support-blank-filled",
+"theme": "light",
+"dir": "ltr",
+"width": 320,
+"props": {
+"label": "Date",
+"supportingText": " ",
+"reserveSupportingSpace": true
+},
+"slots": [],
+"hooks": {},
+"focus": false,
+"globalDensity": null,
+"clip": {
+"x": 16,
+"y": 16,
+"width": 336,
+"height": 76
+},
+"host": {
+"x": 24,
+"y": 24,
+"width": 320,
+"height": 60
+},
+"classes": "md-text-field md-text-field--filled hydrated",
+"container": {
+"rect": {
+"x": 24,
+"y": 24,
+"width": 320,
+"height": 56
+},
+"backgroundColor": "rgb(230, 224, 233)",
+"borderTopLeftRadius": "4px",
+"borderTopRightRadius": "4px",
+"borderBottomRightRadius": "0px",
+"borderBottomLeftRadius": "0px",
+"paddingLeft": "23px",
+"paddingRight": "23px",
+"paddingTop": "8px"
+},
+"label": {
+"rect": {
+"x": 47,
+"y": 40,
+"width": 32.921875,
+"height": 24
+},
+"color": "rgb(73, 69, 79)",
+"fontSize": "16px",
+"lineHeight": "24px",
+"text": "Date"
+},
+"input": {
+"rect": {
+"x": 47,
+"y": 48,
+"width": 274,
+"height": 24
+},
+"color": "rgb(28, 27, 31)",
+"fontSize": "16px",
+"lineHeight": "24px",
+"letterSpacing": "0.5px"
+},
+"chips": null,
+"support": {
+"rect": {
+"x": 40,
+"y": 84,
+"width": 0,
+"height": 0
+},
+"color": "rgb(73, 69, 79)",
+"fontSize": "12px"
+},
+"counter": null,
+"indicator": {
+"rect": {
+"x": 24,
+"y": 79,
+"width": 320,
+"height": 1
+},
+"backgroundColor": "rgb(73, 69, 79)",
+"opacity": "1"
+},
+"fieldset": null,
+"legend": null,
+"stateLayer": {
+"rect": {
+"x": 24,
+"y": 24,
+"width": 320,
+"height": 56
+},
+"backgroundColor": "rgb(28, 27, 31)",
+"opacity": "0"
+},
+"prefix": null,
+"suffix": null,
+"buttons": [],
+"children": [],
+"parts": null,
+"ax": [
+{
+"role": "button",
+"name": "Run"
+},
+{
+"role": "textbox",
+"name": "Date",
+"readonly": false,
+"multiline": false,
+"required": false
+}
+],
+"inputValue": ""
+},
+{
+"name": "tf-outlined-d3-support",
+"theme": "light",
+"dir": "ltr",
+"width": 320,
+"props": {
+"variant": "outlined",
+"density": -3.0,
+"label": "Date",
+"value": "05/11/2026",
+"supportingText": "MM/DD/YYYY"
+},
+"slots": [],
+"hooks": {},
+"focus": false,
+"globalDensity": null,
+"clip": {
+"x": 16,
+"y": 16,
+"width": 336,
+"height": 79
+},
+"host": {
+"x": 24,
+"y": 24,
+"width": 320,
+"height": 62.5
+},
+"classes": "md-text-field md-text-field--outlined md-text-field--floating md-text-field--density-3 hydrated",
+"container": {
+"rect": {
+"x": 24,
+"y": 24,
+"width": 320,
+"height": 44
+},
+"backgroundColor": "rgba(0, 0, 0, 0)",
+"borderTopLeftRadius": "4px",
+"borderTopRightRadius": "4px",
+"borderBottomRightRadius": "4px",
+"borderBottomLeftRadius": "4px",
+"paddingLeft": "19px",
+"paddingRight": "19px",
+"paddingTop": "5px"
+},
+"label": {
+"rect": {
+"x": 43,
+"y": 18.5,
+"width": 21.609375,
+"height": 13
+},
+"color": "rgb(73, 69, 79)",
+"fontSize": "10.5px",
+"lineHeight": "13px",
+"text": "Date"
+},
+"input": {
+"rect": {
+"x": 43,
+"y": 35.5,
+"width": 282,
+"height": 21
+},
+"color": "rgb(28, 27, 31)",
+"fontSize": "14.5px",
+"lineHeight": "21px",
+"letterSpacing": "0.5px"
+},
+"chips": null,
+"support": {
+"rect": {
+"x": 40,
+"y": 72,
+"width": 66.28125,
+"height": 14.5
+},
+"color": "rgb(73, 69, 79)",
+"text": "MM/DD/YYYY",
+"fontSize": "10.5px"
+},
+"counter": null,
+"indicator": null,
+"fieldset": {
+"rect": {
+"x": 24,
+"y": 24,
+"width": 320,
+"height": 44
+},
+"borderTopColor": "rgb(121, 116, 126)",
+"borderTopWidth": "1px"
+},
+"legend": {
+"rect": {
+"x": 39,
+"y": 24.5,
+"width": 29.609375,
+"height": 0
+},
+"fontSize": "10.5px"
+},
+"stateLayer": null,
+"prefix": null,
+"suffix": null,
+"buttons": [],
+"children": [],
+"parts": null,
+"ax": [
+{
+"role": "button",
+"name": "Run"
+},
+{
+"role": "textbox",
+"name": "Date",
+"description": "MM/DD/YYYY",
+"value": "05/11/2026",
+"readonly": false,
+"multiline": false,
+"required": false
+}
+],
+"inputValue": "05/11/2026"
+},
+{
+"name": "tf-outlined-d3-error-wrap",
+"theme": "light",
+"dir": "ltr",
+"width": 240,
+"props": {
+"variant": "outlined",
+"density": -3.0,
+"label": "Date",
+"value": "31/02",
+"error": true,
+"errorText": "Enter a valid date in the format MM/DD/YYYY, for example 05/11/2026"
+},
+"slots": [],
+"hooks": {},
+"focus": false,
+"globalDensity": null,
+"clip": {
+"x": 16,
+"y": 16,
+"width": 256,
+"height": 93
+},
+"host": {
+"x": 24,
+"y": 24,
+"width": 240,
+"height": 77
+},
+"classes": "md-text-field md-text-field--outlined md-text-field--error md-text-field--with-trailing md-text-field--floating md-text-field--density-3 hydrated",
+"container": {
+"rect": {
+"x": 24,
+"y": 24,
+"width": 240,
+"height": 44
+},
+"backgroundColor": "rgba(0, 0, 0, 0)",
+"borderTopLeftRadius": "4px",
+"borderTopRightRadius": "4px",
+"borderBottomRightRadius": "4px",
+"borderBottomLeftRadius": "4px",
+"paddingLeft": "19px",
+"paddingRight": "19px",
+"paddingTop": "5px"
+},
+"label": {
+"rect": {
+"x": 43,
+"y": 18.5,
+"width": 21.609375,
+"height": 13
+},
+"color": "rgb(179, 38, 30)",
+"fontSize": "10.5px",
+"lineHeight": "13px",
+"text": "Date"
+},
+"input": {
+"rect": {
+"x": 43,
+"y": 35.5,
+"width": 169,
+"height": 21
+},
+"color": "rgb(28, 27, 31)",
+"fontSize": "14.5px",
+"lineHeight": "21px",
+"letterSpacing": "0.5px"
+},
+"chips": null,
+"support": {
+"rect": {
+"x": 40,
+"y": 72,
+"width": 208,
+"height": 29
+},
+"color": "rgb(179, 38, 30)",
+"text": "Enter a valid date in the format MM/DD/YYYY, for example 05/11/2026",
+"fontSize": "10.5px"
+},
+"counter": null,
+"indicator": null,
+"fieldset": {
+"rect": {
+"x": 24,
+"y": 24,
+"width": 240,
+"height": 44
+},
+"borderTopColor": "rgb(179, 38, 30)",
+"borderTopWidth": "1px"
+},
+"legend": {
+"rect": {
+"x": 39,
+"y": 24.5,
+"width": 29.609375,
+"height": 0
+},
+"fontSize": "10.5px"
+},
+"stateLayer": null,
+"prefix": null,
+"suffix": null,
+"buttons": [],
+"children": [],
+"parts": null,
+"ax": [
+{
+"role": "button",
+"name": "Run"
+},
+{
+"role": "textbox",
+"name": "Date",
+"description": "Enter a valid date in the format MM/DD/YYYY, for example 05/11/2026",
+"value": "31/02",
+"readonly": false,
+"multiline": false,
+"invalid": "true",
+"required": false
+},
+{
+"role": "alert",
+"name": ""
+}
+],
+"inputValue": "31/02"
+},
+{
+"name": "tf-parts-chips-rtl",
+"theme": "light",
+"dir": "rtl",
+"width": 360,
+"props": {
+"variant": "outlined",
+"label": "Tags"
+},
+"slots": [
+{
+"slot": "chips",
+"kind": "chip",
+"label": "Alpha"
+},
+{
+"slot": "chips",
+"kind": "chip",
+"label": "Beta"
+},
+{
+"slot": "chips",
+"kind": "chip",
+"label": "Gamma"
+}
+],
+"hooks": {},
+"focus": false,
+"globalDensity": null,
+"clip": {
+"x": 16,
+"y": 16,
+"width": 376,
+"height": 72
+},
+"host": {
+"x": 24,
+"y": 24,
+"width": 360,
+"height": 56
+},
+"classes": "tfc md-text-field md-text-field--outlined hydrated md-text-field--with-chips md-text-field--floating",
+"container": {
+"rect": {
+"x": 24,
+"y": 24,
+"width": 360,
+"height": 56
+},
+"backgroundColor": "rgba(0, 0, 0, 0)",
+"borderTopLeftRadius": "4px",
+"borderTopRightRadius": "4px",
+"borderBottomRightRadius": "4px",
+"borderBottomLeftRadius": "4px",
+"paddingLeft": "23px",
+"paddingRight": "23px",
+"paddingTop": "8px"
+},
+"label": {
+"rect": {
+"x": 335.03125,
+"y": 16,
+"width": 25.96875,
+"height": 16
+},
+"color": "rgb(73, 69, 79)",
+"fontSize": "12px",
+"lineHeight": "16px",
+"text": "Tags"
+},
+"input": {
+"rect": {
+"x": 47,
+"y": 40,
+"width": 0,
+"height": 24
+},
+"color": "rgb(28, 27, 31)",
+"fontSize": "16px",
+"lineHeight": "24px",
+"letterSpacing": "0.5px"
+},
+"chips": {
+"rect": {
+"x": 51,
+"y": 36,
+"width": 310,
+"height": 32
+},
+"backgroundColor": "rgb(225, 245, 254)"
+},
+"support": null,
+"counter": null,
+"indicator": null,
+"fieldset": {
+"rect": {
+"x": 24,
+"y": 24,
+"width": 360,
+"height": 56
+},
+"borderTopColor": "rgb(121, 116, 126)",
+"borderTopWidth": "1px"
+},
+"legend": {
+"rect": {
+"x": 331.03125,
+"y": 24.5,
+"width": 33.96875,
+"height": 0
+},
+"fontSize": "12px"
+},
+"stateLayer": null,
+"prefix": null,
+"suffix": null,
+"buttons": [],
+"children": [
+{
+"tag": "md-chip",
+"rect": {
+"x": 292.453125,
+"y": 36,
+"width": 68.546875,
+"height": 32
+},
+"slot": null
+},
+{
+"tag": "md-chip",
+"rect": {
+"x": 219.5,
+"y": 36,
+"width": 60.953125,
+"height": 32
+},
+"slot": null
+},
+{
+"tag": "md-chip",
+"rect": {
+"x": 125.96875,
+"y": 36,
+"width": 81.53125,
+"height": 32
+},
+"slot": null
+}
+],
+"parts": {
+"chipsBackgroundColor": "#E1F5FE",
+"chipsGap": 12.0
+},
+"ax": [
+{
+"role": "button",
+"name": "Run"
+},
+{
+"role": "button",
+"name": "Alpha"
+},
+{
+"role": "button",
+"name": "Beta"
+},
+{
+"role": "button",
+"name": "Gamma"
+},
+{
+"role": "textbox",
+"name": "Tags",
+"readonly": false,
+"multiline": false,
+"required": false
+}
+],
+"inputValue": ""
 }
 ]
 }

@@ -1074,13 +1074,13 @@
       "code": "DOM_GLOBAL",
       "severity": "warning",
       "message": "Window access requires a native adapter.",
-      "line": 881
+      "line": 892
     },
     {
       "code": "ANIMATION_FRAME",
       "severity": "warning",
       "message": "Animation timing requires a native lifecycle adapter.",
-      "line": 1081
+      "line": 1092
     },
     {
       "code": "CANCELABLE_EVENT",
@@ -1094,7 +1094,7 @@
     "styleUrl": "md-list-item.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "3bb69232ab61b1776b524d361d64cc50725f6f0aafb912b669b79ec49709ad81"
+    "sha256": "37ad1bd196118434d308faf059356fa2d6b9466a3b562d21651ef18f92567fc1"
   },
   "styles": [
     {
@@ -3900,13 +3900,18 @@
           "important": false
         },
         {
+          "property": "visibility",
+          "value": "hidden",
+          "important": false
+        },
+        {
           "property": "transform",
           "value": "translateY(-8px)",
           "important": false
         },
         {
           "property": "transition",
-          "value": "transform var(--_collapse-duration) var(--_collapse-easing)",
+          "value": "transform var(--_collapse-duration) var(--_collapse-easing),\n    visibility 0s linear var(--_collapse-duration)",
           "important": false
         },
         {
@@ -3931,13 +3936,18 @@
       "context": null,
       "declarations": [
         {
+          "property": "visibility",
+          "value": "visible",
+          "important": false
+        },
+        {
           "property": "transform",
           "value": "translateY(0)",
           "important": false
         },
         {
           "property": "transition",
-          "value": "transform var(--_expand-duration) var(--_expand-easing)",
+          "value": "transform var(--_expand-duration) var(--_expand-easing),\n    visibility 0s",
           "important": false
         }
       ]
@@ -4340,7 +4350,11 @@
       ],
       "events": [
         "mdClick",
-        "mdExpand"
+        "mdExpand",
+        "mdItemClick",
+        "mdItemSelect",
+        "mdRequestActivation",
+        "mdItemRequestReorder"
       ],
       "methods": [
         "setFocus",
@@ -4360,12 +4374,7 @@
         "expanded-content"
       ],
       "unsupportedProperties": [],
-      "unsupportedEvents": [
-        "mdItemClick",
-        "mdItemSelect",
-        "mdRequestActivation",
-        "mdItemRequestReorder"
-      ],
+      "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
@@ -4373,7 +4382,8 @@
         "mdItemClick, mdItemSelect, mdRequestActivation and mdItemRequestReorder are the source's internal item-to-list protocol; natively the list coordinates its rows directly and emits mdSelect, mdActivate and mdReorder instead.",
         "Accessibility: a selection row is an option with its selected state (a radio button in a single-select listbox, a checkbox in a multi-select one), a menu row is a menu item (a button on Compose), the primary action is a button or link; the row's index is its set position. The headline and supporting text use the shared md-tooltip while clipped.",
         "The headline-tooltip-popup and supporting-tooltip-popup parts are styled through the shared md-tooltip appearance, not the list item part API.",
-        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
+        "Part declarations: backgroundColor, opacity and cornerShape on every visual part (cornerShape clips the avatar and the image-wrap), color on the text and glyph parts; the headline also takes letterSpacing and the row its border. Layout declarations are the hooks' job (gate-7 r3-14: NativeListPartsIntegration / NativeListPartsTest against Chrome's ::part() rules).",
+        "macOS SwiftUI/AppKit, iOS simulator (iPhone and iPad on iOS 26.3, iPhone on iOS 18.6; docs/native-parity/ios-harness.md) and Android emulator renderers are verified against the Chrome oracles; their accessibility trees are compared with Chrome's on all three platforms by tools/ax (docs/native-parity/accessibility.md). Spoken VoiceOver/TalkBack output is not automated."
       ],
       "verification": "not-device-verified",
       "visualParts": [
@@ -4513,7 +4523,11 @@
       ],
       "events": [
         "mdClick",
-        "mdExpand"
+        "mdExpand",
+        "mdItemClick",
+        "mdItemSelect",
+        "mdRequestActivation",
+        "mdItemRequestReorder"
       ],
       "methods": [
         "setFocus",
@@ -4533,12 +4547,7 @@
         "expanded-content"
       ],
       "unsupportedProperties": [],
-      "unsupportedEvents": [
-        "mdItemClick",
-        "mdItemSelect",
-        "mdRequestActivation",
-        "mdItemRequestReorder"
-      ],
+      "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
@@ -4546,7 +4555,8 @@
         "mdItemClick, mdItemSelect, mdRequestActivation and mdItemRequestReorder are the source's internal item-to-list protocol; natively the list coordinates its rows directly and emits mdSelect, mdActivate and mdReorder instead.",
         "Accessibility: a selection row is an option with its selected state (a radio button in a single-select listbox, a checkbox in a multi-select one), a menu row is a menu item (a button on Compose), the primary action is a button or link; the row's index is its set position. The headline and supporting text use the shared md-tooltip while clipped.",
         "The headline-tooltip-popup and supporting-tooltip-popup parts are styled through the shared md-tooltip appearance, not the list item part API.",
-        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
+        "Part declarations: backgroundColor, opacity and cornerShape on every visual part (cornerShape clips the avatar and the image-wrap), color on the text and glyph parts; the headline also takes letterSpacing and the row its border. Layout declarations are the hooks' job (gate-7 r3-14: NativeListPartsIntegration / NativeListPartsTest against Chrome's ::part() rules).",
+        "macOS SwiftUI/AppKit, iOS simulator (iPhone and iPad on iOS 26.3, iPhone on iOS 18.6; docs/native-parity/ios-harness.md) and Android emulator renderers are verified against the Chrome oracles; their accessibility trees are compared with Chrome's on all three platforms by tools/ax (docs/native-parity/accessibility.md). Spoken VoiceOver/TalkBack output is not automated."
       ],
       "verification": "not-device-verified",
       "visualParts": [

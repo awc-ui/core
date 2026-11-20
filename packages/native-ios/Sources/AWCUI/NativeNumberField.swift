@@ -25,13 +25,47 @@ public struct AWCNumberFieldAppearance: Equatable, Sendable {
               stepperColor: o.stepperColor ?? stepperColor, splitStepperSize: o.splitStepperSize ?? splitStepperSize)
     }
 }
+/// Typed counterpart of md-number-field's `::part(field)` (the inner md-text-field host). Part values come from the outer
+/// tree: the md-text-field hooks declared on the part win over the number field's own (the inline steppers' end padding) and
+/// over hooks inherited from outside; its background and opacity paint the whole inner field box (container and support row).
+public struct AWCNumberFieldPartAppearance: Equatable, Sendable {
+    /// md-text-field hooks (`--md-text-field-*`) declared on `::part(field)`.
+    public let field: AWCTextFieldAppearance?
+    /// `::part(field) { background-color; opacity }`.
+    public let fieldBackgroundColor: String?, fieldOpacity: Double?
+    public init(field: AWCTextFieldAppearance? = nil, fieldBackgroundColor: String? = nil, fieldOpacity: Double? = nil) {
+        self.field = field; self.fieldBackgroundColor = awcFieldColor(fieldBackgroundColor)
+        self.fieldOpacity = fieldOpacity.flatMap { $0.isFinite ? min(1, max(0, $0)) : nil }
+    }
+    public init(values v: [String: AWCValue]) {
+        self.init(field: v["field"].map { AWCTextFieldAppearance(values: $0.object) }, fieldBackgroundColor: (v["fieldBackgroundColor"]?.string).flatMap { $0.isEmpty ? nil : $0 },
+                  fieldOpacity: v["fieldOpacity"]?.number)
+    }
+    public func merging(_ o: Self) -> Self {
+        .init(field: field.map { $0.merging(o.field ?? .init()) } ?? o.field, fieldBackgroundColor: o.fieldBackgroundColor ?? fieldBackgroundColor,
+              fieldOpacity: o.fieldOpacity ?? fieldOpacity)
+    }
+}
 private struct AWCNumberFieldAppearanceKey: EnvironmentKey { static let defaultValue = AWCNumberFieldAppearance() }
+private struct AWCNumberFieldPartAppearanceKey: EnvironmentKey { static let defaultValue = AWCNumberFieldPartAppearance() }
+private struct AWCNumberFieldPartAppearanceTargetsKey: EnvironmentKey { static let defaultValue: [String: AWCNumberFieldPartAppearance] = [:] }
 private struct AWCNumberFieldAppearanceTargetsKey: EnvironmentKey { static let defaultValue: [String: AWCNumberFieldAppearance] = [:] }
 private struct AWCNumberFieldControllersKey: EnvironmentKey { static let defaultValue: [String: AWCNumberFieldController] = [:] }
 extension EnvironmentValues {
     var awcNumberFieldAppearance: AWCNumberFieldAppearance { get { self[AWCNumberFieldAppearanceKey.self] } set { self[AWCNumberFieldAppearanceKey.self] = newValue } }
     var awcNumberFieldAppearanceTargets: [String: AWCNumberFieldAppearance] { get { self[AWCNumberFieldAppearanceTargetsKey.self] } set { self[AWCNumberFieldAppearanceTargetsKey.self] = newValue } }
     var awcNumberFieldControllers: [String: AWCNumberFieldController] { get { self[AWCNumberFieldControllersKey.self] } set { self[AWCNumberFieldControllersKey.self] = newValue } }
+    var awcNumberFieldPartAppearance: AWCNumberFieldPartAppearance { get { self[AWCNumberFieldPartAppearanceKey.self] } set { self[AWCNumberFieldPartAppearanceKey.self] = newValue } }
+    var awcNumberFieldPartAppearanceTargets: [String: AWCNumberFieldPartAppearance] { get { self[AWCNumberFieldPartAppearanceTargetsKey.self] } set { self[AWCNumberFieldPartAppearanceTargetsKey.self] = newValue } }
+}
+private struct AWCNumberFieldPartAppearanceModifier: ViewModifier {
+    let value: AWCNumberFieldPartAppearance, id: String?
+    @Environment(\.awcNumberFieldPartAppearance) private var inherited
+    @Environment(\.awcNumberFieldPartAppearanceTargets) private var targets
+    func body(content: Content) -> some View {
+        if let id { var t = targets; t[id] = (t[id] ?? .init()).merging(value); return AnyView(content.environment(\.awcNumberFieldPartAppearanceTargets, t)) }
+        return AnyView(content.environment(\.awcNumberFieldPartAppearance, inherited.merging(value)))
+    }
 }
 private struct AWCNumberFieldAppearanceModifier: ViewModifier {
     let value: AWCNumberFieldAppearance, id: String?
@@ -52,6 +86,8 @@ public extension View {
     func awcNumberFieldAppearance(_ value: AWCNumberFieldAppearance, for id: String? = nil) -> some View { modifier(AWCNumberFieldAppearanceModifier(value: value, id: id)) }
     /// Attaches `controller` to the number field with node id `id` (every descendant number field without an id).
     func awcNumberFieldController(_ controller: AWCNumberFieldController, for id: String? = nil) -> some View { modifier(AWCNumberFieldControllerModifier(controller: controller, id: id)) }
+    /// md-number-field `::part(field)` values for descendant number fields, or for the one with node id `id`.
+    func awcNumberFieldPartAppearance(_ value: AWCNumberFieldPartAppearance, for id: String? = nil) -> some View { modifier(AWCNumberFieldPartAppearanceModifier(value: value, id: id)) }
 }
 
 /// Native counterparts of md-number-field's methods: setFocus, select, stepUp, stepDown, getValidity, checkValidity,
@@ -114,11 +150,14 @@ struct AWCNativeNumberField: View {
     @Environment(\.awcNumberFieldControllers) private var controllers
     @Environment(\.awcTextFieldAppearance) private var fieldAppearance
     @Environment(\.awcTextFieldAppearanceTargets) private var fieldTargets
+    @Environment(\.awcNumberFieldPartAppearance) private var inheritedParts
+    @Environment(\.awcNumberFieldPartAppearanceTargets) private var partTargets
     @Environment(\.awcNativeDensity) private var inheritedDensity
     @State private var rt = AWCNumberFieldRuntime()
 
     private var model: AWCNumberFieldModel { AWCNumberFieldModel(properties: node.properties) }
     private var appearance: AWCNumberFieldAppearance { inheritedAppearance.merging(appearanceTargets[node.id] ?? .init()) }
+    private var parts: AWCNumberFieldPartAppearance { inheritedParts.merging(partTargets[node.id] ?? .init()) }
     private var intl: AWCNumberIntl { .shared }
     private var disabled: Bool { model.disabled || formDisabled }
     private var scale: Double { AWCNativeDensity.resolve(model.density, inherited: inheritedDensity) }
@@ -145,7 +184,13 @@ struct AWCNativeNumberField: View {
     private var stepperColor: String { appearance.stepperColor ?? theme.tokens["--md-sys-color-on-surface-variant"].flatMap(awcFieldColor) ?? "#49454F" }
 
     var body: some View {
+        // S71-02: the methods run closures made by `start()` once; they must see the current render's node, so the runtime's step
+        // closure is re-made on every render (@ObservationIgnored: no invalidation).
+        let _ = refreshMethods()
         if model.hidden { EmptyView() } else { observed(model) }
+    }
+    private func refreshMethods() {
+        rt.step = { dir, times in doStep(dir, model.stepAmount * max(1, times), nearest: false, reason: "none") }
     }
     private func arranged(_ m: AWCNumberFieldModel) -> some View {
         Group {
@@ -227,13 +272,21 @@ struct AWCNativeNumberField: View {
         hooks.focus = { f in focusChanged(f) }
         if m.inline { hooks.trailing = AnyView(HStack(spacing: gapXs) { stepper(-1, m); stepper(1, m) }) }
         // :host(.md-number-field--inline) sets --md-text-field-padding-inline-end: 8px; the host's own (targeted) hook still wins.
-        let ownPadding = m.inline && fieldTargets[node.id]?.paddingInlineEnd == nil ? AWCTextFieldAppearance(paddingInlineEnd: insetSm) : AWCTextFieldAppearance()
+        let partField = parts.field ?? .init()
+        let ownPadding = m.inline && fieldTargets[node.id]?.paddingInlineEnd == nil && partField.paddingInlineEnd == nil ? AWCTextFieldAppearance(paddingInlineEnd: insetSm) : AWCTextFieldAppearance()
         return AWCNativeTextField(node: inner, theme: theme, value: rt.inputValue, setValue: { raw in fieldInput(raw) }, emit: { _, _ in },
                                   leading: [], trailing: [], chips: [], clearIcon: [], passwordIcon: [], speechIcon: [], errorIcon: [],
                                   child: { child($0, { _ in }) }, formMessage: nil, formResets: formResets, formDisabled: formDisabled,
                                   submit: {}, validityBox: nil, hooks: hooks)
+            .awcTextFieldAppearance(partField, for: node.id)   // innermost: the part's hooks win over targeted outer ones
             .awcTextFieldAppearance(ownPadding)
-            .awcInspect(nodeID: node.id, part: "field", name: "field")
+            .background { if let bg = parts.fieldBackgroundColor { Color(awcHex: bg) } }
+            // CSS opacity composites the part as one group (its background, container and indicator), not layer by layer.
+            .compositingGroup()
+            .opacity(parts.fieldOpacity ?? 1)
+            .awcInspect(nodeID: node.id, part: "field", name: "field") { [bg = parts.fieldBackgroundColor ?? "", op = parts.fieldOpacity ?? 1] _ in
+                ["background": .string(bg), "opacity": .number(op)]
+            }
     }
     @State private var fallbackField = AWCTextFieldController()
 
@@ -256,10 +309,13 @@ struct AWCNativeNumberField: View {
                 if pressed { DispatchQueue.main.async { [field = controller?.field ?? fallbackField] in _ = field.setFocus() } }
                 #endif
             }
-        let metrics: [String: AWCValue] = ["disabled": .bool(off)]
+        let metrics: [String: AWCValue] = ["disabled": .bool(off), "label": .string(dir > 0 ? m.incrementLabel : m.decrementLabel)]
         return child(AWCNode(id: "\(node.id)-\(kind)", tag: "md-icon-button", properties: props), { _ in })
             .awcIconButtonAppearance(look)
             .simultaneousGesture(press)
+            // S71-04: the composed icon button exposed AppKit's extra action set (AXDelete...) in some processes; the
+            // representation is a plain Button with the same label, disabled state and step action.
+            .accessibilityRepresentation { Button(dir > 0 ? m.incrementLabel : m.decrementLabel) { rt.step(Double(dir), 1) }.disabled(off) }
             .awcInspect(nodeID: node.id, part: kind, name: kind) { _ in metrics }
     }
     private func pressChanged(_ g: DragGesture.Value, dir: Double, size: Double) {
@@ -277,7 +333,6 @@ struct AWCNativeNumberField: View {
         rt.value = v; rt.defaultValue = v; rt.lastCommitted = v; rt.lastProp = node.properties["value"]
         rt.inputValue = intl.format(v, model)
         let r = rt
-        rt.step = { dir, times in doStep(dir, model.stepAmount * max(1, times), nearest: false, reason: "none") }
         installValidity()
         validityBox?.evaluate = { r.validity().constraint }
         controller?.runtime = rt

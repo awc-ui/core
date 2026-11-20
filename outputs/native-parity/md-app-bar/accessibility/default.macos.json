@@ -1,0 +1,330 @@
+{
+ "tag": "md-app-bar",
+ "case": "default",
+ "request": {
+  "tag": "md-app-bar",
+  "properties": {},
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "children": [
+          {
+           "actions": [
+            "AXPress"
+           ],
+           "description": "Open navigation",
+           "disclosing": false,
+           "disclosureLevel": 0,
+           "enabled": true,
+           "expanded": false,
+           "focused": false,
+           "frame": [
+            36,
+            40,
+            48,
+            48
+           ],
+           "identifier": "example-md-app-bar-leading-icon",
+           "index": 0,
+           "invalid": "false",
+           "required": false,
+           "role": "AXButton",
+           "roleDescription": "button",
+           "selected": false
+          }
+         ],
+         "enabled": true,
+         "focused": false,
+         "frame": [
+          36,
+          40,
+          48,
+          48
+         ],
+         "identifier": "example-md-app-bar-leading-icon",
+         "role": "AXGroup",
+         "roleDescription": "group"
+        },
+        {
+         "enabled": true,
+         "frame": [
+          96,
+          50,
+          448,
+          28
+         ],
+         "role": "AXUnknown"
+        },
+        {
+         "enabled": true,
+         "frame": [
+          96,
+          51.5,
+          157,
+          25
+         ],
+         "role": "AXStaticText",
+         "roleDescription": "text",
+         "value": "Your workspace"
+        },
+        {
+         "children": [
+          {
+           "actions": [
+            "AXPress"
+           ],
+           "description": "Search",
+           "disclosing": false,
+           "disclosureLevel": 0,
+           "enabled": true,
+           "expanded": false,
+           "focused": false,
+           "frame": [
+            556,
+            40,
+            48,
+            48
+           ],
+           "identifier": "C71C4E9E-4FC8-48F0-B93F-CD17CF00547E",
+           "index": 0,
+           "invalid": "false",
+           "required": false,
+           "role": "AXButton",
+           "roleDescription": "button",
+           "selected": false
+          }
+         ],
+         "enabled": true,
+         "focused": false,
+         "frame": [
+          556,
+          40,
+          48,
+          48
+         ],
+         "identifier": "C71C4E9E-4FC8-48F0-B93F-CD17CF00547E",
+         "role": "AXGroup",
+         "roleDescription": "group"
+        }
+       ],
+       "enabled": true,
+       "focused": false,
+       "frame": [
+        32,
+        32,
+        576,
+        64
+       ],
+       "identifier": "example-md-app-bar",
+       "role": "AXGroup",
+       "roleDescription": "group"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      128
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    128
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [
+   {
+    "children": [],
+    "id": "C71C4E9E-4FC8-48F0-B93F-CD17CF00547E",
+    "properties": {
+     "aria-label": "Search",
+     "icon": "search"
+    },
+    "slot": "trailing",
+    "tag": "md-icon-button"
+   }
+  ],
+  "id": "example-md-app-bar",
+  "properties": {
+   "density": 0,
+   "headline": "Your workspace",
+   "leadingIcon": "menu",
+   "leadingIconLabel": "Open navigation",
+   "scrolled": false,
+   "searchAriaLabel": "",
+   "searchDisabled": false,
+   "searchPlaceholder": "Search",
+   "searchValue": "",
+   "subtitle": "",
+   "titleAlignment": "start",
+   "variant": "small"
+  },
+  "tag": "md-app-bar"
+ },
+ "focus": [
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Open navigation",
+    "frame": [
+     36,
+     40,
+     48,
+     48
+    ],
+    "identifier": "example-md-app-bar-leading-icon",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Search",
+    "frame": [
+     556,
+     40,
+     48,
+     48
+    ],
+    "identifier": "C71C4E9E-4FC8-48F0-B93F-CD17CF00547E",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 64,
+     "width": 576,
+     "x": 32,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "fill": "#FFFBFE",
+     "renderTime": 596014397.3061668,
+     "role": "banner",
+     "scrolled": false,
+     "variant": "small",
+     "warned": 0
+    },
+    "name": "md-app-bar"
+   },
+   {
+    "bounds": {
+     "height": 28,
+     "width": 472,
+     "x": 84,
+     "y": 50
+    },
+    "id": "component.headline-inline",
+    "metrics": {
+     "opacity": 1
+    },
+    "name": "headline-inline",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 48,
+     "width": 48,
+     "x": 36,
+     "y": 40
+    },
+    "id": "component.leading",
+    "name": "leading",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 48,
+     "width": 48,
+     "x": 36,
+     "y": 40
+    },
+    "id": "component.leading-icon",
+    "name": "leading-icon",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 64,
+     "width": 576,
+     "x": 32,
+     "y": 32
+    },
+    "id": "component.row",
+    "name": "row",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 28,
+     "width": 448,
+     "x": 96,
+     "y": 50
+    },
+    "id": "component.title",
+    "name": "title",
+    "parentId": "component"
+   },
+   {
+    "bounds": {
+     "height": 48,
+     "width": 48,
+     "x": 556,
+     "y": 40
+    },
+    "id": "component.trailing",
+    "name": "trailing",
+    "parentId": "component"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

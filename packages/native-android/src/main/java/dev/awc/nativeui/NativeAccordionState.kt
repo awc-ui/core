@@ -13,6 +13,8 @@ internal class NativeAccordionItemState(
     var headingLevel by mutableStateOf(headingLevel)
     var regionRole by mutableStateOf(regionRole)
     var collapsible by mutableStateOf(collapsible)
+    /** `hidden` (`display: none`): coordinated, not rendered, takes no gap, ignores focusHeader. */
+    var hidden by mutableStateOf(false)
     var index by mutableStateOf(-1); private set
     var hasChassisHandle by mutableStateOf(false); private set
     var owner:NativeAccordionState?=null; private set
@@ -24,7 +26,7 @@ internal class NativeAccordionItemState(
     var requestFocus:()->Unit={}
     val toggleBlocked get()=disabled || (expanded && !collapsible)
     fun toggle() { if(!toggleBlocked) assignExpanded(!expanded) }
-    fun focusHeader() { if(!disabled) requestFocus() }
+    fun focusHeader() { if(!disabled && !hidden) requestFocus() }
     fun assignExpanded(value:Boolean) {
         if(expanded==value) return
         expanded=value

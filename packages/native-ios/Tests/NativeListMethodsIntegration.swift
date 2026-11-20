@@ -55,11 +55,15 @@ struct ListMethodsFixture: View {
         reset("single-select")
         check(list.isConnected && items["a"]!.isConnected, "controllers connect")
         check(list.getSelectedIndices() == [2], "getSelectedIndices seeds from selected rows: \(list.getSelectedIndices())")
-        check(list.activateNext() == "a", "activateNext from c wraps past expandable rows to a"); pump()
+        // Chrome 153 (web/methods-oracle.json): in a selection list the expandable row d is a roving stop.
+        check(list.activateNext() == "d", "activateNext from c moves to the expandable row d (md-list isItemFocusable)"); pump()
+        check(focusedID() == "d", "activateNext focuses d (\(focusedID()))")
+        check(names() == ["mdActivate@list", "mdRequestActivation@d"] && state.events.first?.1["index"].number == 3, "mdActivate {index 3} \(names())")
+        check(list.activatePrevious() == "c", "activatePrevious back to c"); pump()
+        check(focusedID() == "c", "focus on c"); check(names() == ["mdActivate@list", "mdRequestActivation@d", "mdActivate@list", "mdRequestActivation@c"], "second mdActivate \(names())")
+        check(list.activateNext() == "d", "activateNext to d again"); pump()
+        check(list.activateNext() == "a", "activateNext from d wraps past the disabled e to a"); pump()
         check(focusedID() == "a" && metric("a", "focusRing") == .bool(true), "activateNext focuses with a visible ring (\(focusedID()))")
-        check(names() == ["mdActivate@list"] && state.events.first?.1["index"].number == 0, "mdActivate {index 0} \(names())")
-        check(list.activatePrevious() == "c", "activatePrevious wraps to c"); pump()
-        check(focusedID() == "c", "focus on c"); check(names() == ["mdActivate@list", "mdActivate@list"], "second mdActivate \(names())")
         // selectItem: silent.
         state.events = []; list.selectItem(0); pump()
         check(list.getSelectedIndices() == [0] && state.events.isEmpty, "selectItem(0) single-select is silent: \(list.getSelectedIndices()) \(names())")
@@ -80,7 +84,7 @@ struct ListMethodsFixture: View {
         items["e"]!.toggle(); pump(0.3); check(metric("e", "expanded") == .bool(false), "toggle on a disabled row is a no-op")
         items["a"]!.toggle(); pump(0.2); check(metric("a", "expanded") == .bool(false), "toggle on a non-expandable row is a no-op")
         reset("single-select"); state.events = []
-        check(items["a"]!.focusItem(), "focusItem"); pump(); check(focusedID() == "a" && names() == ["mdActivate@list"], "focusItem focuses a and activates \(focusedID()) \(names())")
+        check(items["a"]!.focusItem(), "focusItem"); pump(); check(focusedID() == "a" && names() == ["mdActivate@list", "mdRequestActivation@a"], "focusItem focuses a and activates \(focusedID()) \(names())")
         check(!items["b"]!.setFocus(focusVisible: true), "a disabled row cannot take focus")
         // Keyboard reorder: Alt+ArrowDown/Up, ignored at the edges; order is relative to the authored order.
         reset("none", reorderable: true)

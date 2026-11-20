@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-31T20:06:20.542Z",
+  "generatedAt": "2026-11-15T22:35:21.594Z",
   "componentCount": 55,
   "documentedCount": 56,
   "subComponentCount": 1,
@@ -2079,6 +2079,62 @@
         {
           "name": "--md-avatar-outline-width",
           "description": "Optional outline width (default 0)"
+        },
+        {
+          "name": "--md-avatar-palette-1-container",
+          "description": "Container fill for palette bucket 1"
+        },
+        {
+          "name": "--md-avatar-palette-1-label",
+          "description": "Label color for palette bucket 1"
+        },
+        {
+          "name": "--md-avatar-palette-2-container",
+          "description": "Container fill for palette bucket 2"
+        },
+        {
+          "name": "--md-avatar-palette-2-label",
+          "description": "Label color for palette bucket 2"
+        },
+        {
+          "name": "--md-avatar-palette-3-container",
+          "description": "Container fill for palette bucket 3"
+        },
+        {
+          "name": "--md-avatar-palette-3-label",
+          "description": "Label color for palette bucket 3"
+        },
+        {
+          "name": "--md-avatar-palette-4-container",
+          "description": "Container fill for palette bucket 4"
+        },
+        {
+          "name": "--md-avatar-palette-4-label",
+          "description": "Label color for palette bucket 4"
+        },
+        {
+          "name": "--md-avatar-palette-5-container",
+          "description": "Container fill for palette bucket 5"
+        },
+        {
+          "name": "--md-avatar-palette-5-label",
+          "description": "Label color for palette bucket 5"
+        },
+        {
+          "name": "--md-avatar-palette-6-container",
+          "description": "Container fill for palette bucket 6"
+        },
+        {
+          "name": "--md-avatar-palette-6-label",
+          "description": "Label color for palette bucket 6"
+        },
+        {
+          "name": "--md-avatar-palette-7-container",
+          "description": "Container fill for palette bucket 7"
+        },
+        {
+          "name": "--md-avatar-palette-7-label",
+          "description": "Label color for palette bucket 7"
         },
         {
           "name": "--md-avatar-label-letter-spacing",
@@ -9850,7 +9906,68 @@
           "description": "The avatar's <img> (exported)"
         }
       ],
-      "cssCustomProps": [],
+      "cssCustomProps": [
+        {
+          "name": "--md-org-chart-connector-color",
+          "description": "Connector line colour"
+        },
+        {
+          "name": "--md-org-chart-connector-width",
+          "description": "Connector line thickness"
+        },
+        {
+          "name": "--md-org-chart-node-color",
+          "description": "Node card background"
+        },
+        {
+          "name": "--md-org-chart-node-outline-color",
+          "description": "Node card border colour"
+        },
+        {
+          "name": "--md-org-chart-node-outline-width",
+          "description": "Node card border width"
+        },
+        {
+          "name": "--md-org-chart-node-shape",
+          "description": "Node card corner radius"
+        },
+        {
+          "name": "--md-org-chart-node-min-width",
+          "description": "Node card min inline-size"
+        },
+        {
+          "name": "--md-org-chart-node-max-width",
+          "description": "Node card max inline-size"
+        },
+        {
+          "name": "--md-org-chart-selected-color",
+          "description": "Selected node accent (border + tint)"
+        },
+        {
+          "name": "--md-org-chart-focus-ring-color",
+          "description": "Focus outline colour (default: buttons')"
+        },
+        {
+          "name": "--md-org-chart-state-layer-color",
+          "description": "Hover / selected overlay colour"
+        },
+        {
+          "name": "--md-org-chart-toggle-size",
+          "description": "Expand/collapse toggler diameter"
+        },
+        {
+          "name": "--md-org-chart-level-gap",
+          "description": "Vertical gap between levels"
+        },
+        {
+          "name": "--md-org-chart-sibling-gap",
+          "description": "Horizontal gap between siblings"
+        },
+        {
+          "name": "--md-org-chart-duration",
+          "description": "Motion duration"
+        }
+      ],
       "dependencies": [
         "md-ripple",
         "md-avatar",
@@ -13625,6 +13742,10 @@
         {
           "name": "--md-slider-value-padding-block",
           "description": "Value indicator vertical padding"
+        },
+        {
+          "name": "--md-slider-value-indicator-reserve",
+          "description": "Space reserved for a persistent value indicator (block-start horizontal, inline-end vertical)"
         },
         {
           "name": "--md-slider-inset-icon-color",

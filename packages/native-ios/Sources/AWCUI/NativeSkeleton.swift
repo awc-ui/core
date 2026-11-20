@@ -75,7 +75,7 @@ struct AWCNativeSkeleton:View {
         let m=metrics
         if m.hidden{Color.clear.frame(width:0,height:0).awcInspectionAbsent().accessibilityHidden(true)}
         else{
-            TimelineView(.animation(minimumInterval:1.0/60,paused:fixedClock != nil || reduced)){timeline in
+            TimelineView(.animation(minimumInterval:nil,paused:fixedClock != nil || reduced)){timeline in
                 rendered(m,clock:fixedClock ?? .init(entrance:timeline.date.timeIntervalSince(entranceAt),recurring:timeline.date.timeIntervalSince(recurringAt)))
             }.onAppear{entranceAt=Date();recurringAt=entranceAt;announce(m)}
                 .onChange(of:reduced){_,_ in entranceAt=Date();recurringAt=entranceAt}
@@ -120,11 +120,14 @@ import UIKit
 final class AWCNativeSkeletonStatusView:UIActivityIndicatorView {
     var nodeID="",label=""
     override func point(inside point:CGPoint,with event:UIEvent?)->Bool{false}
+    // R2-D12: the authored label is the accessible name, including an empty one (Web: role=status, empty name). UIKit's
+    // default ("In progress") must never replace it, whatever the order of SwiftUI updates and accessibility reads.
+    override var accessibilityLabel:String?{get{label} set{}}
 }
 private struct AWCNativeSkeletonStatusBridge:UIViewRepresentable {
     let id:String,label:String
     func makeUIView(context:Context)->AWCNativeSkeletonStatusView{
-        let view=AWCNativeSkeletonStatusView(style:.medium);view.color = .clear;view.isUserInteractionEnabled=false;view.hidesWhenStopped=false;view.startAnimating();return view
+        let view=AWCNativeSkeletonStatusView(style:.medium);view.nodeID=id;view.label=label;view.color = .clear;view.isUserInteractionEnabled=false;view.hidesWhenStopped=false;view.startAnimating();return view
     }
     func updateUIView(_ view:AWCNativeSkeletonStatusView,context:Context){view.nodeID=id;view.label=label;view.isAccessibilityElement=true;view.accessibilityIdentifier=id;view.accessibilityLabel=label;view.accessibilityTraits.insert(.updatesFrequently)}
 }

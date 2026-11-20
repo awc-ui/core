@@ -102,6 +102,33 @@ struct NavigationBarPaintFixture: View {
         }
         return out
     }
+    /// Gate-7 R6-17: the declarations of `tag::part(part){…}` in a case's rules.
+    static func boxRule(_ css: String, _ tag: String, _ part: String) -> [String: String]? {
+        guard let r = css.range(of: tag + "::part(" + part + "){") else { return nil }
+        var out: [String: String] = [:]
+        for decl in css[r.upperBound...].prefix(while: { $0 != "}" }).split(separator: ";") {
+            let kv = decl.split(separator: ":", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespaces) }; if kv.count == 2 { out[kv[0]] = kv[1] } }
+        return out.isEmpty ? nil : out
+    }
+    /// A wrapper part's rule as the typed box: background(-color), border (width style colour), border-radius, padding shorthand.
+    static func partBox(_ r: [String: String]?) -> AWCPartBox? {
+        guard let r, ["background-color", "background", "border", "border-radius", "padding"].contains(where: { r[$0] != nil }) else { return nil }
+        func n(_ s: String) -> Double { Double(s.replacingOccurrences(of: "px", with: "")) ?? 0 }
+        let border = (r["border"] ?? "").split(separator: " ").map(String.init)
+        return AWCPartBox(background: r["background-color"] ?? r["background"], borderWidth: border.first.map(n), borderColor: border.last.flatMap { $0.hasPrefix("#") ? $0 : nil },
+                          cornerRadius: r["border-radius"].map(n), padding: r["padding"].map { $0.split(separator: " ").map { n(String($0)) } })
+    }
+    /// The inspected box of a wrapper part against Chrome's computed box.
+    static func boxCheck(_ label: String, _ node: AWCNativeInspectionNode?, bg: String, bw: String, bc: String, radius: String, pad: [String]) {
+        guard let node else { check(false, "\(label) box measured"); return }
+        func n(_ s: String) -> Double { Double(s.replacingOccurrences(of: "px", with: "")) ?? 0 }
+        check(colorClose(node.metrics["background"], bg), "\(label) box background \(String(describing: node.metrics["background"])) vs \(bg)")
+        check(abs((node.metrics["borderWidth"]?.number ?? -1) - n(bw)) < 0.01, "\(label) box border width \(String(describing: node.metrics["borderWidth"])) vs \(bw)")
+        if n(bw) > 0 { check(colorClose(node.metrics["borderColor"], bc), "\(label) box border colour \(String(describing: node.metrics["borderColor"])) vs \(bc)") }
+        check(abs((node.metrics["radius"]?.number ?? -1) - n(radius)) < 0.01, "\(label) box radius \(String(describing: node.metrics["radius"])) vs \(radius)")
+        let p = node.metrics["padding"]?.array.compactMap(\.number) ?? []
+        check(p.count == 4 && zip(p, pad.map(n)).allSatisfy { abs($0 - $1) < 0.01 }, "\(label) box padding \(p) vs \(pad)")
+    }
     static func run(_ c: AWCValue, shots: URL) {
         let name = c["name"].string
         state.dark = c["theme"].string == "dark"; state.rtl = c["dir"].string == "rtl"
@@ -110,7 +137,8 @@ struct NavigationBarPaintFixture: View {
         state.appearance = AWCNavigationBarAppearance(css: hooks(nodes.first?.properties["_hooks"] ?? .null))
         let rules = partRules(c["parts"].string), tp = { (part: String, prop: String) in rules["md-navigation-tab::" + part]?[prop] }
         state.tabParts = .init(stateLayerColor: tp("state-layer", "background-color"), stateLayerOpacity: tp("state-layer", "opacity").flatMap(Double.init), iconColor: tp("icon", "color"),
-                               labelColor: tp("label", "color"), indicatorColor: tp("indicator", "background-color"), badgeColor: tp("badge", "background-color"), badgeLabelColor: tp("badge", "color"))
+                               labelColor: tp("label", "color"), indicatorColor: tp("indicator", "background-color"), badgeColor: tp("badge", "background-color"), badgeLabelColor: tp("badge", "color"),
+                               container: partBox(boxRule(c["parts"].string, "md-navigation-tab", "container")), iconContainer: partBox(boxRule(c["parts"].string, "md-navigation-tab", "icon-container")))
         state.barParts = .init(containerColor: rules["md-navigation-bar::container"]?["background-color"])
         // The global density rung of the matrix rides on the bar (the oracle sets it on an ancestor).
         if let d = c["density"].number, d != 0 { state.nodes = nodes.map { n in var n = n; if n.properties["density"] == nil { n.properties["density"] = .number(d) }; return n } } else { state.nodes = nodes }
@@ -144,6 +172,19 @@ struct NavigationBarPaintFixture: View {
                 let wr = wt[part]["rect"]
                 near(p.bounds.minX, wr["x"].number, "\(lbl) \(part) x"); near(p.bounds.minY, wr["y"].number, "\(lbl) \(part) y")
                 near(p.bounds.width, wr["width"].number, "\(lbl) \(part) width", 1); near(p.bounds.height, wr["height"].number, "\(lbl) \(part) height", 1)
+                // ::part(container) / ::part(icon-container) boxes (gate-7 R6-17): the typed box against Chrome's computed box.
+                if part != "icon", boxRule(c["parts"].string, "md-navigation-tab", part) != nil {
+                    boxCheck("\(name) \(lbl) \(part)", p, bg: wt[part]["bg"].string, bw: wt[part]["bw"].string, bc: wt[part]["bc"].string, radius: wt[part]["radius"].string, pad: wt[part]["pad"].array.map(\.string))
+                }
+            }
+            // A text icon slot (R6-11): the run's own box (Chrome's Range) — font family and size decide its width.
+            for sl in wt["slotted"].array where sl["textRect"] != .null {
+                guard let run = m(id, "slotted-icon") else { check(false, "\(name) \(lbl) slotted icon measured"); continue }
+                let tr = sl["textRect"]
+                near(run.bounds.minX, tr["x"].number, "\(lbl) slotted icon x"); near(run.bounds.width, tr["width"].number, "\(lbl) slotted icon width")
+                near(run.bounds.midY, (tr["y"].number ?? 0) + (tr["height"].number ?? 0) / 2, "\(lbl) slotted icon centre y", 1)
+                near(run.metrics["fontSize"]?.number, numbers(sl["fontSize"].string).first, "\(lbl) slotted icon size", 0.01)
+                check(colorClose(run.metrics["color"], sl["color"].string), "\(name) \(lbl) slotted icon colour")
             }
             if wt["icon"] != .null, let icon = m(id, "icon") { check(colorClose(icon.metrics["color"], wt["icon"]["color"].string), "\(name) \(lbl) icon colour \(String(describing: icon.metrics["color"])) vs \(wt["icon"]["color"].string)") }
             let label = m(id, "label")

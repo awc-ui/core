@@ -1,0 +1,733 @@
+{
+ "tag": "md-stepper",
+ "case": "mobile",
+ "html": "<md-stepper data-ax-node=\"n0\" id=\"example-md-stepper\"><md-step data-ax-node=\"n1\">Complete this section, then continue to the next step.</md-step><md-step data-ax-node=\"n2\">Complete this section, then continue to the next step.</md-step><md-step data-ax-node=\"n3\">Complete this section, then continue to the next step.</md-step></md-stepper>",
+ "props": {
+  "n0": {
+   "active": 0,
+   "autoComplete": true,
+   "backLabel": "Back",
+   "completedWord": "completed",
+   "currentWord": "current",
+   "density": 0,
+   "errorWord": "error",
+   "finishLabel": "Finish",
+   "indicator": "numbered",
+   "label": "Progress",
+   "lazy": false,
+   "loading": false,
+   "mode": "linear",
+   "nav": true,
+   "nextDisabled": false,
+   "nextLabel": "Continue",
+   "ofWord": "of",
+   "optionalWord": "Optional",
+   "orientation": "horizontal",
+   "readonly": false,
+   "stepWord": "Step",
+   "variant": "mobile"
+  },
+  "n1": {
+   "description": "Set up your account",
+   "label": "Account"
+  },
+  "n2": {
+   "description": "Set up your workspace",
+   "label": "Workspace"
+  },
+  "n3": {
+   "description": "Set up your review",
+   "label": "Review"
+  }
+ },
+ "platform": "web",
+ "chrome": "Chrome/153.0.8010.36",
+ "tree": {
+  "role": "main",
+  "name": "",
+  "ignored": false,
+  "frame": [
+   0,
+   0,
+   640,
+   272
+  ],
+  "children": [
+   {
+    "role": "navigation",
+    "name": "Progress",
+    "ignored": false,
+    "frame": [
+     16,
+     16,
+     608,
+     202
+    ],
+    "children": [
+     {
+      "role": "status",
+      "name": "",
+      "ignored": false,
+      "live": "polite",
+      "atomic": true,
+      "relevant": "additions text",
+      "frame": [
+       15,
+       15,
+       1,
+       1
+      ]
+     },
+     {
+      "role": "alert",
+      "name": "",
+      "ignored": false,
+      "live": "assertive",
+      "atomic": true,
+      "relevant": "additions text",
+      "frame": [
+       15,
+       15,
+       1,
+       1
+      ]
+     },
+     {
+      "role": "list",
+      "name": "",
+      "ignored": false,
+      "frame": [
+       16,
+       16,
+       608,
+       146
+      ],
+      "children": [
+       {
+        "role": "listitem",
+        "name": "",
+        "ignored": false,
+        "level": 1,
+        "children": [
+         {
+          "role": "generic",
+          "name": "",
+          "ignored": false,
+          "frame": [
+           16,
+           16,
+           202.65625,
+           96
+          ],
+          "children": [
+           {
+            "role": "button",
+            "name": "Step 1 of 3: Account, current",
+            "ignored": false,
+            "focusable": true,
+            "expanded": true,
+            "frame": [
+             55.953125,
+             16,
+             122.734375,
+             96
+            ],
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true,
+              "children": [
+               {
+                "role": "none",
+                "name": "",
+                "ignored": true
+               }
+              ]
+             },
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true,
+              "children": [
+               {
+                "role": "none",
+                "name": "",
+                "ignored": true,
+                "children": [
+                 {
+                  "role": "StaticText",
+                  "name": "Account",
+                  "ignored": false,
+                  "frame": [
+                   89.3125,
+                   76,
+                   56,
+                   16
+                  ],
+                  "children": [
+                   {
+                    "role": "InlineTextBox",
+                    "name": "Account",
+                    "ignored": false
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "role": "none",
+                "name": "",
+                "ignored": true,
+                "children": [
+                 {
+                  "role": "StaticText",
+                  "name": "Set up your account",
+                  "ignored": false,
+                  "frame": [
+                   63.953125,
+                   97,
+                   106.734375,
+                   14
+                  ],
+                  "children": [
+                   {
+                    "role": "InlineTextBox",
+                    "name": "Set up your account",
+                    "ignored": false
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           }
+          ]
+         },
+         {
+          "role": "region",
+          "name": "Account",
+          "ignored": false,
+          "frame": [
+           16,
+           112,
+           608,
+           50
+          ],
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "generic",
+              "name": "",
+              "ignored": false,
+              "frame": [
+               16,
+               112,
+               608,
+               50
+              ],
+              "children": [
+               {
+                "role": "StaticText",
+                "name": "Complete this section, then continue to the next step.",
+                "ignored": false,
+                "frame": [
+                 16,
+                 128,
+                 376.234375,
+                 18
+                ],
+                "children": [
+                 {
+                  "role": "InlineTextBox",
+                  "name": "Complete this section, then continue to the next step.",
+                  "ignored": false
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "role": "listitem",
+        "name": "",
+        "ignored": false,
+        "disabled": true,
+        "level": 1,
+        "children": [
+         {
+          "role": "generic",
+          "name": "",
+          "ignored": false,
+          "frame": [
+           218.65625,
+           16,
+           202.671875,
+           96
+          ],
+          "children": [
+           {
+            "role": "button",
+            "name": "Step 2 of 3: Workspace",
+            "ignored": false,
+            "disabled": true,
+            "focusable": true,
+            "expanded": false,
+            "frame": [
+             250.953125,
+             16,
+             138.0625,
+             96
+            ],
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true,
+              "children": [
+               {
+                "role": "none",
+                "name": "",
+                "ignored": true
+               }
+              ]
+             },
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true,
+              "children": [
+               {
+                "role": "none",
+                "name": "",
+                "ignored": true,
+                "children": [
+                 {
+                  "role": "StaticText",
+                  "name": "Workspace",
+                  "ignored": false,
+                  "frame": [
+                   285.09375,
+                   76,
+                   69.78125,
+                   16
+                  ],
+                  "children": [
+                   {
+                    "role": "InlineTextBox",
+                    "name": "Workspace",
+                    "ignored": false
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "role": "none",
+                "name": "",
+                "ignored": true,
+                "children": [
+                 {
+                  "role": "StaticText",
+                  "name": "Set up your workspace",
+                  "ignored": false,
+                  "frame": [
+                   258.953125,
+                   97,
+                   122.0625,
+                   14
+                  ],
+                  "children": [
+                   {
+                    "role": "InlineTextBox",
+                    "name": "Set up your workspace",
+                    "ignored": false
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "role": "listitem",
+        "name": "",
+        "ignored": false,
+        "disabled": true,
+        "level": 1,
+        "children": [
+         {
+          "role": "generic",
+          "name": "",
+          "ignored": false,
+          "frame": [
+           421.328125,
+           16,
+           202.671875,
+           96
+          ],
+          "children": [
+           {
+            "role": "button",
+            "name": "Step 3 of 3: Review",
+            "ignored": false,
+            "disabled": true,
+            "focusable": true,
+            "expanded": false,
+            "frame": [
+             464.96875,
+             16,
+             115.390625,
+             96
+            ],
+            "children": [
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true,
+              "children": [
+               {
+                "role": "none",
+                "name": "",
+                "ignored": true
+               }
+              ]
+             },
+             {
+              "role": "none",
+              "name": "",
+              "ignored": true,
+              "children": [
+               {
+                "role": "none",
+                "name": "",
+                "ignored": true,
+                "children": [
+                 {
+                  "role": "StaticText",
+                  "name": "Review",
+                  "ignored": false,
+                  "frame": [
+                   499.703125,
+                   76,
+                   45.90625,
+                   16
+                  ],
+                  "children": [
+                   {
+                    "role": "InlineTextBox",
+                    "name": "Review",
+                    "ignored": false
+                   }
+                  ]
+                 }
+                ]
+               },
+               {
+                "role": "none",
+                "name": "",
+                "ignored": true,
+                "children": [
+                 {
+                  "role": "StaticText",
+                  "name": "Set up your review",
+                  "ignored": false,
+                  "frame": [
+                   472.96875,
+                   97,
+                   99.390625,
+                   14
+                  ],
+                  "children": [
+                   {
+                    "role": "InlineTextBox",
+                    "name": "Set up your review",
+                    "ignored": false
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true
+     },
+     {
+      "role": "none",
+      "name": "",
+      "ignored": true,
+      "children": [
+       {
+        "role": "button",
+        "name": "Back",
+        "ignored": false,
+        "disabled": true,
+        "invalid": "false",
+        "frame": [
+         16,
+         178,
+         63.53125,
+         40
+        ],
+        "children": [
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "StaticText",
+              "name": "Back",
+              "ignored": false,
+              "frame": [
+               32,
+               190,
+               31.53125,
+               16
+              ],
+              "children": [
+               {
+                "role": "InlineTextBox",
+                "name": "Back",
+                "ignored": false
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "role": "none",
+        "name": "",
+        "ignored": true,
+        "children": [
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "StaticText",
+            "name": "Step 1 of 3",
+            "ignored": false,
+            "frame": [
+             273.484375,
+             190,
+             67.71875,
+             16
+            ],
+            "children": [
+             {
+              "role": "InlineTextBox",
+              "name": "Step 1 of 3",
+              "ignored": false
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "role": "button",
+        "name": "Continue",
+        "ignored": false,
+        "invalid": "false",
+        "focusable": true,
+        "frame": [
+         535.15625,
+         178,
+         88.84375,
+         40
+        ],
+        "children": [
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true
+           }
+          ]
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true
+         },
+         {
+          "role": "none",
+          "name": "",
+          "ignored": true,
+          "children": [
+           {
+            "role": "none",
+            "name": "",
+            "ignored": true,
+            "children": [
+             {
+              "role": "StaticText",
+              "name": "Continue",
+              "ignored": false,
+              "frame": [
+               551.15625,
+               190,
+               56.84375,
+               16
+              ],
+              "children": [
+               {
+                "role": "InlineTextBox",
+                "name": "Continue",
+                "ignored": false
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "focus": [
+  {
+   "dom": "div",
+   "role": "button",
+   "name": "Step 1 of 3: Account, current",
+   "frame": [
+    55.953125,
+    16,
+    122.734375,
+    96
+   ],
+   "props": {
+    "focusable": true,
+    "focused": true,
+    "expanded": true
+   }
+  },
+  {
+   "dom": "md-button",
+   "role": "button",
+   "name": "Continue",
+   "frame": [
+    535.15625,
+    178,
+    88.84375,
+    40
+   ],
+   "props": {
+    "invalid": "false",
+    "focusable": true,
+    "focused": true
+   }
+  },
+  {
+   "outside": "ax-after"
+  }
+ ],
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   18
+  ],
+  "cssPerUnit": 1
+ }
+}

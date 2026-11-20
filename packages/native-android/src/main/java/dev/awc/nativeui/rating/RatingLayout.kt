@@ -38,6 +38,12 @@ data class RatingHooks(
     /** --md-rating-value-label-font is a `font` shorthand: only its family and line-height survive (size / weight are re-set). */
     val valueLabelFontFamily: String? = null, val valueLabelLineHeight: Double? = null,
     val popScale: Double? = null, val durationMs: Double? = null,
+    /** ::part(value-label) only (no hook sets them): font size / weight and letter spacing of the value label. */
+    val valueLabelFontSize: Double? = null, val valueLabelFontWeight: Double? = null, val valueLabelLetterSpacing: Double? = null,
+    /** ::part(icon-filled) colour: the filled glyph only (the host's colour stays the active colour). */
+    val iconFilledColor: String? = null,
+    /** ::part(item) width / height: the item box (the glyph keeps --_size, centred in it). */
+    val itemBox: Double? = null,
 )
 
 /** A press ripple: started at `start` (ms) at (x %, y %) of the item, 420 ms emphasized, circle 0 → 85 %, opacity .22 → 0. */
@@ -60,9 +66,12 @@ data class RatingPaint(
     /** Glyph axes: the empty layer is FILL 0 / wght 500 with outline-empty, else FILL 1 / wght 400; the filled layer FILL 1 / wght 500. */
     val emptyFill: Int, val emptyWeight: Int, val glyphSize: Double,
     val activeColor: SrRgba, val inactiveColor: SrRgba, val stateLayerColor: SrRgba,
+    /** The filled glyph's colour when ::part(icon-filled) sets one (null: the active colour). */
+    val iconColor: SrRgba? = null,
     val focusRing: Boolean, val focusRingColor: SrRgba, val focusRingWidth: Double, val focusRingOffset: Double,
     val label: SliderRect?, val labelText: String?, val labelColor: SrRgba, val labelFontFamily: String,
     val labelFontSize: Double, val labelFontWeight: Double, val labelLineHeight: Double,
+    val labelLetterSpacing: Double = 0.0,
 )
 
 private fun luCeil(x: Double): Double = ceil(x.toFloat().toDouble() * 64) / 64
@@ -87,7 +96,8 @@ object RatingLayout {
         val rung = densityProp?.takeIf { it in -4..-1 }
         val d = rung?.toDouble() ?: theme.densityScale
         val (gapXs, gapMd) = if (rung != null) gapsForRung(rung) else theme.gapXs to theme.gapMd
-        val itemSize = hooks.itemSize ?: max(12.0, base(size) + d * 2)
+        val glyph = hooks.itemSize ?: max(12.0, base(size) + d * 2)
+        val itemSize = hooks.itemBox ?: glyph      // the item box (::part(item) width / height); the glyph keeps --_size
         val gap = hooks.itemGap ?: gapXs
         val c = { css: String -> srParseColor(css) }
         val active = c(hooks.activeColor ?: theme.secondary)
@@ -97,10 +107,10 @@ object RatingLayout {
         val n = r.max
         val itemsW = n * itemSize + max(0, n - 1) * gap
         // Value label: an inline grid stacking the hidden sizers (every step's label) under the visible text.
-        val labelFont = 14.0; val labelWeight = 500.0
+        val labelFont = hooks.valueLabelFontSize ?: 14.0; val labelWeight = hooks.valueLabelFontWeight ?: 500.0; val labelSpacing = hooks.valueLabelLetterSpacing ?: 0.0
         val labelLine = hooks.valueLabelLineHeight ?: theme.labelLineHeight
         val labelText = if (showValueLabel) r.label(r.displayValue) else null
-        val labelW = if (!showValueLabel) 0.0 else (r.labelVariants() + labelText!!).maxOf { luCeil(measurer.width(it, labelFont, labelWeight)) }
+        val labelW = if (!showValueLabel) 0.0 else (r.labelVariants() + labelText!!).maxOf { luCeil(measurer.width(it, labelFont, labelWeight) + labelSpacing * it.length) }
         val hostW = itemsW + if (showValueLabel) gapMd + labelW else 0.0
         val hostH = max(itemSize, if (showValueLabel) labelLine else 0.0)
         val rtl = r.rtl
@@ -134,12 +144,12 @@ object RatingLayout {
         return RatingPaint(
             width = hostW, height = hostH, opacity = if (r.disabled || r.softDisabled) theme.disabledContentOpacity else 1.0,
             items = items, itemList = list, icon = icon, emptyIcon = if (outlineEmpty) icon else emptyIcon,
-            emptyFill = if (outlineEmpty) 0 else 1, emptyWeight = if (outlineEmpty) 500 else 400, glyphSize = itemSize,
-            activeColor = active, inactiveColor = inactive, stateLayerColor = stateColor,
+            emptyFill = if (outlineEmpty) 0 else 1, emptyWeight = if (outlineEmpty) 500 else 400, glyphSize = glyph,
+            activeColor = active, inactiveColor = inactive, stateLayerColor = stateColor, iconColor = hooks.iconFilledColor?.let(c),
             focusRing = r.focused && r.focusVisible, focusRingColor = c(hooks.focusRingColor ?: theme.secondary),
             focusRingWidth = hooks.focusRingWidth ?: 3.0, focusRingOffset = hooks.focusRingOffset ?: 2.0,
             label = label, labelText = labelText, labelColor = labelColor, labelFontFamily = hooks.valueLabelFontFamily ?: theme.labelFontFamily,
-            labelFontSize = labelFont, labelFontWeight = labelWeight, labelLineHeight = labelLine,
+            labelFontSize = labelFont, labelFontWeight = labelWeight, labelLineHeight = labelLine, labelLetterSpacing = labelSpacing,
         )
     }
 

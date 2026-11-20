@@ -97,8 +97,9 @@ private fun ratingKey(e: KeyEvent): String? = when (e.key) {
 
     // Host properties → the interaction, once per composition (Stencil's watchers on changes only; the component's own
     // value writes live in the interaction — Compose hosts own their props).
-    r.sync(RatingProps(p.num("value").toDouble(), p.num("defaultValue").toDouble(), p.int("max", 5).coerceIn(1, 100), p.num("precision", 1f).toDouble(),
+    r.sync(RatingProps(p.srDouble("value"), p.srDouble("defaultValue"), p.int("max", 5).coerceIn(1, 100), p.srDouble("precision", 1.0),
         p.bool("readonly"), p.bool("disabled"), p.bool("softDisabled"), p.str("hover", "preview"), p.str("dir") == "rtl" || (p.str("dir") != "ltr" && rtlEnv)))
+    r.getLabel = publicController?.getLabel
     r.onEvent = { e -> emit(e.name, e.detail) }
     motion.reducedMotion = reduced
 
@@ -120,7 +121,7 @@ private fun ratingKey(e: KeyEvent): String? = when (e.key) {
         popScale = hk["pop-scale"]?.toDoubleOrNull(), durationMs = hk["duration"]?.removeSuffix("ms")?.toDoubleOrNull())
     val now = awcSrMotionClock({ val t = SystemClock.uptimeMillis().toDouble(); motion.active(t) || ripples.any { t < it.start + 420 } }, version)
     @Suppress("UNUSED_VARIABLE") val v = version
-    val paint = RatingLayout.layout(r, theme, hooks, measurer, p.str("size", "md"), p.str("icon", "star"), p.str("emptyIcon", "star"),
+    val paint = RatingLayout.layout(r, theme, RatingParts.hooks(hooks, LocalAWCRatingParts.current), measurer, p.str("size", "md"), p.str("icon", "star"), p.str("emptyIcon", "star"),
         p.bool("outlineEmpty", true), p.bool("showValueLabel"), (p["density"] as? Number)?.toInt() ?: p.str("density").toIntOrNull(),
         if (r.disabled) -1 else if (hoverItem >= 0) hoverItem else stickyItem, if (r.disabled) -1 else pressedItem, ripples.toList(), reduced, motion, now)
     val ratingLabel = p.str("ratingLabel", p.str("ariaLabel", "Rating"))
@@ -169,9 +170,11 @@ private fun ratingKey(e: KeyEvent): String? = when (e.key) {
         val label = paint.label; val text = paint.labelText
         if (label != null && text != null) {
             val d = LocalDensity.current
-            Text(text, Modifier.awcSrAt(label.x.dp, label.y.dp).width(label.width.dp).clearAndSetSemantics { }, color = srCssColorOf(paint.labelColor), fontFamily = RatingRoboto,
+            val halfLeading = (paint.labelLineHeight - paint.labelFontSize * 2400 / 2048) / 2      // CSS half-leading (may be negative)
+            Text(text, Modifier.awcSrAt(label.x.dp, (label.y + halfLeading).dp).width(label.width.dp).clearAndSetSemantics { }, color = srCssColorOf(paint.labelColor), fontFamily = RatingRoboto,
                 fontWeight = FontWeight(paint.labelFontWeight.toInt()), maxLines = 1, softWrap = false,
-                style = TextStyle(fontSize = with(d) { paint.labelFontSize.dp.toSp() }, lineHeight = with(d) { paint.labelLineHeight.dp.toSp() }, fontFeatureSettings = "tnum"))
+                style = TextStyle(fontSize = with(d) { paint.labelFontSize.dp.toSp() }, letterSpacing = with(d) { paint.labelLetterSpacing.dp.toSp() }, fontFeatureSettings = "tnum",
+                    platformStyle = PlatformTextStyle(includeFontPadding = false)))
         }
         if (paint.focusRing) {
             val o = paint.focusRingOffset + paint.focusRingWidth
@@ -211,7 +214,7 @@ private fun ratingKey(e: KeyEvent): String? = when (e.key) {
         }) {
         RatingGlyph(paint.emptyIcon, size, paint.emptyFill.toFloat(), paint.emptyWeight, srCssColorOf(paint.inactiveColor))
         // The filled copy, clipped from the inline-end side (left edge in RTL).
-        RatingGlyph(paint.icon, size, 1f, 500, srCssColorOf(paint.activeColor), Modifier.drawWithContent {
+        RatingGlyph(paint.icon, size, 1f, 500, srCssColorOf(paint.iconColor ?: paint.activeColor), Modifier.drawWithContent {
             val keep = (1 - it.clipPct / 100).toFloat() * this.size.width
             if (it.clipFromLeft) clipRect(left = this.size.width - keep) { this@drawWithContent.drawContent() }
             else clipRect(right = keep) { this@drawWithContent.drawContent() }

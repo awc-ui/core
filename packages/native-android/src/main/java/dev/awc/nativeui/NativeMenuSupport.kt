@@ -230,6 +230,8 @@ internal data class NativeMenuPlacement(val x:Double,val y:Double,val width:Doub
             val hook=NativeMenuLength.parse(a.maxBlockSize)?.resolve(viewport) ?: 250.0
             return min(mh ?: hook,viewport.height-2*margin)
         }
+        /** `--md-menu-section-gap` (default 2px): the space under a row marked `gap` in a sectioned baseline menu. */
+        fun sectionGap(a:AWCMenuAppearance,viewport:Size)=NativeMenuLength.parse(a.sectionGap)?.resolve(viewport) ?: 2.0
         fun margin(a:AWCMenuAppearance,viewport:Size)=NativeMenuLength.parse(a.viewportMargin)?.resolve(viewport) ?: 8.0
         /** Surface width before the vertical pass: the responsive sheet, or the measured width widened to the anchor. */
         fun width(anchor:Rect?,surfaceWidth:Double,viewport:Size,model:NativeMenuModel,a:AWCMenuAppearance):Double {
@@ -240,12 +242,13 @@ internal data class NativeMenuPlacement(val x:Double,val y:Double,val width:Doub
         /** [chrome] is the surface height outside the scroll viewport (padding + header), [content] the viewport's natural height. */
         fun resolve(anchor:Rect,surfaceWidth:Double,chrome:Double,content:Double,viewport:Size,model:NativeMenuModel,a:AWCMenuAppearance):NativeMenuPlacement {
             val gap=4.0;val vw=viewport.width.toDouble();val vh=viewport.height.toDouble()
-            val m=margin(a,viewport)
-            val baseCap=defaultCap(model,a,viewport,m)
+            // positionMenu() clamps with VIEWPORT_MARGIN (8); --md-menu-viewport-margin sizes the CSS caps (max-width, max-block-size).
+            val hm=margin(a,viewport);val m=8.0
+            val baseCap=defaultCap(model,a,viewport,hm)
             fun height(cap:Double)=chrome+min(content,cap)
             val top0=anchor.top.toDouble();val bottom0=anchor.bottom.toDouble();val left0=anchor.left.toDouble();val right0=anchor.right.toDouble()
             if(model.responsive && vw<=600) {
-                val w=vw-2*m;val h=height(baseCap)
+                val w=vw-2*hm;val h=height(baseCap)
                 var top=bottom0+gap;var vertical="bottom"
                 if(top+h+m>vh && top0-gap-h>=m) { top=top0-gap-h;vertical="top" }
                 top=max(m,min(top,vh-h-m))

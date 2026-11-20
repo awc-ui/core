@@ -37,11 +37,12 @@ try {
  check(inputClosed.inspection===undefined,'Settled close removes menu measurement instead of revealing enclosing viewport bounds.');
  const show=await method('show','show');check(show.ack && show.methodCall.status==='accepted','Show returns immediate correlated acceptance.');
  check(result(await settled('show'),'show').status==='fulfilled','Show completes after actual native initialization/open commit.');
- const frame=await client.call({command:'frame'});check(frame.inspection.nodes.some(node=>node.id==='component' && node.bounds.height>140),'Open frame measures the actual menu stack.');
+ const frame=await client.call({command:'frame'});check(frame.inspection.nodes.some(node=>node.id==='component' && node.bounds.height>120),'Open frame measures the actual menu stack.');
  { await delay(300); const settledFrame=await client.call({command:'frame'}); // after the 150 ms open motion (scaleY .8 → 1)
    const nodes=settledFrame.inspection.nodes,byId=id=>nodes.find(node=>node.id===id),root=byId('component'),items=[1,2,3].map(i=>byId('component.item-'+i));
    const inside=b=>b.x>=root.bounds.x-.01 && b.y>=root.bounds.y-.01 && b.x+b.width<=root.bounds.x+root.bounds.width+.01 && b.y+b.height<=root.bounds.y+root.bounds.height+.01;
-   check(root.name==='md-fab-menu overlay' && root.bounds.width>=items[0].bounds.width+100 && items.every(item=>item && inside(item.bounds)),'Open menu root is the fixed inset-0 overlay over the scope viewport (source host), not the item stack.');
+   const overlay=byId('component.overlay');
+   check(root.name==='md-fab-menu' && overlay?.name==='md-fab-menu overlay' && overlay.bounds.width>=root.bounds.width+100 && items.every(item=>item && inside(item.bounds)) && Math.abs(root.bounds.height-152)<1,'Open menu root is the item stack (the Web md-fab-menu box: 3 × 48 + 2 × 4, R1-06); the fixed inset-0 overlay over the scope viewport is its overlay part.');
    check(items.every(item=>item && item.name==='md-fab-menu-item' && item.parentId==='component' && Math.abs(item.bounds.height-48)<.6),'All three items are measured as menu parts in authored order.');
    check(items.every(item=>Math.abs(item.bounds.x+item.bounds.width-(items[0].bounds.x+items[0].bounds.width))<.6) && items[0].bounds.x>100,'Items share the anchor-aligned inline end in canvas coordinates.');
    check([1,2,3].every(i=>['icon','label','state-layer'].every(part=>byId(`component.item-${i}.${part}`)?.parentId===`component.item-${i}`)),'Item icon, label and state-layer parts are measured under their item.'); }

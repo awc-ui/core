@@ -47,6 +47,10 @@ struct AWCNativeAccordionGroup: View {
     @Environment(\.awcAccordionAppearanceTargets) private var appearanceTargets
     @Environment(\.awcAccordionItemAppearance) private var inheritedItemAppearance
     private var appearance: AWCAccordionAppearance { inheritedAppearance.merging(appearanceTargets[node.id] ?? .init()) }
+    @Environment(\.awcForcedColors) private var forced
+    @Environment(\.awcAccordionParts) private var groupParts
+    @Environment(\.awcAccordionPartTargets) private var groupPartTargets
+    private var placeholderPart: AWCAccordionPartAppearance { (groupParts[.dropPlaceholder] ?? .init()).merging(groupPartTargets[node.id]?[.dropPlaceholder] ?? .init()) }
     private var resolvedDensity: Double { AWCNativeDensity.resolve(node.properties["density"]?.number, inherited: density) }
     @Environment(\.awcEventDispatcher) private var dispatcher
     @Environment(\.awcEventTargetListeners) private var listeners
@@ -58,10 +62,11 @@ struct AWCNativeAccordionGroup: View {
         let _ = runtime.bind(dispatcher: dispatcher, listeners: listeners, observe: onEvent)
         let _ = runtime.state.claimRenderOrder()
         let config = runtime.state.configuration, outlined = config.variant == "outlined"
-        let children = runtime.displayNodes, corners = appearance.containerShape ?? .points(max(8, 12 + resolvedDensity))
+        // Hidden children (`display: none`) keep their coordination state but take no slot and no gap.
+        let children = runtime.displayNodes.filter { !(runtime.items[$0.id]?.hidden ?? ($0.properties["hidden"]?.bool == true)) }, corners = appearance.containerShape ?? .points(max(8, 12 + resolvedDensity))
         let compact = node.properties["density"] != nil ? resolvedDensity <= -3 : compactGap
         let floating = config.floating, floatingCorners = appearance.floatingRadius ?? .points(theme.tokens["--md-sys-shape-corner-large"].flatMap { Double($0.replacingOccurrences(of: "px", with: "")) } ?? 16)
-        VStack(spacing: outlined ? 0 : appearance.gap ?? (compact ? 4 : 8)) {
+        let panel = VStack(spacing: outlined ? 0 : appearance.gap ?? (compact ? 4 : 8)) {
             ForEach(Array(children.enumerated()), id: \.element.id) { index, child in
                 VStack(spacing: 0) {
                     if let item = runtime.items[child.id], child.tag == "md-accordion-item" {
@@ -71,7 +76,7 @@ struct AWCNativeAccordionGroup: View {
                 }
                 .background { AWCAccordionGeometryProbe(id:child.id,registry:pointerRegistry) }
                 .modifier(AWCAccordionShiftOffset(motion:reorderMotion,id:child.id,dragged:runtime.state.draggedItemID,draggedOffset:runtime.state.draggedOffset))
-                .zIndex(runtime.state.draggedItemID == child.id ? 10:1)
+                .modifier(AWCStackingLift(own: runtime.state.draggedItemID == child.id ? 10 : 1))
             }
         }
         .padding(outlined && !floating ? 1 : 0)
@@ -79,12 +84,14 @@ struct AWCNativeAccordionGroup: View {
         .environment(\.awcAccordionItemAppearance, floating && !outlined ? inheritedItemAppearance.merging(.init(containerColor:"#00000000",containerShape:.points(0),containerShapeExpanded:.points(0),elevation:[],elevationExpanded:[])) : inheritedItemAppearance)
         .background(alignment:.topLeading) {
             if let placeholder=runtime.state.dropPlaceholder {
-                let shape=AWCNativeCornerShape(corners:appearance.dropPlaceholderShape ?? corners)
-                let outline=appearance.dropPlaceholderOutlineWidth ?? 2
-                shape.fill(appearance.dropPlaceholderColor.map{Color(awcHex:$0)} ?? color("primary-container","#EADDFF").opacity(0.45))
-                    .overlay { if outline>0 { shape.strokeBorder(appearance.dropPlaceholderOutlineColor.map{Color(awcHex:$0)} ?? color("primary","#6750A4").opacity(0.55),style:StrokeStyle(lineWidth:outline,dash:awcDashedBorderPattern(outline))) } }
+                // ::part(drop-placeholder) declarations win over the hooks (outer part rules over the inner sheet).
+                let pp=placeholderPart, ghost=pp.cornerShape ?? appearance.dropPlaceholderShape ?? corners
+                let shape=AWCNativeCornerShape(corners:ghost)
+                let outline=pp.borderWidth ?? appearance.dropPlaceholderOutlineWidth ?? 2
+                shape.fill((pp.backgroundColor ?? appearance.dropPlaceholderColor).map{Color(awcHex:$0)} ?? color("primary-container","#EADDFF").opacity(0.45))
+                    .overlay { if outline>0 { AWCBlinkDashedBorder(corners:ghost,width:outline,color:(pp.borderColor ?? appearance.dropPlaceholderOutlineColor).map{Color(awcHex:$0)} ?? color("primary","#6750A4").opacity(0.55)) } }
                     // CSS opacity applies to the composited box (fill and dashed border together).
-                    .frame(height:placeholder.height).compositingGroup().opacity(appearance.dropPlaceholderOpacity ?? 1)
+                    .frame(height:placeholder.height).compositingGroup().opacity(pp.opacity ?? appearance.dropPlaceholderOpacity ?? 1)
                     // Border dashes are physical (they start after the top-left corner in both directions).
                     .environment(\.layoutDirection,.leftToRight)
                     .awcInspect(nodeID:node.id,part:"drop-placeholder",name:"drop-placeholder")
@@ -100,6 +107,9 @@ struct AWCNativeAccordionGroup: View {
                                               resting: appearance.floatingElevation ?? AWCBoxShadow.source(theme.tokens["--md-sys-elevation-3"] ?? "none") ?? [],
                                               lifted: appearance.floatingElevationActive ?? AWCBoxShadow.source(theme.tokens["--md-sys-elevation-5"] ?? "none") ?? [],
                                               timing: panelTiming(config)))
+        // forced-colors: `:host(.md-accordion--floating) { border: 1px solid CanvasText }` (border-box, inside the panel width).
+        .modifier(AWCForcedHostBorder(width: 1, color: floating ? forced?.canvasText : nil, fill: nil, corners: floatingCorners))
+        .awcCursor(runtime.state.chassisDragging ? .grabbing : nil)
         .awcInspect(nodeID: node.id, name: "md-accordion") { _ in
             ["expandedIndices": .array(runtime.state.expandedIndices.map { .number(Double($0)) }),
              "order": .array(runtime.state.originalIndices.map { .number(Double($0)) }),
@@ -118,8 +128,8 @@ struct AWCNativeAccordionGroup: View {
         }
         .onChange(of: node) { _, next in runtime.update(next) }
         .onDisappear { runtime.disappear() }
-        .modifier(AWCAccordionFloatingPlacement(active: floating, x: runtime.state.x, y: runtime.state.y,
-                                                z: Double(runtime.state.zIndex ?? 1000), width: appearance.floatingWidth ?? 360))
+        AWCAccordionFloatingHost(active: floating, x: runtime.state.loaded ? runtime.state.x : config.initialX, y: runtime.state.loaded ? runtime.state.y : config.initialY,
+                                 z: Double(runtime.state.zIndex ?? 1000), width: appearance.floatingWidth ?? 360, entryID: node.id, content: panel)
     }
     /// Panel `--_effects-duration` / `--_effects-easing` (spring effects tokens); `transition="none"` and reduced motion snap.
     private func panelTiming(_ config: AWCNativeAccordionConfiguration) -> AWCAccordionReorderMotion.Timing {
@@ -233,7 +243,16 @@ struct AWCNativeAccordionItem: View {
         return .init(top:collapseHeadingTop ? awcAccordionCollapsedMargin(own.top,headerMargins.top):own.top,right:own.right,
                      bottom:collapseHeadingBottom ? awcAccordionCollapsedMargin(own.bottom,headerMargins.bottom):own.bottom,left:own.left)
     }
-    private var appearance: AWCAccordionItemAppearance { inheritedAppearance.merging(appearanceTargets[node.id] ?? .init()) }
+    @Environment(\.awcForcedColors) private var forced
+    private var appearance: AWCAccordionItemAppearance {
+        let value = inheritedAppearance.merging(appearanceTargets[node.id] ?? .init())
+        // forced-colors: author colours are forced (backgrounds Canvas, text and icons CanvasText); state layers are display: none.
+        guard let f = forced else { return value }
+        return value.merging(.init(containerColor: f.canvas, containerColorExpanded: f.canvas, headerColor: f.canvas, headerColorExpanded: f.canvas,
+                                   headlineColor: f.canvasText, headlineColorExpanded: f.canvasText, supportingColor: f.canvasText, iconColor: f.canvasText,
+                                   iconColorExpanded: f.canvasText, stateLayerColor: "#00000000", stateLayerColorExpanded: "#00000000",
+                                   elevation: [], elevationExpanded: [], containerColorDragging: f.canvas, chassisHandleColor: f.canvasText))
+    }
     @Environment(\.accessibilityReduceMotion) private var systemReduced
     @Environment(\.awcAccordionReducedMotion) private var reducedOverride
     @Environment(\.awcAccordionControllers) private var controllers
@@ -301,6 +320,7 @@ struct AWCNativeAccordionItem: View {
                         .modifier(AWCAccordionPartMargin(value:part(.content)))
                 }
                 .awcAccordionRegionSemantics(label: expanded ? accessibleLabel : "")
+                .background { AWCAccordionPanelAnchor(id: node.id + ".panel", name: expanded ? accessibleLabel : "") }
                 .modifier(AWCAccordionPartBox(value:part(.panel),stretch:true,applyOpacity:false))
                 .opacity(part(.panel).opacity ?? frame.opacity).awcNativeInert(!expanded)
                 .awcInspect(nodeID: node.id, part: "panel", name: "panel") { _ in ["expanded": .bool(state.expanded), "regionRole": .string(state.regionRole)] }
@@ -319,6 +339,8 @@ struct AWCNativeAccordionItem: View {
             }
             .overlay { if let separator { AWCAccordionSeparatorShape(corners:corners).fill(separator,style:FillStyle(eoFill:true)).accessibilityHidden(true) } }
             .background { AWCNativeBoxShadow(corners:corners,layers:dragging ? AWCBoxShadow.source(theme.tokens["--md-sys-elevation-4"] ?? "none") ?? []:restingShadow,toLayers:dragging ? nil:expandedShadow,fraction:frame.effects,placement:.outer) }
+            .modifier(AWCForcedHostBorder(width: 1, color: forced?.canvasText, fill: forced?.canvas, corners: corners))
+            .awcCursor(dragging ? .grabbing : nil)
             .awcInspect(nodeID: node.id, name: "md-accordion-item") { size in ["expanded": .bool(state.expanded), "radius": .number(Double(corners.radii(in:size).first?.width ?? 0))] }
             .overlay(alignment: .top) {
                 if state.hasChassisHandle {
@@ -326,8 +348,8 @@ struct AWCNativeAccordionItem: View {
                     AWCAccordionChassisHandle(context: reorderContext, nodeID: node.id, expanded: state.expanded, dragging: owner?.chassisDragging ?? false,
                                               barColor: hook ?? (state.expanded ? color("on-secondary-container","#1D192B") : owner?.chassisDragging == true ? color("primary","#6750A4") : color("on-surface-variant","#49454F")),
                                               tint: resolvedColor(appearance.stateLayerColor,"on-surface","#1C1B1F"), hoverTint: appearance.chassisHandleBackgroundHover.map { Color(awcHex:$0) },
-                                              timing: interactionTiming, onFrame: { chassisFrame = $0 })
-                        .padding(.top, 4)
+                                              timing: interactionTiming, onFrame: { chassisFrame = $0 }, forced: forced != nil, handlePart: part(.chassisHandle), barPart: part(.chassisHandleBar))
+                        .padding(.top, 4 + (forced != nil ? 1 : 0))
                 }
             }
         }
@@ -403,6 +425,7 @@ struct AWCNativeAccordionItem: View {
                                      partColor:part(.dragHandle).color.map{Color(awcHex:$0)},partOpacity:part(.dragHandle).opacity,
                                      dragging:dragging,timing:interactionTiming,nodeID:node.id)
                         .modifier(AWCAccordionPartBox(value:part(.dragHandle),applyOpacity:false))
+                        .awcCursor(dragging ? .grabbing : .grab, active: .grabbing)
                         .overlay { if let reorderContext { AWCAccordionReorderCapture(id:node.id,capture:reorderContext,pressed:{ point in
                             gripPress = point.map { CGPoint(x:gripFrame.minX+$0.x,y:gripFrame.minY+$0.y) } }) } }
                         .background { GeometryReader { g in Color.clear.onChange(of:g.frame(in:.named("awc-accordion-header")),initial:true) { _,f in gripFrame=f } } }
@@ -445,9 +468,11 @@ struct AWCNativeAccordionItem: View {
                 routeKeyWithAlt: { key, alt in state.key(key == "Space" ? " " : key, alt: alt) },
                 // iOS: focus on the raw touch-down (AWCTouchPressRouter); press, drag and activation stay SwiftUI's.
                 touchPress: .init(began: { _ in if !state.disabled { _ = focusHandle.requestPointerFocus?() }; return false }, ended: { _ in }, cancelled: {}),
-                heading: true))
+                heading: true,
+                controls: { [id = node.id + ".panel"] in AWCTabPanelLinks.element(controls: id, tabs: "", index: 0, roles: ["AXGroup", "AXScrollArea"]) }))
                 .accessibilityHidden(false)
         }
+        .awcCursor(state.disabled ? .notAllowed : .pointer)
         .awcInspect(nodeID: node.id, part: "header", parentPart: "heading", name: "header")
         .modifier(AWCAccordionHeaderMargin(margins:.init(top:collapseHeadingTop ? 0:headerMargins.top,right:headerMargins.right,bottom:collapseHeadingBottom ? 0:headerMargins.bottom,left:headerMargins.left)))
     }
@@ -524,6 +549,21 @@ private struct AWCNativeAccordionRunningTransition {
                      shape: interpolate(start.shape,next.shape), spatial: interpolate(start.spatial,next.spatial), effects: interpolate(start.effects,next.effects))
     }
 }
+
+/// Web: the header button `aria-controls` the panel region. macOS: an invisible anchor view inside the panel registers with the
+/// md-tab link table; the header links to the accessibility element around it (AXLinkedUIElements): SwiftUI exposes the panel
+/// region as the content's AXScrollArea named like the header. UIKit has no element relation (R6-09).
+#if canImport(AppKit)
+import AppKit
+struct AWCAccordionPanelAnchor: NSViewRepresentable {
+    let id: String, name: String
+    final class Anchor: NSView { override func hitTest(_ point: NSPoint) -> NSView? { nil }; override func isAccessibilityElement() -> Bool { false } }
+    func makeNSView(context: Context) -> Anchor { let v = Anchor(); AWCTabPanelLinks.register(v, id: id, name: name, tabs: nil, index: -1); return v }
+    func updateNSView(_ v: Anchor, context: Context) { AWCTabPanelLinks.register(v, id: id, name: name, tabs: nil, index: -1) }
+}
+#else
+struct AWCAccordionPanelAnchor: View { let id: String, name: String; var body: some View { EmptyView() } }
+#endif
 
 extension View {
     /// Web renders the header button inside a heading (h3 > button). macOS exposes an AXHeading around the header control;

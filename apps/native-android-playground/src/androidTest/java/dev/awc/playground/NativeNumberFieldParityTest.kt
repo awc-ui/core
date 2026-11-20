@@ -30,6 +30,9 @@ import kotlin.math.abs
  */
 class NativeNumberFieldParityTest {
     @get:Rule val compose=createComposeRule()
+    // Touch mode is per display (Android 14+): a key-driven suite earlier in the run leaves keyboard mode, where a field takes
+    // initial focus when composed. Chrome's baseline is a pointer session: start and leave every test in touch mode.
+    @org.junit.Before @org.junit.After fun touchMode() { runCatching { androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().setInTouchMode(true) } }
     private var case by mutableStateOf(JSONObject("{\"name\":\"init\",\"props\":{},\"width\":320}"))
     private var epoch by mutableIntStateOf(0)
     private val collector=AWCInspectionCollector()
@@ -39,6 +42,8 @@ class NativeNumberFieldParityTest {
     private var checks=0;private val failures=mutableListOf<String>();private val report=JSONArray()
     private fun check(ok:Boolean,label:String) { checks++;if(!ok) failures+=label }
     private fun px(s:String?)=s?.trim()?.removeSuffix("px")?.toDoubleOrNull()
+    private fun json(o:JSONObject):Map<String,Any?> = o.keys().asSequence().associateWith { k-> o.get(k).let { if(it is JSONObject) json(it) else if(it==JSONObject.NULL) null else it } }
+    private fun nfParts(o:JSONObject?)=if(o==null) AWCNumberFieldPartAppearance() else AWCNumberFieldPartAppearance.fromValues(json(o))
     private fun nfHooks(h:JSONObject?):AWCNumberFieldAppearance { if(h==null) return AWCNumberFieldAppearance()
         fun l(k:String)=if(h.has(k)) px(h.getString(k)) else null
         return AWCNumberFieldAppearance(l("--md-number-field-width"),l("--md-number-field-min-width"),l("--md-number-field-stepper-icon-size"),
@@ -63,10 +68,10 @@ class NativeNumberFieldParityTest {
             CompositionLocalProvider(LocalLayoutDirection provides if(c.optString("dir")=="rtl") LayoutDirection.Rtl else LayoutDirection.Ltr) {
                 Box(Modifier.absoluteOffset(24.dp,24.dp).width(c.optDouble("width",320.0).dp)) {
                     AWCDensityScope(if(c.isNull("globalDensity") || !c.has("globalDensity")) 0.0 else c.getDouble("globalDensity")) { AWCFieldReducedMotionScope(true) {
-                        AWCNumberFieldAppearanceScope(nfHooks(c.optJSONObject("hooks"))) { AWCTextFieldAppearanceScope(tfHooks(c.optJSONObject("hooks"))) {
+                        AWCNumberFieldAppearanceScope(nfHooks(c.optJSONObject("hooks"))) { AWCTextFieldAppearanceScope(tfHooks(c.optJSONObject("hooks"))) { AWCNumberFieldPartAppearanceScope(nfParts(c.optJSONObject("parts"))) {
                             AWCTextFieldInspectionScope({ fieldValues=it }) { AWCNumberFieldInspectionScope({ values=it }) { AWCInspectionScope(collector) {
                                 AWCNumberFieldControllerScope(controller) { AWCComponent("md-number-field",props(c)) }
-                            } } } } }
+                            } } } } } }
                     } }
                 }
             }
@@ -98,6 +103,9 @@ class NativeNumberFieldParityTest {
         val host=c.getJSONObject("host");val hb=root.bounds
         near(hb.x,host.getDouble("x"),"host x");near(hb.y,host.getDouble("y"),"host y");near(hb.width,host.getDouble("width"),"host width");near(hb.height,host.getDouble("height"),"host height")
         rect(n("field"),c.optJSONObject("field"),"field")
+        if(c.optJSONObject("parts")!=null) { val f=c.getJSONObject("field")   // ::part(field): background and opacity of the inner field box
+            check(close(v("field","background"),f.optString("backgroundColor")),"$name field background ${v("field","background")} vs ${f.optString("backgroundColor")}")
+            near((v("field","opacity") as? Double) ?: -1.0,f.optString("opacity","1").toDouble(),"field opacity",.001) }
         for(k in listOf("increment","decrement")) { val w=c.optJSONObject(k)
             if(w==null) { check(n(k)==null,"$name no $k");continue }
             rect(n(k),w,k);check(v(k,"disabled")==w.getBoolean("disabled"),"$name $k disabled ${v(k,"disabled")} vs ${w.getBoolean("disabled")}") }

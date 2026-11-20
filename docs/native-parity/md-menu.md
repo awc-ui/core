@@ -15,10 +15,21 @@ Independent final audit pending. Source contract: [md-menu-source-review.md](md-
 | `show({ autoFocus })`, `close()`, `whenClosed()`, `reposition()`, `getScrollViewport()` | `AWCMenuScopeState.menu(id)` → `AWCMenuHandle` | `AWCMenuScopeState.menu(id)` → `AWCMenuHandle` |
 | md-sub-menu-item `collapse()` | `handle.collapse(row:)` | `handle.collapse(rowID)` |
 | Hooks: the six menu hooks and the five row hooks (inherited by every row) | `AWCMenuAppearance` + `.awcMenuAppearance(_:)` | `AWCMenuAppearance` + `AWCMenuAppearanceScope` |
+| CSS parts (16: md-menu `empty-text`, `surface`, `menu-viewport`; md-menu-item `state-layer`, `leading-icon`, `content`, `headline`, `supporting-text`, `badge`, `trailing`; md-sub-menu-item's six) | `AWCMenuPartAppearance` + `.awcMenuPartAppearance(_:part:for:)`, `.awcMenuItemPartAppearance`, `.awcSubMenuItemPartAppearance` (`AWCMenuPart` / `AWCMenuItemPart` / `AWCSubMenuItemPart`) | `AWCMenuPartAppearance` + `AWCMenuPartAppearanceScope`, `AWCMenuItemPartAppearanceScope`, `AWCSubMenuItemPartAppearanceScope` |
+| `setComboboxElement(el)`, `setVirtualProvider(provider)` | `handle.setComboboxElement(id)`, `handle.setVirtualProvider(AWCMenuVirtualProvider?)`, `handle.activeDescendant`, `handle.handleKey(_:)` | `handle.setComboboxElement(id)`, `handle.setVirtualProvider(AWCMenuVirtualProvider?)`, `handle.activeDescendant`, `handle.handleKey(key)` |
+| Inline-fill embedding (`md-menu--inline-fill`, `--md-menu-inline-surface-color`, `--md-menu-inline-fill-radius-end`) | `.awcMenuInlineFill()` | `AWCMenuInlineFillScope { … }` |
 
 `getScrollViewport()` returns the viewport geometry (scrollTop, scrollHeight, clientHeight) instead of the Web element.
-`setComboboxElement()` and `setVirtualProvider()` are the DOM combobox / virtualization plumbing of md-select and
-md-autocomplete and have no native counterpart (unsupported in the policies).
+Part appearances (background, color, outline colour / width, corner radius, opacity, letter spacing) follow the source's
+cascade: an outer `::part()` rule wins over the hooks and every internal state rule (a state-layer opacity holds in every
+state), a tag rule reaches every element of the tag in the subtree (flyouts included), an element ID (`for:`) outranks it field
+by field. `setVirtualProvider` runs the source's virtual navigation against the provider's indices (ArrowUp/Down wrapping past
+disabled rows, Home/End, typeahead through `findPrefix`, Enter on the active option in combobox mode), awaits
+`ensureVisible` before it marks or focuses the windowed row, and makes the surface a listbox; with `setComboboxElement` the
+combobox keeps focus and `activeDescendant` names the active row (aria-activedescendant), which shows the focus ring. Keys
+typed in the header slot reach the menu as the source's keydown bubbles from the header input (macOS: also from an AppKit
+text field there); `handleKey` routes a combobox's keys explicitly. Inline fill: anchorless menus fill the embedding view
+without shadow, padding or radius except the end corners, on the inline surface colour, uncapped.
 
 Behaviour mirrors the source:
 
@@ -108,6 +119,41 @@ expanded state, which Chrome does not report on the roleless md-button host; the
 stop with auto-focus off, which Chrome 153 does not report although the source sets both (decisions below and in the source
 review).
 
+## Gate-7 r4 (2026-11-05)
+
+- R4-12 (parts) and R4-13 (combobox / virtual provider): native APIs above; tested by the Chrome 153 cases of
+  `menu-r4.html` (parts with tag and #id rules, LTR / RTL, baseline / standard, dark) on macOS, iOS and Android, and by
+  NativeMenuVirtualIntegration / NativeMenuVirtualTest (a 10,000-row provider with an 8-row window).
+- R4-14: `--md-menu-viewport-margin` (height cap and width clamp; positioning clamps with the source's fixed 8),
+  `--md-menu-section-gap` and the inline-fill hooks have Chrome cases in `menu-r4.html`, compared on all three platforms.
+- R4-15 (decision): `--md-menu-group-container-shape` / `--md-menu-group-shape` are implemented natively
+  (`AWCMenuAppearance.groupContainerShape`) and compared in `hook-group-shape`; they are not in the CEM, so the Laboratory
+  exposes the CEM's hooks only. Alternative: document them in md-menu-item-group (source owner, gate 1); then the Laboratory
+  field follows from the CEM.
+- R4-16: a row whose targets change instantly (Reduce Motion, leaving hover) keeps its paused TimelineView live for two
+  frames, so the new layer / fill is drawn (iOS 18 and macOS kept the paused timeline's stale content).
+- R2-D10: NativePreviewPresentationTest renders md-menu through the Laboratory host (LivePreviewMenuHost) and sends Escape as
+  a window key event (the source listens on the document). R4-21: tools/ax expectation for the initially open Web reference.
+- Evidence: main-queue n2-064-install-menu-r4; evidence work/n2-lab/install-main/j64, n2-lab/out/j61 j63 a40 a41
+
+## Gate-7 r4 re-check follow-ups (2026-11-07)
+
+- R4-16 (reopened: macOS `selection-keep-open (reduced) click-radio`): a pointer press also bumps the row's activation counter
+  (so a press released in the same SwiftUI update still draws a wave), and the ripple treated every activation as a keyboard
+  trigger: a centered wave started two frames late and released at once. Its fade began ~23 ms after Chrome's, so the phase-end
+  shot still had the wave at 0.107 where Chrome's was ~0.05 (layer trace, n2-066). A pointer activation now starts the wave at
+  the press point on the next frame and holds it to the release (md-ripple onPointerDown); keyboard activations keep the
+  centered self-releasing wave. Menu states: macOS 2524/2524, iOS 26.3 and 18.6 2524/2524.
+- R4-27: NativeMenuVirtualIntegration is `@MainActor` and checks the UIKit text field on iOS. On iOS a hardware key typed in a
+  UIKit text field declared with `.awcMenuHeader` reaches SwiftUI's key handling at the scope, not at the surface's header slot
+  (the menus render through the scope's preference overlay; probe n2-069), so `AWCMenuScope` routes ArrowUp / ArrowDown / Home /
+  End / Enter to an open virtual listbox menu when the focused text input lies in its header or a combobox is registered (macOS
+  keeps its local key monitor). Menu virtual 18/18 on macOS, iPhone 26.3, iPhone 18.6 and iPad 26.3.
+- R4-23: `test-native-views.sh` runs NativeMenuVirtualIntegration; NativeMenuPaintIntegration runs `menu-web-paint` and
+  `menu-r4-paint` by default (`AWC_MENU_FIXTURE` selects one; the iOS harness bundles both), NativeMenuPaintTest has a second
+  @Test for `menu-r4-paint` (`menuFixture` selects one): macOS / iOS 9092/9092, Android 8302 + 790.
+- Evidence: main-queue n2-072-install-r4-followups; evidence work/n2-lab/install-main/j72, n2-lab/out/j66 j67 j69 j70 j71 a42
+
 ## Decisions (2026-10-30)
 
 Recorded with alternatives in [md-menu-source-review.md](md-menu-source-review.md):
@@ -120,3 +166,9 @@ Recorded with alternatives in [md-menu-source-review.md](md-menu-source-review.m
 ## Remaining
 
 Independent final audit.
+
+## Select-family follow-ups (2026-11-08)
+
+- Tab from a row when the anchor is a text field (md-select / md-multi-select trigger), AppKit: `closeEntireMenuTree()` focuses the anchor, whose field editor (not an AWC focus view) then holds focus, and the advance found nothing to continue from (focus stayed on the field; Chrome leaves it on the document). The advance now waits for the anchor focus and continues from the field as its own Tab does: document order, else the key-view loop, else the field resigns. Menu Tab runs 214 / 214; select `tab-away` / `tab-while-open` pass (n2-080, n2-081).
+- Compose `NativeMenuRipple`: a pointer press starts the wave one frame after the press (was two; the keyboard `trigger()` keeps two), as SwiftUI since R4-16; the release fade follows a frame earlier. Menu states unchanged, md-multi-select select-all phase-end layer now matches (n2-A051, n2-A052).
+- Evidence: main-queue n2-082-install-select-gate3; evidence work/n2-lab/install-main/j82, n2-lab/out/j76 j80 j81 a45 a46 a51 a52.

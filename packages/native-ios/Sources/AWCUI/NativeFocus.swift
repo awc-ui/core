@@ -17,6 +17,9 @@ public struct AWCButtonAccessibilityPolicy: Equatable, Sendable {
     /// `aria-hidden="true"`: out of the accessibility tree (the element stays clickable, as on Web).
     public let ariaHidden: Bool
     private let allowsDisabledFocus:Bool
+    /// Keeps first-responder status when the control becomes disabled while focused (Chrome keeps a focused button focused;
+    /// md-transfer-list's movers). It does not make a disabled control focusable.
+    public let retainsFocusWhenDisabled: Bool
     public init(properties: [String: AWCValue]) {
         hardDisabled = properties["disabled"]?.bool == true
         activationBlocked = hardDisabled || properties["softDisabled"]?.bool == true || properties["loading"]?.bool == true
@@ -32,6 +35,7 @@ public struct AWCButtonAccessibilityPolicy: Equatable, Sendable {
         required = properties["required"]?.bool == true
         errorText = properties["errorText"]?.string ?? ""
         allowsDisabledFocus = properties["_menuRoving"]?.bool == true
+        retainsFocusWhenDisabled = properties["_retainFocus"]?.bool == true
     }
     public var sequentiallyFocusable: Bool { (!hardDisabled || allowsDisabledFocus) && (groupTabindex ?? 0) >= 0 }
     public var programmaticallyFocusable: Bool { !hardDisabled || allowsDisabledFocus }

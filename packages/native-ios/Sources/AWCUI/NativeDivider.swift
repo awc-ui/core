@@ -55,7 +55,7 @@ struct AWCNativeDividerView: View {
     let theme: AWCTheme
     @Environment(\.awcDividerAppearance) private var appearance
     @Environment(\.layoutDirection) private var direction
-    @Environment(\.colorSchemeContrast) private var contrast
+    @Environment(\.awcForcedColors) private var forced
     @ScaledMetric(relativeTo: .body) private var minimumLength = 16.0
 
     @ViewBuilder var body: some View {
@@ -65,7 +65,7 @@ struct AWCNativeDividerView: View {
     private var separator: some View {
         let metrics = AWCNativeDividerMetrics(properties: properties, appearance: appearance)
         let rtl = direction == .rightToLeft
-        let color = contrast == .increased ? theme.onSurface :
+        let color = forced.map { Color(awcHex: $0.canvasText) } ??
             Color(awcHex: appearance.color ?? theme.tokens["--md-sys-color-outline-variant"] ?? "#CAC4D0")
         return AWCNativeDividerLayout(metrics: metrics, rtl: rtl, minimumLength: minimumLength) {
             Rectangle().fill(color)

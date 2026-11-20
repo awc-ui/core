@@ -1,4 +1,5 @@
 import { appearanceField, appearanceProfile } from './accordion-appearance.js';
+import { DATE_PICKER_UPDATE_PROPERTIES, validDatePickerUpdate, DATE_PICKER_ITEM_METHODS, DATE_PICKER_VALIDITY_METHODS } from './date-picker-appearance.js';
 
 // md-color-picker and md-time-picker: the source hooks as native appearance fields, the retained property updates and the
 // methods. Field order follows the native initializers (AWCColorPickerAppearance takes labelled arguments in order).
@@ -148,13 +149,14 @@ export const TIME_PICKER_UPDATE_PROPERTIES = Object.freeze(['variant', 'format',
 const TP_RULES = { variant: enumOf(['dial', 'input']), format: enumOf(['12h', '24h']), required: bool, error: bool, reserveSupportingSpace: bool, disabled: bool, open: bool,
   hideTrigger: bool, responsive: bool, periodLayout: enumOf(['vertical', 'horizontal']), orientation: enumOf(['auto', 'vertical', 'horizontal']), density,
   minuteStep: value => typeof value === 'number' && Number.isFinite(value) };
-export const PICKER_UPDATE_PROPERTIES = Object.freeze({ 'md-color-picker': COLOR_PICKER_UPDATE_PROPERTIES, 'md-time-picker': TIME_PICKER_UPDATE_PROPERTIES });
-export const PICKER_UPDATE_LABELS = Object.freeze({ 'md-color-picker': 'Color Picker', 'md-time-picker': 'Time Picker' });
+export const PICKER_UPDATE_PROPERTIES = Object.freeze({ 'md-color-picker': COLOR_PICKER_UPDATE_PROPERTIES, 'md-time-picker': TIME_PICKER_UPDATE_PROPERTIES, 'md-date-picker': DATE_PICKER_UPDATE_PROPERTIES });
+export const PICKER_UPDATE_LABELS = Object.freeze({ 'md-color-picker': 'Color Picker', 'md-time-picker': 'Time Picker', 'md-date-picker': 'Date Picker' });
 export function validPickerUpdate(tag, key, value) {
+  if (tag === 'md-date-picker') return validDatePickerUpdate(key, value);
   const rule = (tag === 'md-color-picker' ? CP_RULES : TP_RULES)[key];
   return rule ? rule(value) : text(value);
 }
 
 // ---- methods: synchronous calls on the mounted picker (AWCColorPickerController / AWCTimePickerController) ----
-export const PICKER_ITEM_METHODS = Object.freeze({ 'md-color-picker': ['show', 'close'], 'md-time-picker': ['show', 'hide'] });
-export const PICKER_VALIDITY_METHODS = Object.freeze({ 'md-time-picker': ['checkValidity', 'reportValidity', 'getValidity'] });
+export const PICKER_ITEM_METHODS = Object.freeze({ 'md-color-picker': ['show', 'close'], 'md-time-picker': ['show', 'hide'], 'md-date-picker': DATE_PICKER_ITEM_METHODS });
+export const PICKER_VALIDITY_METHODS = Object.freeze({ 'md-time-picker': ['checkValidity', 'reportValidity', 'getValidity'], 'md-date-picker': DATE_PICKER_VALIDITY_METHODS });

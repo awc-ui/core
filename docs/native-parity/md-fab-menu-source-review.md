@@ -29,7 +29,7 @@ The item stack gap defaults to the spacing token (4). Variant primary/secondary/
 
 The anchor gains expanded/menu/control accessibility state. It temporarily becomes circular and uses the variant's vibrant color pair. The icon fades out for 120 ms, changes through the FAB's `setMenuIcon("close")` method and fades in. Closing clears the temporary icon and shape. Authored icon and slot content must survive.
 
-Source caveats to verify rather than infer from comments: `quick` skips the close delay but does not currently remove all CSS entry transitions; per-item index is assigned but the declared stagger constant is unused. Anchor color cleanup removes inline overrides rather than retaining a prior authored inline value. These require explicit source/native decisions and regression evidence.
+Decisions (gate-7 R1-05, 2026-11): `quick` means close without the 180 ms exit delay: `close()` commits `open=false` at once (mdClose and whenClosed settle), and the CSS entry motion still plays; the property description now says so, and SwiftUI/Compose match (Chrome 153 record `fm-keyboard-quick`). There is no per-item stagger: the unused `_ITEM_STAGGER_MS` constant is removed (items enter with the container; the per-item index custom property stays). Anchor colours: the menu saves the anchor's own inline values when it overrides them and restores them on close, removal or anchor change (regression specs in `md-fab-menu.spec.ts`); the natives already restored authored appearance.
 
 ## Input, focus and events
 

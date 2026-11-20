@@ -1,6 +1,6 @@
 # md-progress-indicator — accessibility parity
 
-Generated 2026-10-29T11:11:40.136Z by tools/ax. Web = Chrome AX tree of the same effective node.
+Generated 2026-11-05T01:32:19.491Z by tools/ax. Web = Chrome AX tree of the same effective node.
 
 ## determinate
 

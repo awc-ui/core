@@ -27,7 +27,15 @@ import AWCUI
             var node = AWCExamples.node(for: tag); node.properties["open"] = true
             let (window, host) = mount(AWCPreviewScope { AWCNativeView(node: node) }.frame(width: 640))
             check(window.sheets.isEmpty, "\(tag): preview must not create a platform sheet")
-            check(host.fittingSize.height >= 640, "\(tag): embedded content must size the capture surface")
+            if ["md-select", "md-multi-select"].contains(tag) {
+                // Dedicated renderers (select family): the open menu renders in flow below the field, inside the capture surface.
+                var closed = node; closed.properties["open"] = false
+                let (closedWindow, closedHost) = mount(AWCPreviewScope { AWCNativeView(node: closed) }.frame(width: 640))
+                check(host.fittingSize.height >= closedHost.fittingSize.height + 96, "\(tag): the open menu must size the capture surface (\(host.fittingSize.height) vs closed \(closedHost.fittingSize.height))")
+                closedWindow.close(); pump()
+            } else {
+                check(host.fittingSize.height >= 640, "\(tag): embedded content must size the capture surface")
+            }
             check(!descendants(host).contains { $0 is NSDatePicker || $0 is NSPopUpButton }, "\(tag): preview controls must not require an uncaptured picker panel")
             window.close(); pump()
         }

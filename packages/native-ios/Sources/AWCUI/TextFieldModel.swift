@@ -215,6 +215,7 @@ struct AWCTextConstraints: Equatable {
     private var debounceItem: DispatchWorkItem?
     private var throttleItem: DispatchWorkItem?
     private var throttlePending = false
+    private var throttleDue: DispatchTime?
     var send: (String) -> Void = { _ in }
     var current: () -> String = { "" }
     func distinct(_ value: String) { guard value != lastEmitted else { return }; lastEmitted = value; send(value) }
@@ -229,16 +230,24 @@ struct AWCTextConstraints: Equatable {
                 distinct(value); throttlePending = false
                 let item = DispatchWorkItem { [weak self] in
                     guard let self else { return }
-                    self.throttleItem = nil
+                    self.throttleItem = nil; self.throttleDue = nil
                     if self.throttlePending { self.distinct(self.current()); self.throttlePending = false }
                 }
                 // Chrome runs input before a timer due at the same instant: the window closes 1 ms after its end.
-                throttleItem = item; DispatchQueue.main.asyncAfter(deadline: .now() + (throttle + 1) / 1000, execute: item)
+                throttleDue = .now() + (throttle + 1) / 1000
+                throttleItem = item; DispatchQueue.main.asyncAfter(deadline: throttleDue!, execute: item)
             } else { throttlePending = true }
         }
         if debounce <= 0 && throttle <= 0 { distinct(value) }
     }
-    func cancel() { debounceItem?.cancel(); throttleItem?.cancel(); debounceItem = nil; throttleItem = nil; throttlePending = false }
+    /// A window whose end passed before this input (the main queue ran the keystroke first, as on a loaded iOS Simulator) closes
+    /// now, before the input: the timer due earlier fires first, so the latest value of the closed window is emitted ahead of it.
+    func flushDue() {
+        guard let item = throttleItem, let due = throttleDue, .now() >= due else { return }
+        item.cancel(); throttleItem = nil; throttleDue = nil
+        if throttlePending { throttlePending = false; distinct(current()) }
+    }
+    func cancel() { debounceItem?.cancel(); throttleItem?.cancel(); debounceItem = nil; throttleItem = nil; throttlePending = false; throttleDue = nil }
 }
 
 // MARK: Formatter / parser (the `formatter` / `parser` function props)

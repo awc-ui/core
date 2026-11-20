@@ -281,6 +281,8 @@ class AWCTimePickerRuntime internal constructor() {
     /** The active dial number's label and the presented hand angle (degrees, unwrapped). */
     var activeNumber by mutableStateOf<String?>(null); internal set
     var handAngle = 0.0; internal set
+    /** The label strings the dialog renders (headline, toggle-mode, period-toggle), for the paint test. */
+    var labelTexts: Map<String, String> = emptyMap(); internal set
     /** The hand's target angle (unwrapped) and length (fraction of the radius): the source's inline rotate() and length. */
     var handTarget = 0.0; internal set
     var handLength = .8; internal set
@@ -346,6 +348,8 @@ class AWCTimePickerRuntime internal constructor() {
     internal var pendingFocus: String? = null
     internal var focusSerial by mutableIntStateOf(0)
     internal var pendingFrames = 2
+    /** reportValidity() for hosts that hold the runtime: an invalid picker shows its message and focuses the trigger. */
+    fun reportValidity(): Boolean { if (disabledNow) return true; val v = validityRecord(); if (v.first) return true; revealed = true; validationMessage = v.second; focusLater("trigger"); return false }
     internal fun focusLater(id: String, frames: Int = 2) { pendingFocus = id; pendingFrames = frames; focusSerial++ }
     /** Methods (`show()`, `close()`, `checkValidity()` / `reportValidity()`), bound by the mounted view. */
     var show: () -> Unit = {}; internal set
@@ -843,6 +847,7 @@ private fun TPDialog(rt: AWCTimePickerRuntime, owner: AWCModalOwner, session: AW
     val tokens = LocalAWCThemeTokens.current
     val isInput = rt.mode == "input"
     val headline = labels.headline.ifEmpty { if (isInput) labels.headlineInput else labels.headlineDial }
+    rt.labelTexts = mapOf("headline" to headline, "toggle-mode" to (if (isInput) labels.toggleDial else labels.toggleInput), "period-toggle" to labels.period)
     val shadows = appearance.raw("dialog-elevation")?.let { NativeShadowLayer.parse(it) } ?: NativeShadowLayer.parse(tokens["--md-sys-elevation-3"] ?: "none")
     val corners = AWCCornerShape.uniform(m.dialogShape)
     val width = min(m.dialogWidth, max(0.0, vw - 48))

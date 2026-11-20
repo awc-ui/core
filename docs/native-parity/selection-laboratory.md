@@ -94,6 +94,8 @@ Semantics follow `utils/form.ts` and the components:
 | Android paint parity with them (jobs A721/A723) | radio 3,177/3,177; checkbox 5,759/5,759; switch 10,447/10,447 |
 | Studio focused (17 files incl. `selection-integration.test.mjs`, job 724) | 244/244 |
 | Swift live host `test-live-selection.mjs` (job 724) | 38/38 |
+| Swift live host after the retained-update settle (gate-7 R4-26, d4-062: SwiftUI publishes the inspection one display update after the pixels it describes; the host now waits for it) | 10 of 10 runs 38/38; probe 0 of 80 stale inspections (9 of 40 before) |
+| Swift live host after the settle on every update, method and input (d2 host robustness, installed d2-066; `work/d2-lab/hr/runs/064`) | `test-live-selection` 38/38 in 13 of 13 runs (5 under load); stale-frame probe 600 iterations (30 update, method and input scenarios, quiet and LOAD=6): 0 frames pairing new pixels with the pre-action inspection, 0 late replies; `test-live-stale-frames.mjs` 10 of 10 |
 | Android `LivePreviewSelectionHostTest` with the selection interaction tests and `LivePreviewHostTest` (job A724) | 28/28 |
 | Copied examples (jobs 725/A725) | 118 SwiftUI typecheck clean; 118 Compose compile |
 

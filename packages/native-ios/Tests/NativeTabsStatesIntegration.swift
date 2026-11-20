@@ -26,7 +26,7 @@ struct TabsStatesFixture: View {
         let ids = ["before"] + state.nodes.flatMap { [$0.id] + $0.children.flatMap { [$0.id, $0.id + "-ripple"] } }
         ZStack(alignment: .topLeading) {
             // AppKit orders the key-view loop geometrically: "before" sits above the tablist, as #before precedes it.
-            AWCNativeView(node: AWCNode(id: "before", tag: "md-button", properties: ["variant": "text"], children: [.text("B")])).offset(x: 0, y: -10).opacity(0.01)
+            AWCNativeView(node: AWCNode(id: "before", tag: "md-button", properties: ["variant": "text"], children: [.text("B")])).offset(x: 0, y: -10).opacity(0.05)   // 5 %, not 1 %: the iPad focus engine does not keep focus on a view that faint (gate-7 R6-18, iPad)
             AWCNativeScope {
                 VStack(alignment: .leading, spacing: 0) {
                     ForEach(state.nodes) { n in AWCNativeView(node: n) { e in state.events.append((e.name, e.detail, e.nodeID)) } }

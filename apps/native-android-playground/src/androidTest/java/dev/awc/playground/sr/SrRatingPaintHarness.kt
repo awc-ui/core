@@ -47,7 +47,7 @@ class RatingPaintCase(val c: Map<String, Any?>) {
         val density = Regex("""^density-scale-(\d)""").find(name)?.groupValues?.get(1)?.toDouble()?.let { -it } ?: 0.0
         val outlineEmpty = attr("outline-empty")?.let { it != "false" } ?: true
         val icon = attr("icon") ?: "star"
-        val p = RatingLayout.layout(r, ratingTheme(c["theme"] == "dark", density), ratingHooks(attr("style") ?: ""), ApproxMeasurer(),
+        val p = RatingLayout.layout(r, ratingTheme(c["theme"] == "dark", density), dev.awc.nativeui.RatingParts.hooks(ratingHooks(attr("style") ?: ""), caseParts(c["html"] as String, "md-rating").mapNotNull { (k, v) -> dev.awc.nativeui.AWCRatingPart.fromSource(k)?.let { it to v } }.toMap()), ApproxMeasurer(),
             size = attr("size") ?: "md", icon = icon, emptyIcon = attr("empty-icon") ?: "star",
             outlineEmpty = outlineEmpty, showValueLabel = attr("show-value-label") != null, densityProp = attr("density")?.toIntOrNull())
         val tree: Map<String, Any?> = c["tree"].cast()
@@ -88,7 +88,7 @@ class RatingPaintCase(val c: Map<String, Any?>) {
             val clip = Regex("""[\d.]+(?=%)""").find(fg["clip"] as String)?.value?.toDouble() ?: -1.0
             val fromLeft = (fg["clip"] as String).let { Regex("""inset\(0px 0px 0px [\d.]+%\)""").matches(it) }
             if (abs(clip - it.clipPct) > 1e-6 || (clip > 0 && fromLeft != it.clipFromLeft)) d("item[$i] clip web ${fg["clip"]} native ${it.clipPct}% left=${it.clipFromLeft}")
-            eqC("item[$i] fg", fg["color"] as String, p.activeColor); eqC("item[$i] bg", bg["color"] as String, p.inactiveColor)
+            eqC("item[$i] fg", fg["color"] as String, p.iconColor ?: p.activeColor); eqC("item[$i] bg", bg["color"] as String, p.inactiveColor)
             if (fg["text"] != p.icon) d("item[$i] icon web ${fg["text"]} native ${p.icon}")
             if (bg["text"] != p.emptyIcon) d("item[$i] empty icon web ${bg["text"]} native ${p.emptyIcon}")
             val fvs = bg["fvs"] as String

@@ -1,87 +1,113 @@
-# md-menu (with md-menu-item, md-menu-item-group, md-sub-menu-item) — gate 7 independent audit
+# `md-menu` (with `md-menu-item`, `md-menu-item-group`, `md-sub-menu-item`) — gate 7 independent audit
 
-**Verdict: FAIL (findings R4-12, R4-13, R4-14, R4-15, R4-16, R4-17)** — gate-7 reviewer r4, 2026-10-31.
+**Superseded verdict (re-check 2026-11-06): FAIL (macOS R4-16 reopened; iOS R4-27)**
 
-Scope: md-menu and its required children md-menu-item, md-menu-item-group, md-sub-menu-item (a parent cannot pass with an
-unreviewed child). Snapshot audited: `work/audit/r4-tree` (canonical copy 2026-10-31 02:12 Mac time, job r4-001; md-menu
-was installed by n2-046 on 2026-10-30 15:40). Re-runs by r4 on that snapshot (Mac lane r4, Android lane a6 / emulator-5566,
-simulator AWC-r4 = iPhone 17 Pro, iOS 26.3.1). Working files: `work/audit/r4/`.
+R4-12 (the 16 CSS parts), R4-13 (`setComboboxElement` / `setVirtualProvider`), R4-14 (four hooks without a Chrome comparison), R4-15
+(undocumented group-shape hooks, by decision), R4-16 (states failures on macOS and iOS 18.6), R4-17 (Android Laboratory no-op update) and
+R4-21 (tools/ax Web reference) are re-checked below.
 
-## Evidence freshness
+Reviewer: gate-7 reviewer r4. First audit 2026-10-31 (FAIL); re-check 2026-11-06 after the fix forks marked the r4 findings fixed
+(d4: R4-01, 02, 04–10, 17, 18, 20; di: R4-11, R4-19; n2: R4-12–16, R4-21; R4-03 is still open, owner d3). Independent of the
+implementing forks; no product code, tests or fixtures were changed.
 
-`outputs/native-parity/md-menu/native/checkpoint.json` lists files but no hashes, so it cannot prove which code produced the
-counts. The n2 runs were made on `work/n2-full`; canonical shared files (`AWCNativeView.swift`, `NativeFocus.swift`,
-`NativeFocusBridge.swift`, `AWCComponent.kt`) changed again 2026-10-30 23:12, and fx's canonical integration (fx-068)
-already reported macOS menu states 2,522/2,524. Counts below are r4 re-runs. Oracles: `menu-web-*.json` (Swift) and the
-Android assets are byte-identical; they are a normalized derivation of `outputs/native-parity/md-menu/web-oracle/`
-(same Chrome 153 metadata; paint: all 138 cases with identical rect multisets; states: the fixture rects are a subset of the
-oracle's in all 26 runs).
+Re-check snapshot: `work/audit/r4-tree`, refreshed from the canonical tree by job `r4-050-snapshot2` on 2026-11-06 16:03 UTC (rsync,
+83 install jobs present, latest `di-045-install-ax-runtime`; file manifest `work/audit/r4/snap2/manifest.sha256`; no git commands).
+Build products were rebuilt incrementally in the private tree. Devices: macOS (AppKit host), iOS simulator `AWC-r4` (iPhone 17 Pro,
+iOS 26.3.1), Android emulator `emulator-5566` (AwcNative7, API 36), Chrome 153.0.8010.36 for the tools/ax Web reference.
+Timing-sensitive suites (states/motion/stack, iOS harness, Android device runs, tools/ax) ran through `tools/slot.sh timing 4`;
+the simulator was shut down on every job exit. Raw outputs: `work/audit/r4/runs2/` (first audit: `runs/`); job logs
+`claude-runner/done/r4-05*`, `r4-A05*`, `r4-06*`.
 
-## Gate 1 — source contract matrix
+## Re-check 2026-11-17
 
-IR current; CEM = IR = inventory: md-menu 16/2/7/2/8 + 3 parts; md-menu-item 15/1/0/2/5 + 7 parts; md-menu-item-group
-2/0/0/1/0; md-sub-menu-item 9/1/1/2/0 + 6 parts.
+**Verdict (re-check 2026-11-17): FAIL (S7-6-02)** — gate-7 reviewer s7-6 (previous: re-check 2026-11-06 FAIL, gate-7 reviewer r4).
 
-| Rows | SwiftUI | Compose | Laboratory | Test |
-|---|---|---|---|---|
-| 42 properties of the four tags | NativeMenu.swift, MenuSupport.swift, MenuScope.swift, MenuController.swift | NativeMenu*.kt | retained updates of all four tags | menu-web-paint (138), menu-web-states (26 + 26 reduced), host tests |
-| events `mdOpen`, `mdClose`, `mdClick` (rows, submenu rows) | yes | yes | event stream (probe) | states runs |
-| md-menu methods `show({autoFocus})`, `close`, `whenClosed`, `reposition`, `getScrollViewport`; md-sub-menu-item `collapse` | `AWCMenuHandle` | same | lifecycle methods with callIds, `reposition`, `collapse` (probe ok) | states runs, host tests |
-| md-menu `setComboboxElement`, `setVirtualProvider` | **unsupported** | **unsupported** | — | — (R4-13) |
-| slots (menu default + `header`; row `leading-icon`/`trailing-icon`; sub `leading-icon`/`submenu`; group default) | yes | yes | recipe | paint cases |
-| 8 menu hooks + 5 row hooks | `AWCMenuAppearance` | same | menu-appearance.js (11 hooks) | `--md-menu-viewport-margin`, `--md-menu-section-gap`: **no test**; inline-surface/fill-radius: Studio only (R4-14) |
-| 16 parts (menu 3, item 7, sub 6) | **none** | **none** | **none** | boxes only (R4-12) |
-| undocumented `--md-menu-group-container-shape` / `--md-menu-group-shape` | yes | yes | **no** | paint (`hook-group-shape`) (R4-15) |
+Snapshot `work/audit/s7-6-tree` (job `s7-6-001-snapshot`), canonical with iOS shim v5. Lanes: Mac r5, Android a6 (emulator-5566), simulators AWC-r5 (iPhone 26.3) and AWC-r5-18 (iOS 18.6). Jobs that ran across the Mac sleep of 2026-11-17 were repeated after the wake; counts below come only from the repeated jobs.
 
-Decisions recorded in md-menu-source-review.md (2026-10-27, 2026-10-30) were reviewed and are acceptable (each keeps the
-source contract, names the native consequence and the revert path).
+| Platform | Suite | Job | Result |
+| --- | --- | --- | --- |
+| macOS | Menu paint 9092/9092 (`s7-6-002-swift`); states x2 | `s7-6-009` | 2523/2524, 2524/2524 (S7-6-02); virtual 18/18 |
+| iOS 26.3 | Menu paint 9092; states x3; virtual | `s7-6-003-ios26` | 9092/9092; 2523/2524, 2524, 2524; 18/18 |
+| iOS 18.6 | Menu states, virtual | `s7-6-004-ios18` | 2523/2524; 18/18 |
+| Android | `s7-6-A001-android` | 28/28 tests |
+- Gate 1: matrix regenerated (`s7-6-009`, `work/audit/s7-6/gate1/matrix.log`): every property, event, method, slot, hook and part has Swift, Compose and Laboratory hits; test hits missing only for two menu hooks (S7-6-03, non-blocking).
+- Laboratory (gate 3): `s7-6-005-lab-web` 891 studio / 12 compiler / 561 spec / e2e ok; `s7-6-008`, `s7-6-009` live probes (children2 22 ok, 0 fail; the 3 LIVE_COMMAND_TIMEOUT failures of `s7-6-008` at load 119 did not repeat); live selection 20/20 runs 38/38 (`s7-6-009`); examples: Kotlin compile ok (`s7-6-A003-examples-kotlin`), Swift typecheck in `s7-6-002-swift`.
+- Gate 6: tools/ax macOS/Web/iOS exit 0 (`s7-6-006`); Android 0 open findings on 4 components (`s7-6-A004-ax-android-repeat`); checkpoint hashes: 19 SAME, 0 DIFF (`work/audit/s7-6/hashcheck.py`).
+- Exceptions: none proposed, none accepted.
+- R4-16, R4-23 (both menu paint oracles by default), R4-27 (virtual 18/18 on all runtimes) verified. S7-6-02: one motion or flat-pixel check fails in 3 of 6 states runs at normal load, a different case each time (blocking); S7-6-03 non-blocking.
 
-## Gates 2, 4, 5 — re-runs
 
-| Suite | Claimed | r4 result | Job |
+## Gates
+
+| Gate | Result | Basis |
+|---|---|---|
+| 1 Source contract | PASS | md-menu 16/2/7/2/8 + 3 parts, md-menu-item 15/1/0/2/5 + 7 parts, group 2/0/0/1/0, sub-menu-item 9/1/1/2/0 + 6 parts; IR = CEM = inventory = source; all 16 parts now typed (`AWCMenuPart`/`AWCMenuItemPart`/`AWCSubMenuItemPart`, Compose `NativeMenuParts.kt`, Laboratory `MENU_*_PARTS`); both former unsupported methods implemented; R4-15 settled by a recorded decision |
+| 2 Implementation | PASS | |
+| 3 Laboratory | PASS | live previews of all four tags, retained and no-op updates, lifecycle methods with results, `reposition`, `collapse`, 46 + 46 examples compile |
+| 4 Behaviour | **FAIL** (iOS) | states runs pass on three platforms; the virtual-provider / combobox suite passes on macOS (18/18) and Android but does not compile for iOS (R4-27) |
+| 5 Visual | **FAIL** (macOS) | 138 + 17 (`menu-r4-paint`: parts, viewport-margin, section-gap, inline fill) Chrome cases pass on three platforms; macOS states keep the reduced click-radio phase-shot failure (R4-16) |
+| 6 Runtime + AX | **FAIL** (iOS) | macOS, iPhone 26.3, iPhone 16 Pro 18.6 (states), Android; tools/ax 3 cases 0 open; iOS virtual suite unverified (R4-27) |
+| 7 Final audit | FAIL | R4-16 (reopened), R4-27 |
+
+## Re-check of the 2026-10-31 findings
+
+- **R4-12 — VERIFIED.** All 16 parts have typed native styling on SwiftUI and Compose and Laboratory targets; the 17 Chrome cases of
+  `menu-r4-paint.json` (byte-identical Swift fixture and Android asset; Chrome 153, 2026-10-31) cover every part: macOS 790/790,
+  iPhone 790/790, Android **790/790** (r4-A052).
+- **R4-13 — VERIFIED.** `handle.setComboboxElement(id)` / `handle.setVirtualProvider(_:)` on both platforms (declared supported in
+  NativeSupport.json / support.json); `NativeMenuVirtualIntegration` (10,000-row provider, 8-row window, combobox) macOS 18/18,
+  iPhone **does not compile for the simulator** (main-actor isolation errors in the fixture; `runs2/ios/run-r4j-NativeMenuVirtualIntegration.log`); Android `virtualProviderAndComboboxFollowTheSource` pass (r4-A050).
+- **R4-14 — VERIFIED.** `hook-menu-viewport-margin-height/-width`, `hook-menu-section-gap(-default)`, `inline-fill-*` Chrome cases in
+  `menu-r4-paint` pass on the three platforms (above).
+- **R4-15 — RESOLVED BY DECISION** (accepted): md-menu.md records that the group-shape hooks are implemented natively and compared in
+  `hook-group-shape`, and that the Laboratory exposes only CEM hooks until the source owner documents them in the CEM (alternative
+  recorded). The md-menu-item-group readme already lists `--md-menu-group-container-shape`; the CEM still does not (source-owner item).
+- **R4-16 — PARTIALLY FIXED, reopened.** The disabled-row hover layer is fixed: macOS no longer fails `pointer-item hover-disabled`, and iOS 18.6 (iPhone 16 Pro clone, r4-055) passes 2,524/2,524 where it failed twice before. The second part still fails on canonical code: macOS `NativeMenuStatesIntegration` 2,523/2,524 — `selection-keep-open (reduced) click-radio flat pixels` (4,474/175,894 pixels > 6 levels, worst 7 at (25,211)), byte-for-byte the first-audit signature; n2's own install gate recorded the same failure (`n2-lab/install-main/j64/menu-states.log`) and fx reproduced it in isolation (`integration/i4/isolated/NativeMenuStatesIntegration-2.log`). Android and iOS pass this run.**
+- **R4-17 — VERIFIED.** Android `{quick:false}` (md-menu) and `{disabled:false}` (md-menu-item, md-sub-menu-item), all unchanged → 200,
+  sessions alive (r4-051a); `LivePreviewNoOpUpdateHostTest#menu`, `#menuItem` pass.
+- **R4-21 — VERIFIED.** tools/ax expectation for case `open` tied to the recorded initial-open decision (`expectations.mjs` line 109).
+
+## Re-run counts (2026-11-06)
+
+| Suite | Claimed / first audit | r4 re-check | Job |
 |---|---|---|---|
-| macOS `NativeMenuPaintIntegration` (138 cases) | 8,302/8,302 | **8,302/8,302** | r4-004 |
-| macOS `NativeMenuStatesIntegration` (26 + 26 reduced) | 2,524/2,524 | **2,523/2,524** — `selection-keep-open (reduced) click-radio flat pixels` (4,474/175,894 pixels > 6 levels, worst 7); rerun: **2,522/2,524** (r4-031: the same shot plus `pointer-item (reduced) hover-disabled` — the disabled "Copy" row keeps a 0.08 hover layer) | r4-004, r4-031 |
-| Android `NativeMenuPaintTest` | 8,302/8,302 | **8,302/8,302** | r4-A003 |
-| Android `NativeMenuStatesTest` | 2,524/2,524 | **2,524/2,524** | r4-A003 |
-| Android `LivePreviewMenuHostTest` | 4/4 | **4/4** (recipe/hooks/lifecycle, row, group, submenu pages) | r4-A003 |
-| iOS sim paint | 8,302/8,302 | **8,302/8,302** | r4-012 |
-| iOS sim states | 2,524/2,524 | **2,524/2,524** | r4-012 |
-| iOS sim iPad Pro 11-inch (M5) 26.3 paint / states | — (never run) | **8,302/8,302** / **2,524/2,524** | r4-033 (AWC-r4-pad) |
-| iOS sim iPhone 16 Pro 18.6 paint / states | — (never run) | **8,302/8,302** / **2,522/2,524** (`pointer-item hover-disabled` and its reduced run: layer 0.08 vs 0) | r4-033 (AWC-r4-o) |
+| macOS `NativeMenuPaintIntegration` (138) | 8,302 | **8,302/8,302** | r4-051 |
+| macOS `NativeMenuPaintIntegration` `AWC_MENU_FIXTURE=menu-r4-paint` (17) | n2 | **790/790** | r4-055 |
+| macOS `NativeMenuStatesIntegration` (26 + 26 reduced) | 2,523 / 2,522 of 2,524 (r4 10-31) | **2,523/2,524 — `selection-keep-open (reduced) click-radio flat pixels` (4,474/175,894 pixels > 6 levels, worst 7), identical to the first audit and to n2's own install gate `n2-lab/install-main/j64/menu-states.log`** | r4-052 |
+| macOS `NativeMenuVirtualIntegration` | n2 | **18/18** | r4-055 |
+| Android `NativeMenuPaintTest` / `NativeMenuStatesTest` | 8,302 / 2,524 | **8,302/8,302**, **2,524/2,524** | r4-A050 |
+| Android `NativeMenuPaintTest` menuFixture=menu-r4-paint | n2 | **790/790** | r4-A052 |
+| Android `NativeMenuVirtualTest`, `LivePreviewMenuHostTest` | new / 4 | pass, **4/4** (7/7 tests in the run) | r4-A050 |
+| iOS iPhone 17 Pro 26.3 paint / states | 8,302 / 2,524 | **8,302/8,302**, **2,524/2,524** | r4-053 |
+| iOS iPhone 17 Pro 26.3 menu-r4 paint / virtual | n2 | **790/790**, ****does not compile for the simulator** (main-actor isolation errors in the fixture; `runs2/ios/run-r4j-NativeMenuVirtualIntegration.log`)** | r4-055 |
+| iOS iPhone 16 Pro 18.6 states (the R4-16 runtime) | 2,522/2,524 (r4 10-31; di full18 11-05) | **2,524/2,524 (hover-disabled fixed)** | r4-055 |
 
-Test allowances reviewed and accepted (methodology, renderers unchanged): fallback-glyph advance widening for symbols outside
-Roboto on Android/iOS; phase shots compared across Chrome's capture window; iOS envelope +2 frames for HID delivery; Android
-activation-exit window widened by Chrome's measured 150 ms timer jitter; "Tab past the last control" stand-in.
+Accepted test allowances (unchanged): fallback-glyph advance widening outside Roboto on Android/iOS; phase shots across Chrome's capture
+window; iOS +2-frame envelope for HID delivery; Android activation-exit window widened by Chrome's 150 ms timer jitter.
 
 ## Gate 3 — Laboratory
 
-- 4177 probe (r4-002a, r4-004b): md-menu SwiftUI + Compose sessions, update `{quick:true}`, `show()` (callId) → `mdOpen`,
-  `reposition()`, `close()` → `mdClose`, method-results `fulfilled`; md-menu-item `{headline, badge}`, md-menu-item-group
-  `{label}`, md-sub-menu-item `{headline}` + `collapse()` accepted on both platforms.
-- **R4-17**: Android no-op updates `{quick:false}` (md-menu), `{disabled:false}` (md-menu-item, md-sub-menu-item) → 502, session lost (r4-006b); changing values succeed; SwiftUI accepts all.
-- Examples 28 SwiftUI + 28 Compose (regenerated, byte-identical to n2's set): Swift typecheck 0 errors (r4-007); Compose
-  BUILD SUCCESSFUL (r4-A006; re-verified by r4-A007: the compile task executed and the example classes were produced). Studio `menu-integration` within 110/110 (r4-008); SwiftUI `test-live-menu` 43/43 (r4-020).
+4177 probe (r4-051a): md-menu on both platforms — update `{quick:true}`, `show()` (callId) → `mdOpen`, `reposition()`, `close()` → `mdClose`,
+results `fulfilled`; md-menu-item `{headline, badge}`, md-menu-item-group `{label}`, md-sub-menu-item `{headline}` + `collapse()` (22/22 steps).
+Examples regenerated (46 SwiftUI + 46 Compose, incl. the part examples): Swift 0 errors (r4-052a); Compose BUILD SUCCESSFUL (r4-A051). Studio
+110/110 (r4-052a); SwiftUI `test-live-menu` 43/43.
 
 ## Gate 6 — runtime and accessibility
 
-- iOS: the documented evidence was a single runtime (AWC-n2, iPhone 17 Pro 26.3.1); r4 ran all three runtimes (table):
-  iPhone 26.3 and iPad 26.3 pass, iOS 18.6 fails the disabled-row hover check (R4-16).
-- tools/ax re-run (3 cases): iOS pass; macOS and Android 1 open finding each in case `open` ("menu name \"\" → \"Open menu\""). Both r4 Web captures (r4-020, r4-022) show Chrome rendering the initially-open menu unpositioned (y = −18) and unnamed — the source's initial-open gap — whereas n2's 2026-10-30 capture of the same HTML shows it positioned and named; the native behaviour follows the recorded decision (an initially open menu opens like a later `open = true`). Justified here; the Web-reference nondeterminism is filed as R4-21. The four md-menu expectations (Android group label read as text, anchor expanded state on
-  the roleless md-button host, menu named after its anchor with auto-focus off, first row as roving Tab stop) match recorded
-  decisions and are **accepted** as conventions.
+tools/ax re-run (`runs2/ax/md-menu/report.md`): 3 cases — macOS pass (5 accepted), iOS pass (1 accepted), Android pass (7 accepted), **0 open**.
+The five md-menu expectations (Android group label as text; expanded state on the roleless md-button anchor; menu name and first-row
+Tab stop with auto-focus off; menu name in case `open` from the initial-open gap) match recorded decisions and are accepted.
 
-## Exceptions
+## Exception decisions
 
-`setComboboxElement` / `setVirtualProvider` are declared unsupported without an exception record (R4-13). No other proposed
-exceptions.
+No exception records needed: R4-13 was implemented rather than excepted; R4-15 is a recorded, reversible decision (accepted).
 
 ## Findings
 
-- **R4-12** (gates 1/3/4): no native `::part` styling for the 16 parts.
-- **R4-13** (gate 1): two methods unsupported without exception records.
-- **R4-14** (gates 4/5): four hooks without a Chrome comparison (two untested entirely).
-- **R4-15** (gates 1/3): undocumented group-shape hooks not in CEM/Laboratory.
-- **R4-16** (gates 5/6, macOS + iOS 18.6): states fail in every r4 macOS run (2,523 and 2,522/2,524) and on iOS 18.6 (2,522/2,524: hover-disabled layer 0.08 in the normal and reduced run); claimed 2,524/2,524 is not reproducible on canonical code (fx i4 saw 2,522/2,524 too).
-- **R4-17** (gate 3): Android Laboratory host drops the session on a no-op retained update.
-- R4-21 (tooling, non-blocking): the tools/ax Web reference for case `open` is nondeterministic (initial-open gap captured in r4's runs).
+- **R4-16** (gates 5/6, macOS, blocking — reopened): `selection-keep-open (reduced) click-radio` phase shot still fails (2,523/2,524).
+- **R4-27** (gate 6 iOS, blocking): `NativeMenuVirtualIntegration` (the R4-13 virtual-provider / combobox suite) does not compile for the iOS simulator (main-actor isolation), so the new native APIs are unverified on iOS.
+- Non-blocking: R4-23 (`NativeMenuVirtualIntegration` is not in `test-native-views.sh`'s fixture list and `menu-r4-paint` runs only when selected by `AWC_MENU_FIXTURE` / `menuFixture`, so integration runs do not cover R4-12/13/14).
+
+## History
+
+First audit 2026-10-31: FAIL (R4-12–17; R4-21 non-blocking); `work/audit/r4/runs/`, `work/audit/r4/audit/md-menu.md`.

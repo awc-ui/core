@@ -6,6 +6,14 @@
 // phase-end snapshot compared like a paint case. Lockstep with Swift's NativeStepperIntegration.swift.
 package dev.awc.playground.stepper
 
+import dev.awc.nativeui.AWCAccordionInsets
+import dev.awc.nativeui.AWCAccordionPartAppearance
+import dev.awc.nativeui.AWCCornerLength
+import dev.awc.nativeui.AWCCornerRadius
+import dev.awc.nativeui.AWCCornerShape
+import dev.awc.nativeui.AWCStepPart
+import dev.awc.nativeui.AWCStepperPart
+import dev.awc.nativeui.StepperParts
 import dev.awc.nativeui.stepper.*
 import kotlin.math.abs
 
@@ -88,6 +96,19 @@ fun swColor(s: String) = stepperColor(s) ?: SRGBA(0.0, 0.0, 0.0, 0.0)
 fun swPx(v: Any?) = stepperPx(v as? String ?: "") ?: 0.0
 private fun fmt(r: SRect) = "(${r.x}, ${r.y}, ${r.width}, ${r.height})"
 
+/** story 5-3: a wrapper part's painted box (background, border width, radius) against the Chrome computed style. */
+fun stepperBoxDiff(l: String, w: Map<String, Any?>, b: StepBox?, rect: SRect, d: (String) -> Unit) {
+    val web = swColor(w["backgroundColor"] as? String ?: ""); val mine = b?.background ?: SRGBA(0.0, 0.0, 0.0, 0.0)
+    if (abs(web.a - mine.a) > 0.002 || (web.a > 0 && (abs(web.r - mine.r) > 0.6 / 255 || abs(web.g - mine.g) > 0.6 / 255 || abs(web.b - mine.b) > 0.6 / 255))) d("$l box bg web ${w["backgroundColor"]} native $mine")
+    val bw = swPx(w["borderTopWidth"])
+    if (abs(bw - (b?.borderWidth ?: 0.0)) > 1e-6) d("$l border width web $bw native ${b?.borderWidth ?: 0.0}")
+    if (bw > 0 || web.a > 0) {
+        val lim = minOf(rect.width, rect.height) / 2
+        val wr = minOf(swPx(w["borderTopLeftRadius"]), lim); val nr = minOf(b?.radius ?: 0.0, lim)
+        if (abs(wr - nr) > 1e-6) d("$l radius web ${w["borderTopLeftRadius"]} native ${b?.radius ?: 0.0}")
+    }
+}
+
 fun stepperTreeDiff(tree: Map<String, Any?>, p: StepperPaint, m: StepperModel, ox: Double, oy: Double, d: (String) -> Unit) {
     fun at(r: SRect) = if (r.isEmpty) r else r.offset(ox, oy)
     fun eqR(l: String, w: SRect, mine: SRect) {
@@ -106,6 +127,10 @@ fun stepperTreeDiff(tree: Map<String, Any?>, p: StepperPaint, m: StepperModel, o
     p.nav?.let { mine["nav"] = it }; p.mobileNav?.let { mine["mobile-nav"] = it }; p.mobileProgress?.let { mine["mobile-progress"] = it }
     if (wparts.keys != mine.keys) d("host parts web ${wparts.keys.sorted()} native ${mine.keys.sorted()}")
     for ((k, w) in wparts) mine[k]?.let { eqR(k, swRect(w["rect"]), it) }
+    // ::part backgrounds (transparent unless a part rule sets one).
+    val bgs = mapOf("list" to p.listBackground, "content" to p.contentBackground, "nav" to p.navBackground, "mobile-nav" to p.mobileNavBackground)
+    for ((k, w) in wparts) if (k in bgs) eqC("$k bg", w["backgroundColor"] as? String ?: "", bgs[k] ?: SRGBA(0.0, 0.0, 0.0, 0.0))
+    wparts["mobile-progress"]?.let { w -> p.mobileProgress?.let { r -> stepperBoxDiff("mobile-progress", w, p.mobileProgressBox, r, d) } }
     val live = tree["live"].objs().map { it["text"] as? String ?: "" }
     if (live != listOf(m.live, m.errorLive)) d("live web $live native ${listOf(m.live, m.errorLive)}")
     val kids = tree["children"].objs()
@@ -132,7 +157,7 @@ fun stepperTreeDiff(tree: Map<String, Any?>, p: StepperPaint, m: StepperModel, o
             when (k) {
                 "connector connector-leading" -> if ((w["display"] as? String) != "none") d("$L display web ${w["display"]}")
                 "inner" -> {
-                    eqR(L, wr, s.inner)
+                    eqR(L, wr, s.inner); stepperBoxDiff(L, w, s.innerBox, s.inner, d)
                     val a = w["attrs"].obj()
                     val mineA = HashMap<String, String>()
                     if (!m.p.readonly) {
@@ -146,7 +171,7 @@ fun stepperTreeDiff(tree: Map<String, Any?>, p: StepperPaint, m: StepperModel, o
                         if ((a[key] as? String) != mineA[key]) d("$L attr $key web ${a[key]} native ${mineA[key]}")
                 }
                 "indicator" -> {
-                    eqR(L, wr, s.indicator)
+                    eqR(L, wr, s.indicator); stepperBoxDiff(L, w, s.indicatorBox, s.indicator, d)
                     if (abs(op - s.indicatorOpacity) > 1e-6) d("$L opacity web $op native ${s.indicatorOpacity}")
                     val bs = w["boxShadow"] as? String ?: "none"
                     val ring = s.focusRing
@@ -187,9 +212,13 @@ fun stepperTreeDiff(tree: Map<String, Any?>, p: StepperPaint, m: StepperModel, o
                         }
                     }
                     if ((w["text"] as? String) != s.number) d("$L text web ${w["text"]} native ${s.number}")
+                    // border-radius (computed: px or %), clamped to the box like the painted shape.
+                    val rw = w["borderTopLeftRadius"] as? String ?: ""
+                    val wrad = minOf(if (rw.endsWith("%")) (rw.dropLast(1).toDoubleOrNull() ?: 0.0) / 100 * s.bubbleSize else swPx(rw), s.bubbleSize / 2)
+                    if (abs(wrad - minOf(s.bubbleRadius ?: Double.POSITIVE_INFINITY, s.bubbleSize / 2)) > 1e-6) d("$L radius web $rw native ${s.bubbleRadius}")
                 }
                 "text" -> {
-                    eqR(L, wr, s.text ?: SRect.ZERO)
+                    eqR(L, wr, s.text ?: SRect.ZERO); stepperBoxDiff(L, w, s.textBox, s.text ?: SRect.ZERO, d)
                     if (abs(op - s.textOpacity) > 1e-6) d("$L opacity web $op native ${s.textOpacity}")
                 }
                 "label", "optional", "description" -> {
@@ -201,6 +230,8 @@ fun stepperTreeDiff(tree: Map<String, Any?>, p: StepperPaint, m: StepperModel, o
                     if (abs(swPx(w["fontSize"]) - line.fontSize) > 1e-6) d("$L fontSize web ${w["fontSize"]} native ${line.fontSize}")
                     if (abs(swPx(w["lineHeight"]) - line.lineHeight) > 1e-6) d("$L lineHeight web ${w["lineHeight"]} native ${line.lineHeight}")
                     if (((w["fontWeight"] as? String)?.toDoubleOrNull() ?: 0.0) != line.weight) d("$L fontWeight web ${w["fontWeight"]} native ${line.weight}")
+                    val wls = (w["letterSpacing"] as? String)?.let { if (it == "normal") 0.0 else stepperPx(it) } ?: 0.0
+                    if (abs(wls - line.letterSpacing) > 1e-6) d("$L letterSpacing web ${w["letterSpacing"]} native ${line.letterSpacing}")
                 }
                 "connector connector-trailing" -> {
                     val c = s.connector ?: continue
@@ -211,6 +242,7 @@ fun stepperTreeDiff(tree: Map<String, Any?>, p: StepperPaint, m: StepperModel, o
                     eqR(L, wr, pn.rect)
                     if ((w["visibility"] as? String) != (if (pn.visible) "visible" else "hidden")) d("$L visibility web ${w["visibility"]} native ${pn.visible}")
                     if (abs(op - pn.opacity) > 1e-6) d("$L opacity web $op native ${pn.opacity}")
+                    eqC("$L bg", w["backgroundColor"] as? String ?: "", s.panelBackground ?: SRGBA(0.0, 0.0, 0.0, 0.0))
                     val gr = w["gridTemplateRows"] as? String ?: ""
                     val gv = if (gr.endsWith("px")) stepperPx(gr) else null
                     val mg = pn.gridRows
@@ -223,20 +255,49 @@ fun stepperTreeDiff(tree: Map<String, Any?>, p: StepperPaint, m: StepperModel, o
     }
 }
 
+/** gate 7 (typed parts): the case's `::part` rules as data (`data-fa-parts` on the root: {"<tag>": {"<part>": {"<css>": "<value>"}}}). */
+fun stepperCaseParts(html: String): Pair<Map<AWCStepPart, AWCAccordionPartAppearance>, Map<AWCStepperPart, AWCAccordionPartAppearance>> {
+    val raw = Regex("""data-fa-parts='([^']*)'""").find(html)?.groupValues?.get(1) ?: return emptyMap<AWCStepPart, AWCAccordionPartAppearance>() to emptyMap()
+    val all = StepperEnv.parse(raw).obj()
+    fun px(v: Any?) = (v as? String)?.replace("px", "")?.trim()?.toDoubleOrNull()
+    fun hex(v: Any?) = (v as? String)?.trim()?.uppercase()
+    fun appearance(d: Map<String, Any?>): AWCAccordionPartAppearance {
+        val radius = px(d["border-radius"])?.let { r -> AWCCornerRadius(AWCCornerLength(r), AWCCornerLength(r)).let { AWCCornerShape(it, it, it, it) } }
+        // padding: the CSS shorthand of one to four lengths; border: `<width> solid <colour>`.
+        val pv = ((d["padding"] as? String) ?: "").split(" ").filter { it.isNotBlank() }.mapNotNull { px(it) }
+        val pad = when (pv.size) { 1 -> AWCAccordionInsets(pv[0], pv[0], pv[0], pv[0]); 2 -> AWCAccordionInsets(pv[0], pv[1], pv[0], pv[1])
+            3 -> AWCAccordionInsets(pv[0], pv[1], pv[2], pv[1]); 4 -> AWCAccordionInsets(pv[0], pv[1], pv[2], pv[3]); else -> null }
+        val bt = ((d["border"] as? String) ?: "").split(" ").filter { it.isNotBlank() }
+        return AWCAccordionPartAppearance(color = hex(d["color"]), backgroundColor = hex(d["background-color"]),
+            borderColor = bt.lastOrNull()?.takeIf { it.startsWith("#") }?.let { hex(it) }, borderWidth = bt.firstOrNull()?.let { px(it) }, cornerShape = radius, padding = pad,
+            gap = px(d["gap"]), fontSize = px(d["font-size"]), lineHeight = px(d["line-height"]), fontWeight = (d["font-weight"] as? String)?.toDoubleOrNull(),
+            letterSpacing = px(d["letter-spacing"]))
+    }
+    val step = all["md-step"].obj().entries.mapNotNull { (k, v) -> AWCStepPart.fromSource(k)?.let { it to appearance(v.obj()) } }.toMap()
+    val stepper = all["md-stepper"].obj().entries.mapNotNull { (k, v) -> AWCStepperPart.fromSource(k)?.let { it to appearance(v.obj()) } }.toMap()
+    return step to stepper
+}
+
 fun stepperInput(width: Double, dir: String, dark: Boolean, density: Double, mk: StepperMarkup) = StepperLayoutInput(
     width = width, rtl = dir == "rtl", dark = dark, globalDensity = density,
     slotHeight = if (mk.slot) 24.0 else null,      // the oracle's `.panel` div: Roboto 14px, line-height normal (16) + 4px padding × 2
     defaultContentHeight = 24.0, tokens = if (dark) StepperWebTokens.dark else StepperWebTokens.light, hooks = mk.hooks)
 
+fun stepperStripParts(html: String) = html.replace(Regex("<style>[^<]*</style>"), "").replace(Regex("\\s+data-fa-parts='[^']*'"), "")
+
 class StepperPaintCase(private val c: Map<String, Any?>) {
     fun run(): List<String> {
         val diffs = ArrayList<String>()
-        val mk = StepperMarkup(c["html"] as? String ?: "")
+        val mk = StepperMarkup(stepperStripParts(c["html"] as? String ?: ""))
         val m = StepperModel()
         m.sync(mk.props, mk.steps)
         if ((c["name"] as? String ?: "").startsWith("focus-visible-header")) m.focusVisible = 0
+        val (stepParts, stepperParts) = stepperCaseParts(c["html"] as? String ?: "")
         val input = stepperInput(c["width"].dbl() ?: 480.0, c["dir"] as? String ?: "ltr", c["theme"] == "dark", c["density"].dbl() ?: 0.0, mk)
-        val paint = StepperLayout.layout(m, input, StepperEnv.measure)
+            .copy(stepParts = stepParts, stepperParts = stepperParts)
+            // A bare text node in a step's panel (no `.panel` div): Roboto 16px, line-height normal = 19px (the oracle's own box).
+            .let { if ((c["name"] as? String ?: "").startsWith("slotted-text")) it.copy(defaultContentHeight = 19.0) else it }
+        val paint = StepperParts.applied(StepperLayout.layout(m, input, StepperEnv.measure), stepParts, stepperParts)
         val box = swRect(c["box"])
         stepperTreeDiff(c["tree"].obj(), paint, m, box.x, box.y) { diffs += it }
         return diffs
@@ -434,7 +495,8 @@ object StepperParity {
         if (paint) {
             val rungs = StepperWebTokens.checkRungs()
             total++; if (rungs.isEmpty()) { passed++; println("density rungs: tokens.css = StepperTheme.rungs 1/1") } else rungs.forEach { println("FAIL $it") }
-            for ((files, title, required) in listOf(Triple(listOf("web-paint.json", "paint.json"), "paint", true), Triple(listOf("web-paint-extra.json"), "paint (extra)", false))) {
+            for ((files, title, required) in listOf(Triple(listOf("web-paint.json", "paint.json"), "paint", true), Triple(listOf("web-paint-extra.json"), "paint (extra)", false),
+                Triple(listOf("web-paint-extra2.json"), "paint (extra2)", false))) {
                 val root = load(dir, files)
                 if (root == null) { if (required) { println("missing $dir/${files[0]}"); total++ }; continue }
                 val cases = root["cases"].objs()
@@ -447,9 +509,11 @@ object StepperParity {
                 println("md-stepper $title: $ok/${cases.size}")
             }
         }
-        if (states) for ((file, reduced) in listOf(listOf("web-states.json", "states.json") to false, listOf("web-states-reduced.json", "states-reduced.json") to true)) {
+        // R6-11: the duration-hook runs (web-states-extra*.json) when the oracle folder has them.
+        if (states) for ((file, reduced) in listOf(listOf("web-states.json", "states.json") to false, listOf("web-states-reduced.json", "states-reduced.json") to true,
+                                                    listOf("web-states-extra.json") to false, listOf("web-states-extra-reduced.json") to true)) {
             val root = load(dir, file)
-            if (root == null) { println("missing $dir/${file[0]}"); total++; continue }
+            if (root == null) { if (file[0].contains("-extra")) continue; println("missing $dir/${file[0]}"); total++; continue }
             val runs = root["runs"].objs()
             var ok = 0
             for (r in runs) {

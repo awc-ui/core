@@ -7,7 +7,7 @@
  "windows": [
   {
    "type": 1,
-   "display": 1450,
+   "display": 466,
    "title": "",
    "root": {
     "class": "android.widget.FrameLayout",
@@ -106,7 +106,7 @@
                  1280,
                  240
                 ],
-                "virtualId": 75,
+                "virtualId": 660,
                 "children": [
                  {
                   "class": "android.view.View",
@@ -132,7 +132,7 @@
                    227,
                    112
                   ],
-                  "virtualId": 81,
+                  "virtualId": 666,
                   "children": [
                    {
                     "class": "android.widget.TextView",
@@ -157,7 +157,7 @@
                      131,
                      48
                     ],
-                    "virtualId": 92
+                    "virtualId": 677
                    },
                    {
                     "class": "android.widget.Button",
@@ -167,7 +167,7 @@
                      227,
                      112
                     ],
-                    "virtualId": 1000000081,
+                    "virtualId": 1000000666,
                     "fake": true
                    }
                   ]
@@ -230,7 +230,7 @@
     227,
     112
    ],
-   "virtualId": 81
+   "virtualId": 666
   },
   {
    "class": "android.view.View",
@@ -257,7 +257,7 @@
     227,
     112
    ],
-   "virtualId": 81
+   "virtualId": 666
   }
  ],
  "events": [
@@ -278,16 +278,6 @@
    "class": "android.view.ViewGroup"
   },
   {
-   "type": "TYPE_WINDOW_STATE_CHANGED",
-   "via": "system",
-   "text": [
-    "AWC Native"
-   ],
-   "contentDescription": "",
-   "changes": 0,
-   "class": "dev.awc.playground.LivePreviewActivity"
-  },
-  {
    "type": "TYPE_VIEW_FOCUSED",
    "via": "window",
    "text": [],
@@ -302,6 +292,16 @@
    "contentDescription": "",
    "changes": 1,
    "class": "android.view.ViewGroup"
+  },
+  {
+   "type": "TYPE_WINDOW_STATE_CHANGED",
+   "via": "system",
+   "text": [
+    "AWC Native"
+   ],
+   "contentDescription": "",
+   "changes": 0,
+   "class": "dev.awc.playground.LivePreviewActivity"
   }
  ]
 }

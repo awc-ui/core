@@ -25,3 +25,7 @@ export const menuAppearance = Object.freeze({
   // The native hooks are CSS text: "56px".
   nativeValue: (name, value, platform) => MENU_APPEARANCE_FIELDS.some(f => f.name === name) ? quote(`${cssNumber(value)}px`, platform) : undefined,
 });
+/** The family's typed part targets (::part names; AWCMenuPart / AWCMenuItemPart / AWCSubMenuItemPart natively). */
+export const MENU_PARTS = Object.freeze(['empty-text', 'surface', 'menu-viewport']);
+export const MENU_ITEM_PARTS = Object.freeze(['state-layer', 'leading-icon', 'content', 'headline', 'supporting-text', 'badge', 'trailing']);
+export const SUB_MENU_ITEM_PARTS = Object.freeze(['state-layer', 'leading-icon', 'content', 'headline', 'supporting-text', 'badge']);

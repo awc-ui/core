@@ -1,0 +1,126 @@
+# Sprint status for the remaining AWC native-parity work. The coordinator syncs this file; story agents do not edit it.
+generated: 11-13-2026 19:00
+last_updated: 11-20-2026 10:22
+project: awc-native
+project_key: NOKEY
+tracking_system: file-system
+story_location: "_bmad-output/implementation-artifacts"
+
+development_status:
+  epic-1: in-progress
+  1-1-md-transfer-list-finish-and-install: review
+  1-2-md-search-finish-and-install: review
+  1-3-md-date-picker-finish-and-install: review
+  1-4-ipad-focus-entry-shared: review
+  1-5-md-date-picker-accessibility: review
+  epic-1-retrospective: optional
+
+  epic-2: in-progress
+  2-1-button-family-ios-motion-and-captures: review
+  2-2-timelineview-tick-skip-remaining-sites: review
+  epic-2-retrospective: optional
+
+  epic-3: in-progress
+  3-1-containment-batch-install-and-stacking: review
+  epic-3-retrospective: optional
+
+  epic-4: in-progress
+  4-1-r5-post-install-verification: review
+  4-2-md-table-open-items: review
+  4-3-charts-and-org-chart-parts: review
+  epic-4-retrospective: optional
+
+  epic-5: in-progress
+  5-1-nav-wrapper-parts-and-android-label: review
+  5-2-web-slotted-text-accessibility: review
+  5-3-stepper-landmark-and-wrapper-parts: review
+  epic-5-retrospective: optional
+
+  epic-6: in-progress
+  6-1-select-family-finish: review
+  6-2-pickers-audit-readiness: in-progress  # blocked, see the story file
+  6-3-text-fields-followups: review
+  6-4-shared-bindings-and-nav-residuals: review
+  6-5-macos-harness-key-window-loss: review
+  6-6-select-family-ios-timing-and-swift-residuals: review
+  6-7-select-family-accessibility-and-autocomplete-preview: review
+  epic-6-retrospective: optional
+
+  epic-7: in-progress
+  7-1-audit-text-number-otp-fields: done
+  7-2-audit-select-family-autocomplete: ready-for-dev
+  7-3-audit-color-and-time-picker: ready-for-dev
+  7-4-audit-navigation-rail-and-app-bar: done
+  7-5-recheck-slider-rating-stepper: done
+  7-6-recheck-checkbox-menu-sheets: done
+  7-7-recheck-button-family: done
+  7-8-recheck-containment: done
+  7-9-recheck-charts-orgchart-table: done
+  7-10-recheck-navigation: done
+  7-11-audit-search-transfer-list-date-picker: done
+  7-12-recheck-avatar-list-accordion: done
+  7-13-recheck-button-group: done
+  7-14-recheck-text-number-otp-fields: ready-for-dev
+  7-15-recheck-table: done
+  7-16-recheck-stepper: done
+  7-17-audit-search: in-progress
+  7-18-recheck-navigation-rail: done
+  7-19-recheck-table-2: done
+  7-20-recheck-accordion-2: done
+  7-21-recheck-checkbox-menu-2: ready-for-dev
+  7-22-recheck-accordion-list-3: done
+  7-23-recheck-switch: in-progress
+  7-24-recheck-navigation-rail-2: done
+  7-25-recheck-table-3: ready-for-dev
+  epic-7-retrospective: optional
+
+  epic-8: backlog
+  8-1-final-integration-run: ready-for-dev
+  8-2-ledger-consolidation: ready-for-dev
+  epic-8-retrospective: optional
+
+  epic-9: in-progress
+  9-1-avatar-ios-forced-colors-outline: review
+  9-2-list-android-expand-timing-under-load: review
+  9-3-accordion-macos-controls-relation: review
+  9-4-accordion-floating-panel-overlay-layer: review
+  9-5-button-group-ios18-lost-frame: review
+  9-6-otp-field-live-frame-and-border-motion: review
+  9-7-number-field-step-capture-and-extra-actions: review
+  9-8-text-field-member-tests-and-throttle-sample: review
+  9-9-list-macos-drag-reorder-fade-tail: review
+  9-10-ios-shim-key-await-regression-and-install: review
+  9-11-table-pagination-macos-tab-and-rowspan-semantics: review
+  9-12-stepper-ios-width-from-host: review
+  9-13-date-picker-android-live-host-400-and-paint-default: review
+  9-14-navigation-rail-phone-rtl-release-ripple-and-member-tests: review
+  9-15-ipad-focus-system-first-group-takes-tab-target: review
+  9-16-table-ios-sort-click-late-start-and-web-role-race: review
+  9-17-ios-rtl-outlined-field-notch-wrong-side: review
+  9-18-text-and-number-field-states-suites-stale-frames: review
+  9-19-select-family-ios18-residuals-and-intermittent-click-loss: review
+  9-20-text-field-ios-tab-out-and-blur-motion-one-frame-late: in-progress
+  9-21-button-states-ipad-snapshot-equals-direct-capture: review
+  9-22-search-press-block-first-frame-after-focus: review
+  9-23-ios-harness-uikit-responder-block-and-first-key: review
+  9-24-accordion-android-registration-before-first-toggle-and-wrapped-items: review
+  9-25-list-macos-full-states-pointer-buttons-and-reorder-placeholder: review
+  9-26-checkbox-iphone-pointer-glyph-opacity-one-sample: review
+  9-27-menu-states-one-frame-misses-and-hook-tests: in-progress
+  9-28-laboratory-macos-preview-presentation-date-picker-commit-click: review
+  9-29-select-family-ios-first-frame-lag-flat-pixels-autocomplete: review
+  9-30-accordion-android-modal-scope-registration-order: review
+  9-31-list-states-suite-extra-timing-tier: in-progress
+  9-32-time-picker-ios-residual-hand-and-focus-turn-misses: in-progress
+  9-33-color-picker-ios-thumb-press-and-popover-open-misses: in-progress
+  9-34-autocomplete-caret-clock-late-on-ios-and-macos-rtl: in-progress
+  9-35-select-all-ripple-flat-pixels-check-shot-time: in-progress
+  9-36-select-keyboard-open-single-frame-misses-ios: in-progress
+  9-37-ios-states-harness-sampling-pump-main-thread-cost: review
+  9-38-ios-states-checks-phase-of-the-display-grid: review
+  9-39-switch-states-suite-passes-a-33ms-delay: review
+  9-40-navigation-rail-members-test-hangs-on-macos: review
+  9-41-table-iphone-sort-residual-and-late-selection-start: in-progress
+  9-42-tools-ax-empty-capture-is-a-failure: review
+  9-43-search-docked-open-frame-hole-ios18: in-progress
+  epic-9-retrospective: optional

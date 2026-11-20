@@ -2812,10 +2812,10 @@
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Dedicated native item: all ten properties, three events, toggle() and focusHeader() through .awcAccordionItemController(_:for:), four slots, twenty-four appearance hooks and eleven typed part targets. mdItemRequestFocus and mdItemRequestReorder bubble to the owning accordion, which performs the source navigation and keyboard reorder.",
+        "Dedicated native item: all ten properties, three events, toggle() and focusHeader() through .awcAccordionItemController(_:for:), four slots, twenty-four appearance hooks and thirteen typed part targets. mdItemRequestFocus and mdItemRequestReorder bubble to the owning accordion, which performs the source navigation and keyboard reorder.",
         "An item that is not a direct child of an accordion is never owned and keeps its own disclosure state and events, like the source element.",
-        "chassis-handle and chassis-handle-bar render on the first item of a floating accordion and are styled through chassisHandleColor and chassisHandleBackgroundHover; they accept no part declarations.",
-        "macOS SwiftUI/AppKit renderer and live-host verification is recorded; iOS SDK, simulator/device and VoiceOver execution remain unavailable and unverified."
+        "chassis-handle and chassis-handle-bar render on the first item of a floating accordion, are styled through chassisHandleColor and chassisHandleBackgroundHover, and take typed part declarations (background, corner shape, width, height, opacity), which win in every state as an outer ::part declaration does.",
+        "macOS SwiftUI/AppKit, iOS simulator (iPhone and iPad on iOS 26.3, iPhone on iOS 18.6; docs/native-parity/ios-harness.md) and Android emulator renderers are verified against the Chrome oracles; their accessibility trees are compared with Chrome's on all three platforms by tools/ax (docs/native-parity/accessibility.md). Spoken VoiceOver/TalkBack output is not automated."
       ],
       "verification": "not-device-verified",
       "visualParts": [
@@ -2829,7 +2829,9 @@
         "trailing-icon",
         "panel",
         "content",
-        "content-inner"
+        "content-inner",
+        "chassis-handle",
+        "chassis-handle-bar"
       ],
       "appearance": {
         "api": ".awcAccordionItemAppearance(AWCAccordionItemAppearance)",
@@ -2895,10 +2897,10 @@
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Dedicated native item: all ten properties, three events, toggle() and focusHeader() through AWCAccordionItemControllerScope, four slots, twenty-four appearance hooks and eleven typed part targets. mdItemRequestFocus and mdItemRequestReorder bubble to the owning accordion, which performs the source navigation and keyboard reorder.",
+        "Dedicated native item: all ten properties, three events, toggle() and focusHeader() through AWCAccordionItemControllerScope, four slots, twenty-four appearance hooks and thirteen typed part targets. mdItemRequestFocus and mdItemRequestReorder bubble to the owning accordion, which performs the source navigation and keyboard reorder.",
         "An item that is not a direct child of an accordion is never owned and keeps its own disclosure state and events, like the source element.",
-        "chassis-handle and chassis-handle-bar render on the first item of a floating accordion and are styled through chassisHandleColor and chassisHandleBackgroundHover; they accept no part declarations.",
-        "Android Compose rendering, events, retained-host and device suites are recorded; TalkBack delivery and OS accessibility traversal remain unverified."
+        "chassis-handle and chassis-handle-bar render on the first item of a floating accordion, are styled through chassisHandleColor and chassisHandleBackgroundHover, and take typed part declarations (background, corner shape, width, height, opacity), which win in every state as an outer ::part declaration does.",
+        "macOS SwiftUI/AppKit, iOS simulator (iPhone and iPad on iOS 26.3, iPhone on iOS 18.6; docs/native-parity/ios-harness.md) and Android emulator renderers are verified against the Chrome oracles; their accessibility trees are compared with Chrome's on all three platforms by tools/ax (docs/native-parity/accessibility.md). Spoken VoiceOver/TalkBack output is not automated."
       ],
       "verification": "not-device-verified",
       "visualParts": [
@@ -2912,7 +2914,9 @@
         "trailing-icon",
         "panel",
         "content",
-        "content-inner"
+        "content-inner",
+        "chassis-handle",
+        "chassis-handle-bar"
       ],
       "appearance": {
         "api": "AWCAccordionItemAppearanceScope(AWCAccordionItemAppearance)",

@@ -1,0 +1,4332 @@
+{
+ "chart": "md-bar-chart",
+ "subset": "forced",
+ "cases": [
+  {
+   "name": "bar-forced-default",
+   "theme": "light",
+   "dir": "ltr",
+   "width": 640,
+   "html": "<md-bar-chart label=\"Quarterly results\" no-animation  style=\"block-size:360px\"></md-bar-chart>",
+   "props": {
+    "series": [
+     {
+      "label": "Revenue",
+      "data": [
+       12,
+       19,
+       15,
+       24,
+       22,
+       30
+      ]
+     },
+     {
+      "label": "Costs",
+      "data": [
+       8,
+       11,
+       13,
+       14,
+       18,
+       17
+      ]
+     }
+    ],
+    "xAxis": {
+     "data": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun"
+     ]
+    }
+   },
+   "clip": {
+    "x": 16,
+    "y": 16,
+    "width": 656,
+    "height": 376
+   },
+   "snap": {
+    "tag": "md-bar-chart",
+    "rect": {
+     "x": 24,
+     "y": 24,
+     "width": 640,
+     "height": 360
+    },
+    "attrs": {
+     "role": "figure",
+     "aria-label": "Quarterly results, Bar chart, with 2 series, from Jan to Jun.",
+     "style": "block-size:360px",
+     "legend": "top-end",
+     "layout": "vertical",
+     "density": "0",
+     "class": "md-bar-chart md-bar-chart--vertical hydrated md-bar-chart--mounted"
+    },
+    "style": {
+     "display": "block",
+     "visibility": "visible",
+     "opacity": "1",
+     "color": "rgb(255, 255, 255)",
+     "backgroundColor": "rgb(0, 0, 0)",
+     "transform": "none",
+     "borderTopLeftRadius": "16px",
+     "borderTopRightRadius": "16px",
+     "borderBottomRightRadius": "16px",
+     "borderBottomLeftRadius": "16px",
+     "borderTopWidth": "0px",
+     "borderTopColor": "rgb(255, 255, 255)",
+     "boxShadow": "none",
+     "outlineStyle": "none",
+     "outlineWidth": "3px",
+     "outlineColor": "rgb(255, 255, 255)",
+     "outlineOffset": "0px",
+     "fontFamily": "Roboto",
+     "fontSize": "16px",
+     "fontWeight": "400",
+     "lineHeight": "normal",
+     "letterSpacing": "normal",
+     "textAlign": "start",
+     "paddingTop": "16px",
+     "paddingRight": "16px",
+     "paddingBottom": "16px",
+     "paddingLeft": "16px",
+     "columnGap": "normal",
+     "rowGap": "normal",
+     "gap": "normal",
+     "zIndex": "auto",
+     "transitionProperty": "all",
+     "transitionDuration": "0s",
+     "transitionTimingFunction": "ease",
+     "cursor": "auto",
+     "pointerEvents": "auto",
+     "whiteSpace": "normal",
+     "overflow": "visible",
+     "position": "relative",
+     "width": "640px",
+     "height": "360px",
+     "minHeight": "160px",
+     "blockSize": "360px",
+     "flexDirection": "row",
+     "justifyContent": "normal",
+     "alignItems": "normal",
+     "direction": "ltr",
+     "forcedColorAdjust": "auto"
+    },
+    "parts": [
+     {
+      "tag": "header",
+      "part": "header",
+      "cls": "md-bar-chart__header",
+      "attrs": {
+       "part": "header",
+       "class": "md-bar-chart__header"
+      },
+      "rect": {
+       "x": 0,
+       "y": 0,
+       "width": 0,
+       "height": 0
+      },
+      "display": "contents",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(255, 255, 255)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(255, 255, 255)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(255, 255, 255)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "static",
+      "width": "auto",
+      "height": "auto",
+      "minHeight": "0px",
+      "blockSize": "auto",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "div",
+      "part": "canvas",
+      "cls": "md-bar-chart__canvas",
+      "attrs": {
+       "role": "application",
+       "tabindex": "0",
+       "aria-label": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+       "part": "canvas",
+       "class": "md-bar-chart__canvas"
+      },
+      "rect": {
+       "x": 40,
+       "y": 40,
+       "width": 608,
+       "height": 328
+      },
+      "display": "block",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(255, 255, 255)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(255, 255, 255)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(255, 255, 255)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "absolute",
+      "width": "608px",
+      "height": "328px",
+      "minHeight": "0px",
+      "blockSize": "328px",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "canvas",
+      "part": "plot-canvas",
+      "cls": null,
+      "attrs": {
+       "part": "plot-canvas",
+       "style": "position: absolute; inset: 0px; width: 100%; height: 100%; display: block;"
+      },
+      "rect": {
+       "x": 40,
+       "y": 40,
+       "width": 608,
+       "height": 328
+      },
+      "display": "block",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(255, 255, 255)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(255, 255, 255)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(255, 255, 255)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "clip",
+      "position": "absolute",
+      "width": "608px",
+      "height": "328px",
+      "minHeight": "0px",
+      "blockSize": "328px",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "div",
+      "part": "legend",
+      "cls": null,
+      "attrs": {
+       "part": "legend",
+       "style": "position: absolute; top: 2px; right: 12px; display: flex; flex-wrap: wrap; gap: 4px 12px; justify-content: flex-end; max-width: 88%; pointer-events: auto;"
+      },
+      "rect": {
+       "x": 486.91,
+       "y": 42,
+       "width": 149.09,
+       "height": 20
+      },
+      "display": "flex",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(255, 255, 255)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(255, 255, 255)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(255, 255, 255)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "12px",
+      "rowGap": "4px",
+      "gap": "4px 12px",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "absolute",
+      "width": "149.094px",
+      "height": "20px",
+      "minHeight": "0px",
+      "blockSize": "20px",
+      "flexDirection": "row",
+      "justifyContent": "flex-end",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "footer",
+      "part": "footer",
+      "cls": "md-bar-chart__footer",
+      "attrs": {
+       "part": "footer",
+       "class": "md-bar-chart__footer"
+      },
+      "rect": {
+       "x": 0,
+       "y": 0,
+       "width": 0,
+       "height": 0
+      },
+      "display": "contents",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(255, 255, 255)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(255, 255, 255)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(255, 255, 255)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "static",
+      "width": "auto",
+      "height": "auto",
+      "minHeight": "0px",
+      "blockSize": "auto",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     }
+    ],
+    "overlay": [
+     {
+      "text": "Quarterly results",
+      "rect": {
+       "x": 62.75,
+       "y": 74,
+       "width": 105.34,
+       "height": 16
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "600 14px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, 0, 0)"
+     },
+     {
+      "text": "0",
+      "rect": {
+       "x": 48.56,
+       "y": 336.5,
+       "width": 6.19,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -6.1875, -6.5)"
+     },
+     {
+      "text": "5",
+      "rect": {
+       "x": 48.56,
+       "y": 296,
+       "width": 6.19,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -6.1875, -6.5)"
+     },
+     {
+      "text": "10",
+      "rect": {
+       "x": 42.38,
+       "y": 255.5,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "15",
+      "rect": {
+       "x": 42.38,
+       "y": 215,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "20",
+      "rect": {
+       "x": 42.38,
+       "y": 174.5,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "25",
+      "rect": {
+       "x": 42.38,
+       "y": 134,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "30",
+      "rect": {
+       "x": 42.38,
+       "y": 93.5,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "Jan",
+      "rect": {
+       "x": 101.45,
+       "y": 349,
+       "width": 18.14,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -9.07031, 0)"
+     },
+     {
+      "text": "Feb",
+      "rect": {
+       "x": 197.07,
+       "y": 349,
+       "width": 17.98,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -8.99219, 0)"
+     },
+     {
+      "text": "Mar",
+      "rect": {
+       "x": 291.95,
+       "y": 349,
+       "width": 19.33,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -9.66406, 0)"
+     },
+     {
+      "text": "Apr",
+      "rect": {
+       "x": 388.59,
+       "y": 349,
+       "width": 17.09,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -8.54688, 0)"
+     },
+     {
+      "text": "May",
+      "rect": {
+       "x": 482.33,
+       "y": 349,
+       "width": 20.72,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -10.3594, 0)"
+     },
+     {
+      "text": "Jun",
+      "rect": {
+       "x": 579.11,
+       "y": 349,
+       "width": 18.22,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -9.10938, 0)"
+     }
+    ],
+    "legend": [
+     {
+      "tag": "button",
+      "attrs": {
+       "aria-pressed": "true",
+       "style": "display: inline-flex; align-items: center; gap: 6px; background: none; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; padding: 2px 4px; cursor: pointer; white-space: nowrap; flex: 0 0 auto; min-width: 0px; max-width: 100%; font: 400 14px Roboto, sans-serif; color: var(--md-sys-color-on-surface-variant, #49454F);"
+      },
+      "text": "Revenue",
+      "rect": {
+       "x": 486.91,
+       "y": 42,
+       "width": 76.95,
+       "height": 20
+      },
+      "opacity": "1"
+     },
+     {
+      "tag": "button",
+      "attrs": {
+       "aria-pressed": "true",
+       "style": "display: inline-flex; align-items: center; gap: 6px; background: none; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; padding: 2px 4px; cursor: pointer; white-space: nowrap; flex: 0 0 auto; min-width: 0px; max-width: 100%; font: 400 14px Roboto, sans-serif; color: var(--md-sys-color-on-surface-variant, #49454F);"
+      },
+      "text": "Costs",
+      "rect": {
+       "x": 575.86,
+       "y": 42,
+       "width": 60.14,
+       "height": 20
+      },
+      "opacity": "1"
+     }
+    ],
+    "live": {
+     "attrs": {
+      "role": "status",
+      "aria-live": "polite",
+      "aria-atomic": "true",
+      "class": "md-bar-chart__live"
+     },
+     "text": ""
+    },
+    "table": {
+     "caption": "Quarterly results",
+     "rows": [
+      [
+       "X",
+       "Revenue",
+       "Costs"
+      ],
+      [
+       "Jan",
+       "12",
+       "8"
+      ],
+      [
+       "Feb",
+       "19",
+       "11"
+      ],
+      [
+       "Mar",
+       "15",
+       "13"
+      ],
+      [
+       "Apr",
+       "24",
+       "14"
+      ],
+      [
+       "May",
+       "22",
+       "18"
+      ],
+      [
+       "Jun",
+       "30",
+       "17"
+      ]
+     ],
+     "rowCount": 7,
+     "attrs": {}
+    },
+    "plot": {
+     "attrs": {
+      "role": "application",
+      "tabindex": "0",
+      "aria-label": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+      "part": "canvas",
+      "class": "md-bar-chart__canvas"
+     },
+     "rect": {
+      "x": 40,
+      "y": 40,
+      "width": 608,
+      "height": 328
+     },
+     "focused": false
+    },
+    "activeInShadow": null
+   },
+   "scene": {
+    "width": 608,
+    "height": 328,
+    "plot": {
+     "x": 22.76,
+     "y": 60,
+     "width": 573.24,
+     "height": 243
+    },
+    "gridlines": [
+     {
+      "x1": 22.76,
+      "y1": 303,
+      "x2": 596,
+      "y2": 303,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 262.5,
+      "x2": 596,
+      "y2": 262.5,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 222,
+      "x2": 596,
+      "y2": 222,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 181.5,
+      "x2": 596,
+      "y2": 181.5,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 141,
+      "x2": 596,
+      "y2": 141,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 100.5,
+      "x2": 596,
+      "y2": 100.5,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 60,
+      "x2": 596,
+      "y2": 60,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     }
+    ],
+    "axisLines": [
+     {
+      "x1": 22.76,
+      "y1": 303,
+      "x2": 596,
+      "y2": 303,
+      "color": "#CAC4D0",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 60,
+      "x2": 22.76,
+      "y2": 303,
+      "color": "#CAC4D0",
+      "width": 1
+     }
+    ],
+    "areas": [],
+    "bars": [
+     {
+      "x": 37.09,
+      "y": 205.8,
+      "w": 30.4,
+      "h": 97.2,
+      "color": "#6750A4",
+      "radius": [
+       6,
+       6,
+       0,
+       0
+      ],
+      "seriesIndex": 0,
+      "dataIndex": 0,
+      "horizontal": false
+     },
+     {
+      "x": 132.63,
+      "y": 149.1,
+      "w": 30.4,
+      "h": 153.9,
+      "color": "#6750A4",
+      "radius": [
+       6,
+       6,
+       0,
+       0
+      ],
+      "seriesIndex": 0,
+      "dataIndex": 1,
+      "horizontal": false
+     },
+     {
+      "x": 228.17,
+      "y": 181.5,
+      "w": 30.4,
+      "h": 121.5,
+      "color": "#6750A4",
+      "radius": [
+       6,
+       6,
+       0,
+       0
+      ],
+      "seriesIndex": 0,
+      "dataIndex": 2,
+      "horizontal": false
+     },
+     {
+      "x": 323.71,
+      "y": 108.6,
+      "w": 30.4,
+      "h": 194.4,
+      "color": "#6750A4",
+      "radius": [
+       6,
+       6,
+       0,
+       0
+      ],
+      "seriesIndex": 0,
+      "dataIndex": 3,
+      "horizontal": false
+     },
+     {
+      "x": 419.25,
+      "y": 124.8,
+      "w": 30.4,
+      "h": 178.2,
+      "color": "#6750A4",
+      "radius": [
+       6,
+       6,
+       0,
+       0
+      ],
+      "seriesIndex": 0,
+      "dataIndex": 4,
+      "horizontal": false
+     },
+     {
+      "x": 514.79,
+      "y": 60,
+      "w": 30.4,
+      "h": 243,
+      "color": "#6750A4",
+      "radius": [
+       6,
+       6,
+       0,
+       0
+      ],
+      "seriesIndex": 0,
+      "dataIndex": 5,
+      "horizontal": false
+     },
+     {
+      "x": 73.57,
+      "y": 238.2,
+      "w": 30.4,
+      "h": 64.8,
+      "color": "#7D5260",
+      "radius": [
+       6,
+       6,
+       0,
+       0
+      ],
+      "seriesIndex": 1,
+      "dataIndex": 0,
+      "horizontal": false
+     },
+     {
+      "x": 169.11,
+      "y": 213.9,
+      "w": 30.4,
+      "h": 89.1,
+      "color": "#7D5260",
+      "radius": [
+       6,
+       6,
+       0,
+       0
+      ],
+      "seriesIndex": 1,
+      "dataIndex": 1,
+      "horizontal": false
+     },
+     {
+      "x": 264.65,
+      "y": 197.7,
+      "w": 30.4,
+      "h": 105.3,
+      "color": "#7D5260",
+      "radius": [
+       6,
+       6,
+       0,
+       0
+      ],
+      "seriesIndex": 1,
+      "dataIndex": 2,
+      "horizontal": false
+     },
+     {
+      "x": 360.19,
+      "y": 189.6,
+      "w": 30.4,
+      "h": 113.4,
+      "color": "#7D5260",
+      "radius": [
+       6,
+       6,
+       0,
+       0
+      ],
+      "seriesIndex": 1,
+      "dataIndex": 3,
+      "horizontal": false
+     },
+     {
+      "x": 455.73,
+      "y": 157.2,
+      "w": 30.4,
+      "h": 145.8,
+      "color": "#7D5260",
+      "radius": [
+       6,
+       6,
+       0,
+       0
+      ],
+      "seriesIndex": 1,
+      "dataIndex": 4,
+      "horizontal": false
+     },
+     {
+      "x": 551.27,
+      "y": 165.3,
+      "w": 30.4,
+      "h": 137.7,
+      "color": "#7D5260",
+      "radius": [
+       6,
+       6,
+       0,
+       0
+      ],
+      "seriesIndex": 1,
+      "dataIndex": 5,
+      "horizontal": false
+     }
+    ],
+    "slices": [],
+    "lines": [],
+    "markers": [],
+    "texts": [
+     {
+      "x": 22.76,
+      "y": 34,
+      "text": "Quarterly results",
+      "color": "#1C1B1F",
+      "fontSize": 14,
+      "fontWeight": 600,
+      "align": "start",
+      "baseline": "top",
+      "key": "title"
+     },
+     {
+      "x": 14.76,
+      "y": 303,
+      "text": "0",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "vt-0"
+     },
+     {
+      "x": 14.76,
+      "y": 262.5,
+      "text": "5",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "vt-1"
+     },
+     {
+      "x": 14.76,
+      "y": 222,
+      "text": "10",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "vt-2"
+     },
+     {
+      "x": 14.76,
+      "y": 181.5,
+      "text": "15",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "vt-3"
+     },
+     {
+      "x": 14.76,
+      "y": 141,
+      "text": "20",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "vt-4"
+     },
+     {
+      "x": 14.76,
+      "y": 100.5,
+      "text": "25",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "vt-5"
+     },
+     {
+      "x": 14.76,
+      "y": 60,
+      "text": "30",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "vt-6"
+     },
+     {
+      "x": 70.53,
+      "y": 309,
+      "text": "Jan",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "ct-0"
+     },
+     {
+      "x": 166.07,
+      "y": 309,
+      "text": "Feb",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "ct-1"
+     },
+     {
+      "x": 261.61,
+      "y": 309,
+      "text": "Mar",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "ct-2"
+     },
+     {
+      "x": 357.15,
+      "y": 309,
+      "text": "Apr",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "ct-3"
+     },
+     {
+      "x": 452.69,
+      "y": 309,
+      "text": "May",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "ct-4"
+     },
+     {
+      "x": 548.23,
+      "y": 309,
+      "text": "Jun",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "ct-5"
+     }
+    ],
+    "barLabels": [],
+    "legend": [
+     {
+      "label": "Revenue",
+      "color": "#6750A4",
+      "seriesIndex": 0,
+      "hidden": false,
+      "x": 0,
+      "y": 0
+     },
+     {
+      "label": "Costs",
+      "color": "#7D5260",
+      "seriesIndex": 1,
+      "hidden": false,
+      "x": 0,
+      "y": 0
+     }
+    ],
+    "legendPosition": "top-end",
+    "xPositions": [
+     70.53,
+     166.07,
+     261.61,
+     357.15,
+     452.69,
+     548.23
+    ],
+    "xValues": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun"
+    ],
+    "xLabels": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun"
+    ],
+    "barBaseline": 303,
+    "hoverPoints": [
+     {
+      "seriesIndex": 0,
+      "color": "#6750A4",
+      "label": "Revenue",
+      "byIndex": {
+       "0": {
+        "x": 52.29,
+        "y": 205.8,
+        "value": 12,
+        "color": "#6750A4"
+       },
+       "1": {
+        "x": 147.83,
+        "y": 149.1,
+        "value": 19,
+        "color": "#6750A4"
+       },
+       "2": {
+        "x": 243.37,
+        "y": 181.5,
+        "value": 15,
+        "color": "#6750A4"
+       },
+       "3": {
+        "x": 338.91,
+        "y": 108.6,
+        "value": 24,
+        "color": "#6750A4"
+       },
+       "4": {
+        "x": 434.45,
+        "y": 124.8,
+        "value": 22,
+        "color": "#6750A4"
+       },
+       "5": {
+        "x": 529.99,
+        "y": 60,
+        "value": 30,
+        "color": "#6750A4"
+       }
+      },
+      "values": [
+       12,
+       19,
+       15,
+       24,
+       22,
+       30
+      ]
+     },
+     {
+      "seriesIndex": 1,
+      "color": "#7D5260",
+      "label": "Costs",
+      "byIndex": {
+       "0": {
+        "x": 88.77,
+        "y": 238.2,
+        "value": 8,
+        "color": "#7D5260"
+       },
+       "1": {
+        "x": 184.31,
+        "y": 213.9,
+        "value": 11,
+        "color": "#7D5260"
+       },
+       "2": {
+        "x": 279.85,
+        "y": 197.7,
+        "value": 13,
+        "color": "#7D5260"
+       },
+       "3": {
+        "x": 375.39,
+        "y": 189.6,
+        "value": 14,
+        "color": "#7D5260"
+       },
+       "4": {
+        "x": 470.93,
+        "y": 157.2,
+        "value": 18,
+        "color": "#7D5260"
+       },
+       "5": {
+        "x": 566.47,
+        "y": 165.3,
+        "value": 17,
+        "color": "#7D5260"
+       }
+      },
+      "values": [
+       8,
+       11,
+       13,
+       14,
+       18,
+       17
+      ]
+     }
+    ]
+   },
+   "ax": [
+    {
+     "role": "button",
+     "name": "Run"
+    },
+    {
+     "role": "application",
+     "name": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave."
+    },
+    {
+     "role": "button",
+     "name": "Revenue",
+     "pressed": true
+    },
+    {
+     "role": "button",
+     "name": "Costs",
+     "pressed": true
+    },
+    {
+     "role": "status",
+     "name": ""
+    }
+   ],
+   "focus": [
+    "body"
+   ]
+  },
+  {
+   "name": "bar-forced-stacked",
+   "theme": "light",
+   "dir": "ltr",
+   "width": 640,
+   "html": "<md-bar-chart label=\"Quarterly results\" no-animation stack=\"normal\" show-totals style=\"block-size:360px\"></md-bar-chart>",
+   "props": {
+    "series": [
+     {
+      "label": "North",
+      "data": [
+       12,
+       19,
+       15,
+       24,
+       22,
+       30
+      ]
+     },
+     {
+      "label": "South",
+      "data": [
+       8,
+       11,
+       13,
+       14,
+       18,
+       17
+      ]
+     },
+     {
+      "label": "West",
+      "data": [
+       5,
+       7,
+       9,
+       6,
+       10,
+       12
+      ]
+     }
+    ],
+    "xAxis": {
+     "data": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun"
+     ]
+    }
+   },
+   "clip": {
+    "x": 16,
+    "y": 16,
+    "width": 656,
+    "height": 376
+   },
+   "snap": {
+    "tag": "md-bar-chart",
+    "rect": {
+     "x": 24,
+     "y": 24,
+     "width": 640,
+     "height": 360
+    },
+    "attrs": {
+     "role": "figure",
+     "aria-label": "Quarterly results, Bar chart, with 3 series, from Jan to Jun.",
+     "style": "block-size:360px",
+     "legend": "top-end",
+     "layout": "vertical",
+     "density": "0",
+     "class": "md-bar-chart md-bar-chart--vertical hydrated md-bar-chart--mounted"
+    },
+    "style": {
+     "display": "block",
+     "visibility": "visible",
+     "opacity": "1",
+     "color": "rgb(255, 255, 255)",
+     "backgroundColor": "rgb(0, 0, 0)",
+     "transform": "none",
+     "borderTopLeftRadius": "16px",
+     "borderTopRightRadius": "16px",
+     "borderBottomRightRadius": "16px",
+     "borderBottomLeftRadius": "16px",
+     "borderTopWidth": "0px",
+     "borderTopColor": "rgb(255, 255, 255)",
+     "boxShadow": "none",
+     "outlineStyle": "none",
+     "outlineWidth": "3px",
+     "outlineColor": "rgb(255, 255, 255)",
+     "outlineOffset": "0px",
+     "fontFamily": "Roboto",
+     "fontSize": "16px",
+     "fontWeight": "400",
+     "lineHeight": "normal",
+     "letterSpacing": "normal",
+     "textAlign": "start",
+     "paddingTop": "16px",
+     "paddingRight": "16px",
+     "paddingBottom": "16px",
+     "paddingLeft": "16px",
+     "columnGap": "normal",
+     "rowGap": "normal",
+     "gap": "normal",
+     "zIndex": "auto",
+     "transitionProperty": "all",
+     "transitionDuration": "0s",
+     "transitionTimingFunction": "ease",
+     "cursor": "auto",
+     "pointerEvents": "auto",
+     "whiteSpace": "normal",
+     "overflow": "visible",
+     "position": "relative",
+     "width": "640px",
+     "height": "360px",
+     "minHeight": "160px",
+     "blockSize": "360px",
+     "flexDirection": "row",
+     "justifyContent": "normal",
+     "alignItems": "normal",
+     "direction": "ltr",
+     "forcedColorAdjust": "auto"
+    },
+    "parts": [
+     {
+      "tag": "header",
+      "part": "header",
+      "cls": "md-bar-chart__header",
+      "attrs": {
+       "part": "header",
+       "class": "md-bar-chart__header"
+      },
+      "rect": {
+       "x": 0,
+       "y": 0,
+       "width": 0,
+       "height": 0
+      },
+      "display": "contents",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(255, 255, 255)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(255, 255, 255)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(255, 255, 255)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "static",
+      "width": "auto",
+      "height": "auto",
+      "minHeight": "0px",
+      "blockSize": "auto",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "div",
+      "part": "canvas",
+      "cls": "md-bar-chart__canvas",
+      "attrs": {
+       "role": "application",
+       "tabindex": "0",
+       "aria-label": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+       "part": "canvas",
+       "class": "md-bar-chart__canvas"
+      },
+      "rect": {
+       "x": 40,
+       "y": 40,
+       "width": 608,
+       "height": 328
+      },
+      "display": "block",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(255, 255, 255)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(255, 255, 255)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(255, 255, 255)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "absolute",
+      "width": "608px",
+      "height": "328px",
+      "minHeight": "0px",
+      "blockSize": "328px",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "canvas",
+      "part": "plot-canvas",
+      "cls": null,
+      "attrs": {
+       "part": "plot-canvas",
+       "style": "position: absolute; inset: 0px; width: 100%; height: 100%; display: block;"
+      },
+      "rect": {
+       "x": 40,
+       "y": 40,
+       "width": 608,
+       "height": 328
+      },
+      "display": "block",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(255, 255, 255)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(255, 255, 255)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(255, 255, 255)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "clip",
+      "position": "absolute",
+      "width": "608px",
+      "height": "328px",
+      "minHeight": "0px",
+      "blockSize": "328px",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "div",
+      "part": "legend",
+      "cls": null,
+      "attrs": {
+       "part": "legend",
+       "style": "position: absolute; top: 2px; right: 12px; display: flex; flex-wrap: wrap; gap: 4px 12px; justify-content: flex-end; max-width: 88%; pointer-events: auto;"
+      },
+      "rect": {
+       "x": 436.88,
+       "y": 42,
+       "width": 199.13,
+       "height": 20
+      },
+      "display": "flex",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(255, 255, 255)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(255, 255, 255)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(255, 255, 255)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "12px",
+      "rowGap": "4px",
+      "gap": "4px 12px",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "absolute",
+      "width": "199.125px",
+      "height": "20px",
+      "minHeight": "0px",
+      "blockSize": "20px",
+      "flexDirection": "row",
+      "justifyContent": "flex-end",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "footer",
+      "part": "footer",
+      "cls": "md-bar-chart__footer",
+      "attrs": {
+       "part": "footer",
+       "class": "md-bar-chart__footer"
+      },
+      "rect": {
+       "x": 0,
+       "y": 0,
+       "width": 0,
+       "height": 0
+      },
+      "display": "contents",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(255, 255, 255)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(255, 255, 255)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(255, 255, 255)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "static",
+      "width": "auto",
+      "height": "auto",
+      "minHeight": "0px",
+      "blockSize": "auto",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     }
+    ],
+    "overlay": [
+     {
+      "text": "Quarterly results",
+      "rect": {
+       "x": 62.75,
+       "y": 74,
+       "width": 105.34,
+       "height": 16
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "600 14px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, 0, 0)"
+     },
+     {
+      "text": "0",
+      "rect": {
+       "x": 48.56,
+       "y": 336.5,
+       "width": 6.19,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -6.1875, -6.5)"
+     },
+     {
+      "text": "10",
+      "rect": {
+       "x": 42.38,
+       "y": 295.31,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "20",
+      "rect": {
+       "x": 42.38,
+       "y": 254.13,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "30",
+      "rect": {
+       "x": 42.38,
+       "y": 212.94,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "40",
+      "rect": {
+       "x": 42.38,
+       "y": 171.75,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "50",
+      "rect": {
+       "x": 42.38,
+       "y": 130.56,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "Jan",
+      "rect": {
+       "x": 101.45,
+       "y": 349,
+       "width": 18.14,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -9.07031, 0)"
+     },
+     {
+      "text": "Feb",
+      "rect": {
+       "x": 197.07,
+       "y": 349,
+       "width": 17.98,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -8.99219, 0)"
+     },
+     {
+      "text": "Mar",
+      "rect": {
+       "x": 291.95,
+       "y": 349,
+       "width": 19.33,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -9.66406, 0)"
+     },
+     {
+      "text": "Apr",
+      "rect": {
+       "x": 388.59,
+       "y": 349,
+       "width": 17.09,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -8.54688, 0)"
+     },
+     {
+      "text": "May",
+      "rect": {
+       "x": 482.33,
+       "y": 349,
+       "width": 20.72,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -10.3594, 0)"
+     },
+     {
+      "text": "Jun",
+      "rect": {
+       "x": 579.11,
+       "y": 349,
+       "width": 18.22,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -9.10938, 0)"
+     },
+     {
+      "text": "25",
+      "rect": {
+       "x": 104.2,
+       "y": 223.03,
+       "width": 12.63,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "600 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -6.3125, -13)"
+     },
+     {
+      "text": "37",
+      "rect": {
+       "x": 199.75,
+       "y": 173.61,
+       "width": 12.63,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "600 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -6.3125, -13)"
+     },
+     {
+      "text": "37",
+      "rect": {
+       "x": 295.3,
+       "y": 173.61,
+       "width": 12.63,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "600 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -6.3125, -13)"
+     },
+     {
+      "text": "44",
+      "rect": {
+       "x": 390.83,
+       "y": 144.77,
+       "width": 12.63,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "600 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -6.3125, -13)"
+     },
+     {
+      "text": "50",
+      "rect": {
+       "x": 486.38,
+       "y": 120.06,
+       "width": 12.63,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "600 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -6.3125, -13)"
+     },
+     {
+      "text": "59",
+      "rect": {
+       "x": 581.91,
+       "y": 83,
+       "width": 12.63,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "600 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -6.3125, -13)"
+     }
+    ],
+    "legend": [
+     {
+      "tag": "button",
+      "attrs": {
+       "aria-pressed": "true",
+       "style": "display: inline-flex; align-items: center; gap: 6px; background: none; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; padding: 2px 4px; cursor: pointer; white-space: nowrap; flex: 0 0 auto; min-width: 0px; max-width: 100%; font: 400 14px Roboto, sans-serif; color: var(--md-sys-color-on-surface-variant, #49454F);"
+      },
+      "text": "North",
+      "rect": {
+       "x": 436.88,
+       "y": 42,
+       "width": 59.36,
+       "height": 20
+      },
+      "opacity": "1"
+     },
+     {
+      "tag": "button",
+      "attrs": {
+       "aria-pressed": "true",
+       "style": "display: inline-flex; align-items: center; gap: 6px; background: none; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; padding: 2px 4px; cursor: pointer; white-space: nowrap; flex: 0 0 auto; min-width: 0px; max-width: 100%; font: 400 14px Roboto, sans-serif; color: var(--md-sys-color-on-surface-variant, #49454F);"
+      },
+      "text": "South",
+      "rect": {
+       "x": 508.23,
+       "y": 42,
+       "width": 60.31,
+       "height": 20
+      },
+      "opacity": "1"
+     },
+     {
+      "tag": "button",
+      "attrs": {
+       "aria-pressed": "true",
+       "style": "display: inline-flex; align-items: center; gap: 6px; background: none; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; padding: 2px 4px; cursor: pointer; white-space: nowrap; flex: 0 0 auto; min-width: 0px; max-width: 100%; font: 400 14px Roboto, sans-serif; color: var(--md-sys-color-on-surface-variant, #49454F);"
+      },
+      "text": "West",
+      "rect": {
+       "x": 580.55,
+       "y": 42,
+       "width": 55.45,
+       "height": 20
+      },
+      "opacity": "1"
+     }
+    ],
+    "live": {
+     "attrs": {
+      "role": "status",
+      "aria-live": "polite",
+      "aria-atomic": "true",
+      "class": "md-bar-chart__live"
+     },
+     "text": ""
+    },
+    "table": {
+     "caption": "Quarterly results",
+     "rows": [
+      [
+       "X",
+       "North",
+       "South",
+       "West"
+      ],
+      [
+       "Jan",
+       "12",
+       "8",
+       "5"
+      ],
+      [
+       "Feb",
+       "19",
+       "11",
+       "7"
+      ],
+      [
+       "Mar",
+       "15",
+       "13",
+       "9"
+      ],
+      [
+       "Apr",
+       "24",
+       "14",
+       "6"
+      ],
+      [
+       "May",
+       "22",
+       "18",
+       "10"
+      ],
+      [
+       "Jun",
+       "30",
+       "17",
+       "12"
+      ]
+     ],
+     "rowCount": 7,
+     "attrs": {}
+    },
+    "plot": {
+     "attrs": {
+      "role": "application",
+      "tabindex": "0",
+      "aria-label": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+      "part": "canvas",
+      "class": "md-bar-chart__canvas"
+     },
+     "rect": {
+      "x": 40,
+      "y": 40,
+      "width": 608,
+      "height": 328
+     },
+     "focused": false
+    },
+    "activeInShadow": null
+   },
+   "scene": {
+    "width": 608,
+    "height": 328,
+    "plot": {
+     "x": 22.76,
+     "y": 60,
+     "width": 573.24,
+     "height": 243
+    },
+    "gridlines": [
+     {
+      "x1": 22.76,
+      "y1": 303,
+      "x2": 596,
+      "y2": 303,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 261.81,
+      "x2": 596,
+      "y2": 261.81,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 220.63,
+      "x2": 596,
+      "y2": 220.63,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 179.44,
+      "x2": 596,
+      "y2": 179.44,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 138.25,
+      "x2": 596,
+      "y2": 138.25,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 97.07,
+      "x2": 596,
+      "y2": 97.07,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     }
+    ],
+    "axisLines": [
+     {
+      "x1": 22.76,
+      "y1": 303,
+      "x2": 596,
+      "y2": 303,
+      "color": "#CAC4D0",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 60,
+      "x2": 22.76,
+      "y2": 303,
+      "color": "#CAC4D0",
+      "width": 1
+     }
+    ],
+    "areas": [],
+    "bars": [
+     {
+      "x": 37.09,
+      "y": 253.58,
+      "w": 66.88,
+      "h": 49.42,
+      "color": "#6750A4",
+      "radius": [
+       0,
+       0,
+       0,
+       0
+      ],
+      "seriesIndex": 0,
+      "dataIndex": 0,
+      "horizontal": false
+     },
+     {
+      "x": 132.63,
+      "y": 224.75,
+      "w": 66.88,
+      "h": 78.25,
+      "color": "#6750A4",
+      "radius": [
+       0,
+       0,
+       0,
+       0
+      ],
+      "seriesIndex": 0,
+      "dataIndex": 1,
+      "horizontal": false
+     },
+     {
+      "x": 228.17,
+      "y": 241.22,
+      "w": 66.88,
+      "h": 61.78,
+      "color": "#6750A4",
+      "radius": [
+       0,
+       0,
+       0,
+       0
+      ],
+      "seriesIndex": 0,
+      "dataIndex": 2,
+      "horizontal": false
+     },
+     {
+      "x": 323.71,
+      "y": 204.15,
+      "w": 66.88,
+      "h": 98.85,
+      "color": "#6750A4",
+      "radius": [
+       0,
+       0,
+       0,
+       0
+      ],
+      "seriesIndex": 0,
+      "dataIndex": 3,
+      "horizontal": false
+     },
+     {
+      "x": 419.25,
+      "y": 212.39,
+      "w": 66.88,
+      "h": 90.61,
+      "color": "#6750A4",
+      "radius": [
+       0,
+       0,
+       0,
+       0
+      ],
+      "seriesIndex": 0,
+      "dataIndex": 4,
+      "horizontal": false
+     },
+     {
+      "x": 514.79,
+      "y": 179.44,
+      "w": 66.88,
+      "h": 123.56,
+      "color": "#6750A4",
+      "radius": [
+       0,
+       0,
+       0,
+       0
+      ],
+      "seriesIndex": 0,
+      "dataIndex": 5,
+      "horizontal": false
+     },
+     {
+      "x": 37.09,
+      "y": 220.63,
+      "w": 66.88,
+      "h": 32.95,
+      "color": "#7D5260",
+      "radius": [
+       0,
+       0,
+       0,
+       0
+      ],
+      "seriesIndex": 1,
+      "dataIndex": 0,
+      "horizontal": false
+     },
+     {
+      "x": 132.63,
+      "y": 179.44,
+      "w": 66.88,
+      "h": 45.31,
+      "color": "#7D5260",
+      "radius": [
+       0,
+       0,
+       0,
+       0
+      ],
+      "seriesIndex": 1,
+      "dataIndex": 1,
+      "horizontal": false
+     },
+     {
+      "x": 228.17,
+      "y": 187.68,
+      "w": 66.88,
+      "h": 53.54,
+      "color": "#7D5260",
+      "radius": [
+       0,
+       0,
+       0,
+       0
+      ],
+      "seriesIndex": 1,
+      "dataIndex": 2,
+      "horizontal": false
+     },
+     {
+      "x": 323.71,
+      "y": 146.49,
+      "w": 66.88,
+      "h": 57.66,
+      "color": "#7D5260",
+      "radius": [
+       0,
+       0,
+       0,
+       0
+      ],
+      "seriesIndex": 1,
+      "dataIndex": 3,
+      "horizontal": false
+     },
+     {
+      "x": 419.25,
+      "y": 138.25,
+      "w": 66.88,
+      "h": 74.14,
+      "color": "#7D5260",
+      "radius": [
+       0,
+       0,
+       0,
+       0
+      ],
+      "seriesIndex": 1,
+      "dataIndex": 4,
+      "horizontal": false
+     },
+     {
+      "x": 514.79,
+      "y": 109.42,
+      "w": 66.88,
+      "h": 70.02,
+      "color": "#7D5260",
+      "radius": [
+       0,
+       0,
+       0,
+       0
+      ],
+      "seriesIndex": 1,
+      "dataIndex": 5,
+      "horizontal": false
+     },
+     {
+      "x": 37.09,
+      "y": 200.03,
+      "w": 66.88,
+      "h": 20.59,
+      "color": "#625B71",
+      "radius": [
+       6,
+       6,
+       0,
+       0
+      ],
+      "seriesIndex": 2,
+      "dataIndex": 0,
+      "horizontal": false
+     },
+     {
+      "x": 132.63,
+      "y": 150.61,
+      "w": 66.88,
+      "h": 28.83,
+      "color": "#625B71",
+      "radius": [
+       6,
+       6,
+       0,
+       0
+      ],
+      "seriesIndex": 2,
+      "dataIndex": 1,
+      "horizontal": false
+     },
+     {
+      "x": 228.17,
+      "y": 150.61,
+      "w": 66.88,
+      "h": 37.07,
+      "color": "#625B71",
+      "radius": [
+       6,
+       6,
+       0,
+       0
+      ],
+      "seriesIndex": 2,
+      "dataIndex": 2,
+      "horizontal": false
+     },
+     {
+      "x": 323.71,
+      "y": 121.78,
+      "w": 66.88,
+      "h": 24.71,
+      "color": "#625B71",
+      "radius": [
+       6,
+       6,
+       0,
+       0
+      ],
+      "seriesIndex": 2,
+      "dataIndex": 3,
+      "horizontal": false
+     },
+     {
+      "x": 419.25,
+      "y": 97.07,
+      "w": 66.88,
+      "h": 41.19,
+      "color": "#625B71",
+      "radius": [
+       6,
+       6,
+       0,
+       0
+      ],
+      "seriesIndex": 2,
+      "dataIndex": 4,
+      "horizontal": false
+     },
+     {
+      "x": 514.79,
+      "y": 60,
+      "w": 66.88,
+      "h": 49.42,
+      "color": "#625B71",
+      "radius": [
+       6,
+       6,
+       0,
+       0
+      ],
+      "seriesIndex": 2,
+      "dataIndex": 5,
+      "horizontal": false
+     }
+    ],
+    "slices": [],
+    "lines": [],
+    "markers": [],
+    "texts": [
+     {
+      "x": 22.76,
+      "y": 34,
+      "text": "Quarterly results",
+      "color": "#1C1B1F",
+      "fontSize": 14,
+      "fontWeight": 600,
+      "align": "start",
+      "baseline": "top",
+      "key": "title"
+     },
+     {
+      "x": 14.76,
+      "y": 303,
+      "text": "0",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "vt-0"
+     },
+     {
+      "x": 14.76,
+      "y": 261.81,
+      "text": "10",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "vt-1"
+     },
+     {
+      "x": 14.76,
+      "y": 220.63,
+      "text": "20",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "vt-2"
+     },
+     {
+      "x": 14.76,
+      "y": 179.44,
+      "text": "30",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "vt-3"
+     },
+     {
+      "x": 14.76,
+      "y": 138.25,
+      "text": "40",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "vt-4"
+     },
+     {
+      "x": 14.76,
+      "y": 97.07,
+      "text": "50",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "vt-5"
+     },
+     {
+      "x": 70.53,
+      "y": 309,
+      "text": "Jan",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "ct-0"
+     },
+     {
+      "x": 166.07,
+      "y": 309,
+      "text": "Feb",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "ct-1"
+     },
+     {
+      "x": 261.61,
+      "y": 309,
+      "text": "Mar",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "ct-2"
+     },
+     {
+      "x": 357.15,
+      "y": 309,
+      "text": "Apr",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "ct-3"
+     },
+     {
+      "x": 452.69,
+      "y": 309,
+      "text": "May",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "ct-4"
+     },
+     {
+      "x": 548.23,
+      "y": 309,
+      "text": "Jun",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "ct-5"
+     }
+    ],
+    "barLabels": [
+     {
+      "seriesIndex": 2,
+      "dataIndex": 0,
+      "text": "25",
+      "color": "#1C1B1F",
+      "size": 11,
+      "fontWeight": 600,
+      "atLowEnd": false
+     },
+     {
+      "seriesIndex": 2,
+      "dataIndex": 1,
+      "text": "37",
+      "color": "#1C1B1F",
+      "size": 11,
+      "fontWeight": 600,
+      "atLowEnd": false
+     },
+     {
+      "seriesIndex": 2,
+      "dataIndex": 2,
+      "text": "37",
+      "color": "#1C1B1F",
+      "size": 11,
+      "fontWeight": 600,
+      "atLowEnd": false
+     },
+     {
+      "seriesIndex": 2,
+      "dataIndex": 3,
+      "text": "44",
+      "color": "#1C1B1F",
+      "size": 11,
+      "fontWeight": 600,
+      "atLowEnd": false
+     },
+     {
+      "seriesIndex": 2,
+      "dataIndex": 4,
+      "text": "50",
+      "color": "#1C1B1F",
+      "size": 11,
+      "fontWeight": 600,
+      "atLowEnd": false
+     },
+     {
+      "seriesIndex": 2,
+      "dataIndex": 5,
+      "text": "59",
+      "color": "#1C1B1F",
+      "size": 11,
+      "fontWeight": 600,
+      "atLowEnd": false
+     }
+    ],
+    "legend": [
+     {
+      "label": "North",
+      "color": "#6750A4",
+      "seriesIndex": 0,
+      "hidden": false,
+      "x": 0,
+      "y": 0
+     },
+     {
+      "label": "South",
+      "color": "#7D5260",
+      "seriesIndex": 1,
+      "hidden": false,
+      "x": 0,
+      "y": 0
+     },
+     {
+      "label": "West",
+      "color": "#625B71",
+      "seriesIndex": 2,
+      "hidden": false,
+      "x": 0,
+      "y": 0
+     }
+    ],
+    "legendPosition": "top-end",
+    "xPositions": [
+     70.53,
+     166.07,
+     261.61,
+     357.15,
+     452.69,
+     548.23
+    ],
+    "xValues": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun"
+    ],
+    "xLabels": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun"
+    ],
+    "barBaseline": 303,
+    "hoverPoints": [
+     {
+      "seriesIndex": 0,
+      "color": "#6750A4",
+      "label": "North",
+      "byIndex": {
+       "0": {
+        "x": 70.53,
+        "y": 253.58,
+        "value": 12,
+        "color": "#6750A4"
+       },
+       "1": {
+        "x": 166.07,
+        "y": 224.75,
+        "value": 19,
+        "color": "#6750A4"
+       },
+       "2": {
+        "x": 261.61,
+        "y": 241.22,
+        "value": 15,
+        "color": "#6750A4"
+       },
+       "3": {
+        "x": 357.15,
+        "y": 204.15,
+        "value": 24,
+        "color": "#6750A4"
+       },
+       "4": {
+        "x": 452.69,
+        "y": 212.39,
+        "value": 22,
+        "color": "#6750A4"
+       },
+       "5": {
+        "x": 548.23,
+        "y": 179.44,
+        "value": 30,
+        "color": "#6750A4"
+       }
+      },
+      "values": [
+       12,
+       19,
+       15,
+       24,
+       22,
+       30
+      ]
+     },
+     {
+      "seriesIndex": 1,
+      "color": "#7D5260",
+      "label": "South",
+      "byIndex": {
+       "0": {
+        "x": 70.53,
+        "y": 220.63,
+        "value": 8,
+        "color": "#7D5260"
+       },
+       "1": {
+        "x": 166.07,
+        "y": 179.44,
+        "value": 11,
+        "color": "#7D5260"
+       },
+       "2": {
+        "x": 261.61,
+        "y": 187.68,
+        "value": 13,
+        "color": "#7D5260"
+       },
+       "3": {
+        "x": 357.15,
+        "y": 146.49,
+        "value": 14,
+        "color": "#7D5260"
+       },
+       "4": {
+        "x": 452.69,
+        "y": 138.25,
+        "value": 18,
+        "color": "#7D5260"
+       },
+       "5": {
+        "x": 548.23,
+        "y": 109.42,
+        "value": 17,
+        "color": "#7D5260"
+       }
+      },
+      "values": [
+       8,
+       11,
+       13,
+       14,
+       18,
+       17
+      ]
+     },
+     {
+      "seriesIndex": 2,
+      "color": "#625B71",
+      "label": "West",
+      "byIndex": {
+       "0": {
+        "x": 70.53,
+        "y": 200.03,
+        "value": 5,
+        "color": "#625B71"
+       },
+       "1": {
+        "x": 166.07,
+        "y": 150.61,
+        "value": 7,
+        "color": "#625B71"
+       },
+       "2": {
+        "x": 261.61,
+        "y": 150.61,
+        "value": 9,
+        "color": "#625B71"
+       },
+       "3": {
+        "x": 357.15,
+        "y": 121.78,
+        "value": 6,
+        "color": "#625B71"
+       },
+       "4": {
+        "x": 452.69,
+        "y": 97.07,
+        "value": 10,
+        "color": "#625B71"
+       },
+       "5": {
+        "x": 548.23,
+        "y": 60,
+        "value": 12,
+        "color": "#625B71"
+       }
+      },
+      "values": [
+       5,
+       7,
+       9,
+       6,
+       10,
+       12
+      ]
+     }
+    ]
+   },
+   "ax": [
+    {
+     "role": "button",
+     "name": "Run"
+    },
+    {
+     "role": "application",
+     "name": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave."
+    },
+    {
+     "role": "button",
+     "name": "North",
+     "pressed": true
+    },
+    {
+     "role": "button",
+     "name": "South",
+     "pressed": true
+    },
+    {
+     "role": "button",
+     "name": "West",
+     "pressed": true
+    },
+    {
+     "role": "status",
+     "name": ""
+    }
+   ],
+   "focus": [
+    "body"
+   ]
+  },
+  {
+   "name": "bar-forced-horizontal",
+   "theme": "light",
+   "dir": "ltr",
+   "width": 640,
+   "html": "<md-bar-chart label=\"Quarterly results\" no-animation layout=\"horizontal\" style=\"block-size:360px\"></md-bar-chart>",
+   "props": {
+    "series": [
+     {
+      "label": "Revenue",
+      "data": [
+       12,
+       19,
+       15,
+       24,
+       22,
+       30
+      ]
+     },
+     {
+      "label": "Costs",
+      "data": [
+       8,
+       11,
+       13,
+       14,
+       18,
+       17
+      ]
+     }
+    ],
+    "xAxis": {
+     "data": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun"
+     ]
+    }
+   },
+   "clip": {
+    "x": 16,
+    "y": 16,
+    "width": 656,
+    "height": 376
+   },
+   "snap": {
+    "tag": "md-bar-chart",
+    "rect": {
+     "x": 24,
+     "y": 24,
+     "width": 640,
+     "height": 360
+    },
+    "attrs": {
+     "role": "figure",
+     "aria-label": "Quarterly results, Bar chart, with 2 series, from Jan to Jun.",
+     "style": "block-size:360px",
+     "legend": "top-end",
+     "layout": "horizontal",
+     "density": "0",
+     "class": "md-bar-chart md-bar-chart--horizontal hydrated md-bar-chart--mounted"
+    },
+    "style": {
+     "display": "block",
+     "visibility": "visible",
+     "opacity": "1",
+     "color": "rgb(255, 255, 255)",
+     "backgroundColor": "rgb(0, 0, 0)",
+     "transform": "none",
+     "borderTopLeftRadius": "16px",
+     "borderTopRightRadius": "16px",
+     "borderBottomRightRadius": "16px",
+     "borderBottomLeftRadius": "16px",
+     "borderTopWidth": "0px",
+     "borderTopColor": "rgb(255, 255, 255)",
+     "boxShadow": "none",
+     "outlineStyle": "none",
+     "outlineWidth": "3px",
+     "outlineColor": "rgb(255, 255, 255)",
+     "outlineOffset": "0px",
+     "fontFamily": "Roboto",
+     "fontSize": "16px",
+     "fontWeight": "400",
+     "lineHeight": "normal",
+     "letterSpacing": "normal",
+     "textAlign": "start",
+     "paddingTop": "16px",
+     "paddingRight": "16px",
+     "paddingBottom": "16px",
+     "paddingLeft": "16px",
+     "columnGap": "normal",
+     "rowGap": "normal",
+     "gap": "normal",
+     "zIndex": "auto",
+     "transitionProperty": "all",
+     "transitionDuration": "0s",
+     "transitionTimingFunction": "ease",
+     "cursor": "auto",
+     "pointerEvents": "auto",
+     "whiteSpace": "normal",
+     "overflow": "visible",
+     "position": "relative",
+     "width": "640px",
+     "height": "360px",
+     "minHeight": "160px",
+     "blockSize": "360px",
+     "flexDirection": "row",
+     "justifyContent": "normal",
+     "alignItems": "normal",
+     "direction": "ltr",
+     "forcedColorAdjust": "auto"
+    },
+    "parts": [
+     {
+      "tag": "header",
+      "part": "header",
+      "cls": "md-bar-chart__header",
+      "attrs": {
+       "part": "header",
+       "class": "md-bar-chart__header"
+      },
+      "rect": {
+       "x": 0,
+       "y": 0,
+       "width": 0,
+       "height": 0
+      },
+      "display": "contents",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(255, 255, 255)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(255, 255, 255)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(255, 255, 255)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "static",
+      "width": "auto",
+      "height": "auto",
+      "minHeight": "0px",
+      "blockSize": "auto",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "div",
+      "part": "canvas",
+      "cls": "md-bar-chart__canvas",
+      "attrs": {
+       "role": "application",
+       "tabindex": "0",
+       "aria-label": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+       "part": "canvas",
+       "class": "md-bar-chart__canvas"
+      },
+      "rect": {
+       "x": 40,
+       "y": 40,
+       "width": 608,
+       "height": 328
+      },
+      "display": "block",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(255, 255, 255)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(255, 255, 255)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(255, 255, 255)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "absolute",
+      "width": "608px",
+      "height": "328px",
+      "minHeight": "0px",
+      "blockSize": "328px",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "canvas",
+      "part": "plot-canvas",
+      "cls": null,
+      "attrs": {
+       "part": "plot-canvas",
+       "style": "position: absolute; inset: 0px; width: 100%; height: 100%; display: block;"
+      },
+      "rect": {
+       "x": 40,
+       "y": 40,
+       "width": 608,
+       "height": 328
+      },
+      "display": "block",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(255, 255, 255)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(255, 255, 255)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(255, 255, 255)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "clip",
+      "position": "absolute",
+      "width": "608px",
+      "height": "328px",
+      "minHeight": "0px",
+      "blockSize": "328px",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "div",
+      "part": "legend",
+      "cls": null,
+      "attrs": {
+       "part": "legend",
+       "style": "position: absolute; top: 2px; right: 12px; display: flex; flex-wrap: wrap; gap: 4px 12px; justify-content: flex-end; max-width: 88%; pointer-events: auto;"
+      },
+      "rect": {
+       "x": 486.91,
+       "y": 42,
+       "width": 149.09,
+       "height": 20
+      },
+      "display": "flex",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(255, 255, 255)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(255, 255, 255)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(255, 255, 255)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "12px",
+      "rowGap": "4px",
+      "gap": "4px 12px",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "absolute",
+      "width": "149.094px",
+      "height": "20px",
+      "minHeight": "0px",
+      "blockSize": "20px",
+      "flexDirection": "row",
+      "justifyContent": "flex-end",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "footer",
+      "part": "footer",
+      "cls": "md-bar-chart__footer",
+      "attrs": {
+       "part": "footer",
+       "class": "md-bar-chart__footer"
+      },
+      "rect": {
+       "x": 0,
+       "y": 0,
+       "width": 0,
+       "height": 0
+      },
+      "display": "contents",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(255, 255, 255)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(255, 255, 255)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(255, 255, 255)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "static",
+      "width": "auto",
+      "height": "auto",
+      "minHeight": "0px",
+      "blockSize": "auto",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     }
+    ],
+    "overlay": [
+     {
+      "text": "Quarterly results",
+      "rect": {
+       "x": 71.13,
+       "y": 74,
+       "width": 105.34,
+       "height": 16
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "600 14px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, 0, 0)"
+     },
+     {
+      "text": "0",
+      "rect": {
+       "x": 68.03,
+       "y": 349,
+       "width": 6.19,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -3.09375, 0)"
+     },
+     {
+      "text": "5",
+      "rect": {
+       "x": 162.19,
+       "y": 349,
+       "width": 6.19,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -3.09375, 0)"
+     },
+     {
+      "text": "10",
+      "rect": {
+       "x": 253.23,
+       "y": 349,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -6.1875, 0)"
+     },
+     {
+      "text": "15",
+      "rect": {
+       "x": 347.38,
+       "y": 349,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -6.1875, 0)"
+     },
+     {
+      "text": "20",
+      "rect": {
+       "x": 441.52,
+       "y": 349,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -6.1875, 0)"
+     },
+     {
+      "text": "25",
+      "rect": {
+       "x": 535.66,
+       "y": 349,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -6.1875, 0)"
+     },
+     {
+      "text": "30",
+      "rect": {
+       "x": 629.81,
+       "y": 349,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -6.1875, 0)"
+     },
+     {
+      "text": "Jan",
+      "rect": {
+       "x": 44.98,
+       "y": 113.75,
+       "width": 18.14,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -18.1406, -6.5)"
+     },
+     {
+      "text": "Feb",
+      "rect": {
+       "x": 45.14,
+       "y": 154.25,
+       "width": 17.98,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -17.9844, -6.5)"
+     },
+     {
+      "text": "Mar",
+      "rect": {
+       "x": 43.8,
+       "y": 194.75,
+       "width": 19.33,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -19.3281, -6.5)"
+     },
+     {
+      "text": "Apr",
+      "rect": {
+       "x": 46.03,
+       "y": 235.25,
+       "width": 17.09,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -17.0938, -6.5)"
+     },
+     {
+      "text": "May",
+      "rect": {
+       "x": 42.41,
+       "y": 275.75,
+       "width": 20.72,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -20.7188, -6.5)"
+     },
+     {
+      "text": "Jun",
+      "rect": {
+       "x": 44.91,
+       "y": 316.25,
+       "width": 18.22,
+       "height": 13
+      },
+      "color": "rgb(255, 255, 255)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -18.2188, -6.5)"
+     }
+    ],
+    "legend": [
+     {
+      "tag": "button",
+      "attrs": {
+       "aria-pressed": "true",
+       "style": "display: inline-flex; align-items: center; gap: 6px; background: none; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; padding: 2px 4px; cursor: pointer; white-space: nowrap; flex: 0 0 auto; min-width: 0px; max-width: 100%; font: 400 14px Roboto, sans-serif; color: var(--md-sys-color-on-surface-variant, #49454F);"
+      },
+      "text": "Revenue",
+      "rect": {
+       "x": 486.91,
+       "y": 42,
+       "width": 76.95,
+       "height": 20
+      },
+      "opacity": "1"
+     },
+     {
+      "tag": "button",
+      "attrs": {
+       "aria-pressed": "true",
+       "style": "display: inline-flex; align-items: center; gap: 6px; background: none; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; padding: 2px 4px; cursor: pointer; white-space: nowrap; flex: 0 0 auto; min-width: 0px; max-width: 100%; font: 400 14px Roboto, sans-serif; color: var(--md-sys-color-on-surface-variant, #49454F);"
+      },
+      "text": "Costs",
+      "rect": {
+       "x": 575.86,
+       "y": 42,
+       "width": 60.14,
+       "height": 20
+      },
+      "opacity": "1"
+     }
+    ],
+    "live": {
+     "attrs": {
+      "role": "status",
+      "aria-live": "polite",
+      "aria-atomic": "true",
+      "class": "md-bar-chart__live"
+     },
+     "text": ""
+    },
+    "table": {
+     "caption": "Quarterly results",
+     "rows": [
+      [
+       "X",
+       "Revenue",
+       "Costs"
+      ],
+      [
+       "Jan",
+       "12",
+       "8"
+      ],
+      [
+       "Feb",
+       "19",
+       "11"
+      ],
+      [
+       "Mar",
+       "15",
+       "13"
+      ],
+      [
+       "Apr",
+       "24",
+       "14"
+      ],
+      [
+       "May",
+       "22",
+       "18"
+      ],
+      [
+       "Jun",
+       "30",
+       "17"
+      ]
+     ],
+     "rowCount": 7,
+     "attrs": {}
+    },
+    "plot": {
+     "attrs": {
+      "role": "application",
+      "tabindex": "0",
+      "aria-label": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+      "part": "canvas",
+      "class": "md-bar-chart__canvas"
+     },
+     "rect": {
+      "x": 40,
+      "y": 40,
+      "width": 608,
+      "height": 328
+     },
+     "focused": false
+    },
+    "activeInShadow": null
+   },
+   "scene": {
+    "width": 608,
+    "height": 328,
+    "plot": {
+     "x": 31.14,
+     "y": 60,
+     "width": 564.86,
+     "height": 243
+    },
+    "gridlines": [
+     {
+      "x1": 31.14,
+      "y1": 60,
+      "x2": 31.14,
+      "y2": 303,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 125.28,
+      "y1": 60,
+      "x2": 125.28,
+      "y2": 303,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 219.43,
+      "y1": 60,
+      "x2": 219.43,
+      "y2": 303,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 313.57,
+      "y1": 60,
+      "x2": 313.57,
+      "y2": 303,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 407.71,
+      "y1": 60,
+      "x2": 407.71,
+      "y2": 303,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 501.86,
+      "y1": 60,
+      "x2": 501.86,
+      "y2": 303,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 596,
+      "y1": 60,
+      "x2": 596,
+      "y2": 303,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     }
+    ],
+    "axisLines": [
+     {
+      "x1": 31.14,
+      "y1": 60,
+      "x2": 31.14,
+      "y2": 303,
+      "color": "#CAC4D0",
+      "width": 1
+     },
+     {
+      "x1": 31.14,
+      "y1": 303,
+      "x2": 596,
+      "y2": 303,
+      "color": "#CAC4D0",
+      "width": 1
+     }
+    ],
+    "areas": [],
+    "bars": [
+     {
+      "x": 31.14,
+      "y": 66.08,
+      "w": 225.94,
+      "h": 12.89,
+      "color": "#6750A4",
+      "radius": [
+       0,
+       6,
+       6,
+       0
+      ],
+      "seriesIndex": 0,
+      "dataIndex": 0,
+      "horizontal": true
+     },
+     {
+      "x": 31.14,
+      "y": 106.58,
+      "w": 357.74,
+      "h": 12.89,
+      "color": "#6750A4",
+      "radius": [
+       0,
+       6,
+       6,
+       0
+      ],
+      "seriesIndex": 0,
+      "dataIndex": 1,
+      "horizontal": true
+     },
+     {
+      "x": 31.14,
+      "y": 147.07,
+      "w": 282.43,
+      "h": 12.89,
+      "color": "#6750A4",
+      "radius": [
+       0,
+       6,
+       6,
+       0
+      ],
+      "seriesIndex": 0,
+      "dataIndex": 2,
+      "horizontal": true
+     },
+     {
+      "x": 31.14,
+      "y": 187.58,
+      "w": 451.89,
+      "h": 12.89,
+      "color": "#6750A4",
+      "radius": [
+       0,
+       6,
+       6,
+       0
+      ],
+      "seriesIndex": 0,
+      "dataIndex": 3,
+      "horizontal": true
+     },
+     {
+      "x": 31.14,
+      "y": 228.08,
+      "w": 414.23,
+      "h": 12.89,
+      "color": "#6750A4",
+      "radius": [
+       0,
+       6,
+       6,
+       0
+      ],
+      "seriesIndex": 0,
+      "dataIndex": 4,
+      "horizontal": true
+     },
+     {
+      "x": 31.14,
+      "y": 268.58,
+      "w": 564.86,
+      "h": 12.89,
+      "color": "#6750A4",
+      "radius": [
+       0,
+       6,
+       6,
+       0
+      ],
+      "seriesIndex": 0,
+      "dataIndex": 5,
+      "horizontal": true
+     },
+     {
+      "x": 31.14,
+      "y": 81.54,
+      "w": 150.63,
+      "h": 12.89,
+      "color": "#7D5260",
+      "radius": [
+       0,
+       6,
+       6,
+       0
+      ],
+      "seriesIndex": 1,
+      "dataIndex": 0,
+      "horizontal": true
+     },
+     {
+      "x": 31.14,
+      "y": 122.04,
+      "w": 207.12,
+      "h": 12.89,
+      "color": "#7D5260",
+      "radius": [
+       0,
+       6,
+       6,
+       0
+      ],
+      "seriesIndex": 1,
+      "dataIndex": 1,
+      "horizontal": true
+     },
+     {
+      "x": 31.14,
+      "y": 162.54,
+      "w": 244.77,
+      "h": 12.89,
+      "color": "#7D5260",
+      "radius": [
+       0,
+       6,
+       6,
+       0
+      ],
+      "seriesIndex": 1,
+      "dataIndex": 2,
+      "horizontal": true
+     },
+     {
+      "x": 31.14,
+      "y": 203.04,
+      "w": 263.6,
+      "h": 12.89,
+      "color": "#7D5260",
+      "radius": [
+       0,
+       6,
+       6,
+       0
+      ],
+      "seriesIndex": 1,
+      "dataIndex": 3,
+      "horizontal": true
+     },
+     {
+      "x": 31.14,
+      "y": 243.54,
+      "w": 338.92,
+      "h": 12.89,
+      "color": "#7D5260",
+      "radius": [
+       0,
+       6,
+       6,
+       0
+      ],
+      "seriesIndex": 1,
+      "dataIndex": 4,
+      "horizontal": true
+     },
+     {
+      "x": 31.14,
+      "y": 284.04,
+      "w": 320.09,
+      "h": 12.89,
+      "color": "#7D5260",
+      "radius": [
+       0,
+       6,
+       6,
+       0
+      ],
+      "seriesIndex": 1,
+      "dataIndex": 5,
+      "horizontal": true
+     }
+    ],
+    "slices": [],
+    "lines": [],
+    "markers": [],
+    "texts": [
+     {
+      "x": 31.14,
+      "y": 34,
+      "text": "Quarterly results",
+      "color": "#1C1B1F",
+      "fontSize": 14,
+      "fontWeight": 600,
+      "align": "start",
+      "baseline": "top",
+      "key": "title"
+     },
+     {
+      "x": 31.14,
+      "y": 309,
+      "text": "0",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "vt-0"
+     },
+     {
+      "x": 125.28,
+      "y": 309,
+      "text": "5",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "vt-1"
+     },
+     {
+      "x": 219.43,
+      "y": 309,
+      "text": "10",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "vt-2"
+     },
+     {
+      "x": 313.57,
+      "y": 309,
+      "text": "15",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "vt-3"
+     },
+     {
+      "x": 407.71,
+      "y": 309,
+      "text": "20",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "vt-4"
+     },
+     {
+      "x": 501.86,
+      "y": 309,
+      "text": "25",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "vt-5"
+     },
+     {
+      "x": 596,
+      "y": 309,
+      "text": "30",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "vt-6"
+     },
+     {
+      "x": 23.14,
+      "y": 80.25,
+      "text": "Jan",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "ct-0"
+     },
+     {
+      "x": 23.14,
+      "y": 120.75,
+      "text": "Feb",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "ct-1"
+     },
+     {
+      "x": 23.14,
+      "y": 161.25,
+      "text": "Mar",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "ct-2"
+     },
+     {
+      "x": 23.14,
+      "y": 201.75,
+      "text": "Apr",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "ct-3"
+     },
+     {
+      "x": 23.14,
+      "y": 242.25,
+      "text": "May",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "ct-4"
+     },
+     {
+      "x": 23.14,
+      "y": 282.75,
+      "text": "Jun",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "ct-5"
+     }
+    ],
+    "barLabels": [],
+    "legend": [
+     {
+      "label": "Revenue",
+      "color": "#6750A4",
+      "seriesIndex": 0,
+      "hidden": false,
+      "x": 0,
+      "y": 0
+     },
+     {
+      "label": "Costs",
+      "color": "#7D5260",
+      "seriesIndex": 1,
+      "hidden": false,
+      "x": 0,
+      "y": 0
+     }
+    ],
+    "legendPosition": "top-end",
+    "xPositions": [
+     80.25,
+     120.75,
+     161.25,
+     201.75,
+     242.25,
+     282.75
+    ],
+    "xValues": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun"
+    ],
+    "xLabels": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun"
+    ],
+    "barBaseline": 31.14,
+    "hoverPoints": [
+     {
+      "seriesIndex": 0,
+      "color": "#6750A4",
+      "label": "Revenue",
+      "byIndex": {
+       "0": {
+        "x": 257.08,
+        "y": 72.52,
+        "value": 12,
+        "color": "#6750A4"
+       },
+       "1": {
+        "x": 388.88,
+        "y": 113.02,
+        "value": 19,
+        "color": "#6750A4"
+       },
+       "2": {
+        "x": 313.57,
+        "y": 153.52,
+        "value": 15,
+        "color": "#6750A4"
+       },
+       "3": {
+        "x": 483.03,
+        "y": 194.02,
+        "value": 24,
+        "color": "#6750A4"
+       },
+       "4": {
+        "x": 445.37,
+        "y": 234.52,
+        "value": 22,
+        "color": "#6750A4"
+       },
+       "5": {
+        "x": 596,
+        "y": 275.02,
+        "value": 30,
+        "color": "#6750A4"
+       }
+      },
+      "values": [
+       12,
+       19,
+       15,
+       24,
+       22,
+       30
+      ]
+     },
+     {
+      "seriesIndex": 1,
+      "color": "#7D5260",
+      "label": "Costs",
+      "byIndex": {
+       "0": {
+        "x": 181.77,
+        "y": 87.98,
+        "value": 8,
+        "color": "#7D5260"
+       },
+       "1": {
+        "x": 238.26,
+        "y": 128.48,
+        "value": 11,
+        "color": "#7D5260"
+       },
+       "2": {
+        "x": 275.91,
+        "y": 168.98,
+        "value": 13,
+        "color": "#7D5260"
+       },
+       "3": {
+        "x": 294.74,
+        "y": 209.48,
+        "value": 14,
+        "color": "#7D5260"
+       },
+       "4": {
+        "x": 370.06,
+        "y": 249.98,
+        "value": 18,
+        "color": "#7D5260"
+       },
+       "5": {
+        "x": 351.23,
+        "y": 290.48,
+        "value": 17,
+        "color": "#7D5260"
+       }
+      },
+      "values": [
+       8,
+       11,
+       13,
+       14,
+       18,
+       17
+      ]
+     }
+    ]
+   },
+   "ax": [
+    {
+     "role": "button",
+     "name": "Run"
+    },
+    {
+     "role": "application",
+     "name": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave."
+    },
+    {
+     "role": "button",
+     "name": "Revenue",
+     "pressed": true
+    },
+    {
+     "role": "button",
+     "name": "Costs",
+     "pressed": true
+    },
+    {
+     "role": "status",
+     "name": ""
+    }
+   ],
+   "focus": [
+    "body"
+   ]
+  }
+ ],
+ "oracle": {
+  "page": "/ch-paint.html?chart=bar&subset=forced",
+  "browser": "Chrome/153.0.8010.36",
+  "createdAt": "2026-10-27T11:22:52.726Z",
+  "deviceScaleFactor": 1,
+  "media": [
+   {
+    "name": "forced-colors",
+    "value": "active"
+   }
+  ]
+ }
+}

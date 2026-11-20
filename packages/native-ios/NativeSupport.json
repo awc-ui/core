@@ -848,7 +848,7 @@
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Dedicated native text field (SwiftUI on AppKit/UIKit text input, Compose BasicTextField): all 47 properties — filled and outlined, density 0…−4, the floating label and outlined notch, prefix/suffix, counter, clearable / password toggle / speech-to-text in internal and external modes, single-line and auto-grow/fixed multiline, chips with chipsWrap, restrict, debounce/throttle mdSearch, the combobox input role — every event, the seven slots, seventeen hooks and typed parts for the container, label, input, supporting text and counter.",
+        "Dedicated native text field (SwiftUI on AppKit/UIKit text input, Compose BasicTextField): all 47 properties — filled and outlined, density 0…−4, the floating label and outlined notch, prefix/suffix, counter, clearable / password toggle / speech-to-text in internal and external modes, single-line and auto-grow/fixed multiline, chips with chipsWrap, restrict, debounce/throttle mdSearch, the combobox input role — every event, the seven slots, seventeen hooks and typed parts for the container, label, input, supporting text, counter and chips.",
         "Real native text input: IME composition (marked text), selection, caret colour, secure entry with the password toggle, keyboard type / return key / content type from type, inputMode, enterKeyHint and autocomplete; no automatic capitalisation, correction or smart punctuation unless autoCapitalize asks for it (Chrome inserts exactly the keys typed).",
         "Methods through AWCTextFieldController: setFocus(), select(), getValidity/checkValidity/reportValidity/setCustomValidity with Chrome's ValidityState flags and English messages; getInputElement() returns AWCTextFieldInputInfo (value, selection, focus, composition) instead of a DOM element. formatter/parser closures go through AWCTextFieldFormatting (.awcTextFieldFormatting / AWCTextFieldFormattingScope).",
         "Forms: registers with the native form (name, value, constraint validation, reset without events); Enter submits a single-line field's form. Speech-to-text internal mode uses the platform recognizer (SFSpeechRecognizer with the app's usage descriptions; Android SpeechRecognizer with RECORD_AUDIO); external mode reports the microphone state.",
@@ -953,7 +953,7 @@
           "stepperColor",
           "splitStepperSize"
         ],
-        "parts": ".awcTextFieldAppearance(AWCTextFieldAppearance) (the field part is the inner md-text-field)"
+        "parts": ".awcNumberFieldPartAppearance(AWCNumberFieldPartAppearance)"
       },
       "visualParts": [
         "field"
@@ -1023,7 +1023,8 @@
           "focusColor",
           "fontSize",
           "outlineColor"
-        ]
+        ],
+        "parts": ".awcOTPFieldPartAppearance(AWCOTPFieldPartAppearance)"
       },
       "visualParts": [
         "separator",
@@ -1079,13 +1080,12 @@
       "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
-      "unsupportedSlots": [
-        "inset-icon"
-      ],
+      "unsupportedSlots": [],
       "notes": [
         "Dedicated native slider: standard / centered / range, five sizes, stops, value indicator, inset icon (Material Symbols from icon), vertical orientation, keyboard, pointer and touch input with the source events and order, the stylesheet transitions; hooks through AWCSliderAppearance.",
         "Host property changes follow the Stencil watchers: value / valueStart / valueEnd changes clear a live drag value, min / max changes re-clamp (written back to the node).",
-        "The inset-icon slot (custom icon content) is not rendered natively: the inset icon comes from the icon property.",
+        "The inset-icon slot renders its content in the inset box instead of the icon glyph (centred, inset-size font, the inset colour inherited), under the track mask (R6-04).",
+        "Parts: typed part appearances (.awcSliderPartAppearance(_:part:) / AWCSliderPartAppearanceScope) with the source part semantics — surface opacity, track corner shape, track-active / track-inactive colour, size from the track edge and corner shape, thumb-knob colour and size, value-indicator colour / font / padding / shape, inset colour (Mac Chrome ::part cases, paint-extra2).",
         "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint, pointer / keyboard / touch replays with events, motion per frame (plain and reduced motion), lifecycle (runtime property changes through the Stencil watchers, form reset), RTL."
       ],
       "appearance": {
@@ -1113,10 +1113,19 @@
           "valuePaddingBlock",
           "insetIconColor",
           "insetIconActiveColor",
-          "minTrackLength"
+          "minTrackLength",
+          "valueIndicatorReserve"
         ]
       },
-      "visualParts": []
+      "visualParts": [
+        "surface",
+        "track",
+        "track-active",
+        "track-inactive",
+        "thumb-knob",
+        "value-indicator",
+        "inset"
+      ]
     },
     "md-rating": {
       "status": "native-adapter",
@@ -1152,8 +1161,9 @@
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Dedicated native rating: precision 1 / 0.5, hover preview, keyboard, pop / state layer / ripple motion, readonly, disabled and soft-disabled, the value label; getLabel goes through the native label closure; hooks through AWCRatingAppearance; focusRating() through AWCRatingController.",
+        "Dedicated native rating: precision 1 / 0.5, hover preview, keyboard, pop / state layer / ripple motion, readonly, disabled and soft-disabled, the value label; hooks through AWCRatingAppearance; focusRating() and getLabel (the value label and accessible value text) through AWCRatingController.",
         "Host value changes are validated and clamped like @Watch('value'); a smaller max re-clamps the value.",
+        "Parts: typed part appearances (.awcRatingPartAppearance(_:part:) / AWCRatingPartAppearanceScope) — items gap, item size, icon-filled / icon-empty colour (the filled glyph only), state-layer colour, value-label colour / font / letter spacing (Mac Chrome ::part cases, paint-extra2).",
         "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint, pointer / keyboard / touch replays with events, motion per frame (plain and reduced motion), lifecycle (runtime property changes through the Stencil watchers, form reset), RTL."
       ],
       "appearance": {
@@ -1174,7 +1184,14 @@
           "iconFontFamily"
         ]
       },
-      "visualParts": []
+      "visualParts": [
+        "items",
+        "item",
+        "icon-filled",
+        "icon-empty",
+        "state-layer",
+        "value-label"
+      ]
     },
     "md-select": {
       "status": "native-adapter",
@@ -1240,7 +1257,8 @@
         "Not supported: virtualize (not virtualized: the native lists render every option (loadOptions / options replace the list)).",
         "Not supported: filterMode (filtering is local (contains); the source's remote mode is the app's (setQuery / loadOptions)).",
         "Not supported: rowHeight (virtualization row height (no virtualized list)).",
-        "Not supported: searchingLabel (remote-search status text (no remote mode))."
+        "Not supported: searchingLabel (remote-search status text (no remote mode)).",
+        "Laboratory (gate 3): typed hooks (md-select's eight fields; md-multi-select's 38 hooks as a hook map), retained updates of every supported property, the controller methods (show, close, focusTrigger, reset, loadOptions, setQuery, getLabels, getValidity, checkValidity, reportValidity, setCustomValidity) with results, copyable examples; the SwiftUI and Compose live hosts render the menu in flow below the field."
       ],
       "unsupportedProperties": [
         "virtualize",
@@ -1250,7 +1268,20 @@
       ],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
-      "unsupportedSlots": []
+      "unsupportedSlots": [],
+      "appearance": {
+        "api": ".awcSelectAppearance(AWCSelectAppearance)",
+        "fields": [
+          "width",
+          "minWidth",
+          "caretColor",
+          "caretSize",
+          "clearColor",
+          "trailingGap",
+          "optionIconColor",
+          "spinnerSize"
+        ]
+      }
     },
     "md-multi-select": {
       "status": "native-adapter",
@@ -1328,7 +1359,8 @@
         "Not supported: filterMode (filtering is local (contains); the source's remote mode is the app's (setQuery / loadOptions)).",
         "Not supported: rowHeight (virtualization row height (no virtualized list)).",
         "Not supported: countFormatter (a JavaScript function value).",
-        "Not supported: searchingLabel (remote-search status text (no remote mode))."
+        "Not supported: searchingLabel (remote-search status text (no remote mode)).",
+        "Laboratory (gate 3): typed hooks (md-select's eight fields; md-multi-select's 38 hooks as a hook map), retained updates of every supported property, the controller methods (show, close, focusTrigger, reset, loadOptions, setQuery, getLabels, getValidity, checkValidity, reportValidity, setCustomValidity) with results, copyable examples; the SwiftUI and Compose live hosts render the menu in flow below the field."
       ],
       "unsupportedProperties": [
         "virtualize",
@@ -1344,19 +1376,69 @@
         "trigger-trailing",
         "menu-header",
         "menu-loader"
-      ]
+      ],
+      "appearance": {
+        "api": ".awcMultiSelectAppearance(AWCMultiSelectAppearance)",
+        "fields": [
+          "caret-box-size",
+          "caret-color",
+          "caret-size",
+          "chip-gap",
+          "chip-height",
+          "chip-outline",
+          "chip-radius",
+          "clear-bg",
+          "clear-color",
+          "clear-focus-ring-color",
+          "clear-focus-ring-offset",
+          "clear-focus-ring-width",
+          "clear-hover-bg",
+          "clear-icon-size",
+          "clear-radius",
+          "clear-size",
+          "empty-color",
+          "empty-font",
+          "empty-padding",
+          "frame-gap",
+          "inline-chips-block-start",
+          "loader-size",
+          "loading-padding",
+          "min-width",
+          "option-icon-color",
+          "option-icon-size",
+          "search-bg",
+          "search-border-color",
+          "search-border-width",
+          "search-color",
+          "search-padding",
+          "search-placeholder-color",
+          "search-spinner-size",
+          "select-all-divider-color",
+          "select-all-divider-width",
+          "spinner-size",
+          "trigger-width",
+          "width"
+        ]
+      }
     },
     "md-autocomplete": {
       "status": "native-adapter",
       "properties": [
+        "valueMissingLabel",
+        "reserveSupportingSpace",
+        "variant",
         "label",
         "placeholder",
         "supportingText",
         "error",
         "errorText",
+        "disabled",
+        "softDisabled",
         "required",
+        "density",
         "options",
         "multiple",
+        "chipPosition",
         "value",
         "inputValue",
         "freeSolo",
@@ -1365,14 +1447,18 @@
         "noOptionsText",
         "noResultsText",
         "loadingText",
+        "statusTemplate",
         "disableCloseOnSelect",
+        "clearOnBlur",
         "clearable",
+        "clearIcon",
         "dropdownIcon",
         "limitResults",
         "open",
-        "valueMissingLabel",
-        "disabled",
-        "softDisabled",
+        "filterer",
+        "placement",
+        "matchTriggerWidth",
+        "maxHeight",
         "name"
       ],
       "events": [
@@ -1383,26 +1469,7 @@
         "mdClear",
         "mdValidityChange"
       ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
-        "reserveSupportingSpace",
-        "variant",
-        "density",
-        "chipPosition",
-        "statusTemplate",
-        "clearOnBlur",
-        "clearIcon",
-        "filterer",
-        "virtualize",
-        "filterMode",
-        "rowHeight",
-        "placement",
-        "matchTriggerWidth",
-        "maxHeight"
-      ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "methods": [
         "focusInput",
         "showMenu",
         "closeMenu",
@@ -1413,14 +1480,40 @@
         "reportValidity",
         "setCustomValidity"
       ],
-      "unsupportedSlots": [
+      "slots": [
         "loader",
         "dropdown-icon"
       ],
+      "unsupportedProperties": [
+        "virtualize",
+        "filterMode",
+        "rowHeight"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native searchable sheet, free-form submit and multiple selection. Custom JS filtering and virtualization not executed.",
-        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
-      ]
+        "Dedicated native renderer (SwiftUI / Compose) composed of the library's own md-text-field (editable combobox), md-menu listbox, md-menu-item option rows, md-chip input chips and md-icon-button clear button: typing opens and filters without moving focus (only what was typed since the popup opened filters), ArrowDown / ArrowUp move focus into the list, keys typed on a row keep typing in the input, Enter picks, Escape closes and snaps the text back; multiple selection with chips below / top / left / right / inline (Backspace removes the last chip, the popup stays open); free solo; clear button, caret, loading spinner and loading bar; the polite \"{count} suggestions available\" status. Verified against the Mac Chrome 153 oracles (paint, interaction states, motion, events; full and reduced motion).",
+        "Methods through AWCAutocompleteController: focusInput, showMenu, closeMenu, loadOptions(options), getLabels(values), getValidity / checkValidity / reportValidity / setCustomValidity; filterer is the controller's closure property (native API only). Forms: name, required and reset through AWCFormScope.",
+        "The suggestions present in the nearest AWCMenuScope (anchored below the field); outside a scope they render in flow.",
+        "Not supported: virtualize, filterMode and rowHeight belong to the source's WASM-virtualized list (above 200 options or virtualize=\"always\"); the native lists render every option and always filter by substring (filterMode's default). loadOptions() takes an array (an OptionRowSource is the virtual list's row source)."
+      ],
+      "appearance": {
+        "api": ".awcAutocompleteAppearance(AWCAutocompleteAppearance)",
+        "fields": [
+          "width",
+          "minWidth",
+          "chipGap",
+          "chipRadius",
+          "caretColor",
+          "caretSize",
+          "clearColor",
+          "optionIconColor",
+          "optionIconSize",
+          "loadingColor",
+          "spinnerSize"
+        ]
+      }
     },
     "md-select-option": {
       "status": "native-adapter",
@@ -1453,44 +1546,29 @@
     "md-date-picker": {
       "status": "native-adapter",
       "properties": [
+        "valueMissingLabel",
+        "reserveSupportingSpace",
+        "variant",
         "value",
         "label",
+        "placeholder",
         "min",
         "max",
         "open",
+        "disabled",
         "required",
         "clearable",
         "clearLabel",
         "error",
         "errorText",
         "supportingText",
-        "headline",
-        "cancelLabel",
-        "okLabel",
-        "commitOnSelect",
-        "valueMissingLabel",
-        "disabled",
-        "name"
-      ],
-      "events": [
-        "mdInput",
-        "mdSelected",
-        "mdChange",
-        "mdOpen",
-        "mdClose",
-        "mdCancel",
-        "mdValidityChange"
-      ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
-        "reserveSupportingSpace",
-        "variant",
-        "placeholder",
         "locale",
         "dateSeparator",
         "fieldVariant",
         "firstDayOfWeek",
+        "headline",
+        "cancelLabel",
+        "okLabel",
         "selectDateLabel",
         "enterDatesLabel",
         "invalidDateLabel",
@@ -1510,16 +1588,25 @@
         "yearGridLabel",
         "scrimDismissible",
         "outsideClickDismissible",
+        "commitOnSelect",
+        "name",
         "isDateDisabled",
         "density"
       ],
-      "unsupportedEvents": [
+      "events": [
+        "mdChange",
+        "mdSelected",
+        "mdInput",
+        "mdOpen",
+        "mdClose",
+        "mdCancel",
         "mdViewChange",
         "mdMenuOpen",
         "mdMenuSelect",
-        "mdModeChange"
+        "mdModeChange",
+        "mdValidityChange"
       ],
-      "unsupportedMethods": [
+      "methods": [
         "show",
         "close",
         "clear",
@@ -1529,15 +1616,107 @@
         "reportValidity",
         "setCustomValidity"
       ],
-      "unsupportedSlots": [
+      "slots": [
         "leading-icon",
         "calendar-icon",
         "header",
         "actions"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "System DatePicker replaces Material calendar and its month/year menus. Date objects serialize to ISO strings. Bounds are supported; predicate callbacks are not.",
-        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings; named external ownership uses AWCFormRegistryScope and awcFormOwner. Disabled is excluded; softDisabled remains a form participant."
+        "Dedicated native renderers (SwiftUI AWCNativeDatePicker, Compose NativeDatePicker): the md-text-field trigger with the clear and calendar buttons, the modal dialog (calendar, year grid, text entry) in the AWCModalScope layer and the docked panel under the field with its month and year lists; Compose presents the dialog in its own modal layer.",
+        "The 40 source hooks through AWCDatePickerAppearance, a hook map (.awcDatePickerAppearance(_:) / AWCDatePickerAppearanceScope): CSS text as the stylesheet reads it; the duration hooks and selection-bloom-easing drive the keyframes.",
+        "Methods through AWCDatePickerController: show(), close(), clear(), focusInput(), checkValidity(), reportValidity() (shows the message as the field's error text and focuses the field), getValidity() and setCustomValidity(). isDateDisabled is a predicate on the controller (a function cannot travel in the property bag).",
+        "Events with the source details (mdOpen, mdClose, mdCancel, mdSelected, mdChange, mdInput, mdViewChange, mdMenuOpen, mdMenuSelect, mdModeChange, mdValidityChange; a date is its ISO day), the calendar / year / list keyboards, the dialog's focus trap. macOS SwiftUI, the iOS simulator and the Android emulator are verified against the Chrome 153 oracles (paint and interaction).",
+        "Participates automatically in AWCFormScope: source successful-value serialization, ordered entries, native validation and reset bindings."
+      ],
+      "appearance": {
+        "api": ".awcDatePickerAppearance(AWCDatePickerAppearance)",
+        "fields": [
+          "actionColor",
+          "calendarBloomDuration",
+          "containerColor",
+          "containerShape",
+          "dayColor",
+          "dayOutlineColor",
+          "dayOutsideColor",
+          "daySelectedBg",
+          "daySelectedColor",
+          "daySelectedShape",
+          "dayTodayShape",
+          "dockedPanelWidth",
+          "fieldColor",
+          "fieldFilledPill",
+          "fieldFocusColor",
+          "fieldSupportingColor",
+          "fieldTextColor",
+          "gridSlideDuration",
+          "headerColor",
+          "headlineColor",
+          "iconColor",
+          "iconSize",
+          "labelColor",
+          "menuColor",
+          "panelBloomOutDuration",
+          "panelMaxBlockSize",
+          "panelWidth",
+          "scrimColor",
+          "selectionBloomDuration",
+          "selectionBloomEasing",
+          "selectionBloomOutDuration",
+          "supportingColor",
+          "todayOutlineColor",
+          "triggerMaxWidth",
+          "weekdayColor",
+          "yearBlockSize",
+          "yearGridGap",
+          "yearGridPaddingInline",
+          "yearGridViewportBlockSize",
+          "yearInlineSize"
+        ]
+      },
+      "visualParts": [
+        "menu-caret",
+        "year-grid-wrap",
+        "month-menu",
+        "year-menu",
+        "entry-input",
+        "field",
+        "clear-button",
+        "calendar-button",
+        "month-toggle",
+        "nav",
+        "month-menu-button",
+        "year-menu-button",
+        "selection-divider",
+        "month-menu-wrap",
+        "year-menu-wrap",
+        "calendar",
+        "weekdays",
+        "weekday",
+        "grid",
+        "week",
+        "year-grid-scroll year-grid-viewport",
+        "year-grid",
+        "year-row",
+        "entry",
+        "header",
+        "supporting",
+        "headline",
+        "mode-toggle",
+        "actions",
+        "cancel-button",
+        "ok-button",
+        "body",
+        "docked-below-nav",
+        "panel",
+        "modal",
+        "scrim",
+        "month-menu-viewport",
+        "year-menu-viewport"
       ]
     },
     "md-time-picker": {
@@ -1858,9 +2037,9 @@
       "notes": [
         "Dedicated native avatar: all eleven properties (image → initials → default slot → person icon; size presets with density 0…−4 and custom CSS lengths: unitless px, px, rem, em, vw, vh, vmin, vmax, pt, pc, in, cm, mm, q with calc/min/max/clamp; circle, rounded and square shapes with physical corners), mdLoad/mdError with { src }, the default slot, twenty-five appearance hooks and three typed part targets.",
         "Identity as in the source: explicit initials (trimmed, three graphemes, locale upper-case) or the first and last name tokens; the name palette bucket uses the source's JavaScript hash; role img with the label, alt or name, otherwise hidden from assistive technology.",
-        "As in the source, a name palette wins over containerColor/labelColor (they color neutral avatars); the fourteen palette hooks (missing from the CEM) recolor their own bucket.",
+        "As in the source, a name palette wins over containerColor/labelColor (they color neutral avatars); the fourteen palette hooks recolor their own bucket.",
         "Images decode natively from data:, file: and http(s) sources; loading=lazy has no viewport deferral and crossorigin has no CORS semantics (a crossorigin change re-requests a displayed image, as Chrome does). Inline SVG slot content has no native equivalent; native views go in the slot.",
-        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
+        "macOS SwiftUI/AppKit, iOS simulator (iPhone and iPad on iOS 26.3, iPhone on iOS 18.6; docs/native-parity/ios-harness.md) and Android emulator renderers are verified against the Chrome oracles; their accessibility trees are compared with Chrome's on all three platforms by tools/ax (docs/native-parity/accessibility.md). Spoken VoiceOver/TalkBack output is not automated."
       ],
       "appearance": {
         "api": ".awcAvatarAppearance(AWCAvatarAppearance)",
@@ -2230,7 +2409,7 @@
         "SwiftUI has no CSS line-height: the half-leading above the first and below the last line of wrapped authored text is not reproduced (about 3.6pt per paragraph at 14/20).",
         "While dragging, the raised stacking (z-index 1000) orders the card only among the siblings of its container; CSS z-index stacks against the document.",
         "The grab/grabbing/pointer cursors and aria-grabbed are not mapped.",
-        "macOS SwiftUI/AppKit renderer and live-host verification is recorded; iOS SDK, simulator/device and VoiceOver execution remain unverified."
+        "macOS SwiftUI/AppKit, iOS simulator (iPhone and iPad on iOS 26.3, iPhone on iOS 18.6; docs/native-parity/ios-harness.md) and Android emulator renderers are verified against the Chrome oracles; their accessibility trees are compared with Chrome's on all three platforms by tools/ax (docs/native-parity/accessibility.md). Spoken VoiceOver/TalkBack output is not automated."
       ],
       "appearance": {
         "api": ".awcCardAppearance(AWCCardAppearance)",
@@ -2290,10 +2469,10 @@
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Dedicated native item: all ten properties, three events, toggle() and focusHeader() through .awcAccordionItemController(_:for:), four slots, twenty-four appearance hooks and eleven typed part targets. mdItemRequestFocus and mdItemRequestReorder bubble to the owning accordion, which performs the source navigation and keyboard reorder.",
+        "Dedicated native item: all ten properties, three events, toggle() and focusHeader() through .awcAccordionItemController(_:for:), four slots, twenty-four appearance hooks and thirteen typed part targets. mdItemRequestFocus and mdItemRequestReorder bubble to the owning accordion, which performs the source navigation and keyboard reorder.",
         "An item that is not a direct child of an accordion is never owned and keeps its own disclosure state and events, like the source element.",
-        "chassis-handle and chassis-handle-bar render on the first item of a floating accordion and are styled through chassisHandleColor and chassisHandleBackgroundHover; they accept no part declarations.",
-        "macOS SwiftUI/AppKit renderer and live-host verification is recorded; iOS SDK, simulator/device and VoiceOver execution remain unavailable and unverified."
+        "chassis-handle and chassis-handle-bar render on the first item of a floating accordion, are styled through chassisHandleColor and chassisHandleBackgroundHover, and take typed part declarations (background, corner shape, width, height, opacity), which win in every state as an outer ::part declaration does.",
+        "macOS SwiftUI/AppKit, iOS simulator (iPhone and iPad on iOS 26.3, iPhone on iOS 18.6; docs/native-parity/ios-harness.md) and Android emulator renderers are verified against the Chrome oracles; their accessibility trees are compared with Chrome's on all three platforms by tools/ax (docs/native-parity/accessibility.md). Spoken VoiceOver/TalkBack output is not automated."
       ],
       "appearance": {
         "api": ".awcAccordionItemAppearance(AWCAccordionItemAppearance)",
@@ -2335,7 +2514,9 @@
         "trailing-icon",
         "panel",
         "content",
-        "content-inner"
+        "content-inner",
+        "chassis-handle",
+        "chassis-handle-bar"
       ]
     },
     "md-accordion": {
@@ -2374,9 +2555,9 @@
       "unsupportedSlots": [],
       "notes": [
         "Dedicated native renderer: all fifteen properties, five events, the default slot and fourteen appearance hooks. Direct-child ownership, exclusive and keep-one coordination, heading/region presentation, pointer and keyboard reorder, lifted clipping, reorder motion, interaction states, drop-placeholder paint and the floating panel are checked against Chrome oracles.",
-        "Floating mode: the nearest awcAccordionViewport() or the window stands in for the CSS viewport. SwiftUI zIndex orders a panel only among siblings of its container, whereas CSS position: fixed stacks against the whole document.",
-        "drop-placeholder is rendered natively and styled through the five drop-placeholder appearance fields; native views accept no ::part declarations for it. The dash phase on sides after a rounded corner differs from Chrome by up to about one period (open).",
-        "macOS SwiftUI/AppKit renderer and live-host verification is recorded; iOS SDK, simulator/device and VoiceOver execution remain unavailable and unverified."
+        "Floating mode: the nearest awcAccordionViewport() or the window stands in for the CSS viewport. CSS position: fixed stacks against the whole document: the panel's z-index lifts the AWC hosts above it, so it paints over later containers of the same AWC tree; an application container between AWC views joins with awcStackingLift(), and an ancestor that clips still clips the panel.",
+        "drop-placeholder is rendered natively, styled through the five drop-placeholder appearance fields and typed part declarations (awcAccordionPartAppearance(_:part:for:): fill, dashed outline colour and width, corner shape, opacity). Its dashed border follows Blink's rounded-border dash distribution (closed centerline from the end of the top-left corner, best-fit gap); every side's dash centres are asserted against Chrome.",
+        "macOS SwiftUI/AppKit, iOS simulator (iPhone and iPad on iOS 26.3, iPhone on iOS 18.6; docs/native-parity/ios-harness.md) and Android emulator renderers are verified against the Chrome oracles; their accessibility trees are compared with Chrome's on all three platforms by tools/ax (docs/native-parity/accessibility.md). Spoken VoiceOver/TalkBack output is not automated."
       ],
       "appearance": {
         "api": ".awcAccordionAppearance(AWCAccordionAppearance)",
@@ -2396,7 +2577,10 @@
           "dropPlaceholderShape",
           "dropPlaceholderOpacity"
         ]
-      }
+      },
+      "visualParts": [
+        "drop-placeholder"
+      ]
     },
     "md-list-item": {
       "status": "native-adapter",
@@ -2432,7 +2616,11 @@
       ],
       "events": [
         "mdClick",
-        "mdExpand"
+        "mdExpand",
+        "mdItemClick",
+        "mdItemSelect",
+        "mdRequestActivation",
+        "mdItemRequestReorder"
       ],
       "methods": [
         "setFocus",
@@ -2452,12 +2640,7 @@
         "expanded-content"
       ],
       "unsupportedProperties": [],
-      "unsupportedEvents": [
-        "mdItemClick",
-        "mdItemSelect",
-        "mdRequestActivation",
-        "mdItemRequestReorder"
-      ],
+      "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
@@ -2465,7 +2648,8 @@
         "mdItemClick, mdItemSelect, mdRequestActivation and mdItemRequestReorder are the source's internal item-to-list protocol; natively the list coordinates its rows directly and emits mdSelect, mdActivate and mdReorder instead.",
         "Accessibility: a selection row is an option with its selected state (a radio button in a single-select listbox, a checkbox in a multi-select one), a menu row is a menu item (a button on Compose), the primary action is a button or link; the row's index is its set position. The headline and supporting text use the shared md-tooltip while clipped.",
         "The headline-tooltip-popup and supporting-tooltip-popup parts are styled through the shared md-tooltip appearance, not the list item part API.",
-        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
+        "Part declarations: backgroundColor, opacity and cornerShape on every visual part (cornerShape clips the avatar and the image-wrap), color on the text and glyph parts; the headline also takes letterSpacing and the row its border. Layout declarations are the hooks' job (gate-7 r3-14: NativeListPartsIntegration / NativeListPartsTest against Chrome's ::part() rules).",
+        "macOS SwiftUI/AppKit, iOS simulator (iPhone and iPad on iOS 26.3, iPhone on iOS 18.6; docs/native-parity/ios-harness.md) and Android emulator renderers are verified against the Chrome oracles; their accessibility trees are compared with Chrome's on all three platforms by tools/ax (docs/native-parity/accessibility.md). Spoken VoiceOver/TalkBack output is not automated."
       ],
       "appearance": {
         "api": ".awcListItemAppearance(AWCListItemAppearance)",
@@ -2604,7 +2788,7 @@
         "Dedicated native list: all eight properties (list, listbox with single/multi selection, menu and other role overrides, density 0…−4), mdSelect, mdActivate and mdReorder with the source payloads (item references become stable native node IDs), the four methods through AWCListController, ten appearance hooks and the drop-placeholder part.",
         "Roving focus with wrap, Home/End and 500 ms typeahead; pointer reorder from the drag handle (lift, sibling shift, dashed placeholder glide, drop) and Alt+Arrow keyboard reorder, measured against Chrome frame by frame.",
         "A reorder keeps the authored composition and translates rows to their displayed slots; on Compose the accessibility order follows the authored order until the host applies mdReorder.",
-        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
+        "macOS SwiftUI/AppKit, iOS simulator (iPhone and iPad on iOS 26.3, iPhone on iOS 18.6; docs/native-parity/ios-harness.md) and Android emulator renderers are verified against the Chrome oracles; their accessibility trees are compared with Chrome's on all three platforms by tools/ax (docs/native-parity/accessibility.md). Spoken VoiceOver/TalkBack output is not automated."
       ],
       "appearance": {
         "api": ".awcListAppearance(AWCListAppearance)",
@@ -2632,9 +2816,12 @@
         "titleAlignment",
         "searchPlaceholder",
         "searchValue",
+        "searchAriaLabel",
         "searchDisabled",
         "headline",
         "subtitle",
+        "scrolled",
+        "density",
         "leadingIcon",
         "leadingIconLabel"
       ],
@@ -2652,15 +2839,78 @@
         "leading",
         "trailing"
       ],
-      "unsupportedProperties": [
-        "searchAriaLabel",
-        "scrolled",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
-      "notes": []
+      "notes": [
+        "Dedicated native app bar (SwiftUI / Compose): small, medium and large bars (the expanded headline block below the row, start or centred), the search bar (pill, in-pill actions, slotted search content), the leading icon button (mdLeadingClick), the trailing actions (at most three shown, one warning per new excess), scrolled colours with their transitions, density and the spacing rung.",
+        "The search input as the source: focus activates (mdSearchActivate), typing emits mdSearchInput (Space announces activation first), Enter activates, Home / End move the caret, keyboard focus selects the text and shows the ring; the pill's hover / press state layer, ripple and focus ring.",
+        "The 38 hooks (the stylesheet's list; the CEM lists 32) through .awcAppBarAppearance(…) / AWCAppBarAppearanceScope as CSS text; every exported part through the typed part appearances (.awcAppBarPartAppearance(_:part:) / AWCAppBarPartAppearanceScope).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: paint and geometry of every configuration (small, centred, medium, large and search bars, subtitles, slots, the trailing cap, density, RTL, dark, the hooks and every typed part), the interaction states and motion (scrolled colours, the search pill's hover / press layer, ripple and focus ring, the input's focus, selection, typing and the events) and the Laboratory hooks and updates."
+      ],
+      "appearance": {
+        "api": ".awcAppBarAppearance(AWCAppBarAppearance)",
+        "fields": [
+          "containerColor",
+          "containerColorScrolled",
+          "containerShape",
+          "headlineColor",
+          "subtitleColor",
+          "leadingIconColor",
+          "trailingIconColor",
+          "containerElevation",
+          "rowHeight",
+          "paddingInlineStart",
+          "paddingInlineEnd",
+          "rowPaddingInline",
+          "rowPaddingBlockStart",
+          "trailingGap",
+          "trailingIconTouchSize",
+          "iconGap",
+          "iconSize",
+          "avatarSize",
+          "expandedPaddingInline",
+          "expandedPaddingBlockEnd",
+          "mediumHeight",
+          "mediumHeightWithSubtitle",
+          "largeHeight",
+          "largeHeightWithSubtitle",
+          "iconButtonSize",
+          "searchContainerColor",
+          "searchContainerColorScrolled",
+          "searchContainerShape",
+          "searchContainerHeight",
+          "searchPaddingInlineStart",
+          "searchPaddingInlineEnd",
+          "searchRowGap",
+          "searchTrailingGap",
+          "searchFieldTrailingGap",
+          "trailingTouchSize",
+          "searchPlaceholderColor",
+          "searchInputColor",
+          "searchTrailingIconColor"
+        ]
+      },
+      "visualParts": [
+        "leading-icon",
+        "title",
+        "subtitle",
+        "expanded-headline",
+        "search-host",
+        "search",
+        "search-state-layer",
+        "search-field",
+        "search-content",
+        "search-input",
+        "search-trailing",
+        "row",
+        "leading",
+        "trailing",
+        "expanded",
+        "icon",
+        "state-layer"
+      ]
     },
     "md-toolbar": {
       "status": "native-adapter",
@@ -2692,7 +2942,8 @@
         "Dedicated native toolbar (SwiftUI / Compose): docked bar and floating pill (horizontal or vertical), standard / vibrant colours, the leading / default / trailing sections with their gaps and alignment, the paired FAB, density, and the opt-in scrolling / wrapping overflow, computed from the authored children as the source.",
         "Roving focus over the icon buttons and buttons (one Tab stop, arrows on the bar's axis, Home / End, wrap; soft-disabled members reachable, hidden / disabled / aria-hidden ones skipped; other controls keep their own stop), re-synced when children change; the toolbar-only icon-button tints; role toolbar with orientation and name, or a generic container.",
         "Hooks through .awcToolbarAppearance(…) / AWCToolbarAppearanceScope; setFocus() through AWCToolbarController.",
-        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: paint and geometry of every configuration, roving focus, Tab order, the dynamic re-sync, pointer state layers, RTL and density."
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: paint and geometry of every configuration, roving focus, Tab order, the dynamic re-sync, pointer state layers, RTL and density.",
+        "Typed ::part() targets (AWCToolbarPartAppearance): container (the background: the floating pill, or a fill over the docked content box) and fab-container as a box (AWCPartBox: background, border width / colour, corner radius and physical padding with the layout shift; the bar and the host grow around the paired FAB)."
       ],
       "appearance": {
         "api": ".awcToolbarAppearance(AWCToolbarAppearance)",
@@ -2709,7 +2960,11 @@
           "flexWrap",
           "scrollbarWidth"
         ]
-      }
+      },
+      "visualParts": [
+        "container",
+        "fab-container"
+      ]
     },
     "md-navigation-bar": {
       "status": "native-adapter",
@@ -2782,17 +3037,33 @@
     "md-navigation-rail": {
       "status": "native-adapter",
       "properties": [
-        "activeIndex",
-        "orientation",
+        "variant",
+        "modal",
+        "fullHeight",
+        "alignment",
         "expandable",
-        "toggleLabel"
+        "toggleLabel",
+        "labelVisibility",
+        "activeIndex",
+        "label",
+        "disableFocusManagement",
+        "density",
+        "orientation",
+        "maxVisible",
+        "overflowLabel",
+        "overflowIcon"
       ],
       "events": [
         "mdTabChange",
         "mdExpand",
         "mdCollapse"
       ],
-      "methods": [],
+      "methods": [
+        "expand",
+        "collapse",
+        "toggle",
+        "focusTab"
+      ],
       "slots": [
         "",
         "logo",
@@ -2803,29 +3074,56 @@
         "footer-content",
         "footer"
       ],
-      "unsupportedProperties": [
-        "variant",
-        "modal",
-        "fullHeight",
-        "alignment",
-        "labelVisibility",
-        "label",
-        "disableFocusManagement",
-        "density",
-        "maxVisible",
-        "overflowLabel",
-        "overflowIcon"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
-      "unsupportedMethods": [
-        "expand",
-        "collapse",
-        "toggle",
-        "focusTab"
-      ],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native rail expansion event supplied, but responsive maxVisible/overflow/modal positioning are not implemented."
+        "Dedicated native rail (SwiftUI / Compose): standard (80) and expanded (220) widths with the width transition and the destinations' FLIP, the modal overlay with its scrim, the horizontal bar, top / middle / bottom alignment, full height, density, the logo, toggle, header, FAB and footer profile slots, and the overflow trigger with its menu (maxVisible).",
+        "Selection and focus as the source: one roving tab stop, arrows on the visual axis (wrapping), Home / End, Enter / Space, Escape and the scrim in a modal; mdTabChange (only when the selection moves), mdExpand / mdCollapse; a silent activeIndex write.",
+        "The 19 rail hooks (the stylesheet's list; the CEM lists 18, not horizontal-height) through .awcNavigationRailAppearance(…) / AWCNavigationRailAppearanceScope; every exported part through the typed part appearances; expand / collapse / toggle / focusTab through AWCNavigationRailController.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: paint and geometry of every configuration (variants, label visibility, density, slots, the modal overlay, the horizontal bar, overflow, badges, links, a dropdown destination, every hook and every exported part), the interaction states and motion (pointer, keyboard, the expand / collapse transition with the destinations' FLIP, reduced motion) and the events."
+      ],
+      "appearance": {
+        "api": ".awcNavigationRailAppearance(AWCNavigationRailAppearance)",
+        "fields": [
+          "containerColor",
+          "containerElevation",
+          "containerShape",
+          "containerWidth",
+          "contentColor",
+          "destinationsGap",
+          "expandedMaxWidth",
+          "expandedWidth",
+          "fabSize",
+          "footerGap",
+          "footerLeadingSize",
+          "gap",
+          "headerSpace",
+          "horizontalHeight",
+          "horizontalPaddingBlock",
+          "horizontalPaddingInline",
+          "logoIconSize",
+          "paddingBlock",
+          "paddingInline"
+        ]
+      },
+      "visualParts": [
+        "scrim",
+        "container",
+        "logo",
+        "logo-contracted",
+        "logo-expanded",
+        "toggle",
+        "header",
+        "fab",
+        "destinations",
+        "overflow",
+        "overflow-trigger",
+        "footer",
+        "footer-profile",
+        "footer-leading",
+        "footer-content"
       ]
     },
     "md-tabs": {
@@ -2915,7 +3213,7 @@
         "Rendered by its bar (geometry, state and motion) or, outside a bar, as a single destination with its own active state; activation emits mdTabClick { index } and follows href / target through the host URL router unless prevented.",
         "The 56 × 32 indicator pill (scaleX 200 ms emphasized-decelerate, opacity 100 ms), the icon (activeIcon and the active-icon / icon slots), the label (600 active / 500 inactive, hidden but named in selected mode, absent in icon-only mode), dot and capped large badges (badgeMax), hard and soft disabled, density 0 to -4.",
         "Hover / press / focus state layers (8 / 12 / 10 %), the focus ring around the indicator and the md-ripple wave; focusEl() through AWCNavigationTabController for a destination outside a bar.",
-        "Typed ::part() targets (AWCNavigationTabPartAppearance): state-layer (colour, fixed opacity), icon, label, indicator and badge (fill, text) colours; container and icon-container are layout wrappers (exception record, md-navigation-bar.md)."
+        "Typed ::part() targets (AWCNavigationTabPartAppearance): state-layer (colour, fixed opacity), icon, label, indicator and badge (fill, text) colours, and container / icon-container as boxes (AWCPartBox: background, border width / colour, corner radius and physical padding with the layout shift)."
       ],
       "appearance": {
         "api": ".awcNavigationTabAppearance(AWCNavigationTabAppearance)",
@@ -2949,45 +3247,79 @@
         "icon",
         "label",
         "indicator",
-        "badge"
+        "badge",
+        "container",
+        "icon-container"
       ]
     },
     "md-navigation-rail-tab": {
       "status": "native-adapter",
       "properties": [
-        "active",
         "icon",
         "label",
+        "active",
+        "disabled",
         "badge",
         "badgeValue",
         "href",
+        "target",
         "value",
         "labelVisibility",
-        "disabled"
-      ],
-      "events": [
-        "mdTabClick"
-      ],
-      "methods": [],
-      "slots": [
-        "icon"
-      ],
-      "unsupportedProperties": [
-        "target",
         "expanded",
         "density"
       ],
-      "unsupportedEvents": [
+      "events": [
+        "mdTabClick",
         "mdSubmenuToggle"
       ],
-      "unsupportedMethods": [
+      "methods": [
         "clearSubmenuSelection"
       ],
-      "unsupportedSlots": [
+      "slots": [
+        "icon",
         "submenu"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Submenu expansion not implemented."
+        "Rendered by its rail (geometry, state and motion) or, outside a rail, as a single destination with its own active state; activation emits mdTabClick { value } and follows href / target through the host URL router; a slotted md-menu opens as the destination's dropdown (mdSubmenuToggle) and its selection marks the destination child-selected.",
+        "The indicator pill, the icon (FILL 0 → 1 when active, or the slotted icon), the label (with its labels-selected reveal), the badge (dot or large, 999+), the state layers, focus ring and md-ripple, all on the source transitions (effects-fast 150 ms; none under reduced motion).",
+        "The 18 destination hooks through .awcNavigationRailTabAppearance(…) / AWCNavigationRailTabAppearanceScope; every exported part through the typed part appearances (per destination with for: / id); clearSubmenuSelection() through AWCNavigationRailController (by destination index).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: paint and geometry of every configuration (variants, label visibility, density, slots, the modal overlay, the horizontal bar, overflow, badges, links, a dropdown destination, every hook and every exported part), the interaction states and motion (pointer, keyboard, the expand / collapse transition with the destinations' FLIP, reduced motion) and the events."
+      ],
+      "appearance": {
+        "api": ".awcNavigationRailTabAppearance(AWCNavigationRailTabAppearance)",
+        "fields": [
+          "activeIconColor",
+          "activeLabelColor",
+          "badgeColor",
+          "badgeContentColor",
+          "caretDuration",
+          "focusRingColor",
+          "focusStateLayerOpacity",
+          "iconColor",
+          "iconSize",
+          "indicatorColor",
+          "indicatorHeight",
+          "indicatorShape",
+          "indicatorWidth",
+          "labelColor",
+          "labelTypography",
+          "minHeight",
+          "pressStateLayerOpacity",
+          "stateLayerColor"
+        ]
+      },
+      "visualParts": [
+        "indicator",
+        "label",
+        "icon-wrapper",
+        "icon",
+        "state-layer",
+        "caret",
+        "anchor"
       ]
     },
     "md-tab": {
@@ -3019,7 +3351,7 @@
         "Rendered by its md-tabs (geometry, state and motion) or, outside a tablist, as a single tab with its own active state; activation outside a tablist emits mdTabClick only.",
         "Stacked (icon above the label) or inline icons, the secondary variant, badges (a count or a dot, on the icon or inline), density 0 to -4 and label truncation as the source; slotted icon and badge content renders natively.",
         "Hover, press and keyboard focus (8 % / 12 % state layer, inset 3-point focus ring) with the md-ripple wave; colours transition over 200 ms.",
-        "Typed ::part() targets (AWCTabPartAppearance): state-layer (colour, fixed opacity), icon, label, indicator and divider colours; content is a layout wrapper (exception record, md-tabs.md)."
+        "Typed ::part() targets (AWCTabPartAppearance): state-layer (colour, fixed opacity), icon, label, indicator and divider colours, and content as a box (AWCPartBox: background, border width / colour, corner radius and physical padding with the layout shift)."
       ],
       "appearance": {
         "api": ".awcTabAppearance(AWCTabAppearance)",
@@ -3040,7 +3372,8 @@
         "icon",
         "label",
         "indicator",
-        "divider"
+        "divider",
+        "content"
       ]
     },
     "md-tab-panel": {
@@ -3111,7 +3444,8 @@
         "Dedicated native renderer (SwiftUI / Compose): the wrapping list, separators, the collapse window with the overflow toggle, the current-page promotion and the staggered entrance computed from the authored md-breadcrumb-item children, as the source.",
         "expand() / collapse() through AWCBreadcrumbsController emit mdExpand { expanded, itemCount } (cancelable like the source event; the state does not depend on it). The toggle moves focus to the first revealed link.",
         "The twelve hooks through .awcBreadcrumbsAppearance(…) / AWCBreadcrumbsAppearanceScope; density follows the md3 ladder including the rung-only spacing tokens.",
-        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against the Mac Chrome 153 oracles (paint, interaction states and motion); the trail is a labelled navigation container."
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against the Mac Chrome 153 oracles (paint, interaction states and motion); the trail is a labelled navigation container.",
+        "Typed ::part() targets (AWCBreadcrumbsPartAppearance): list (background, physical padding), separator (the overflow separator: colour, font size), overflow-button (background in every state, dots colour) and overflow as a box (AWCPartBox: background, border width / colour, corner radius and physical padding with the layout shift)."
       ],
       "appearance": {
         "api": ".awcBreadcrumbsAppearance(AWCBreadcrumbsAppearance)",
@@ -3129,7 +3463,13 @@
           "itemGap",
           "itemPadding"
         ]
-      }
+      },
+      "visualParts": [
+        "list",
+        "separator",
+        "overflow-button",
+        "overflow"
+      ]
     },
     "md-breadcrumb-item": {
       "status": "native-adapter",
@@ -3160,7 +3500,8 @@
       "notes": [
         "A link crumb (href, not current, not disabled) or a static span; mdSelect { href, label, current, itemIndex, itemTotal } is cancelable and, unless prevented, the link opens through the host URL router (target honoured; rel has no native browsing-context effect).",
         "collapsed, itemIndex and itemTotal are managed by the trail (as the source sets them); a crumb outside a trail renders as the first crumb and is the current page only when authored.",
-        "Hover, press and keyboard focus (12 % layer, 3-point secondary ring) with the md-ripple wave; labels truncate at 32 ch with an ellipsis and keep the full accessible name."
+        "Hover, press and keyboard focus (12 % layer, 3-point secondary ring) with the md-ripple wave; labels truncate at 32 ch with an ellipsis and keep the full accessible name.",
+        "Typed ::part() targets (AWCBreadcrumbItemPartAppearance): separator (colour, font size), icon and label (colour), link (colour, underline in the link colour), static (colour, background, border) and state-layer (colour, fixed opacity)."
       ],
       "appearance": {
         "api": ".awcBreadcrumbsAppearance(AWCBreadcrumbsAppearance)",
@@ -3174,7 +3515,15 @@
           "itemGap",
           "itemPadding"
         ]
-      }
+      },
+      "visualParts": [
+        "separator",
+        "icon",
+        "label",
+        "static",
+        "link",
+        "state-layer"
+      ]
     },
     "md-step": {
       "status": "native-adapter",
@@ -3211,6 +3560,7 @@
       "notes": [
         "Rendered by its stepper: the header control (a button named like the source, disabled when unreachable, expanded / collapsed with a panel), its panel and actions are the stepper's own layout, so the authored order is the keyboard order. A step's own style hooks apply to that step.",
         "Standalone (no stepper) it renders like the source with its data-* defaults (first, horizontal, shared panel) and its own active.",
+        "Parts: typed part appearances (.awcStepPartAppearance(_:part:) / AWCStepPartAppearanceScope) — bubble / dot colour and corner radius (winning over the state colours), label / optional / description colour and text metrics (font size / weight / line height, letter spacing), connector colour, state-layer colour, content background and padding (outside the grid track), actions gap (Mac Chrome ::part cases, web-paint-extra2).",
         "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint (142 cases + per-step hooks and step density), the state / motion replays per frame (20 runs, plain and reduced motion) with the md* events, the announcements and the keyframe animations each step starts."
       ],
       "appearance": {
@@ -3240,7 +3590,18 @@
           "collapseDuration"
         ]
       },
-      "visualParts": []
+      "visualParts": [
+        "bubble",
+        "dot",
+        "state-layer",
+        "label",
+        "optional",
+        "description",
+        "connector",
+        "connector-trailing",
+        "content",
+        "actions"
+      ]
     },
     "md-stepper": {
       "status": "native-adapter",
@@ -3291,6 +3652,7 @@
         "Dedicated native stepper: horizontal row (shared content slot or per-step panels), vertical rail with per-step panels and Back / Continue, mobile bar (dots or \"Step N of M\"), numbered / dot indicators, density, RTL; linear / non-linear reachability, auto-complete, the cancelable mdBeforeChange, mdStepChange, mdComplete, the polite / assertive announcements; the stylesheet transitions and keyframe animations; hooks through AWCStepperAppearance; next() / prev() / goTo() / reset() through AWCStepperController.",
         "Host property changes follow the Stencil watchers: a host write to active runs @Watch('active') (clamp, auto-complete, mdStepChange after the update); the component's own writes (active, completed, error) persist until the host changes that property.",
         "The built-in Back / Continue / Finish are native md-buttons; their own events stay internal, as the source stops them.",
+        "Parts: typed part appearances (.awcStepperPartAppearance(_:part:) / AWCStepperPartAppearanceScope) — list / nav / mobile-nav background, content background and padding (a top padding keeps the slotted child's margin inside, as Chrome), nav / mobile-nav padding (Mac Chrome ::part cases, web-paint-extra2).",
         "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint (142 cases + per-step hooks and step density), the state / motion replays per frame (20 runs, plain and reduced motion) with the md* events, the announcements and the keyframe animations each step starts."
       ],
       "appearance": {
@@ -3321,7 +3683,12 @@
           "collapseDuration"
         ]
       },
-      "visualParts": []
+      "visualParts": [
+        "list",
+        "content",
+        "nav",
+        "mobile-nav"
+      ]
     },
     "md-dialog": {
       "status": "native-adapter",
@@ -3365,7 +3732,7 @@
         "Dedicated native dialog hosted by AWCModalScope in the app's own viewport (not a platform window): basic (centred alert dialog over a scrim) and fullscreen; all thirteen properties, mdOpen/mdClose/mdCancel in the source order with null payloads, show/close/whenClosed through AWCDialogController, all five slots, ten appearance hooks and eleven typed part targets.",
         "Shared modal layer: one owner stack for dialogs and sheets (only the top owner handles Escape/back, Tab and scrim dismissal; content under an open modal is inert; focus moves in on open and is restored on close, forwarded when a lower owner closes first) and the source z-index paint order, measured against Chrome in thirteen mixed-stack runs.",
         "Outside an AWCModalScope the component keeps the previous platform presentation (a SwiftUI sheet / a Compose dialog window).",
-        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
+        "macOS SwiftUI/AppKit, iOS simulator (iPhone and iPad on iOS 26.3, iPhone on iOS 18.6; docs/native-parity/ios-harness.md) and Android emulator renderers are verified against the Chrome oracles; their accessibility trees are compared with Chrome's on all three platforms by tools/ax (docs/native-parity/accessibility.md). Spoken VoiceOver/TalkBack output is not automated."
       ],
       "appearance": {
         "api": ".awcDialogAppearance(AWCDialogAppearance)",
@@ -3436,7 +3803,7 @@
         "Dedicated native bottom sheet hosted by AWCModalScope: standard (modal, edge-attached) and detached variants; all thirteen properties, mdOpen/mdClose/mdCancel with null payloads, show/close through AWCBottomSheetController (the source has no whenClosed), drag-handle dismissal with the source threshold, all four slots, sixteen appearance hooks and eleven typed part targets.",
         "Shared modal layer: one owner stack for dialogs and sheets (only the top owner handles Escape/back, Tab and scrim dismissal; content under an open modal is inert; focus moves in on open and is restored on close, forwarded when a lower owner closes first) and the source z-index paint order, measured against Chrome in thirteen mixed-stack runs.",
         "Outside an AWCModalScope the component keeps the previous platform presentation (a SwiftUI sheet / a Compose dialog window).",
-        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
+        "macOS SwiftUI/AppKit, iOS simulator (iPhone and iPad on iOS 26.3, iPhone on iOS 18.6; docs/native-parity/ios-harness.md) and Android emulator renderers are verified against the Chrome oracles; their accessibility trees are compared with Chrome's on all three platforms by tools/ax (docs/native-parity/accessibility.md). Spoken VoiceOver/TalkBack output is not automated."
       ],
       "appearance": {
         "api": ".awcBottomSheetAppearance(AWCBottomSheetAppearance)",
@@ -3515,7 +3882,7 @@
         "Dedicated native side sheet: standard (in-flow, no scrim) and modal variants on the start or end side, attached or detached; all twelve properties, mdOpen/mdClose/mdCancel/mdBack with null payloads, show/close/whenClosed through AWCSideSheetController, all five slots, nine appearance hooks and nine typed part targets.",
         "Shared modal layer: one owner stack for dialogs and sheets (only the top owner handles Escape/back, Tab and scrim dismissal; content under an open modal is inert; focus moves in on open and is restored on close, forwarded when a lower owner closes first) and the source z-index paint order, measured against Chrome in thirteen mixed-stack runs.",
         "Outside an AWCModalScope the component keeps the previous platform presentation (a SwiftUI sheet / a Compose dialog window).",
-        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
+        "macOS SwiftUI/AppKit, iOS simulator (iPhone and iPad on iOS 26.3, iPhone on iOS 18.6; docs/native-parity/ios-harness.md) and Android emulator renderers are verified against the Chrome oracles; their accessibility trees are compared with Chrome's on all three platforms by tools/ax (docs/native-parity/accessibility.md). Spoken VoiceOver/TalkBack output is not automated."
       ],
       "appearance": {
         "api": ".awcSideSheetAppearance(AWCSideSheetAppearance)",
@@ -3572,7 +3939,9 @@
         "show",
         "reposition",
         "whenClosed",
-        "close"
+        "close",
+        "setComboboxElement",
+        "setVirtualProvider"
       ],
       "slots": [
         "",
@@ -3580,17 +3949,15 @@
       ],
       "unsupportedProperties": [],
       "unsupportedEvents": [],
-      "unsupportedMethods": [
-        "setComboboxElement",
-        "setVirtualProvider"
-      ],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
         "Dedicated native renderer (SwiftUI / Compose): the baseline, standard and vibrant surfaces, the standard and grouped (gap) layouts, the header slot, empty text, density, a capped scrolling viewport (max-height, --md-menu-max-block-size) and the 150 ms scale-and-fade entrance and exit (quick and Reduce Motion snap), verified against the Mac Chrome 153 oracles (paint, interaction states and motion).",
         "Anchored menus present in the nearest AWCMenuScope (the menus' top layer): bottom/top-start/end placement against the anchor's live frame (physical, as the source), flipped and kept inside the viewport margin, match-anchor-width and the responsive full-width surface. Outside a scope a menu renders in flow.",
         "Source behaviour: auto-focus of the first row, roving focus with typeahead, Escape and Tab close the tree and restore focus to the anchor, outside clicks close non-persistent menus, opening a menu closes its open peers; mdOpen / mdClose as the source. listbox exposes the surface as a listbox of options.",
-        "show({ autoFocus }), close(), whenClosed() and reposition() through AWCMenuScopeState.menu(id); getScrollViewport() returns the viewport geometry (scrollTop, scrollHeight, clientHeight) rather than an element. setComboboxElement() and setVirtualProvider() are the DOM combobox and virtualization plumbing of md-select / md-autocomplete and have no native counterpart.",
-        "The six menu hooks and the five row hooks (inherited by every row) through .awcMenuAppearance(…) / AWCMenuAppearanceScope."
+        "The six menu hooks and the five row hooks (inherited by every row) through .awcMenuAppearance(…) / AWCMenuAppearanceScope.",
+        "setComboboxElement(id) and setVirtualProvider(provider) through AWCMenuHandle (AWCMenuVirtualProvider: count, label, disabled, ensureVisible, row id, findPrefix): the provider's indices drive ArrowUp/Down (wrapping past disabled rows), Home/End, typeahead and Enter; the combobox keeps focus while activeDescendant names the active windowed row; the surface is a listbox.",
+        "Typed part appearances for the 16 CSS parts (AWCMenuPartAppearance: background, color, outline, corner radius, opacity, letter spacing) per part for every element of the tag or for one element ID, carried into flyouts."
       ],
       "appearance": {
         "api": ".awcMenuAppearance(AWCMenuAppearance)",
@@ -3607,7 +3974,12 @@
           "itemIconSize",
           "itemCheckSize"
         ]
-      }
+      },
+      "visualParts": [
+        "empty-text",
+        "surface",
+        "menu-viewport"
+      ]
     },
     "md-fab-menu": {
       "status": "native-adapter",
@@ -3686,6 +4058,15 @@
       "notes": [
         "Rendered by its md-menu: one- and two-line rows with the leading-icon and trailing-icon slots, trailing text, badge, divider and gap, checkbox and radio rows (check position, indeterminate, keep-open), option presentation and role override, density; hover, press and keyboard focus show the state layer, the md-ripple wave and the inset 3-point focus ring.",
         "Activation emits mdClick and closes the menu tree after 150 ms unless keep-open; Space toggles checkbox and radio rows without closing; disabled rows stay focusable in the roving order (APG) but inert."
+      ],
+      "visualParts": [
+        "state-layer",
+        "leading-icon",
+        "content",
+        "headline",
+        "supporting-text",
+        "badge",
+        "trailing"
       ]
     },
     "md-menu-item-group": {
@@ -3737,6 +4118,14 @@
       "notes": [
         "Opens its slotted md-menu as a flyout beside the row: hover intent with openDelay / closeDelay, ArrowRight, Enter and Space open it with focus on its first row, ArrowLeft and Escape return to the row; the caret rotates as the source and mirrors in RTL.",
         "collapse() closes the flyout at once (no exit motion) through AWCMenuScopeState.menu(id).collapse(row:) / collapse(rowID)."
+      ],
+      "visualParts": [
+        "state-layer",
+        "leading-icon",
+        "content",
+        "headline",
+        "supporting-text",
+        "badge"
       ]
     },
     "md-snackbar": {
@@ -3836,7 +4225,7 @@
         "Source mdOpen/mdClose events have null detail and are cancelable, non-bubbling and non-composed: same-tree capture and target listeners run; cancellation does not undo committed visibility.",
         "Public typed slots, part styles and measured overlay coordinates replace DOM selectors, shadow slots and computed CSS. Arbitrary native content keeps its own handlers and explicitly authored layout.",
         "The native overlay scope must cover the intended viewport. Hover/focus delays, grace periods, RTL placement, flipping, clamping, Escape ownership and retained updates are implemented.",
-        "macOS SwiftUI/AppKit renderer and live-host verification is recorded; iOS SDK, simulator/device and VoiceOver execution remain unavailable and unverified."
+        "macOS SwiftUI/AppKit, iOS simulator (iPhone and iPad on iOS 26.3, iPhone on iOS 18.6; docs/native-parity/ios-harness.md) and Android emulator renderers are verified against the Chrome oracles; their accessibility trees are compared with Chrome's on all three platforms by tools/ax (docs/native-parity/accessibility.md). Spoken VoiceOver/TalkBack output is not automated."
       ],
       "appearance": {
         "api": ".awcTooltipAppearance(AWCTooltipAppearance)",
@@ -3865,41 +4254,20 @@
     "md-search": {
       "status": "native-adapter",
       "properties": [
-        "value",
-        "placeholder",
-        "open",
-        "leadingIcon",
-        "showClearButton",
-        "loading",
-        "loadingLabel",
-        "noResultsLabel",
-        "disabled"
-      ],
-      "events": [
-        "mdInput",
-        "mdSearch",
-        "mdSubmit",
-        "mdChange",
-        "mdOpen",
-        "mdClose",
-        "mdClear",
-        "mdLeadingIconClick"
-      ],
-      "methods": [],
-      "slots": [
-        "trailing",
-        "results"
-      ],
-      "unsupportedProperties": [
         "variant",
         "layout",
         "trigger",
         "triggerIcon",
         "triggerFor",
-        "triggerElement",
         "fullWidth",
+        "value",
+        "placeholder",
+        "open",
+        "disabled",
         "elevation",
+        "leadingIcon",
         "openLeadingIcon",
+        "showClearButton",
         "voiceSearch",
         "escapeCloses",
         "dismissOnOutsideClick",
@@ -3909,15 +4277,26 @@
         "initialFocus",
         "announceResults",
         "resultsLabel",
+        "noResultsLabel",
+        "loading",
         "debounce",
         "throttle",
+        "loadingLabel",
         "density"
       ],
-      "unsupportedEvents": [
+      "events": [
+        "mdInput",
+        "mdSearch",
+        "mdSubmit",
+        "mdChange",
+        "mdOpen",
+        "mdClose",
+        "mdClear",
         "mdVoice",
+        "mdLeadingIconClick",
         "mdTrailingIconClick"
       ],
-      "unsupportedMethods": [
+      "methods": [
         "show",
         "close",
         "whenClosed",
@@ -3926,13 +4305,112 @@
         "startVoice",
         "stopVoice"
       ],
-      "unsupportedSlots": [
+      "slots": [
         "trigger",
         "leading",
-        "loader"
+        "loader",
+        "trailing",
+        "results"
       ],
+      "unsupportedProperties": [
+        "triggerElement"
+      ],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native search field. App must supply filtered result children; no implicit content filtering. Voice recognition and debounce are not implemented."
+        "Dedicated native search (SwiftUI on the md-text-field input, Compose BasicTextField): contained and divided variants, docked and full-screen layouts, bar and icon triggers, density 0…−4, elevation 0…5, the leading morph (search ↔ back), the clear ↔ loading morph, voice search, debounced / throttled / trimmed / distinct mdSearch, result-row arrow navigation, the polite results announcement, every event, the five slots, sixty hooks and typed parts.",
+        "The full-screen view is presented in the nearest AWCModalScope (the application's viewport): focus trap, Escape, inert content underneath. Without a scope it still covers the window from the search's own position.",
+        "Methods through AWCSearchController: show(), close(), toggle(), whenClosed (completion or async), focusInput(), startVoice(), stopVoice(). Voice uses the platform recognizer (SFSpeechRecognizer with the app's usage descriptions; Android SpeechRecognizer with RECORD_AUDIO).",
+        "triggerFor names an external trigger: the search then renders no trigger of its own and the application opens it through the open property or the controller (triggerElement, a DOM element reference, has no native counterpart).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153 (paint incl. ::part cases, per-frame motion, focus, events and timing)."
+      ],
+      "appearance": {
+        "api": ".awcSearchAppearance(AWCSearchAppearance)",
+        "fields": [
+          "containerColor",
+          "containerElevation",
+          "leadingIconColor",
+          "trailingIconColor",
+          "iconColor",
+          "loadingColor",
+          "containerShape",
+          "containerHeight",
+          "iconButtonSize",
+          "leadingIconLabelGap",
+          "trailingIconLabelGap",
+          "containerPaddingInline",
+          "containerPaddingInlineFocused",
+          "leadingPaddingInline",
+          "trailingPaddingInline",
+          "inputColor",
+          "inputFontFamily",
+          "inputFontSize",
+          "inputLineHeight",
+          "inputFontWeight",
+          "inputLetterSpacing",
+          "placeholderColor",
+          "stateLayerColor",
+          "focusIndicatorColor",
+          "focusIndicatorOffset",
+          "avatarSize",
+          "panelMinBlockSize",
+          "panelMaxBlockSize",
+          "maxBlockSize",
+          "dockedPanelShape",
+          "panelOffset",
+          "barFullscreenColor",
+          "fullscreenResultsColor",
+          "dividerColor",
+          "dividerThickness",
+          "fullscreenBarPanelGap",
+          "emptyColor",
+          "emptyPaddingBlock",
+          "emptyPaddingInline",
+          "expandInset",
+          "expandFocusedInset",
+          "expandDuration",
+          "expandEasing",
+          "panelMotionDuration",
+          "fullscreenExpandDuration",
+          "fullscreenExpandEasing",
+          "fullscreenCollapseEasing",
+          "dividedFullscreenBarHeight",
+          "containerMinInlineSize",
+          "containerMaxInlineSize",
+          "iconSize",
+          "focusIndicatorThickness",
+          "panelPaddingBlockStart",
+          "containedBackgroundColor",
+          "containedDockedPanelOffset",
+          "fullscreenBarOffsetBlockStart",
+          "fullscreenBarOffsetInline",
+          "fullscreenCollapseDuration",
+          "hoverStateLayerOpacity",
+          "pressedStateLayerOpacity"
+        ],
+        "parts": ".awcSearchPartAppearance(AWCSearchPartAppearance)"
+      },
+      "visualParts": [
+        "bar",
+        "state-layer",
+        "leading",
+        "leading-state-layer",
+        "input",
+        "trailing",
+        "clear-button",
+        "voice-button",
+        "trigger-button",
+        "divider",
+        "panel",
+        "empty",
+        "results-viewport",
+        "trigger",
+        "panel-body",
+        "results-host",
+        "loading",
+        "loading-shape",
+        "status"
       ]
     },
     "md-table-container": {
@@ -3959,7 +4437,8 @@
       "notes": [
         "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Variants, shapes, vibrant, elevation, max / min height (scrollport with sticky header and footer), top / bottom slots.",
         "Hooks through AWCTableContainerAppearance. As in the source, the shape class and the variant surface rules win over --md-table-container-shape / -color (no visible effect; decision log).",
-        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion).",
+        "Typed part appearances for the family's ::part() targets (AWCTablePart with the shared AWCPartStyle; .awcTablePartAppearance / AWCTablePartAppearanceScope) for every element of the tag or one node ID; part rules win over the hooks and state rules."
       ],
       "appearance": {
         "api": ".awcTableContainerAppearance(AWCTableContainerAppearance)",
@@ -3971,7 +4450,11 @@
           "outlineWidth"
         ]
       },
-      "visualParts": []
+      "visualParts": [
+        "top",
+        "scroll",
+        "bottom"
+      ]
     },
     "md-table": {
       "status": "native-adapter",
@@ -4037,7 +4520,8 @@
         "Methods through AWCTableController (.awcTableController(_, for: id) / AWCTableControllerScope): getSelection returns { count, total, values, all, indeterminate }; pinColumn returns the effective side or nil/null; setColumnVisibility returns the effective visibility. Sorting follows the source contract: mdSortChange, the application reorders its rows.",
         "Typed hooks through AWCTableAppearance (or the raw --md-table-* declarations with .awcTableHooks / AWCTableHooksScope); they inherit down the family like CSS custom properties.",
         "rowOffset / rowCount drive the row index semantics on Android (CollectionInfo / CollectionItemInfo); SwiftUI has no row-index accessibility API (AUDIT exception, decision log).",
-        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion).",
+        "Typed part appearances for the family's ::part() targets (AWCTablePart with the shared AWCPartStyle; .awcTablePartAppearance / AWCTablePartAppearanceScope) for every element of the tag or one node ID; part rules win over the hooks and state rules."
       ],
       "appearance": {
         "api": ".awcTableAppearance(AWCTableAppearance)",
@@ -4062,7 +4546,19 @@
           "emptyMinHeight"
         ]
       },
-      "visualParts": []
+      "visualParts": [
+        "caption",
+        "grid",
+        "header-grid",
+        "hscrollbar",
+        "hscrollbar-thumb",
+        "vscrollbar",
+        "vscrollbar-thumb",
+        "skeleton-row",
+        "loading",
+        "progress",
+        "empty"
+      ]
     },
     "md-table-head": {
       "status": "native-adapter",
@@ -4154,7 +4650,8 @@
       "notes": [
         "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Selection (checkbox cell), clickable rows, expansion with the expanded slot, highlight, disabled, and the three events.",
         "toggle() through AWCTableController.toggleRow(rowID). Hooks through AWCTableRowAppearance.",
-        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion).",
+        "Typed part appearances for the family's ::part() targets (AWCTablePart with the shared AWCPartStyle; .awcTablePartAppearance / AWCTablePartAppearanceScope) for every element of the tag or one node ID; part rules win over the hooks and state rules."
       ],
       "appearance": {
         "api": ".awcTableRowAppearance(AWCTableRowAppearance)",
@@ -4162,7 +4659,9 @@
           "hoverColor"
         ]
       },
-      "visualParts": []
+      "visualParts": [
+        "expanded"
+      ]
     },
     "md-table-cell": {
       "status": "native-adapter",
@@ -4193,7 +4692,8 @@
       "notes": [
         "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Alignment, numeric, padding variants, head / scope, sticky pinning with the pin indicator, colSpan, ellipsis, meta variant, density.",
         "rowSpan is reflected for assistive technology only and does not span rows, as in the source (decision log). Hooks through AWCTableCellAppearance.",
-        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion).",
+        "Typed part appearances for the family's ::part() targets (AWCTablePart with the shared AWCPartStyle; .awcTablePartAppearance / AWCTablePartAppearanceScope) for every element of the tag or one node ID; part rules win over the hooks and state rules."
       ],
       "appearance": {
         "api": ".awcTableCellAppearance(AWCTableCellAppearance)",
@@ -4210,7 +4710,10 @@
           "pinSize"
         ]
       },
-      "visualParts": []
+      "visualParts": [
+        "content",
+        "pin"
+      ]
     },
     "md-table-toolbar": {
       "status": "native-adapter",
@@ -4240,7 +4743,8 @@
       "notes": [
         "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Headline / supporting text (props and slots), leading / title-area / actions / selection-actions slots, the selection band with numSelected or autoBind to the container table.",
         "Hooks through AWCTableToolbarAppearance.",
-        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion).",
+        "Typed part appearances for the family's ::part() targets (AWCTablePart with the shared AWCPartStyle; .awcTablePartAppearance / AWCTablePartAppearanceScope) for every element of the tag or one node ID; part rules win over the hooks and state rules."
       ],
       "appearance": {
         "api": ".awcTableToolbarAppearance(AWCTableToolbarAppearance)",
@@ -4254,7 +4758,14 @@
           "minHeight"
         ]
       },
-      "visualParts": []
+      "visualParts": [
+        "main",
+        "leading",
+        "headline",
+        "supporting-text",
+        "selection-caption",
+        "actions"
+      ]
     },
     "md-table-sort-label": {
       "status": "native-adapter",
@@ -4285,7 +4796,8 @@
       "notes": [
         "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Sort label with direction arrow motion, hover / focus states and the sortedAscending / Descending announcements; inside a table it drives the table sort, alone it emits mdSortRequest.",
         "Hooks through AWCTableSortLabelAppearance.",
-        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion).",
+        "Typed part appearances for the family's ::part() targets (AWCTablePart with the shared AWCPartStyle; .awcTablePartAppearance / AWCTablePartAppearanceScope) for every element of the tag or one node ID; part rules win over the hooks and state rules."
       ],
       "appearance": {
         "api": ".awcTableSortLabelAppearance(AWCTableSortLabelAppearance)",
@@ -4297,7 +4809,10 @@
           "restOpacity"
         ]
       },
-      "visualParts": []
+      "visualParts": [
+        "icon",
+        "label"
+      ]
     },
     "md-table-pagination": {
       "status": "native-adapter",
@@ -4337,7 +4852,8 @@
       "notes": [
         "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Range text, rows-per-page select (including the All option), previous / next and first / last buttons, compact, disabled, density, the actions slot.",
         "goToPage / setRowsPerPage through AWCTablePaginationController. Hooks through AWCTablePaginationAppearance; --md-table-pagination-padding-inline has no effect in the source and none natively (decision log).",
-        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion).",
+        "Typed part appearances for the family's ::part() targets (AWCTablePart with the shared AWCPartStyle; .awcTablePartAppearance / AWCTablePartAppearanceScope) for every element of the tag or one node ID; part rules win over the hooks and state rules."
       ],
       "appearance": {
         "api": ".awcTablePaginationAppearance(AWCTablePaginationAppearance)",
@@ -4349,7 +4865,16 @@
           "selectWidth"
         ]
       },
-      "visualParts": []
+      "visualParts": [
+        "display",
+        "rpp",
+        "rpp-select",
+        "nav",
+        "first-button",
+        "prev-button",
+        "next-button",
+        "last-button"
+      ]
     },
     "md-table-expand-toggle": {
       "status": "native-adapter",
@@ -4388,38 +4913,82 @@
         "sourceSearchPlaceholder",
         "targetSearchPlaceholder",
         "showSelectAll",
-        "emptyText",
-        "singleStepOnly",
-        "moveRightLabel",
-        "moveLeftLabel",
-        "moveAllRightLabel",
-        "moveAllLeftLabel",
-        "disabled"
-      ],
-      "events": [
-        "mdChange",
-        "mdMove"
-      ],
-      "methods": [],
-      "slots": [],
-      "unsupportedProperties": [
         "searchIcon",
         "moveRightIcon",
         "moveLeftIcon",
         "moveAllRightIcon",
         "moveAllLeftIcon",
         "emptyIcon",
+        "emptyText",
         "countTemplate",
-        "density"
+        "density",
+        "disabled",
+        "singleStepOnly",
+        "moveRightLabel",
+        "moveLeftLabel",
+        "moveAllRightLabel",
+        "moveAllLeftLabel",
+        "selectAllLabel"
       ],
-      "unsupportedEvents": [],
-      "unsupportedMethods": [
+      "events": [
+        "mdChange",
+        "mdMove"
+      ],
+      "methods": [
         "moveSelectedRight",
         "moveSelectedLeft"
       ],
+      "slots": [],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native dual-list transfer supports disabled options, checked selection, select-all, per-side search and directional moves."
+        "Dedicated native transfer list: all 24 properties (items as an array or its JSON string, controlled value, titles, searchable with placeholders and icon, select-all with its label template, the four movers' icons and labels, the empty state's icon and text, the count template, density, disabled, single-step-only), both events (mdChange string[], mdMove {direction, moved, target}) and both methods (moveSelectedRight/moveSelectedLeft through AWCTransferListController), with the twenty --md-transfer-list-* hooks as a typed appearance API (item padding as the CSS padding shorthand's physical sides). The host attributes full-width/full-height are read as the fullWidth/fullHeight properties, as on md-card.",
+        "Layout is the source's CSS grid: 1fr auto 1fr with the gap, a minmax(0, 1fr) row that is the host's block size, searchable columns at the definite 360px cap (or the height hook; 100% with full-height) overflowing a shorter row, the others stretched up to the cap, the movers stretched to the row; the stacked layout at a viewport of 640 or less with rotated movers; RTL mirrors the movers. The count pill uses Roboto advances with the 0.4px letter spacing.",
+        "Interaction as in the source: a row click or Space/Enter toggles its check (checks per side in check order, dropped when a controlled value or items change takes the item away), select-all of the visible enabled rows, per-side search over label and description, movers on the visible enabled checked rows; a press focuses the row without the ring (Chrome's :focus-visible), keys show it; the row checkbox is inert (out of the focus order, presses go to the row); a disabled list keeps its scroll region focusable.",
+        "Motion: row backgrounds transition 100 ms ease in premultiplied Oklab (CSS colour interpolation), starting at the frame the change renders; the md-ripple wave paints under the row's checkbox; reduced motion removes the transition.",
+        "Typed ::part() targets (AWCTransferListPartAppearance, one AWCTransferListPartStyle per part): column and, per side, column-source / column-target (background, border colour, corner radius; a side's values over column's), header (background, the divider under it), header-title (background), count (background, text colour, corner radius), search (background of the field's padded box), list (background), item (background, which replaces the hover / checked / focus layers as a ::part() declaration does; corner radius of the row, its focus ring and ripple), empty (background, text and icon colour), empty-icon (colour, size, opacity), controls (background). Part values come from the outer tree, so they win over the hooks and every state rule. Verified against Chrome 153's ::part() cases (web-oracle/parts.json)."
+      ],
+      "appearance": {
+        "api": ".awcTransferListAppearance(AWCTransferListAppearance)",
+        "fields": [
+          "width",
+          "minWidth",
+          "maxWidth",
+          "height",
+          "minHeight",
+          "maxHeight",
+          "columnMinWidth",
+          "columnMaxBlock",
+          "containerShape",
+          "containerColor",
+          "headerColor",
+          "headerTextColor",
+          "itemInset",
+          "itemPadding",
+          "itemGap",
+          "dividerColor",
+          "controlsGap",
+          "emptyIconSize",
+          "controlSize",
+          "controlIconSize"
+        ],
+        "parts": ".awcTransferListPartAppearance(AWCTransferListPartAppearance)"
+      },
+      "visualParts": [
+        "column",
+        "column-source",
+        "column-target",
+        "header",
+        "header-title",
+        "count",
+        "search",
+        "list",
+        "item",
+        "empty",
+        "empty-icon",
+        "controls"
       ]
     },
     "md-organization-chart": {
@@ -4452,7 +5021,7 @@
         "Layout is the source's CSS model: centred flex tree in a scrolling viewport (RTL starts at the right edge), pseudo-element connectors with 12px elbows, the selection trail up to the root (also from folded-away selections), Roboto card text measured exactly, md-avatar (accent ring) and md-icon-button togglers in md-tooltip hung on the card edge; RTL mirrors both orientations.",
         "Interaction as in the source: roving tree-item tab stop (first root, then the last focused), WAI-ARIA tree keys (ArrowUp/Down, forward/backward with RTL swap in both orientations, Home/End, Enter/Space select or toggle), a press focuses the item and a click selects it, a toggler click folds and focuses its row; folding or new data hands focus to the visible owner.",
         "Motion: border, selection ring, hover elevation and state layer transition 300 ms emphasized (pseudo-class changes start at once, state changes a frame later like the source's async render); md-org-chart-grow on every inserted group and on keyframe changes; a 100 ms z-index hold; reduced motion removes them (md-ripple still runs).",
-        "::part() styling has no native equivalent yet: the parts are listed as unsupported visual parts (decision recorded in md-organization-chart-source-review.md)."
+        "Typed part appearances for the 14 ::part() targets (AWCOrgChartPart with the shared AWCPartStyle; .awcOrgChartPartAppearance / AWCOrgChartPartAppearanceScope): list boxes (viewport, tree, group, branch, branch-on-path) paint under the connectors and fade their subtree, cards (node, node-selected) take fill, radius, opacity and padding (the layout measures it), name / title their font and colour, the toggle host, the state layer and the avatar their own fields."
       ],
       "appearance": {
         "api": ".awcOrgChartAppearance(AWCOrgChartAppearance)",
@@ -4474,7 +5043,22 @@
           "duration"
         ]
       },
-      "visualParts": []
+      "visualParts": [
+        "viewport",
+        "tree",
+        "group",
+        "branch",
+        "branch-on-path",
+        "node",
+        "node-selected",
+        "state-layer",
+        "avatar",
+        "avatar-image",
+        "name",
+        "title",
+        "toggle",
+        "empty"
+      ]
     },
     "md-line-chart": {
       "status": "native-adapter",
@@ -4536,7 +5120,6 @@
         "resize",
         "replay",
         "toDataURL",
-        "getInstance",
         "setZoom",
         "resetZoom"
       ],
@@ -4556,7 +5139,8 @@
       "notes": [
         "Dedicated native chart (the ported md-chart engine drawn on a SwiftUI Canvas / Compose DrawScope): every property, the legend, tooltips, hover layer, keyboard cursor and its live announcement, drag and slider zoom, entrance / drill / follow motion, the header, footer, empty and loader slots, and every event.",
         "Formatter and renderer closures (valueFormatter, tooltipRenderer) go through AWCChartFormatters + .awcChartFormatters (SwiftUI) / ChartFormatters + LocalAWCChartFormatters (Compose), keyed by node id; hooks through AWCChartAppearance; methods through AWCChartController (toDataURL returns the canvas layer as a PNG data URL; getInstance has no native counterpart — it returns the Web engine object).",
-        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint scenes, hover / keyboard / pointer and state replays with events, entrance motion per frame, slots, RTL."
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint scenes, hover / keyboard / pointer and state replays with events, entrance motion per frame, slots, RTL.",
+        "Typed part appearances for the ::part() targets (AWCChartPart; the shared sparse vocabulary AWCPartStyle: colour, background, opacity, corner radius, padding, font size / weight, letter spacing; .awcChartPartAppearance / AWCChartPartAppearanceScope) for every chart of the subtree or one node ID; part rules win over the hooks, as outer ::part() rules do."
       ],
       "appearance": {
         "api": ".awcChartAppearance(AWCChartAppearance)",
@@ -4579,7 +5163,20 @@
           "zoomBandColor"
         ]
       },
-      "visualParts": []
+      "visualParts": [
+        "header",
+        "canvas",
+        "empty",
+        "loading",
+        "footer",
+        "zoom",
+        "zoom-slider",
+        "zoom-pan",
+        "zoom-band",
+        "zoom-track",
+        "zoom-window",
+        "zoom-handle"
+      ]
     },
     "md-area-chart": {
       "status": "native-adapter",
@@ -4639,7 +5236,6 @@
         "resize",
         "replay",
         "toDataURL",
-        "getInstance",
         "setZoom",
         "resetZoom"
       ],
@@ -4659,7 +5255,8 @@
       "notes": [
         "Dedicated native chart (the ported md-chart engine drawn on a SwiftUI Canvas / Compose DrawScope): every property, the legend, tooltips, hover layer, keyboard cursor and its live announcement, drag and slider zoom, entrance / drill / follow motion, the header, footer, empty and loader slots, and every event.",
         "Formatter and renderer closures (valueFormatter, tooltipRenderer) go through AWCChartFormatters + .awcChartFormatters (SwiftUI) / ChartFormatters + LocalAWCChartFormatters (Compose), keyed by node id; hooks through AWCChartAppearance; methods through AWCChartController (toDataURL returns the canvas layer as a PNG data URL; getInstance has no native counterpart — it returns the Web engine object).",
-        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint scenes, hover / keyboard / pointer and state replays with events, entrance motion per frame, slots, RTL."
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint scenes, hover / keyboard / pointer and state replays with events, entrance motion per frame, slots, RTL.",
+        "Typed part appearances for the ::part() targets (AWCChartPart; the shared sparse vocabulary AWCPartStyle: colour, background, opacity, corner radius, padding, font size / weight, letter spacing; .awcChartPartAppearance / AWCChartPartAppearanceScope) for every chart of the subtree or one node ID; part rules win over the hooks, as outer ::part() rules do."
       ],
       "appearance": {
         "api": ".awcChartAppearance(AWCChartAppearance)",
@@ -4682,7 +5279,20 @@
           "zoomBandColor"
         ]
       },
-      "visualParts": []
+      "visualParts": [
+        "header",
+        "canvas",
+        "empty",
+        "loading",
+        "footer",
+        "zoom",
+        "zoom-slider",
+        "zoom-pan",
+        "zoom-band",
+        "zoom-track",
+        "zoom-window",
+        "zoom-handle"
+      ]
     },
     "md-bar-chart": {
       "status": "native-adapter",
@@ -4739,7 +5349,6 @@
         "replay",
         "drill",
         "toDataURL",
-        "getInstance",
         "setZoom",
         "resetZoom"
       ],
@@ -4759,7 +5368,8 @@
       "notes": [
         "Dedicated native chart (the ported md-chart engine drawn on a SwiftUI Canvas / Compose DrawScope): every property, the legend, tooltips, hover layer, keyboard cursor and its live announcement, drag and slider zoom, entrance / drill / follow motion, the header, footer, empty and loader slots, and every event.",
         "Formatter and renderer closures (valueFormatter, tooltipRenderer) go through AWCChartFormatters + .awcChartFormatters (SwiftUI) / ChartFormatters + LocalAWCChartFormatters (Compose), keyed by node id; hooks through AWCChartAppearance; methods through AWCChartController (toDataURL returns the canvas layer as a PNG data URL; getInstance has no native counterpart — it returns the Web engine object).",
-        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint scenes, hover / keyboard / pointer and state replays with events, entrance motion per frame, slots, RTL."
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint scenes, hover / keyboard / pointer and state replays with events, entrance motion per frame, slots, RTL.",
+        "Typed part appearances for the ::part() targets (AWCChartPart; the shared sparse vocabulary AWCPartStyle: colour, background, opacity, corner radius, padding, font size / weight, letter spacing; .awcChartPartAppearance / AWCChartPartAppearanceScope) for every chart of the subtree or one node ID; part rules win over the hooks, as outer ::part() rules do."
       ],
       "appearance": {
         "api": ".awcChartAppearance(AWCChartAppearance)",
@@ -4782,7 +5392,20 @@
           "zoomBandColor"
         ]
       },
-      "visualParts": []
+      "visualParts": [
+        "header",
+        "canvas",
+        "empty",
+        "loading",
+        "footer",
+        "zoom",
+        "zoom-slider",
+        "zoom-pan",
+        "zoom-band",
+        "zoom-track",
+        "zoom-window",
+        "zoom-handle"
+      ]
     },
     "md-pie-chart": {
       "status": "native-adapter",
@@ -4831,8 +5454,7 @@
         "resize",
         "replay",
         "drill",
-        "toDataURL",
-        "getInstance"
+        "toDataURL"
       ],
       "slots": [
         "header",
@@ -4852,7 +5474,8 @@
         "Dedicated native chart (the ported md-chart engine drawn on a SwiftUI Canvas / Compose DrawScope): every property, the legend, tooltips, hover layer, keyboard cursor and its live announcement, drag and slider zoom, entrance / drill / follow motion, the header, footer, empty and loader slots, and every event.",
         "Formatter and renderer closures (valueFormatter, tooltipRenderer) go through AWCChartFormatters + .awcChartFormatters (SwiftUI) / ChartFormatters + LocalAWCChartFormatters (Compose), keyed by node id; hooks through AWCChartAppearance; methods through AWCChartController (toDataURL returns the canvas layer as a PNG data URL; getInstance has no native counterpart — it returns the Web engine object).",
         "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint scenes, hover / keyboard / pointer and state replays with events, entrance motion per frame, slots, RTL.",
-        "The center slot is centred on the ring centre and capped at the hole, as in the source."
+        "The center slot is centred on the ring centre and capped at the hole, as in the source.",
+        "Typed part appearances for the ::part() targets (AWCChartPart; the shared sparse vocabulary AWCPartStyle: colour, background, opacity, corner radius, padding, font size / weight, letter spacing; .awcChartPartAppearance / AWCChartPartAppearanceScope) for every chart of the subtree or one node ID; part rules win over the hooks, as outer ::part() rules do."
       ],
       "appearance": {
         "api": ".awcChartAppearance(AWCChartAppearance)",
@@ -4871,7 +5494,14 @@
           "centerColor"
         ]
       },
-      "visualParts": []
+      "visualParts": [
+        "header",
+        "canvas",
+        "center",
+        "empty",
+        "loading",
+        "footer"
+      ]
     },
     "md-sparkline": {
       "status": "native-adapter",
@@ -4900,8 +5530,7 @@
       ],
       "methods": [
         "refreshTheme",
-        "resize",
-        "getInstance"
+        "resize"
       ],
       "slots": [],
       "unsupportedProperties": [],
@@ -4913,7 +5542,8 @@
       "notes": [
         "Dedicated native chart (the ported md-chart engine drawn on a SwiftUI Canvas / Compose DrawScope): every property, the legend, tooltips, hover layer, keyboard cursor and its live announcement, drag and slider zoom, entrance / drill / follow motion, the header, footer, empty and loader slots, and every event.",
         "Formatter and renderer closures (valueFormatter, tooltipRenderer) go through AWCChartFormatters + .awcChartFormatters (SwiftUI) / ChartFormatters + LocalAWCChartFormatters (Compose), keyed by node id; hooks through AWCChartAppearance; methods through AWCChartController (toDataURL returns the canvas layer as a PNG data URL; getInstance has no native counterpart — it returns the Web engine object).",
-        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint scenes, hover / keyboard / pointer and state replays with events, entrance motion per frame, slots, RTL."
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint scenes, hover / keyboard / pointer and state replays with events, entrance motion per frame, slots, RTL.",
+        "Typed part appearances for the ::part() targets (AWCChartPart; the shared sparse vocabulary AWCPartStyle: colour, background, opacity, corner radius, padding, font size / weight, letter spacing; .awcChartPartAppearance / AWCChartPartAppearanceScope) for every chart of the subtree or one node ID; part rules win over the hooks, as outer ::part() rules do."
       ],
       "appearance": {
         "api": ".awcChartAppearance(AWCChartAppearance)",
@@ -4923,7 +5553,9 @@
           "minInlineSize"
         ]
       },
-      "visualParts": []
+      "visualParts": [
+        "canvas"
+      ]
     }
   }
 }

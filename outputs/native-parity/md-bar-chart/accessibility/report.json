@@ -1,6 +1,6 @@
 {
  "tag": "md-bar-chart",
- "at": "2026-10-30T02:47:33.091Z",
+ "at": "2026-11-05T01:32:18.148Z",
  "rows": [
   {
    "case": "default",
@@ -71,7 +71,7 @@
     "macos": {
      "status": "pass",
      "matched": 2,
-     "webElements": 36,
+     "webElements": 35,
      "nativeElements": 4,
      "elements": [
       "group:Monthly revenue, Bar chart, with 2 series, from Jan to Jun.",
@@ -84,7 +84,7 @@
      ],
      "announcements": [],
      "focus": [
-      "AXGroup:Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+      "group:Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
       "togglebutton:Revenue"
      ],
      "findings": [
@@ -135,16 +135,6 @@
         "name": ""
        },
        "detail": "caption \"\" has no macos counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "rowgroup",
-        "name": ""
-       },
-       "detail": "rowgroup \"\" has no macos counterpart",
        "status": "expected",
        "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
       },
@@ -456,7 +446,7 @@
       },
       {
        "kind": "focus",
-       "detail": "Tab order web [application:Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave. | togglebutton:Revenue] → macos [AXGroup:Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave. | togglebutton:Revenue]",
+       "detail": "Tab order web [application:Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave. | togglebutton:Revenue] → macos [group:Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave. | togglebutton:Revenue]",
        "status": "expected",
        "reason": "Same Tab order and names as the Web: the plot first, then the legend toggle buttons. Web role=\"application\" has no platform role: macOS exposes the plot as a labelled AXGroup (focus role reported raw) with increment / decrement and the chart descriptor, iOS as an adjustable element (slider) with the descriptor, Android as a focusable View with the step actions."
       }
@@ -464,9 +454,9 @@
      "contrastMeasured": 4
     },
     "ios": {
-     "status": "pass",
+     "status": "findings",
      "matched": 2,
-     "webElements": 29,
+     "webElements": 6,
      "nativeElements": 3,
      "elements": [
       "switch:Revenue {\"checked\":\"true\"}",
@@ -514,240 +504,10 @@
       {
        "kind": "missing",
        "web": {
-        "role": "table",
-        "name": "Monthly revenue"
-       },
-       "detail": "table \"Monthly revenue\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
         "role": "caption",
         "name": ""
        },
        "detail": "caption \"\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "rowgroup",
-        "name": ""
-       },
-       "detail": "rowgroup \"\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "columnheader",
-        "name": "X"
-       },
-       "detail": "columnheader \"X\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "columnheader",
-        "name": "Revenue"
-       },
-       "detail": "columnheader \"Revenue\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "columnheader",
-        "name": "Cost"
-       },
-       "detail": "columnheader \"Cost\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "rowheader",
-        "name": "Jan"
-       },
-       "detail": "rowheader \"Jan\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "12"
-       },
-       "detail": "cell \"12\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "8"
-       },
-       "detail": "cell \"8\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "rowheader",
-        "name": "Feb"
-       },
-       "detail": "rowheader \"Feb\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "18"
-       },
-       "detail": "cell \"18\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "11"
-       },
-       "detail": "cell \"11\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "rowheader",
-        "name": "Mar"
-       },
-       "detail": "rowheader \"Mar\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "15"
-       },
-       "detail": "cell \"15\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "10"
-       },
-       "detail": "cell \"10\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "rowheader",
-        "name": "Apr"
-       },
-       "detail": "rowheader \"Apr\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "22"
-       },
-       "detail": "cell \"22\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "14"
-       },
-       "detail": "cell \"14\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "rowheader",
-        "name": "May"
-       },
-       "detail": "rowheader \"May\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "28"
-       },
-       "detail": "cell \"28\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "16"
-       },
-       "detail": "cell \"16\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "rowheader",
-        "name": "Jun"
-       },
-       "detail": "rowheader \"Jun\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "26"
-       },
-       "detail": "cell \"26\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "18"
-       },
-       "detail": "cell \"18\" has no ios counterpart",
        "status": "expected",
        "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
       },
@@ -764,9 +524,8 @@
       },
       {
        "kind": "text-missing",
-       "detail": "text not exposed on ios: \"0 5 20 25\"",
-       "status": "expected",
-       "reason": "Axis tick labels are DOM text on the Web (overlay.ts) and canvas text natively; the values are read through the chart data (descriptor / step actions) and the cursor announcement."
+       "detail": "text not exposed on ios: \"0 5 20 25 X Jan 12 8 Feb 18 11 Mar 15 10 Apr 22 14 May 28 16 Jun 26\"",
+       "status": "open"
       },
       {
        "kind": "focus",
@@ -792,7 +551,7 @@
     "android": {
      "status": "pass",
      "matched": 2,
-     "webElements": 36,
+     "webElements": 15,
      "nativeElements": 2,
      "elements": [
       "togglebutton:Revenue {\"pressed\":\"true\"}",
@@ -805,7 +564,7 @@
      ],
      "announcements": [],
      "focus": [
-      "android.view.View:Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+      "group:Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
       "togglebutton:Revenue"
      ],
      "findings": [
@@ -842,40 +601,10 @@
       {
        "kind": "missing",
        "web": {
-        "role": "table",
-        "name": "Monthly revenue"
-       },
-       "detail": "table \"Monthly revenue\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
         "role": "caption",
         "name": ""
        },
        "detail": "caption \"\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "rowgroup",
-        "name": ""
-       },
-       "detail": "rowgroup \"\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "row",
-        "name": ""
-       },
-       "detail": "row \"\" has no android counterpart",
        "status": "expected",
        "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
       },
@@ -912,50 +641,10 @@
       {
        "kind": "missing",
        "web": {
-        "role": "row",
-        "name": ""
-       },
-       "detail": "row \"\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
         "role": "rowheader",
         "name": "Jan"
        },
        "detail": "rowheader \"Jan\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "12"
-       },
-       "detail": "cell \"12\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "8"
-       },
-       "detail": "cell \"8\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "row",
-        "name": ""
-       },
-       "detail": "row \"\" has no android counterpart",
        "status": "expected",
        "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
       },
@@ -972,70 +661,10 @@
       {
        "kind": "missing",
        "web": {
-        "role": "cell",
-        "name": "18"
-       },
-       "detail": "cell \"18\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "11"
-       },
-       "detail": "cell \"11\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "row",
-        "name": ""
-       },
-       "detail": "row \"\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
         "role": "rowheader",
         "name": "Mar"
        },
        "detail": "rowheader \"Mar\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "15"
-       },
-       "detail": "cell \"15\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "10"
-       },
-       "detail": "cell \"10\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "row",
-        "name": ""
-       },
-       "detail": "row \"\" has no android counterpart",
        "status": "expected",
        "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
       },
@@ -1052,70 +681,10 @@
       {
        "kind": "missing",
        "web": {
-        "role": "cell",
-        "name": "22"
-       },
-       "detail": "cell \"22\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "14"
-       },
-       "detail": "cell \"14\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "row",
-        "name": ""
-       },
-       "detail": "row \"\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
         "role": "rowheader",
         "name": "May"
        },
        "detail": "rowheader \"May\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "28"
-       },
-       "detail": "cell \"28\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "16"
-       },
-       "detail": "cell \"16\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "row",
-        "name": ""
-       },
-       "detail": "row \"\" has no android counterpart",
        "status": "expected",
        "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
       },
@@ -1130,28 +699,8 @@
        "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
       },
       {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "26"
-       },
-       "detail": "cell \"26\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "18"
-       },
-       "detail": "cell \"18\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
        "kind": "text-missing",
-       "detail": "text not exposed on android: \"0 5 20 25\"",
+       "detail": "text not exposed on android: \"0 5 20 25 12 8 18 11 15 10 22 14 28 16 26\"",
        "status": "expected",
        "reason": "Axis tick labels are DOM text on the Web (overlay.ts) and canvas text natively; the values are read through the chart data (descriptor / step actions) and the cursor announcement."
       },
@@ -1163,7 +712,7 @@
       },
       {
        "kind": "focus",
-       "detail": "Tab order web [application:Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave. | togglebutton:Revenue] → android [android.view.View:Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave. | togglebutton:Revenue]",
+       "detail": "Tab order web [application:Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave. | togglebutton:Revenue] → android [group:Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave. | togglebutton:Revenue]",
        "status": "expected",
        "reason": "Same Tab order and names as the Web: the plot first, then the legend toggle buttons. Web role=\"application\" has no platform role: macOS exposes the plot as a labelled AXGroup (focus role reported raw) with increment / decrement and the chart descriptor, iOS as an adjustable element (slider) with the descriptor, Android as a focusable View with the step actions."
       }
@@ -1192,12 +741,14 @@
        "class": "android.view.ViewGroup"
       },
       {
-       "type": "TYPE_WINDOW_CONTENT_CHANGED",
-       "via": "window",
-       "text": [],
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
        "contentDescription": "",
-       "changes": 1,
-       "class": "android.view.ViewGroup"
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
       },
       {
        "type": "TYPE_VIEW_FOCUSED",
@@ -1205,6 +756,14 @@
        "text": [],
        "contentDescription": "",
        "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
        "class": "android.view.ViewGroup"
       }
      ]
@@ -1275,7 +834,7 @@
     "macos": {
      "status": "pass",
      "matched": 2,
-     "webElements": 36,
+     "webElements": 35,
      "nativeElements": 4,
      "elements": [
       "group:Monthly revenue, Bar chart, with 2 series, from Jan to Jun.",
@@ -1288,7 +847,7 @@
      ],
      "announcements": [],
      "focus": [
-      "AXGroup:Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+      "group:Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
       "togglebutton:Revenue"
      ],
      "findings": [
@@ -1339,16 +898,6 @@
         "name": ""
        },
        "detail": "caption \"\" has no macos counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "rowgroup",
-        "name": ""
-       },
-       "detail": "rowgroup \"\" has no macos counterpart",
        "status": "expected",
        "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
       },
@@ -1660,7 +1209,7 @@
       },
       {
        "kind": "focus",
-       "detail": "Tab order web [application:Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave. | togglebutton:Revenue] → macos [AXGroup:Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave. | togglebutton:Revenue]",
+       "detail": "Tab order web [application:Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave. | togglebutton:Revenue] → macos [group:Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave. | togglebutton:Revenue]",
        "status": "expected",
        "reason": "Same Tab order and names as the Web: the plot first, then the legend toggle buttons. Web role=\"application\" has no platform role: macOS exposes the plot as a labelled AXGroup (focus role reported raw) with increment / decrement and the chart descriptor, iOS as an adjustable element (slider) with the descriptor, Android as a focusable View with the step actions."
       }
@@ -1668,9 +1217,9 @@
      "contrastMeasured": 4
     },
     "ios": {
-     "status": "pass",
+     "status": "findings",
      "matched": 2,
-     "webElements": 29,
+     "webElements": 6,
      "nativeElements": 3,
      "elements": [
       "switch:Revenue {\"checked\":\"true\"}",
@@ -1718,240 +1267,10 @@
       {
        "kind": "missing",
        "web": {
-        "role": "table",
-        "name": "Monthly revenue"
-       },
-       "detail": "table \"Monthly revenue\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
         "role": "caption",
         "name": ""
        },
        "detail": "caption \"\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "rowgroup",
-        "name": ""
-       },
-       "detail": "rowgroup \"\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "columnheader",
-        "name": "X"
-       },
-       "detail": "columnheader \"X\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "columnheader",
-        "name": "Revenue"
-       },
-       "detail": "columnheader \"Revenue\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "columnheader",
-        "name": "Cost"
-       },
-       "detail": "columnheader \"Cost\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "rowheader",
-        "name": "Jan"
-       },
-       "detail": "rowheader \"Jan\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "12"
-       },
-       "detail": "cell \"12\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "8"
-       },
-       "detail": "cell \"8\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "rowheader",
-        "name": "Feb"
-       },
-       "detail": "rowheader \"Feb\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "18"
-       },
-       "detail": "cell \"18\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "11"
-       },
-       "detail": "cell \"11\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "rowheader",
-        "name": "Mar"
-       },
-       "detail": "rowheader \"Mar\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "15"
-       },
-       "detail": "cell \"15\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "10"
-       },
-       "detail": "cell \"10\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "rowheader",
-        "name": "Apr"
-       },
-       "detail": "rowheader \"Apr\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "22"
-       },
-       "detail": "cell \"22\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "14"
-       },
-       "detail": "cell \"14\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "rowheader",
-        "name": "May"
-       },
-       "detail": "rowheader \"May\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "28"
-       },
-       "detail": "cell \"28\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "16"
-       },
-       "detail": "cell \"16\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "rowheader",
-        "name": "Jun"
-       },
-       "detail": "rowheader \"Jun\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "26"
-       },
-       "detail": "cell \"26\" has no ios counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "18"
-       },
-       "detail": "cell \"18\" has no ios counterpart",
        "status": "expected",
        "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
       },
@@ -1968,9 +1287,8 @@
       },
       {
        "kind": "text-missing",
-       "detail": "text not exposed on ios: \"0 5 20 25\"",
-       "status": "expected",
-       "reason": "Axis tick labels are DOM text on the Web (overlay.ts) and canvas text natively; the values are read through the chart data (descriptor / step actions) and the cursor announcement."
+       "detail": "text not exposed on ios: \"0 5 20 25 X Jan 12 8 Feb 18 11 Mar 15 10 Apr 22 14 May 28 16 Jun 26\"",
+       "status": "open"
       },
       {
        "kind": "focus",
@@ -1996,7 +1314,7 @@
     "android": {
      "status": "pass",
      "matched": 2,
-     "webElements": 36,
+     "webElements": 15,
      "nativeElements": 2,
      "elements": [
       "togglebutton:Revenue {\"pressed\":\"true\"}",
@@ -2009,7 +1327,7 @@
      ],
      "announcements": [],
      "focus": [
-      "android.view.View:Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+      "group:Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
       "togglebutton:Revenue"
      ],
      "findings": [
@@ -2046,40 +1364,10 @@
       {
        "kind": "missing",
        "web": {
-        "role": "table",
-        "name": "Monthly revenue"
-       },
-       "detail": "table \"Monthly revenue\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
         "role": "caption",
         "name": ""
        },
        "detail": "caption \"\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "rowgroup",
-        "name": ""
-       },
-       "detail": "rowgroup \"\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "row",
-        "name": ""
-       },
-       "detail": "row \"\" has no android counterpart",
        "status": "expected",
        "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
       },
@@ -2116,50 +1404,10 @@
       {
        "kind": "missing",
        "web": {
-        "role": "row",
-        "name": ""
-       },
-       "detail": "row \"\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
         "role": "rowheader",
         "name": "Jan"
        },
        "detail": "rowheader \"Jan\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "12"
-       },
-       "detail": "cell \"12\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "8"
-       },
-       "detail": "cell \"8\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "row",
-        "name": ""
-       },
-       "detail": "row \"\" has no android counterpart",
        "status": "expected",
        "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
       },
@@ -2176,70 +1424,10 @@
       {
        "kind": "missing",
        "web": {
-        "role": "cell",
-        "name": "18"
-       },
-       "detail": "cell \"18\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "11"
-       },
-       "detail": "cell \"11\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "row",
-        "name": ""
-       },
-       "detail": "row \"\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
         "role": "rowheader",
         "name": "Mar"
        },
        "detail": "rowheader \"Mar\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "15"
-       },
-       "detail": "cell \"15\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "10"
-       },
-       "detail": "cell \"10\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "row",
-        "name": ""
-       },
-       "detail": "row \"\" has no android counterpart",
        "status": "expected",
        "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
       },
@@ -2256,70 +1444,10 @@
       {
        "kind": "missing",
        "web": {
-        "role": "cell",
-        "name": "22"
-       },
-       "detail": "cell \"22\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "14"
-       },
-       "detail": "cell \"14\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "row",
-        "name": ""
-       },
-       "detail": "row \"\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
         "role": "rowheader",
         "name": "May"
        },
        "detail": "rowheader \"May\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "28"
-       },
-       "detail": "cell \"28\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "16"
-       },
-       "detail": "cell \"16\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "row",
-        "name": ""
-       },
-       "detail": "row \"\" has no android counterpart",
        "status": "expected",
        "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
       },
@@ -2334,28 +1462,8 @@
        "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
       },
       {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "26"
-       },
-       "detail": "cell \"26\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
-       "kind": "missing",
-       "web": {
-        "role": "cell",
-        "name": "18"
-       },
-       "detail": "cell \"18\" has no android counterpart",
-       "status": "expected",
-       "reason": "Web renders a visually hidden screen-reader table of the data (a11y.ts buildDataTable). Native equivalents carry the same rows: macOS / iOS attach an AXChartDescriptor to the plot (VoiceOver chart details and Audio Graph: categories, series, values; checked by NativeChartViewsSmoke); Android exposes TalkBack actions on the plot (Next / Previous / First / Last point or slice) that walk the same data with the live announcement (NativeChartViewsTest)."
-      },
-      {
        "kind": "text-missing",
-       "detail": "text not exposed on android: \"0 5 20 25\"",
+       "detail": "text not exposed on android: \"0 5 20 25 12 8 18 11 15 10 22 14 28 16 26\"",
        "status": "expected",
        "reason": "Axis tick labels are DOM text on the Web (overlay.ts) and canvas text natively; the values are read through the chart data (descriptor / step actions) and the cursor announcement."
       },
@@ -2367,7 +1475,7 @@
       },
       {
        "kind": "focus",
-       "detail": "Tab order web [application:Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave. | togglebutton:Revenue] → android [android.view.View:Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave. | togglebutton:Revenue]",
+       "detail": "Tab order web [application:Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave. | togglebutton:Revenue] → android [group:Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave. | togglebutton:Revenue]",
        "status": "expected",
        "reason": "Same Tab order and names as the Web: the plot first, then the legend toggle buttons. Web role=\"application\" has no platform role: macOS exposes the plot as a labelled AXGroup (focus role reported raw) with increment / decrement and the chart descriptor, iOS as an adjustable element (slider) with the descriptor, Android as a focusable View with the step actions."
       }
@@ -2396,12 +1504,14 @@
        "class": "android.view.ViewGroup"
       },
       {
-       "type": "TYPE_WINDOW_CONTENT_CHANGED",
-       "via": "window",
-       "text": [],
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
        "contentDescription": "",
-       "changes": 1,
-       "class": "android.view.ViewGroup"
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
       },
       {
        "type": "TYPE_VIEW_FOCUSED",
@@ -2409,6 +1519,14 @@
        "text": [],
        "contentDescription": "",
        "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
        "class": "android.view.ViewGroup"
       }
      ]

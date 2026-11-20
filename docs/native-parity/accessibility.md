@@ -106,12 +106,12 @@ named, and can be reverted by restoring those lines; `tools/ax` then reports the
    not report it for these roles, but macOS exposes `AXRequired` and all platforms expose the resulting invalid state
    (required and unchecked) as the source does. Recorded as an accepted difference against the Chrome tree.
 
-7. **macOS in-window modal surfaces are named groups.** md-dialog and md-bottom-sheet render inside the window (the
-   Laboratory and AWC apps present them in the app's own viewport). SwiftUI exposes such a surface as a group named by its
-   title; it offers no dialog subrole (`AXApplicationDialog`/`AXApplicationAlertDialog`), its `isModal` trait has no macOS
-   mapping, and a group cannot point its description at a child. The modal behavior is native — focus is trapped in the
-   surface, the content behind is hidden from accessibility, Escape and the scrim dismiss — and VoiceOver reads the title,
-   then the message. Recorded as accepted entries in `expectations.mjs`; revert by deleting them (the findings reopen).
+7. **macOS in-window modal surfaces report the dialog role (R4-03; the former waiver was rejected by gate-7 r4).** md-dialog, md-bottom-sheet and the modal
+   md-side-sheet render inside the window; SwiftUI exposes the surface as an AXGroup named by its title. The surface's
+   accessibility node now also reports Chrome's mapping — subrole `AXApplicationDialog` (`AXApplicationAlertDialog` for
+   the basic md-dialog), `AXModal` true and the matching role description — through the shared container-attribute
+   extension (`ContainerAccessibility.swift`), and md-dialog's `aria-describedby` message is its AXHelp. The former
+   expectations were removed; the modal behavior (focus trap, hidden background, Escape/scrim dismiss) is unchanged.
 8. **Android dialogs are panes.** Android has no alert-dialog role and no described-by relation: md-dialog is a pane titled
    by its headline (`paneTitle`), which TalkBack announces when it appears, and the message is the text read right after
    the title; focus moves into the dialog and is trapped as on Web. Accepted entries in `expectations.mjs` (revert by
@@ -172,9 +172,6 @@ Findings matching a reviewed entry in `tools/ax/expectations.mjs` are reported a
 - `md-divider` android (text-extra): Web role=separator. Android has no separator role: the divider is described "Separator", as on macOS and iOS.
 - `md-tooltip` android (description): Web: the tooltip describes its anchor (aria-describedby). Compose has no tooltip text on the anchor; the tooltip is a popup announced as a live region when shown.
 - `md-tooltip` android (extra): The Android tooltip popup is a polite live region (how Compose tooltips announce); Web exposes the tooltip text as the anchor description.
-- `/^md-(dialog|bottom-sheet)$/` macos (role): Decision 7: SwiftUI exposes an in-window modal surface as a named group; it offers no way to set the dialog subrole (AXApplicationDialog/AXApplicationAlertDialog) and `isModal` has no macOS mapping. Modality holds natively (focus trapped in the surface, content behind hidden from accessibility, Escape/scrim dismiss); VoiceOver reads the title, then the message.
-- `/^md-(dialog|bottom-sheet)$/` macos (state): Decision 7: no AXModal for SwiftUI in-window surfaces; the modal behavior itself (focus trap, hidden background) is native.
-- `md-dialog` macos (description): Decision 7: Web points the alert dialog's description at its message (aria-describedby); SwiftUI cannot reference a child as a group's description, so the message is the text read right after the title.
 - `md-dialog` android (role): Decision 8: Android has no alert-dialog role. The dialog is a pane titled by its headline (paneTitle), which TalkBack announces when it appears, as for a platform AlertDialog window.
 - `md-dialog` android (description): Decision 8: Android has no described-by relation; the message is the text TalkBack reads right after the pane title.
 
@@ -238,6 +235,8 @@ Remaining open findings after this run (each component's report lists them per c
   AXRow → AXCell; Android a named collection with heading header cells); iOS exposes no data-table structure — an
   exception pending acceptance in [md-table.md](md-table.md#exceptions). The pagination's rows-per-page md-select is the
   generic picker until the md-select renderer lands (fork n2): its role, name and tab stop stay open there.
+
+- **md-date-picker** (story 1-5, 2026-11-15): closed, open and docked have no open finding on any platform. Reviewed conventions: Android touch targets below 48 dp (day cells and icon buttons keep the source 40 px geometry, at least the WCAG 2.5.8 24 px minimum), no tooltip text / described-by on Android, the dialog role and modal state on macOS (as md-time-picker), the modal Tab order start (natives enter at the focused day), and the Web docked rows that Chrome leaves out intermittently. Details in [md-date-picker.md](md-date-picker.md).
 
 Everything else found by `tools/ax` in the earlier runs is fixed (F1–F30) or recorded as a reviewed platform convention
 (decisions 1–8, `expectations.mjs`); every other component has no open finding on any platform.

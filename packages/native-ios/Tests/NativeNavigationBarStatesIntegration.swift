@@ -26,7 +26,7 @@ struct NavigationBarStatesFixture: View {
         let ids = ["before"] + state.nodes.flatMap { [$0.id] + $0.children.flatMap { [$0.id, $0.id + "-ripple"] } }
         ZStack(alignment: .topLeading) {
             // AppKit orders the key-view loop geometrically: "before" sits above the bar, as #before precedes it.
-            AWCNativeView(node: AWCNode(id: "before", tag: "md-button", properties: ["variant": "text"], children: [.text("B")])).offset(x: 0, y: -10).opacity(0.01)
+            AWCNativeView(node: AWCNode(id: "before", tag: "md-button", properties: ["variant": "text"], children: [.text("B")])).offset(x: 0, y: -10).opacity(0.05)   // 5 %, not 1 %: the iPad focus engine does not keep focus on a view that faint (gate-7 R6-18, iPad)
             AWCNativeScope {
                 VStack(alignment: .leading, spacing: 0) {
                     ForEach(state.nodes) { n in AWCNativeView(node: n) { e in state.events.append((e.name, e.detail, e.nodeID)) } }
@@ -165,9 +165,17 @@ struct NavigationBarStatesFixture: View {
             let t0 = now()
             switch lbl {
             case "hover", "hover-soft": if let p = center(target) { state.pointer.update(phase: .move, location: p) }
+            #if os(iOS)
+            // iOS harness: the host pointer changes when UIKit delivers the touch (see AWCShimTouch.pointerDown); at queue time it
+            // led the touch by the delivery latency, so the press state layer started early, more so under load (gate-7 R6-16).
+            case "press": if let p = center(target) { AWCShimTouch.pointerDown({ state.pointer.update(phase: .down, location: p) }) { mouse(.leftMouseDown, p) } }
+            case "release": if let p = center(target) { AWCShimTouch.pointerUp({ state.pointer.update(phase: .up, location: p) }) { mouse(.leftMouseUp, p) } }
+            case "click-soft": if let p = center(target) { AWCShimTouch.pointerDown({ state.pointer.update(phase: .down, location: p) }) { mouse(.leftMouseDown, p) }; pump(0.016); AWCShimTouch.pointerUp({ state.pointer.update(phase: .up, location: p) }) { mouse(.leftMouseUp, p) } }
+            #else
             case "press": if let p = center(target) { state.pointer.update(phase: .down, location: p); mouse(.leftMouseDown, p) }
             case "release": if let p = center(target) { mouse(.leftMouseUp, p); state.pointer.update(phase: .up, location: p) }
             case "click-soft": if let p = center(target) { state.pointer.update(phase: .down, location: p); mouse(.leftMouseDown, p); pump(0.016); mouse(.leftMouseUp, p); state.pointer.update(phase: .up, location: p) }
+            #endif
             case "leave": state.pointer.update(phase: .leave)
             case "focus": state.pointer.update(phase: .leave); _ = focusView("before")?.requestNativeFocus(); key(48, "\t")
             case "arrow-forward": if state.rtl { key(123, "\u{F702}") } else { key(124, "\u{F703}") }

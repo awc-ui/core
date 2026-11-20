@@ -68,6 +68,112 @@ public extension View {
     func awcBreadcrumbsController(_ controller: AWCBreadcrumbsController) -> some View { environment(\.awcBreadcrumbsController, controller) }
 }
 
+// MARK: - Parts
+
+/// `::part()` styling of md-breadcrumb-item: separator (color, font-size), icon / label (color), link (color,
+/// `text-decoration: underline`), static (color, background-color, border width and colour) and state-layer
+/// (background-color, opacity). Part rules come from the outer tree, so they win over the hooks and every internal state rule:
+/// a link colour holds on hover, a static colour / background replaces the current-page and disabled ones, and a state-layer
+/// opacity shows in every state (links only: a static crumb has no state layer), as in Chrome. The underline is drawn in the
+/// link colour (the decorating box's `currentColor`) under the label and an icon-font glyph. Colours `#RRGGBB(AA)`, lengths in
+/// points; a border without a colour uses the crumb's colour.
+public struct AWCBreadcrumbItemPartAppearance: Equatable, Sendable {
+    public let separatorColor: String?, separatorFontSize: Double?, iconColor: String?, labelColor: String?
+    public let linkColor: String?, linkUnderline: Bool?, staticColor: String?, staticBackground: String?, staticBorderWidth: Double?, staticBorderColor: String?
+    public let stateLayerColor: String?, stateLayerOpacity: Double?
+    public init(separatorColor: String? = nil, separatorFontSize: Double? = nil, iconColor: String? = nil, labelColor: String? = nil,
+                linkColor: String? = nil, linkUnderline: Bool? = nil, staticColor: String? = nil, staticBackground: String? = nil,
+                staticBorderWidth: Double? = nil, staticBorderColor: String? = nil, stateLayerColor: String? = nil, stateLayerOpacity: Double? = nil) {
+        func len(_ v: Double?) -> Double? { v.flatMap { $0.isFinite && $0 >= 0 ? $0 : nil } }
+        self.separatorColor = awcSwitchColor(separatorColor); self.separatorFontSize = len(separatorFontSize).flatMap { $0 > 0 ? $0 : nil }
+        self.iconColor = awcSwitchColor(iconColor); self.labelColor = awcSwitchColor(labelColor)
+        self.linkColor = awcSwitchColor(linkColor); self.linkUnderline = linkUnderline
+        self.staticColor = awcSwitchColor(staticColor); self.staticBackground = awcSwitchColor(staticBackground)
+        self.staticBorderWidth = len(staticBorderWidth); self.staticBorderColor = awcSwitchColor(staticBorderColor)
+        self.stateLayerColor = awcSwitchColor(stateLayerColor); self.stateLayerOpacity = stateLayerOpacity.flatMap { $0.isFinite ? min(1, max(0, $0)) : nil }
+    }
+    /// Laboratory names (the fields above).
+    public init(values: [String: AWCValue]) {
+        func n(_ k: String) -> Double? { values[k]?.number }; func s(_ k: String) -> String? { values[k]?.string }
+        self.init(separatorColor: s("separatorColor"), separatorFontSize: n("separatorFontSize"), iconColor: s("iconColor"), labelColor: s("labelColor"),
+                  linkColor: s("linkColor"), linkUnderline: values["linkUnderline"]?.bool, staticColor: s("staticColor"), staticBackground: s("staticBackground"),
+                  staticBorderWidth: n("staticBorderWidth"), staticBorderColor: s("staticBorderColor"), stateLayerColor: s("stateLayerColor"), stateLayerOpacity: n("stateLayerOpacity"))
+    }
+    public func merging(_ o: Self) -> Self {
+        .init(separatorColor: o.separatorColor ?? separatorColor, separatorFontSize: o.separatorFontSize ?? separatorFontSize, iconColor: o.iconColor ?? iconColor,
+              labelColor: o.labelColor ?? labelColor, linkColor: o.linkColor ?? linkColor, linkUnderline: o.linkUnderline ?? linkUnderline,
+              staticColor: o.staticColor ?? staticColor, staticBackground: o.staticBackground ?? staticBackground, staticBorderWidth: o.staticBorderWidth ?? staticBorderWidth,
+              staticBorderColor: o.staticBorderColor ?? staticBorderColor, stateLayerColor: o.stateLayerColor ?? stateLayerColor, stateLayerOpacity: o.stateLayerOpacity ?? stateLayerOpacity)
+    }
+}
+/// `::part()` styling of md-breadcrumbs: list (background-color and the CSS padding shorthand, physical edges), separator (the
+/// overflow item's separator: color, font-size) and overflow-button (background-color in every state, replacing the hover /
+/// focus tint, and the colour of its dots) and overflow (the overflow item's box: background, border, radius and padding with the
+/// layout shift, `AWCPartBox`; gate-7 R6-17).
+public struct AWCBreadcrumbsPartAppearance: Equatable, Sendable {
+    public let listBackground: String?, listPadding: [Double]?, separatorColor: String?, separatorFontSize: Double?
+    public let overflowButtonBackground: String?, overflowButtonColor: String?
+    public let overflow: AWCPartBox?
+    public init(listBackground: String? = nil, listPadding: [Double]? = nil, separatorColor: String? = nil, separatorFontSize: Double? = nil,
+                overflowButtonBackground: String? = nil, overflowButtonColor: String? = nil, overflow: AWCPartBox? = nil) {
+        self.listBackground = awcSwitchColor(listBackground)
+        self.listPadding = listPadding.flatMap { p in (1...4).contains(p.count) && p.allSatisfy { $0.isFinite && $0 >= 0 } ? p : nil }
+        self.separatorColor = awcSwitchColor(separatorColor); self.separatorFontSize = separatorFontSize.flatMap { $0.isFinite && $0 > 0 ? $0 : nil }
+        self.overflowButtonBackground = awcSwitchColor(overflowButtonBackground); self.overflowButtonColor = awcSwitchColor(overflowButtonColor)
+        self.overflow = overflow
+    }
+    /// Laboratory names; `listPadding` as one number, a list of one to four numbers or {top, right, bottom, left}.
+    public init(values: [String: AWCValue]) {
+        self.init(listBackground: values["listBackground"]?.string, listPadding: AWCBreadcrumbsAppearance.padding(values["listPadding"]), separatorColor: values["separatorColor"]?.string,
+                  separatorFontSize: values["separatorFontSize"]?.number, overflowButtonBackground: values["overflowButtonBackground"]?.string, overflowButtonColor: values["overflowButtonColor"]?.string,
+                  overflow: AWCPartBox(value: values["overflow"]))
+    }
+    public func merging(_ o: Self) -> Self {
+        .init(listBackground: o.listBackground ?? listBackground, listPadding: o.listPadding ?? listPadding, separatorColor: o.separatorColor ?? separatorColor,
+              separatorFontSize: o.separatorFontSize ?? separatorFontSize, overflowButtonBackground: o.overflowButtonBackground ?? overflowButtonBackground,
+              overflowButtonColor: o.overflowButtonColor ?? overflowButtonColor, overflow: AWCPartBox.merge(overflow, o.overflow))
+    }
+    /// The list padding shorthand → physical (top, right, bottom, left).
+    var listInsets: (Double, Double, Double, Double) {
+        guard let p = listPadding else { return (0, 0, 0, 0) }
+        switch p.count { case 1: return (p[0], p[0], p[0], p[0]); case 2: return (p[0], p[1], p[0], p[1]); case 3: return (p[0], p[1], p[2], p[1]); default: return (p[0], p[1], p[2], p[3]) }
+    }
+}
+private struct AWCBreadcrumbItemPartAppearanceKey: EnvironmentKey { static let defaultValue = AWCBreadcrumbItemPartAppearance() }
+private struct AWCBreadcrumbItemPartAppearanceTargetsKey: EnvironmentKey { static let defaultValue: [String: AWCBreadcrumbItemPartAppearance] = [:] }
+private struct AWCBreadcrumbsPartAppearanceKey: EnvironmentKey { static let defaultValue = AWCBreadcrumbsPartAppearance() }
+private struct AWCBreadcrumbsPartAppearanceTargetsKey: EnvironmentKey { static let defaultValue: [String: AWCBreadcrumbsPartAppearance] = [:] }
+extension EnvironmentValues {
+    var awcBreadcrumbItemPartAppearance: AWCBreadcrumbItemPartAppearance { get { self[AWCBreadcrumbItemPartAppearanceKey.self] } set { self[AWCBreadcrumbItemPartAppearanceKey.self] = newValue } }
+    var awcBreadcrumbItemPartAppearanceTargets: [String: AWCBreadcrumbItemPartAppearance] { get { self[AWCBreadcrumbItemPartAppearanceTargetsKey.self] } set { self[AWCBreadcrumbItemPartAppearanceTargetsKey.self] = newValue } }
+    var awcBreadcrumbsPartAppearance: AWCBreadcrumbsPartAppearance { get { self[AWCBreadcrumbsPartAppearanceKey.self] } set { self[AWCBreadcrumbsPartAppearanceKey.self] = newValue } }
+    var awcBreadcrumbsPartAppearanceTargets: [String: AWCBreadcrumbsPartAppearance] { get { self[AWCBreadcrumbsPartAppearanceTargetsKey.self] } set { self[AWCBreadcrumbsPartAppearanceTargetsKey.self] = newValue } }
+}
+private struct AWCBreadcrumbItemPartAppearanceModifier: ViewModifier {
+    let value: AWCBreadcrumbItemPartAppearance, id: String?
+    @Environment(\.awcBreadcrumbItemPartAppearance) private var inherited
+    @Environment(\.awcBreadcrumbItemPartAppearanceTargets) private var targets
+    func body(content: Content) -> some View {
+        if let id { var t = targets; t[id] = (t[id] ?? .init()).merging(value); return AnyView(content.environment(\.awcBreadcrumbItemPartAppearanceTargets, t)) }
+        return AnyView(content.environment(\.awcBreadcrumbItemPartAppearance, inherited.merging(value)))
+    }
+}
+private struct AWCBreadcrumbsPartAppearanceModifier: ViewModifier {
+    let value: AWCBreadcrumbsPartAppearance, id: String?
+    @Environment(\.awcBreadcrumbsPartAppearance) private var inherited
+    @Environment(\.awcBreadcrumbsPartAppearanceTargets) private var targets
+    func body(content: Content) -> some View {
+        if let id { var t = targets; t[id] = (t[id] ?? .init()).merging(value); return AnyView(content.environment(\.awcBreadcrumbsPartAppearanceTargets, t)) }
+        return AnyView(content.environment(\.awcBreadcrumbsPartAppearance, inherited.merging(value)))
+    }
+}
+public extension View {
+    /// Applies md-breadcrumb-item `::part()` styling to descendant crumbs, or to the crumb with `id`.
+    func awcBreadcrumbItemPartAppearance(_ value: AWCBreadcrumbItemPartAppearance, for id: String? = nil) -> some View { modifier(AWCBreadcrumbItemPartAppearanceModifier(value: value, id: id)) }
+    /// Applies md-breadcrumbs `::part()` styling to descendant trails, or to the trail with `id`.
+    func awcBreadcrumbsPartAppearance(_ value: AWCBreadcrumbsPartAppearance, for id: String? = nil) -> some View { modifier(AWCBreadcrumbsPartAppearanceModifier(value: value, id: id)) }
+}
+
 /// md-breadcrumbs' methods: expand() and collapse() set the trail state and emit mdExpand (even with maxItems 0, as the source).
 @MainActor @Observable public final class AWCBreadcrumbsController {
     @ObservationIgnored var setExpanded: ((Bool) -> Void)?
@@ -214,6 +320,8 @@ struct AWCBreadcrumbPalette {
     var stateLayer: Color { a.stateLayerColor.map { Color(awcHex: $0) } ?? token("on-surface", "#1C1B1F") }
     var focusRing: Color { token("secondary", "#625B71") }
     var toggle: Color { token("on-surface-variant", "#49454F") }
+    /// The trail's text colour (`--md-breadcrumbs-text-color`): the `currentColor` of the overflow item.
+    var text: Color { a.textColor.map { Color(awcHex: $0) } ?? token("on-surface-variant", "#49454F") }
 }
 
 /// The overflow toggle's glyph: three 1.6-radius dots at x = 6, 12, 18 of a 24 viewBox, drawn in a 20 × 20 box.
@@ -231,8 +339,17 @@ struct AWCBreadcrumbDots: Shape {
 /// opacity 0 → 1 and an 8-point slide from the inline start, 500 ms cubic-bezier(0.38, 1.21, 0.22, 1), delayed by
 /// stagger × min(index, 11). Reduce Motion: instant transitions, no entrance, no nudge or press scale.
 final class AWCBreadcrumbMotion {
-    struct Track { var from: [Double]; var to: [Double]; var start: Double; var duration: Double; var curve: (Double, Double, Double, Double) }
+    struct Track {
+        var from: [Double]; var to: [Double]; var start: Double; var duration: Double; var curve: (Double, Double, Double, Double)
+        /// The transition this one replaces: it keeps running until this one starts (0 or 1 element).
+        var prior: [Track] = []
+    }
     private(set) var tracks: [String: Track] = [:]
+    /// One display frame (ms): a state change starts its CSS transition in the source's next frame — Chrome computes style once
+    /// per frame, after the input — from the value at that frame.
+    static let frame = 1000.0 / 60
+    /// Per key, the track before a change that has not reached its frame yet, and that frame's time.
+    private var pending: [String: (base: Track, start: Double)] = [:]
     private(set) var entranceStart: Double?
     private(set) var end = 0.0
     /// The surface kind (link / static) the tracks belong to; the source swaps the element, so a change starts no transition.
@@ -241,20 +358,31 @@ final class AWCBreadcrumbMotion {
     func swap(kind next: String) -> Bool { defer { kind = next }; return kind != nil && kind != next }
     static func now() -> Double { CACurrentMediaTime() * 1000 }
     static let standard = (0.34, 0.8, 0.34, 1.0), nudge = (0.42, 1.67, 0.21, 0.9)
-    func value(_ k: String, at t: Double) -> [Double] {
-        guard let tr = tracks[k] else { return [] }
+    func value(_ k: String, at t: Double) -> [Double] { tracks[k].map { Self.value($0, at: t) } ?? [] }
+    static func value(_ tr: Track, at t: Double) -> [Double] {
+        if t < tr.start { return tr.prior.first.map { value($0, at: t) } ?? tr.from }
         guard tr.duration > 0, t < tr.start + tr.duration else { return tr.to }
         let e = AWCNativeButtonTiming.cubic(max(0, (t - tr.start) / tr.duration), x1: tr.curve.0, y1: tr.curve.1, x2: tr.curve.2, y2: tr.curve.3)
         return zip(tr.from, tr.to).map { $0 + ($1 - $0) * e }
     }
     func scalar(_ k: String, at t: Double) -> Double { value(k, at: t).first ?? 0 }
     /// The first value applies without a transition (no prior style).
+    /// A change starts in the next frame (`frame`); changes before it coalesce, and a set-and-reset within it starts none.
     func set(_ k: String, _ target: [Double], duration: Double, curve: (Double, Double, Double, Double), now t: Double, snap: Bool = false) {
-        guard let tr = tracks[k], !snap else { tracks[k] = Track(from: target, to: target, start: t, duration: 0, curve: curve); return }
+        guard let tr = tracks[k], !snap else { tracks[k] = Track(from: target, to: target, start: t, duration: 0, curve: curve); pending[k] = nil; return }
+        if let p = pending[k], t < p.start {
+            guard p.base.to != target else { tracks[k] = p.base; pending[k] = nil; return }
+            guard tr.to != target else { return }
+            let from = Self.value(p.base, at: p.start)
+            tracks[k] = Track(from: from.count == target.count ? from : target, to: target, start: p.start, duration: duration, curve: curve, prior: [p.base])
+            end = max(end, p.start + duration); return
+        }
         guard tr.to != target else { return }
-        let from = value(k, at: t)
-        tracks[k] = Track(from: from.count == target.count ? from : target, to: target, start: t, duration: duration, curve: curve)
-        end = max(end, t + duration)
+        var base = tr; base.prior = []
+        let start = t + Self.frame, from = Self.value(base, at: start)
+        pending[k] = (base, start)
+        tracks[k] = Track(from: from.count == target.count ? from : target, to: target, start: start, duration: duration, curve: curve, prior: [base])
+        end = max(end, start + duration)
     }
     func startEntrance(now t: Double, enabled: Bool, delay: Double) {
         guard entranceStart == nil else { return }
@@ -325,11 +453,15 @@ struct AWCBreadcrumbItemView: View {
     let select: (AWCActivationMetadata.Source) -> Void
     let focusHandle: AWCButtonFocusHandle
     @Environment(\.awcNativePointerState) private var pointer
+    @Environment(\.awcBreadcrumbItemPartAppearance) private var partScope
+    @Environment(\.awcBreadcrumbItemPartAppearanceTargets) private var partTargets
     @State private var hover = false
     @State private var pressed = false
     @State private var frame: CGRect = .zero
     @State private var motion = AWCBreadcrumbMotion()
     @State private var animating = false
+    /// The crumb's `::part()` styling (descendant scope merged with its id target).
+    var parts: AWCBreadcrumbItemPartAppearance { partScope.merging(partTargets[item.id] ?? .init()) }
     var props: [String: AWCValue] { item.properties }
     var disabled: Bool { props["disabled"]?.bool == true }
     var href: String { props["href"]?.string ?? "" }
@@ -340,8 +472,12 @@ struct AWCBreadcrumbItemView: View {
     var padding: (Double, Double, Double, Double) { appearance.padding ?? (m.paddingBlock, m.paddingInline, m.paddingBlock, m.paddingInline) }
     var hovered: Bool { guard isLink else { return false }; return pointer.map { p in p.location.map { frame.contains($0) } ?? false } ?? hover }
     var isPressed: Bool { isLink && (pressed || (pointer?.isPointerDown == true && hovered)) }
-    var ink: Color { disabled ? palette.disabled : current ? palette.current : hovered ? palette.hover : palette.link }
-    var layerTarget: Double { guard isLink else { return 0 }; return focusHandle.isFocusVisible || isPressed ? 0.12 : hovered ? 0.08 : 0 }
+    /// ::part(link) / ::part(static) colour wins over the hover, current and disabled colours.
+    var ink: Color {
+        if let c = isLink ? parts.linkColor : parts.staticColor { return Color(awcHex: c) }
+        return disabled ? palette.disabled : current ? palette.current : hovered ? palette.hover : palette.link
+    }
+    var layerTarget: Double { guard isLink else { return 0 }; if let o = parts.stateLayerOpacity { return o }; return focusHandle.isFocusVisible || isPressed ? 0.12 : hovered ? 0.08 : 0 }
     var nudgeTarget: Double { isLink && hovered && !reduced ? (rtl ? -2 : 2) : 0 }
     var entranceDelay: Double { (appearance.stagger ?? 40) * Double(min(index, 11)) }
     var targets: [Double] { awcBreadcrumbComponents(ink) + [layerTarget, nudgeTarget] }
@@ -366,30 +502,39 @@ struct AWCBreadcrumbItemView: View {
         let fontSize = m.fontSize, lineHeight = m.lineHeight, ch = AWCNativeFonts.breadcrumbCh(size: fontSize, weight: weight)
         let inkNow = motion.value("ink", at: now), layer = motion.scalar("layer", at: now), nudge = motion.scalar("nudge", at: now)
         let inkColor = awcBreadcrumbColor(inkNow), (opacity, slide) = motion.entrance(at: now, delay: entranceDelay, rtl: rtl)
+        let ps = parts, sepSize = ps.separatorFontSize ?? m.separatorSize, sepColor = ps.separatorColor.map { Color(awcHex: $0) } ?? palette.separator
+        let iconInk = ps.iconColor.map { Color(awcHex: $0) }, labelInk = ps.labelColor.map { Color(awcHex: $0) }
+        let underline = isLink && ps.linkUnderline == true, border = isLink ? 0 : ps.staticBorderWidth ?? 0
+        let surfaceBackground = isLink ? Color.clear : ps.staticBackground.map { Color(awcHex: $0) } ?? (current ? palette.currentBackground : .clear)
+        let layerFill = ps.stateLayerColor.map { Color(awcHex: $0) } ?? palette.stateLayer
         HStack(spacing: appearance.gap ?? m.hostGap) {
             if index > 0 {
-                AWCBreadcrumbCapWidth(limit: .infinity, measured: AWCNativeFonts.breadcrumbTextWidth(rtl ? AWCNativeFonts.bidiMirrored(separator) : separator, size: m.separatorSize, weight: 500, tracking: 0.1)) {
-                    Text(separator).font(AWCNativeFonts.label(size: m.separatorSize, weight: 500)).tracking(0.1).foregroundStyle(palette.separator).opacity(0.7) }
-                    .frame(minHeight: lineHeight).accessibilityHidden(true)
-                    .awcInspect(nodeID: item.id, part: "separator", name: "separator") { _ in ["color": awcBreadcrumbRGBA(palette.separator), "fontSize": .number(m.separatorSize), "text": .string(separator)] }
+                AWCBreadcrumbCapWidth(limit: .infinity, measured: AWCNativeFonts.breadcrumbTextWidth(rtl ? AWCNativeFonts.bidiMirrored(separator) : separator, size: sepSize, weight: 500, tracking: 0.1)) {
+                    Text(separator).font(AWCNativeFonts.label(size: sepSize, weight: 500)).tracking(0.1).foregroundStyle(sepColor).opacity(0.7) }
+                    // The glyph sits in the crumb's line box (a ::part(separator) font-size larger than the line overflows it).
+                    .frame(minHeight: lineHeight, maxHeight: ps.separatorFontSize == nil ? .infinity : lineHeight).accessibilityHidden(true)
+                    .awcInspect(nodeID: item.id, part: "separator", name: "separator") { _ in ["color": awcBreadcrumbRGBA(sepColor), "fontSize": .number(sepSize), "text": .string(separator)] }
             }
             HStack(spacing: appearance.itemGap ?? m.iconGap) {
                 if hasIcon {
                     Group {
                         if let iconSlot { iconSlot } else {
-                            Text(icon).font(Font(AWCNativeFonts.breadcrumbSymbol(size: m.glyphSize, fill: current ? 1 : 0, weight: current ? 600 : 500))).tracking(0).fixedSize()
+                            Text(icon).font(Font(AWCNativeFonts.breadcrumbSymbol(size: m.glyphSize, fill: current ? 1 : 0, weight: current ? 600 : 500))).tracking(0)
+                                .underline(underline, color: inkColor).fixedSize()
                         }
                     }
-                    .foregroundStyle(inkColor).frame(width: AWCBreadcrumbMetrics.iconBox, height: AWCBreadcrumbMetrics.iconBox).accessibilityHidden(true)
-                    .awcInspect(nodeID: item.id, part: "icon", name: "icon") { _ in ["color": awcBreadcrumbRGBA(ink), "glyphSize": .number(m.glyphSize), "fill": .number(current ? 1 : 0)] }
+                    .foregroundStyle(iconInk ?? inkColor).frame(width: AWCBreadcrumbMetrics.iconBox, height: AWCBreadcrumbMetrics.iconBox).accessibilityHidden(true)
+                    .awcInspect(nodeID: item.id, part: "icon", name: "icon") { _ in ["color": awcBreadcrumbRGBA(iconInk ?? ink), "glyphSize": .number(m.glyphSize), "fill": .number(current ? 1 : 0)] }
                 }
-                AWCBreadcrumbCapWidth(limit: 32 * ch, measured: plainLabel ? AWCNativeFonts.breadcrumbTextWidth(labelText, size: fontSize, weight: weight, tracking: 0.1) : nil) { label.font(AWCNativeFonts.label(size: fontSize, weight: weight)).tracking(0.1).foregroundStyle(inkColor).lineLimit(1).truncationMode(.tail) }
+                AWCBreadcrumbCapWidth(limit: 32 * ch, measured: plainLabel ? AWCNativeFonts.breadcrumbTextWidth(labelText, size: fontSize, weight: weight, tracking: 0.1) : nil) { label.font(AWCNativeFonts.label(size: fontSize, weight: weight)).tracking(0.1).foregroundStyle(labelInk ?? inkColor).underline(underline, color: inkColor).lineLimit(1).truncationMode(.tail) }
                     .frame(minHeight: lineHeight)
-                    .awcInspect(nodeID: item.id, part: "label", name: "label") { _ in ["color": awcBreadcrumbRGBA(ink), "fontSize": .number(fontSize), "fontWeight": .number(weight), "maxWidth": .number(32 * ch)] }
+                    .awcInspect(nodeID: item.id, part: "label", name: "label") { _ in ["color": awcBreadcrumbRGBA(labelInk ?? ink), "fontSize": .number(fontSize), "fontWeight": .number(weight), "maxWidth": .number(32 * ch), "underline": .bool(underline)] }
             }
             .padding(.top, padding.0).padding(.trailing, rtl ? padding.3 : padding.1).padding(.bottom, padding.2).padding(.leading, rtl ? padding.1 : padding.3)
-            .background { Capsule().fill(current ? palette.currentBackground : .clear) }
-            .background { if isLink { Capsule().fill(palette.stateLayer).opacity(layer) } }
+            .padding(border)   // ::part(static) border: outside the padding, inside the pill
+            .background { Capsule().fill(surfaceBackground) }
+            .background { if isLink { Capsule().fill(layerFill).opacity(layer) } }
+            .overlay { if border > 0 { Capsule().strokeBorder(ps.staticBorderColor.map { Color(awcHex: $0) } ?? inkColor, lineWidth: border) } }
             .awcRipple(disabled: !isLink, cornerRadius: 9999, contentColor: ink)
             .overlay { if isLink && focusHandle.isFocusVisible { Capsule().inset(by: -3.5).stroke(palette.focusRing, lineWidth: 3) } }
             .contentShape(Capsule())
@@ -405,7 +550,11 @@ struct AWCBreadcrumbItemView: View {
                 pressed = false; if isLink && inside { select(.pointer) } })
             .modifier(AWCBreadcrumbAccessibility(isLink: isLink, label: labelText, configuration: focusConfiguration))
             .awcInspect(nodeID: item.id, part: "surface", name: "surface") { _ in
-                ["kind": .string(isLink ? "link" : "static"), "color": awcBreadcrumbRGBA(ink), "background": awcBreadcrumbRGBA(current ? palette.currentBackground : .clear),
+                ["kind": .string(isLink ? "link" : "static"), "color": awcBreadcrumbRGBA(ink), "background": awcBreadcrumbRGBA(surfaceBackground),
+                 // Laboratory inspection schema: `border` is four-edge; the width stays under `borderWidth`.
+                 "border": .array(Array(repeating: .number(border), count: 4)), "borderWidth": .number(border),
+                 "borderColor": awcBreadcrumbRGBA(border > 0 ? ps.staticBorderColor.map { Color(awcHex: $0) } ?? ink : .clear), "underline": .bool(underline),
+                 "layerColor": awcBreadcrumbRGBA(layerFill),
                  "padding": .array([.number(padding.0), .number(padding.1), .number(padding.2), .number(padding.3)]), "layerOpacity": .number(layerTarget),
                  "focusRing": .bool(isLink && focusHandle.isFocusVisible), "hover": .bool(hovered), "pressed": .bool(isPressed), "current": .bool(current), "tabStop": .bool(isLink),
                  "inkNow": .array(inkNow.map { .number($0) }), "layerNow": .number(layer), "nudgeNow": .number(nudge), "renderTime": .number(now),
@@ -427,6 +576,8 @@ struct AWCBreadcrumbToggleView: View {
     let nodeID: String, separator: String?, m: AWCBreadcrumbMetrics, palette: AWCBreadcrumbPalette, expandLabel: String, reduced: Bool
     /// Activation; true from the keyboard (the revealed crumb then shows the focus ring).
     let handle: AWCButtonFocusHandle, activate: (Bool) -> Void
+    /// The trail's ::part(separator) / ::part(overflow-button) styling.
+    var parts = AWCBreadcrumbsPartAppearance()
     @Environment(\.awcNativePointerState) private var pointer
     @State private var hover = false
     @State private var pressed = false
@@ -449,15 +600,19 @@ struct AWCBreadcrumbToggleView: View {
         let layer = motion.scalar("layer", at: now), scale = motion.scalar("scale", at: now)
         let configuration = AWCNativeFocusConfiguration(id: nodeID + "-overflow", label: expandLabel, policy: AWCButtonAccessibilityPolicy(properties: [:]), group: nil, cell: nil,
                                                         handle: handle, focusChanged: { _ in }, activate: { activate(true) }, disclosureExpanded: false)
+        let sepSize = parts.separatorFontSize ?? m.separatorSize, sepColor = parts.separatorColor.map { Color(awcHex: $0) } ?? palette.separator
+        let dots = parts.overflowButtonColor.map { Color(awcHex: $0) } ?? palette.toggle
+        // ::part(overflow-button) background-color replaces the hover / focus tint in every state.
+        let fill = parts.overflowButtonBackground.map { Color(awcHex: $0) } ?? palette.toggle.opacity(layer)
         HStack(spacing: m.toggleGap) {
             if let separator {
-                AWCBreadcrumbCapWidth(limit: .infinity, measured: AWCNativeFonts.breadcrumbTextWidth(toggleDirection == .rightToLeft ? AWCNativeFonts.bidiMirrored(separator) : separator, size: m.separatorSize, weight: 400, tracking: 0)) {
-                    Text(separator).font(AWCNativeFonts.label(size: m.separatorSize, weight: 400)).foregroundStyle(palette.separator) }.accessibilityHidden(true)
-                    .awcInspect(nodeID: nodeID, part: "overflow-separator", name: "separator") { _ in ["color": awcBreadcrumbRGBA(palette.separator), "fontSize": .number(m.separatorSize)] }
+                AWCBreadcrumbCapWidth(limit: .infinity, measured: AWCNativeFonts.breadcrumbTextWidth(toggleDirection == .rightToLeft ? AWCNativeFonts.bidiMirrored(separator) : separator, size: sepSize, weight: 400, tracking: 0)) {
+                    Text(separator).font(AWCNativeFonts.label(size: sepSize, weight: 400)).foregroundStyle(sepColor) }.accessibilityHidden(true)
+                    .awcInspect(nodeID: nodeID, part: "overflow-separator", name: "separator") { _ in ["color": awcBreadcrumbRGBA(sepColor), "fontSize": .number(sepSize)] }
             }
-            AWCBreadcrumbDots().fill(palette.toggle).frame(width: 20, height: 20)
+            AWCBreadcrumbDots().fill(dots).frame(width: 20, height: 20)
                 .frame(width: AWCBreadcrumbMetrics.toggleSize, height: AWCBreadcrumbMetrics.toggleSize)
-                .background(Circle().fill(palette.toggle.opacity(layer)))
+                .background(Circle().fill(fill))
                 .overlay { if focused { Circle().inset(by: -3.5).stroke(palette.focusRing, lineWidth: 3) } }
                 .contentShape(Circle())
                 .scaleEffect(scale)
@@ -468,11 +623,14 @@ struct AWCBreadcrumbToggleView: View {
                     pressed = false; if abs(v.translation.width) < 8 && abs(v.translation.height) < 8 { activate(false) } })
                 .awcFocusBridgeLayer { AWCNativeButtonFocusBridge(configuration: configuration) }
                 .awcInspect(nodeID: nodeID, part: "overflow-button", name: "overflow-button") { _ in
-                    ["color": awcBreadcrumbRGBA(palette.toggle), "layerOpacity": .number(layerTarget), "focusRing": .bool(focused), "scale": .number(scaleTarget),
+                    ["color": awcBreadcrumbRGBA(dots), "background": awcBreadcrumbRGBA(parts.overflowButtonBackground.map { Color(awcHex: $0) } ?? palette.toggle.opacity(layerTarget)), "layerOpacity": .number(layerTarget), "focusRing": .bool(focused), "scale": .number(scaleTarget),
                      "layerNow": .number(layer), "scaleNow": .number(scale), "hover": .bool(hovered), "pressed": .bool(isPressed), "label": .string(expandLabel), "renderTime": .number(now)]
                 }
         }
-        .awcInspect(nodeID: nodeID, part: "overflow", name: "overflow") { _ in ["gap": .object(["row": 0, "column": .number(m.toggleGap)]), "toggleGap": .number(m.toggleGap)] }
+        // ::part(overflow) box (gate-7 R6-17): border + padding around the separator and the toggle; the list row grows with it.
+        .awcPartBox(parts.overflow, ink: palette.text)
+        .awcInspect(nodeID: nodeID, part: "overflow", name: "overflow") { _ in
+            (parts.overflow?.metrics(ink: palette.text) ?? [:]).merging(["gap": .object(["row": 0, "column": .number(m.toggleGap)]), "toggleGap": .number(m.toggleGap)]) { _, b in b } }
     }
 }
 
@@ -589,6 +747,8 @@ struct AWCNativeBreadcrumbs: View {
     @Environment(\.layoutDirection) private var direction
     @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
     @Environment(\.awcBreadcrumbsReducedMotion) private var reducedOverride
+    @Environment(\.awcBreadcrumbsPartAppearance) private var partScope
+    @Environment(\.awcBreadcrumbsPartAppearanceTargets) private var partTargets
     var reduced: Bool { reducedOverride ?? systemReduceMotion }
     @Environment(\.awcThemeTokens) private var tokens
     @State private var runtime = AWCBreadcrumbsRuntime()
@@ -600,6 +760,7 @@ struct AWCNativeBreadcrumbs: View {
         let m = AWCBreadcrumbMetrics(d: density, rungs: trailRungs), rtl = direction == .rightToLeft
         let palette = AWCBreadcrumbPalette(tokens: tokens.isEmpty ? theme.tokens : tokens, a: appearance)
         let separator = properties["separator"]?.string ?? "/", label = properties["label"]?.string ?? "Breadcrumb"
+        let parts = partScope.merging(partTargets[node.id] ?? .init()), list = parts.listInsets
         // SwiftUI mirrors custom layouts in right-to-left environments: the flow places in reading order.
         AWCBreadcrumbsFlow(gap: appearance.gap ?? m.listGap, rtl: false) {
             // Identity follows the crumb (revealed crumbs mount and replay the entrance; the others keep their state).
@@ -607,18 +768,22 @@ struct AWCNativeBreadcrumbs: View {
                 if key == AWCNativeBreadcrumbs.toggleKey {
                     AWCBreadcrumbToggleView(nodeID: node.id, separator: model.before > 0 ? separator : nil, m: m, palette: palette,
                                             expandLabel: properties["expandLabel"]?.string ?? "Show full breadcrumb trail", reduced: reduced,
-                                            handle: runtime.toggleHandle, activate: { expandFromToggle(model, keyboard: $0) })
+                                            handle: runtime.toggleHandle, activate: { expandFromToggle(model, keyboard: $0) }, parts: parts)
                 } else if let i = model.items.firstIndex(where: { $0.id == key }), model.items[i].properties["hidden"]?.bool != true {
                     crumb(model.items[i], index: i, model: model, palette: palette, separator: separator, rtl: rtl)
                 }
             }
         }
+        // ::part(list): the CSS padding shorthand is physical (left stays left in RTL), the background fills the padded list.
+        .padding(.top, list.0).padding(.bottom, list.2).padding(.leading, rtl ? list.1 : list.3).padding(.trailing, rtl ? list.3 : list.1)
+        .background { if let c = parts.listBackground { Color(awcHex: c).awcInspect(nodeID: node.id, part: "list", name: "list") { _ in ["background": awcBreadcrumbRGBA(Color(awcHex: c))] } } }
         .frame(maxWidth: .infinity, alignment: rtl ? .trailing : .leading)
         .modifier(AWCBreadcrumbsLandmark(label: label, enabled: !model.standalone, id: node.id))
         .onAppear { bind(model) }
         .onChange(of: model.count) { _, _ in bind(model) }
         .awcInspect(nodeID: node.id, name: "md-breadcrumbs") { _ in
             ["itemCount": .number(Double(model.count)), "expanded": .bool(expanded), "collapsing": .bool(model.collapsing), "listGap": .number(appearance.gap ?? m.listGap),
+             "listPadding": .array([.number(list.0), .number(list.1), .number(list.2), .number(list.3)]),
              "density": .number(density), "label": .string(label)]
         }
     }
@@ -631,7 +796,10 @@ struct AWCNativeBreadcrumbs: View {
         AWCBreadcrumbItemView(item: item, trailID: node.id, index: index, total: model.count, current: current, separator: separator,
                               density: itemDensity(item), rungs: [item.properties["density"]?.number].compactMap { $0 } + trailRungs, palette: palette, appearance: appearance, rtl: rtl, reduced: reduced,
                               entrance: true,
-                              label: AnyView(HStack(spacing: 0) { ForEach(content) { renderChild($0) } }), labelText: text,
+                              label: AnyView(HStack(spacing: 0) { ForEach(content) { c in
+                                  // Slotted text paints in the crumb's ink (gate-7 R6-21): a text node rendered as its own view would set
+                                  // the on-surface foreground over the link / hook / disabled / current colours.
+                                  if c.tag == "#text" { Text(c.properties["text"]?.string ?? "") } else { renderChild(c) } } }), labelText: text,
                               iconSlot: icons.isEmpty ? nil : AnyView(ForEach(icons) { renderChild($0) }),
                               plainLabel: content.count == 1 && content[0].tag == "#text",
                               select: { source in select(item, index, model.count, current, source) }, focusHandle: runtime.handle(item.id))

@@ -1,56 +1,40 @@
-# md-icon-button — gate-7 independent audit
+# md-icon-button — gate-7 independent audit (re-check 3)
 
-Reviewer: gate-7 reviewer r1, 2026-10-31 ([protocol](../../../../audit/AUDIT-PROTOCOL.md)). Everything below was re-run by r1 on the
-snapshot `work/audit/r1-tree` (canonical tree at 2026-10-31 00:15 UTC after 42 install jobs, latest `fx-072-install-orgchart-apk`; hash
-manifest `work/audit/r1/snap/manifest.sha256`), except the Laboratory probes, which use the running 4177 server (canonical). Job logs:
-`work/claude-runner/done/r1-*.log`; outputs: `work/audit/r1/runs/`; gate-1 matrices: `work/audit/r1/matrix/`; defects:
-[`work/audit/DEFECTS.md`](../../../../audit/DEFECTS.md) (section r1). Mac load average during the runs: 110–940 on 16 cores.
-None of these components has a `checkpoint.json`, so freshness rests on these re-runs (R1-10).
+Reviewer: gate-7 reviewer s7-7 (story 7-7), re-check of 2026-11-15, after the round-3/4 fixes R1-12, R1-13, R1-14, R1-16 and the doc/evidence items R1-09, R1-10
+(installed by main-queue fx-128-install-tick-nil, 2026-11-14). Everything below was re-run by s7-7 on a fresh snapshot `work/audit/s7-7-tree`
+(taken 2026-11-15 11:35 Mac time; latest install fx-128; manifest `work/audit/s7-7/snap/`). Outputs `work/audit/s7-7/` (swift/, ios/, android/, lab/, web/, ax/, examples/, gate1/).
+Jobs: s7-7-001-snapshot, -002-sim, -003-swift, -004-ios, -005-lab-web, -006-ax-mac-ios, -007-gate1, -008-ios18-rerun, a1: s7-7-A001-android, -A003-examples-kotlin, -A004-ax-android.
+Simulators AWC-fi2 (iPhone 17 Pro, iOS 26.3.1) and AWC-fi2-ios18 (iPhone 16 Pro, iOS 18.6); Android emulator-5556. Timing runs through `tools/slot.sh timing 4`.
+Host load: the iOS job started at load average 122 (it fell to 12-19 later), so the runs are, if anything, harsher than the fix jobs'.
 
-## Verdict: FAIL
+## Re-run counts (claimed -> re-run)
+| Suite | Claimed (DEFECTS / checkpoint) | s7-7 re-run |
+|---|---|---|
+| Family paint (Chrome 153 oracles) macOS / iOS 26.3 / Android | 974 | 974/974 / 974/974 / 974/974 |
+| Family states macOS | 27819 (fx-127), 29358 canonical (fx-128, other suites included) | 29186/29186 |
+| Family states Android | 18241 (fx-A084) | 18241/18241; device classes 133/133; unit 195/195 |
+| Family states iOS 26.3 x3 | 26346, 26387, 26279 | 26018, 26659, 26522: all pass (one accepted BRACKET match each, R1-14) |
+| Family states iOS 18.6 x5 | 27276, 27660, 27192 | 27073/27074 (1 FAIL), 27519, 27769, 27876, 26730: all other runs pass |
+| md-button paint / states (shared fixtures) | 1086 / 645 | 1086/1086 macOS and iOS; 646/646 iOS 26.3; Android 712 / 645 |
+| Laboratory 4177 probes (iOS and Android, 9 tags) | retained updates, clicks, methods | all 200; setMenuIcon, show/whenClosed/close fulfilled; split 232.5 |
+| Studio / compiler / Web spec / Web e2e | | 878/878, 12/12, 612/612, all 9 tags pass |
+| Examples (copied Swift / Kotlin) | | Swift typecheck 13/13 files exit 0; Kotlin compile 13 files, 364 cases, BUILD ok |
+| tools/ax macOS+Web+iOS+Android | 0 open | 0 open findings on every tag; reports identical to the installed ones |
+| Checkpoints (R1-10) | regenerated | all six checkpoint.json current against the snapshot (0 differing files) |
 
-Blocking: **R1-03d** (no Web/Chrome fixture at all — every visual expectation is transcribed from the source; no state/motion comparison),
-**R1-04** (no retained Laboratory property updates), **R1-07** (`selectedIcon` untested on Android). Non-blocking: R1-09, R1-10.
-
-## Gate 1 — source contract
-
-`md-icon-button.tsx`/`.css`: 19 properties, `mdClick {selected}`, 0 methods, default + `selected` slots, 3 parts (`state-layer`, `icon`,
-`selected-icon`), 9 hooks = 34 rows ([matrix](../../../../audit/r1/matrix/md-icon-button.md)). All rows have SwiftUI and Compose
-implementations and Laboratory exposure (catalog; 9 fields in `icon-button-appearance.js`). Test gap: `selectedIcon` is implemented on
-Android (NativeIconButton.kt:293-319) but no Android test sets it (Swift: NativeIconButtonViewIntegration.swift:115-119) — R1-07.
-
-## Re-run counts (claimed → r1)
-
-| Suite | Claimed | r1 macOS | r1 iOS 26.3 | r1 Android |
-|---|---|---|---|---|
-| `NativeIconButtonViewIntegration` | 284 (iOS 284×3; doc text 268) | **284/284** | **284/284** | — |
-| ButtonMain (icon-button contracts inside) | 1073 | **1073/1073** | **1073/1073** | — |
-| Live host `test-live-icon-button` | pass | **pass** | — | — |
-| Android device | 12 | — | — | `NativeIconButtonParityTest` **12/12** + `LivePreviewHostTest#iconButtonHost…` **1/1** |
-| Android unit | — | — | — | `NativeIconButtonContractTest` **6/6** |
-| Web | 58 Jest; e2e — | e2e **4/4** (r1-009) | | |
-
-## Gates 2/5 — against Chrome (R1-03d)
-
-`outputs/native-parity/md-icon-button` holds Laboratory screenshots and `browser-verification.json` (a 96×96 / 80×56 box check), but no
-Web geometry, paint or state fixture is shared with the native tests: the Swift suite asserts sizes from the source formulas and colours as
-"pixels of the source theme role > 500", the Android suite likewise, light theme only. There is no Chrome comparison of the four variants ×
-selected × toggle states, dark theme, RTL, hover/focus/pressed layers, shape morph, ripple or reduced motion.
-
-## Gate 3 — Laboratory
-
-r1-003: a click returns one `mdClick {selected:true}` on SwiftUI and Android; r1-010: outlined/lg through a new session changes the frame
-and the inspected border (0 → 1) on both. Retained `update` refused (R1-04). Examples: r1 generic 9 Swift + 9 Kotlin compile (r1-005, r1-A003).
-
-## Gate 6 — runtime and accessibility
-
-tools/ax: 6 cases, 0 open, 0 accepted, all three platforms; identical to the installed report (iOS reports the toggle with the switch trait,
-iOS 40 pt targets as info — comparator conventions).
+## Gate 1 matrix
+Regenerated with r1's extractors (`work/audit/s7-7/gate1/`): identical to r1's round-2 matrix. The only unmatched rows are matcher artefacts already reviewed by r1:
+md-segmented-button `segmentIndex`/`segmentTotal` (set-managed, covered through the set tests) and md-split-button `leading-state-layer`/`trailing-state-layer`
+(built by name concatenation in `NativeSplitButton.swift` line 150 and asserted by `split-button-integration.test.mjs`). No new gap.
 
 ## Exceptions
+None proposed; none accepted.
 
-None proposed.
+## Component evidence
+Icon button: `NativeIconButtonViewIntegration` 284/284 (macOS and iOS 26.3), live host script pass; Android `NativeIconButtonParityTest` 13/13; click2 samples (R1-13) pass in every run (BRACKET matches accepted per R1-14).
 
 ## Findings
+No blocking finding. R1-09 stays PARTIAL (non-blocking): the `Status:` line of this doc still says iOS execution and the final audit remain pending, which the evidence above supersedes.
 
-R1-03d, R1-04, R1-07 (blocking); R1-09, R1-10. See [DEFECTS.md](../../../../audit/DEFECTS.md).
+## Verdict
+PASS (gate 7, s7-7, 2026-11-15).

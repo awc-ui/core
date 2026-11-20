@@ -1,0 +1,3298 @@
+{
+"component": "md-search",
+"browser": "Chrome/153.0.8010.36",
+"cases": [
+{
+"name": "search-parts-light-ltr-docked-closed",
+"theme": "light",
+"dir": "ltr",
+"width": 420,
+"props": {
+"placeholder": "Search fruit",
+"layout": "docked",
+"value": "alp",
+"voiceSearch": true
+},
+"hooks": {},
+"avatar": true,
+"list": false,
+"open": false,
+"focused": false,
+"host": {
+"x": 24,
+"y": 24,
+"width": 420,
+"height": 56
+},
+"classes": "sp md-search md-search--contained md-search--docked md-search--trigger-bar md-search--closed md-search--has-value md-search--has-slotted-trailing md-search--elevation-0 hydrated",
+"bar": {
+"rect": {
+"x": 48,
+"y": 24,
+"width": 372,
+"height": 56
+},
+"backgroundColor": "rgb(255, 245, 157)",
+"borderTopLeftRadius": "9999px",
+"borderBottomLeftRadius": "9999px",
+"opacity": "1",
+"color": "rgb(28, 27, 31)",
+"boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+"transform": "none"
+},
+"stateLayer": {
+"rect": {
+"x": 48,
+"y": 24,
+"width": 372,
+"height": 56
+},
+"opacity": "0.2",
+"backgroundColor": "rgb(233, 30, 99)"
+},
+"leading": {
+"rect": {
+"x": 48,
+"y": 28,
+"width": 56,
+"height": 48
+},
+"backgroundColor": "rgb(225, 245, 254)"
+},
+"leadingStateLayer": {
+"rect": {
+"x": 52,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"opacity": "0.3",
+"backgroundColor": "rgb(46, 125, 50)"
+},
+"triggerButton": null,
+"leadingButton": {
+"rect": {
+"x": 52,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"value": "",
+"label": "Search",
+"expanded": null,
+"color": "rgb(28, 27, 31)",
+"caretColor": "rgb(28, 27, 31)",
+"fontSize": "13.3333px",
+"lineHeight": "normal",
+"placeholder": null
+},
+"input": {
+"rect": {
+"x": 104,
+"y": 39,
+"width": 176,
+"height": 26
+},
+"value": "alp",
+"label": "Search fruit",
+"expanded": "false",
+"color": "rgb(26, 35, 126)",
+"caretColor": "rgb(213, 0, 0)",
+"fontSize": "16px",
+"lineHeight": "24px",
+"placeholder": "Search fruit"
+},
+"trailing": {
+"rect": {
+"x": 280,
+"y": 28,
+"width": 140,
+"height": 48
+},
+"backgroundColor": "rgb(243, 229, 245)"
+},
+"clear": {
+"rect": {
+"x": 284,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"opacity": "1",
+"color": "rgb(73, 69, 79)",
+"transform": "matrix(1, 0, 0, 1, 0, 0)",
+"backgroundColor": "rgb(255, 204, 188)"
+},
+"voice": {
+"rect": {
+"x": 336,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"opacity": "1",
+"color": "rgb(73, 69, 79)",
+"backgroundColor": "rgb(200, 230, 201)"
+},
+"loading": null,
+"trigger": null,
+"panel": {
+"rect": {
+"x": 36,
+"y": 84,
+"width": 396,
+"height": 0
+},
+"backgroundColor": "rgb(255, 253, 231)",
+"borderTopLeftRadius": "0px",
+"borderBottomLeftRadius": "0px",
+"opacity": "0",
+"color": "rgb(28, 27, 31)",
+"boxShadow": "none",
+"transform": "matrix(1, 0, 0, 1, 0, -4)"
+},
+"divider": null,
+"empty": null,
+"viewport": {
+"rect": {
+"x": 36,
+"y": 84,
+"width": 396,
+"height": 0
+},
+"backgroundColor": "rgb(232, 234, 246)"
+},
+"triggerBox": null,
+"panelBody": {
+"rect": {
+"x": 36,
+"y": 84,
+"width": 396,
+"height": 0
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"resultsHost": {
+"rect": {
+"x": 36,
+"y": 84,
+"width": 396,
+"height": 0
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"loadingPart": null,
+"loadingShape": null,
+"statusPart": {
+"rect": {
+"x": 23,
+"y": 23,
+"width": 1,
+"height": 1
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"rows": [],
+"status": "",
+"clip": {
+"x": 16,
+"y": 16,
+"width": 436,
+"height": 72
+},
+"ax": [
+{
+"role": "button",
+"name": "Run"
+},
+{
+"role": "status",
+"name": ""
+},
+{
+"role": "button",
+"name": "Search"
+},
+{
+"role": "combobox",
+"name": "Search fruit",
+"value": "alp",
+"expanded": false,
+"haspopup": "listbox",
+"autocomplete": "list",
+"required": false
+},
+{
+"role": "button",
+"name": "Clear search"
+},
+{
+"role": "button",
+"name": "Search by voice",
+"pressed": false
+}
+],
+"partRules": {
+"bar": {
+"background-color": "#FFF59D"
+},
+"state-layer": {
+"background-color": "#E91E63",
+"opacity": "0.2"
+},
+"leading": {
+"background-color": "#E1F5FE"
+},
+"leading-state-layer": {
+"background-color": "#2E7D32",
+"opacity": "0.3"
+},
+"input": {
+"color": "#1A237E",
+"caret-color": "#D50000"
+},
+"trailing": {
+"background-color": "#F3E5F5"
+},
+"clear-button": {
+"background-color": "#FFCCBC"
+},
+"voice-button": {
+"background-color": "#C8E6C9"
+},
+"trigger-button": {
+"background-color": "#B3E5FC"
+},
+"divider": {
+"background-color": "#FF6F00"
+},
+"panel": {
+"background-color": "#FFFDE7"
+},
+"empty": {
+"color": "#B71C1C"
+},
+"results-viewport": {
+"background-color": "#E8EAF6"
+}
+}
+},
+{
+"name": "search-parts-light-ltr-docked-open",
+"theme": "light",
+"dir": "ltr",
+"width": 420,
+"props": {
+"placeholder": "Search fruit",
+"layout": "docked",
+"variant": "divided",
+"value": "alp"
+},
+"hooks": {},
+"avatar": false,
+"list": true,
+"open": true,
+"focused": true,
+"host": {
+"x": 24,
+"y": 24,
+"width": 420,
+"height": 56
+},
+"classes": "sp md-search md-search--divided md-search--docked md-search--trigger-bar md-search--has-value md-search--elevation-0 hydrated md-search--open md-search--panel-content md-search--focused",
+"bar": {
+"rect": {
+"x": 36,
+"y": 24,
+"width": 396,
+"height": 56
+},
+"backgroundColor": "rgb(255, 245, 157)",
+"borderTopLeftRadius": "28px",
+"borderBottomLeftRadius": "0px",
+"opacity": "1",
+"color": "rgb(28, 27, 31)",
+"boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+"transform": "none"
+},
+"stateLayer": {
+"rect": {
+"x": 36,
+"y": 24,
+"width": 396,
+"height": 56
+},
+"opacity": "0.2",
+"backgroundColor": "rgb(233, 30, 99)"
+},
+"leading": {
+"rect": {
+"x": 36,
+"y": 28,
+"width": 56,
+"height": 48
+},
+"backgroundColor": "rgb(225, 245, 254)"
+},
+"leadingStateLayer": {
+"rect": {
+"x": 40,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"opacity": "0.3",
+"backgroundColor": "rgb(46, 125, 50)"
+},
+"triggerButton": null,
+"leadingButton": {
+"rect": {
+"x": 40,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"value": "",
+"label": "Close search",
+"expanded": null,
+"color": "rgb(28, 27, 31)",
+"caretColor": "rgb(28, 27, 31)",
+"fontSize": "13.3333px",
+"lineHeight": "normal",
+"placeholder": null
+},
+"input": {
+"rect": {
+"x": 92,
+"y": 39,
+"width": 280,
+"height": 26
+},
+"value": "alp",
+"label": "Search fruit",
+"expanded": "true",
+"color": "rgb(26, 35, 126)",
+"caretColor": "rgb(213, 0, 0)",
+"fontSize": "16px",
+"lineHeight": "24px",
+"placeholder": "Search fruit"
+},
+"trailing": {
+"rect": {
+"x": 372,
+"y": 28,
+"width": 60,
+"height": 48
+},
+"backgroundColor": "rgb(243, 229, 245)"
+},
+"clear": {
+"rect": {
+"x": 376,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"opacity": "1",
+"color": "rgb(73, 69, 79)",
+"transform": "matrix(1, 0, 0, 1, 0, 0)",
+"backgroundColor": "rgb(255, 204, 188)"
+},
+"voice": null,
+"loading": null,
+"trigger": null,
+"panel": {
+"rect": {
+"x": 36,
+"y": 80,
+"width": 396,
+"height": 185
+},
+"backgroundColor": "rgb(255, 253, 231)",
+"borderTopLeftRadius": "0px",
+"borderBottomLeftRadius": "28px",
+"opacity": "1",
+"color": "rgb(28, 27, 31)",
+"boxShadow": "none",
+"transform": "matrix(1, 0, 0, 1, 0, 0)"
+},
+"divider": {
+"rect": {
+"x": 36,
+"y": 80,
+"width": 396,
+"height": 1
+},
+"backgroundColor": "rgb(255, 111, 0)"
+},
+"empty": null,
+"viewport": {
+"rect": {
+"x": 36,
+"y": 81,
+"width": 396,
+"height": 184
+},
+"backgroundColor": "rgb(232, 234, 246)"
+},
+"triggerBox": null,
+"panelBody": {
+"rect": {
+"x": 36,
+"y": 81,
+"width": 396,
+"height": 184
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"resultsHost": {
+"rect": {
+"x": 36,
+"y": 81,
+"width": 396,
+"height": 184
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"loadingPart": null,
+"loadingShape": null,
+"statusPart": {
+"rect": {
+"x": 23,
+"y": 23,
+"width": 1,
+"height": 1
+},
+"backgroundColor": "rgba(0, 0, 0, 0)",
+"text": "3 results available"
+},
+"rows": [
+{
+"x": 36,
+"y": 81,
+"width": 396,
+"height": 72
+},
+{
+"x": 36,
+"y": 153,
+"width": 396,
+"height": 56
+},
+{
+"x": 36,
+"y": 209,
+"width": 396,
+"height": 56
+}
+],
+"status": "3 results available",
+"clip": {
+"x": 16,
+"y": 16,
+"width": 436,
+"height": 436
+},
+"ax": [
+{
+"role": "button",
+"name": "Run"
+},
+{
+"role": "status",
+"name": ""
+},
+{
+"role": "button",
+"name": "Close search"
+},
+{
+"role": "combobox",
+"name": "Search fruit",
+"value": "alp",
+"expanded": true,
+"focused": true,
+"haspopup": "listbox",
+"autocomplete": "list",
+"required": false
+},
+{
+"role": "button",
+"name": "Clear search"
+},
+{
+"role": "button",
+"name": "Alpha First result"
+},
+{
+"role": "button",
+"name": "Alpine"
+},
+{
+"role": "button",
+"name": "Alpaca"
+}
+],
+"partRules": {
+"bar": {
+"background-color": "#FFF59D"
+},
+"state-layer": {
+"background-color": "#E91E63",
+"opacity": "0.2"
+},
+"leading": {
+"background-color": "#E1F5FE"
+},
+"leading-state-layer": {
+"background-color": "#2E7D32",
+"opacity": "0.3"
+},
+"input": {
+"color": "#1A237E",
+"caret-color": "#D50000"
+},
+"trailing": {
+"background-color": "#F3E5F5"
+},
+"clear-button": {
+"background-color": "#FFCCBC"
+},
+"voice-button": {
+"background-color": "#C8E6C9"
+},
+"trigger-button": {
+"background-color": "#B3E5FC"
+},
+"divider": {
+"background-color": "#FF6F00"
+},
+"panel": {
+"background-color": "#FFFDE7"
+},
+"empty": {
+"color": "#B71C1C"
+},
+"results-viewport": {
+"background-color": "#E8EAF6"
+}
+}
+},
+{
+"name": "search-parts-light-ltr-docked-empty",
+"theme": "light",
+"dir": "ltr",
+"width": 420,
+"props": {
+"placeholder": "Search fruit",
+"layout": "docked",
+"value": "zzz"
+},
+"hooks": {},
+"avatar": false,
+"list": false,
+"open": true,
+"focused": true,
+"host": {
+"x": 24,
+"y": 24,
+"width": 420,
+"height": 56
+},
+"classes": "sp md-search md-search--contained md-search--docked md-search--trigger-bar md-search--has-value md-search--elevation-0 hydrated md-search--open md-search--panel-content md-search--focused",
+"bar": {
+"rect": {
+"x": 36,
+"y": 24,
+"width": 396,
+"height": 56
+},
+"backgroundColor": "rgb(255, 245, 157)",
+"borderTopLeftRadius": "9999px",
+"borderBottomLeftRadius": "9999px",
+"opacity": "1",
+"color": "rgb(28, 27, 31)",
+"boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+"transform": "none"
+},
+"stateLayer": {
+"rect": {
+"x": 36,
+"y": 24,
+"width": 396,
+"height": 56
+},
+"opacity": "0.2",
+"backgroundColor": "rgb(233, 30, 99)"
+},
+"leading": {
+"rect": {
+"x": 36,
+"y": 28,
+"width": 56,
+"height": 48
+},
+"backgroundColor": "rgb(225, 245, 254)"
+},
+"leadingStateLayer": {
+"rect": {
+"x": 40,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"opacity": "0.3",
+"backgroundColor": "rgb(46, 125, 50)"
+},
+"triggerButton": null,
+"leadingButton": {
+"rect": {
+"x": 40,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"value": "",
+"label": "Close search",
+"expanded": null,
+"color": "rgb(28, 27, 31)",
+"caretColor": "rgb(28, 27, 31)",
+"fontSize": "13.3333px",
+"lineHeight": "normal",
+"placeholder": null
+},
+"input": {
+"rect": {
+"x": 92,
+"y": 39,
+"width": 280,
+"height": 26
+},
+"value": "zzz",
+"label": "Search fruit",
+"expanded": "true",
+"color": "rgb(26, 35, 126)",
+"caretColor": "rgb(213, 0, 0)",
+"fontSize": "16px",
+"lineHeight": "24px",
+"placeholder": "Search fruit"
+},
+"trailing": {
+"rect": {
+"x": 372,
+"y": 28,
+"width": 60,
+"height": 48
+},
+"backgroundColor": "rgb(243, 229, 245)"
+},
+"clear": {
+"rect": {
+"x": 376,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"opacity": "1",
+"color": "rgb(73, 69, 79)",
+"transform": "matrix(1, 0, 0, 1, 0, 0)",
+"backgroundColor": "rgb(255, 204, 188)"
+},
+"voice": null,
+"loading": null,
+"trigger": null,
+"panel": {
+"rect": {
+"x": 36,
+"y": 88,
+"width": 396,
+"height": 68
+},
+"backgroundColor": "rgb(255, 253, 231)",
+"borderTopLeftRadius": "16px",
+"borderBottomLeftRadius": "16px",
+"opacity": "1",
+"color": "rgb(28, 27, 31)",
+"boxShadow": "none",
+"transform": "matrix(1, 0, 0, 1, 0, 0)"
+},
+"divider": null,
+"empty": {
+"rect": {
+"x": 36,
+"y": 88,
+"width": 396,
+"height": 68
+},
+"color": "rgb(183, 28, 28)",
+"text": "No results available"
+},
+"viewport": {
+"rect": {
+"x": 0,
+"y": 0,
+"width": 0,
+"height": 0
+},
+"backgroundColor": "rgb(232, 234, 246)"
+},
+"triggerBox": null,
+"panelBody": {
+"rect": {
+"x": 36,
+"y": 88,
+"width": 396,
+"height": 68
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"resultsHost": {
+"rect": {
+"x": 0,
+"y": 0,
+"width": 0,
+"height": 0
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"loadingPart": null,
+"loadingShape": null,
+"statusPart": {
+"rect": {
+"x": 23,
+"y": 23,
+"width": 1,
+"height": 1
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"rows": [],
+"status": "",
+"clip": {
+"x": 16,
+"y": 16,
+"width": 436,
+"height": 316
+},
+"ax": [
+{
+"role": "button",
+"name": "Run"
+},
+{
+"role": "status",
+"name": ""
+},
+{
+"role": "button",
+"name": "Close search"
+},
+{
+"role": "combobox",
+"name": "Search fruit",
+"value": "zzz",
+"expanded": true,
+"focused": true,
+"haspopup": "listbox",
+"autocomplete": "list",
+"required": false
+},
+{
+"role": "button",
+"name": "Clear search"
+},
+{
+"role": "status",
+"name": ""
+}
+],
+"partRules": {
+"bar": {
+"background-color": "#FFF59D"
+},
+"state-layer": {
+"background-color": "#E91E63",
+"opacity": "0.2"
+},
+"leading": {
+"background-color": "#E1F5FE"
+},
+"leading-state-layer": {
+"background-color": "#2E7D32",
+"opacity": "0.3"
+},
+"input": {
+"color": "#1A237E",
+"caret-color": "#D50000"
+},
+"trailing": {
+"background-color": "#F3E5F5"
+},
+"clear-button": {
+"background-color": "#FFCCBC"
+},
+"voice-button": {
+"background-color": "#C8E6C9"
+},
+"trigger-button": {
+"background-color": "#B3E5FC"
+},
+"divider": {
+"background-color": "#FF6F00"
+},
+"panel": {
+"background-color": "#FFFDE7"
+},
+"empty": {
+"color": "#B71C1C"
+},
+"results-viewport": {
+"background-color": "#E8EAF6"
+}
+}
+},
+{
+"name": "search-parts-light-ltr-icon-closed",
+"theme": "light",
+"dir": "ltr",
+"width": 420,
+"props": {
+"placeholder": "Search fruit",
+"layout": "full-screen"
+},
+"hooks": {},
+"avatar": false,
+"list": false,
+"open": false,
+"focused": false,
+"host": {
+"x": 24,
+"y": 24,
+"width": 48,
+"height": 48
+},
+"classes": "sp md-search md-search--contained md-search--full-screen md-search--trigger-icon md-search--closed md-search--elevation-0 hydrated",
+"bar": null,
+"stateLayer": null,
+"leading": null,
+"leadingStateLayer": null,
+"triggerButton": {
+"rect": {
+"x": 24,
+"y": 24,
+"width": 48,
+"height": 48
+},
+"backgroundColor": "rgb(179, 229, 252)"
+},
+"leadingButton": null,
+"input": null,
+"trailing": null,
+"clear": null,
+"voice": null,
+"loading": null,
+"trigger": {
+"x": 24,
+"y": 24,
+"width": 48,
+"height": 48
+},
+"panel": {
+"rect": {
+"x": 0,
+"y": 0,
+"width": 0,
+"height": 0
+},
+"backgroundColor": "rgb(255, 253, 231)",
+"borderTopLeftRadius": "0px",
+"borderBottomLeftRadius": "0px",
+"opacity": "0",
+"color": "rgb(28, 27, 31)",
+"boxShadow": "none",
+"transform": "none"
+},
+"divider": null,
+"empty": null,
+"viewport": {
+"rect": {
+"x": 0,
+"y": 0,
+"width": 0,
+"height": 0
+},
+"backgroundColor": "rgb(232, 234, 246)"
+},
+"triggerBox": {
+"rect": {
+"x": 0,
+"y": 0,
+"width": 0,
+"height": 0
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"panelBody": {
+"rect": {
+"x": 0,
+"y": 0,
+"width": 0,
+"height": 0
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"resultsHost": {
+"rect": {
+"x": 0,
+"y": 0,
+"width": 0,
+"height": 0
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"loadingPart": null,
+"loadingShape": null,
+"statusPart": {
+"rect": {
+"x": 47.5,
+"y": 47.5,
+"width": 1,
+"height": 1
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"rows": [],
+"status": "",
+"clip": {
+"x": 16,
+"y": 16,
+"width": 436,
+"height": 64
+},
+"ax": [
+{
+"role": "button",
+"name": "Run"
+},
+{
+"role": "status",
+"name": ""
+},
+{
+"role": "button",
+"name": "Search fruit"
+}
+],
+"partRules": {
+"bar": {
+"background-color": "#FFF59D"
+},
+"state-layer": {
+"background-color": "#E91E63",
+"opacity": "0.2"
+},
+"leading": {
+"background-color": "#E1F5FE"
+},
+"leading-state-layer": {
+"background-color": "#2E7D32",
+"opacity": "0.3"
+},
+"input": {
+"color": "#1A237E",
+"caret-color": "#D50000"
+},
+"trailing": {
+"background-color": "#F3E5F5"
+},
+"clear-button": {
+"background-color": "#FFCCBC"
+},
+"voice-button": {
+"background-color": "#C8E6C9"
+},
+"trigger-button": {
+"background-color": "#B3E5FC"
+},
+"divider": {
+"background-color": "#FF6F00"
+},
+"panel": {
+"background-color": "#FFFDE7"
+},
+"empty": {
+"color": "#B71C1C"
+},
+"results-viewport": {
+"background-color": "#E8EAF6"
+}
+}
+},
+{
+"name": "search-parts-dark-rtl-docked-closed",
+"theme": "dark",
+"dir": "rtl",
+"width": 420,
+"props": {
+"placeholder": "Search fruit",
+"layout": "docked",
+"value": "alp",
+"voiceSearch": true
+},
+"hooks": {},
+"avatar": true,
+"list": false,
+"open": false,
+"focused": false,
+"host": {
+"x": 24,
+"y": 24,
+"width": 420,
+"height": 56
+},
+"classes": "sp md-search md-search--contained md-search--docked md-search--trigger-bar md-search--closed md-search--has-value md-search--has-slotted-trailing md-search--elevation-0 hydrated",
+"bar": {
+"rect": {
+"x": 48,
+"y": 24,
+"width": 372,
+"height": 56
+},
+"backgroundColor": "rgb(255, 245, 157)",
+"borderTopLeftRadius": "9999px",
+"borderBottomLeftRadius": "9999px",
+"opacity": "1",
+"color": "rgb(230, 225, 229)",
+"boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+"transform": "none"
+},
+"stateLayer": {
+"rect": {
+"x": 48,
+"y": 24,
+"width": 372,
+"height": 56
+},
+"opacity": "0.2",
+"backgroundColor": "rgb(233, 30, 99)"
+},
+"leading": {
+"rect": {
+"x": 364,
+"y": 28,
+"width": 56,
+"height": 48
+},
+"backgroundColor": "rgb(225, 245, 254)"
+},
+"leadingStateLayer": {
+"rect": {
+"x": 368,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"opacity": "0.3",
+"backgroundColor": "rgb(46, 125, 50)"
+},
+"triggerButton": null,
+"leadingButton": {
+"rect": {
+"x": 368,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"value": "",
+"label": "Search",
+"expanded": null,
+"color": "rgb(230, 225, 229)",
+"caretColor": "rgb(230, 225, 229)",
+"fontSize": "13.3333px",
+"lineHeight": "normal",
+"placeholder": null
+},
+"input": {
+"rect": {
+"x": 188,
+"y": 39,
+"width": 176,
+"height": 26
+},
+"value": "alp",
+"label": "Search fruit",
+"expanded": "false",
+"color": "rgb(26, 35, 126)",
+"caretColor": "rgb(213, 0, 0)",
+"fontSize": "16px",
+"lineHeight": "24px",
+"placeholder": "Search fruit"
+},
+"trailing": {
+"rect": {
+"x": 48,
+"y": 28,
+"width": 140,
+"height": 48
+},
+"backgroundColor": "rgb(243, 229, 245)"
+},
+"clear": {
+"rect": {
+"x": 136,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"opacity": "1",
+"color": "rgb(202, 196, 208)",
+"transform": "matrix(1, 0, 0, 1, 0, 0)",
+"backgroundColor": "rgb(255, 204, 188)"
+},
+"voice": {
+"rect": {
+"x": 84,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"opacity": "1",
+"color": "rgb(202, 196, 208)",
+"backgroundColor": "rgb(200, 230, 201)"
+},
+"loading": null,
+"trigger": null,
+"panel": {
+"rect": {
+"x": 36,
+"y": 84,
+"width": 396,
+"height": 0
+},
+"backgroundColor": "rgb(255, 253, 231)",
+"borderTopLeftRadius": "0px",
+"borderBottomLeftRadius": "0px",
+"opacity": "0",
+"color": "rgb(230, 225, 229)",
+"boxShadow": "none",
+"transform": "matrix(1, 0, 0, 1, 0, -4)"
+},
+"divider": null,
+"empty": null,
+"viewport": {
+"rect": {
+"x": 36,
+"y": 84,
+"width": 396,
+"height": 0
+},
+"backgroundColor": "rgb(232, 234, 246)"
+},
+"triggerBox": null,
+"panelBody": {
+"rect": {
+"x": 36,
+"y": 84,
+"width": 396,
+"height": 0
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"resultsHost": {
+"rect": {
+"x": 36,
+"y": 84,
+"width": 396,
+"height": 0
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"loadingPart": null,
+"loadingShape": null,
+"statusPart": {
+"rect": {
+"x": 444,
+"y": 23,
+"width": 1,
+"height": 1
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"rows": [],
+"status": "",
+"clip": {
+"x": 16,
+"y": 16,
+"width": 436,
+"height": 72
+},
+"ax": [
+{
+"role": "button",
+"name": "Run"
+},
+{
+"role": "status",
+"name": ""
+},
+{
+"role": "button",
+"name": "Search"
+},
+{
+"role": "combobox",
+"name": "Search fruit",
+"value": "alp",
+"expanded": false,
+"haspopup": "listbox",
+"autocomplete": "list",
+"required": false
+},
+{
+"role": "button",
+"name": "Clear search"
+},
+{
+"role": "button",
+"name": "Search by voice",
+"pressed": false
+}
+],
+"partRules": {
+"bar": {
+"background-color": "#FFF59D"
+},
+"state-layer": {
+"background-color": "#E91E63",
+"opacity": "0.2"
+},
+"leading": {
+"background-color": "#E1F5FE"
+},
+"leading-state-layer": {
+"background-color": "#2E7D32",
+"opacity": "0.3"
+},
+"input": {
+"color": "#1A237E",
+"caret-color": "#D50000"
+},
+"trailing": {
+"background-color": "#F3E5F5"
+},
+"clear-button": {
+"background-color": "#FFCCBC"
+},
+"voice-button": {
+"background-color": "#C8E6C9"
+},
+"trigger-button": {
+"background-color": "#B3E5FC"
+},
+"divider": {
+"background-color": "#FF6F00"
+},
+"panel": {
+"background-color": "#FFFDE7"
+},
+"empty": {
+"color": "#B71C1C"
+},
+"results-viewport": {
+"background-color": "#E8EAF6"
+}
+}
+},
+{
+"name": "search-parts-dark-rtl-docked-open",
+"theme": "dark",
+"dir": "rtl",
+"width": 420,
+"props": {
+"placeholder": "Search fruit",
+"layout": "docked",
+"variant": "divided",
+"value": "alp"
+},
+"hooks": {},
+"avatar": false,
+"list": true,
+"open": true,
+"focused": true,
+"host": {
+"x": 24,
+"y": 24,
+"width": 420,
+"height": 56
+},
+"classes": "sp md-search md-search--divided md-search--docked md-search--trigger-bar md-search--has-value md-search--elevation-0 hydrated md-search--open md-search--panel-content md-search--focused",
+"bar": {
+"rect": {
+"x": 36,
+"y": 24,
+"width": 396,
+"height": 56
+},
+"backgroundColor": "rgb(255, 245, 157)",
+"borderTopLeftRadius": "28px",
+"borderBottomLeftRadius": "0px",
+"opacity": "1",
+"color": "rgb(230, 225, 229)",
+"boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+"transform": "none"
+},
+"stateLayer": {
+"rect": {
+"x": 36,
+"y": 24,
+"width": 396,
+"height": 56
+},
+"opacity": "0.2",
+"backgroundColor": "rgb(233, 30, 99)"
+},
+"leading": {
+"rect": {
+"x": 376,
+"y": 28,
+"width": 56,
+"height": 48
+},
+"backgroundColor": "rgb(225, 245, 254)"
+},
+"leadingStateLayer": {
+"rect": {
+"x": 380,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"opacity": "0.3",
+"backgroundColor": "rgb(46, 125, 50)"
+},
+"triggerButton": null,
+"leadingButton": {
+"rect": {
+"x": 380,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"value": "",
+"label": "Close search",
+"expanded": null,
+"color": "rgb(230, 225, 229)",
+"caretColor": "rgb(230, 225, 229)",
+"fontSize": "13.3333px",
+"lineHeight": "normal",
+"placeholder": null
+},
+"input": {
+"rect": {
+"x": 96,
+"y": 39,
+"width": 280,
+"height": 26
+},
+"value": "alp",
+"label": "Search fruit",
+"expanded": "true",
+"color": "rgb(26, 35, 126)",
+"caretColor": "rgb(213, 0, 0)",
+"fontSize": "16px",
+"lineHeight": "24px",
+"placeholder": "Search fruit"
+},
+"trailing": {
+"rect": {
+"x": 36,
+"y": 28,
+"width": 60,
+"height": 48
+},
+"backgroundColor": "rgb(243, 229, 245)"
+},
+"clear": {
+"rect": {
+"x": 44,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"opacity": "1",
+"color": "rgb(202, 196, 208)",
+"transform": "matrix(1, 0, 0, 1, 0, 0)",
+"backgroundColor": "rgb(255, 204, 188)"
+},
+"voice": null,
+"loading": null,
+"trigger": null,
+"panel": {
+"rect": {
+"x": 36,
+"y": 80,
+"width": 396,
+"height": 185
+},
+"backgroundColor": "rgb(255, 253, 231)",
+"borderTopLeftRadius": "0px",
+"borderBottomLeftRadius": "28px",
+"opacity": "1",
+"color": "rgb(230, 225, 229)",
+"boxShadow": "none",
+"transform": "matrix(1, 0, 0, 1, 0, 0)"
+},
+"divider": {
+"rect": {
+"x": 36,
+"y": 80,
+"width": 396,
+"height": 1
+},
+"backgroundColor": "rgb(255, 111, 0)"
+},
+"empty": null,
+"viewport": {
+"rect": {
+"x": 36,
+"y": 81,
+"width": 396,
+"height": 184
+},
+"backgroundColor": "rgb(232, 234, 246)"
+},
+"triggerBox": null,
+"panelBody": {
+"rect": {
+"x": 36,
+"y": 81,
+"width": 396,
+"height": 184
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"resultsHost": {
+"rect": {
+"x": 36,
+"y": 81,
+"width": 396,
+"height": 184
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"loadingPart": null,
+"loadingShape": null,
+"statusPart": {
+"rect": {
+"x": 444,
+"y": 23,
+"width": 1,
+"height": 1
+},
+"backgroundColor": "rgba(0, 0, 0, 0)",
+"text": "3 results available"
+},
+"rows": [
+{
+"x": 36,
+"y": 81,
+"width": 396,
+"height": 72
+},
+{
+"x": 36,
+"y": 153,
+"width": 396,
+"height": 56
+},
+{
+"x": 36,
+"y": 209,
+"width": 396,
+"height": 56
+}
+],
+"status": "3 results available",
+"clip": {
+"x": 16,
+"y": 16,
+"width": 436,
+"height": 436
+},
+"ax": [
+{
+"role": "button",
+"name": "Run"
+},
+{
+"role": "status",
+"name": ""
+},
+{
+"role": "button",
+"name": "Close search"
+},
+{
+"role": "combobox",
+"name": "Search fruit",
+"value": "alp",
+"expanded": true,
+"focused": true,
+"haspopup": "listbox",
+"autocomplete": "list",
+"required": false
+},
+{
+"role": "button",
+"name": "Clear search"
+},
+{
+"role": "button",
+"name": "Alpha First result"
+},
+{
+"role": "button",
+"name": "Alpine"
+},
+{
+"role": "button",
+"name": "Alpaca"
+}
+],
+"partRules": {
+"bar": {
+"background-color": "#FFF59D"
+},
+"state-layer": {
+"background-color": "#E91E63",
+"opacity": "0.2"
+},
+"leading": {
+"background-color": "#E1F5FE"
+},
+"leading-state-layer": {
+"background-color": "#2E7D32",
+"opacity": "0.3"
+},
+"input": {
+"color": "#1A237E",
+"caret-color": "#D50000"
+},
+"trailing": {
+"background-color": "#F3E5F5"
+},
+"clear-button": {
+"background-color": "#FFCCBC"
+},
+"voice-button": {
+"background-color": "#C8E6C9"
+},
+"trigger-button": {
+"background-color": "#B3E5FC"
+},
+"divider": {
+"background-color": "#FF6F00"
+},
+"panel": {
+"background-color": "#FFFDE7"
+},
+"empty": {
+"color": "#B71C1C"
+},
+"results-viewport": {
+"background-color": "#E8EAF6"
+}
+}
+},
+{
+"name": "search-parts-dark-rtl-docked-empty",
+"theme": "dark",
+"dir": "rtl",
+"width": 420,
+"props": {
+"placeholder": "Search fruit",
+"layout": "docked",
+"value": "zzz"
+},
+"hooks": {},
+"avatar": false,
+"list": false,
+"open": true,
+"focused": true,
+"host": {
+"x": 24,
+"y": 24,
+"width": 420,
+"height": 56
+},
+"classes": "sp md-search md-search--contained md-search--docked md-search--trigger-bar md-search--has-value md-search--elevation-0 hydrated md-search--open md-search--panel-content md-search--focused",
+"bar": {
+"rect": {
+"x": 36,
+"y": 24,
+"width": 396,
+"height": 56
+},
+"backgroundColor": "rgb(255, 245, 157)",
+"borderTopLeftRadius": "9999px",
+"borderBottomLeftRadius": "9999px",
+"opacity": "1",
+"color": "rgb(230, 225, 229)",
+"boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+"transform": "none"
+},
+"stateLayer": {
+"rect": {
+"x": 36,
+"y": 24,
+"width": 396,
+"height": 56
+},
+"opacity": "0.2",
+"backgroundColor": "rgb(233, 30, 99)"
+},
+"leading": {
+"rect": {
+"x": 376,
+"y": 28,
+"width": 56,
+"height": 48
+},
+"backgroundColor": "rgb(225, 245, 254)"
+},
+"leadingStateLayer": {
+"rect": {
+"x": 380,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"opacity": "0.3",
+"backgroundColor": "rgb(46, 125, 50)"
+},
+"triggerButton": null,
+"leadingButton": {
+"rect": {
+"x": 380,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"value": "",
+"label": "Close search",
+"expanded": null,
+"color": "rgb(230, 225, 229)",
+"caretColor": "rgb(230, 225, 229)",
+"fontSize": "13.3333px",
+"lineHeight": "normal",
+"placeholder": null
+},
+"input": {
+"rect": {
+"x": 96,
+"y": 39,
+"width": 280,
+"height": 26
+},
+"value": "zzz",
+"label": "Search fruit",
+"expanded": "true",
+"color": "rgb(26, 35, 126)",
+"caretColor": "rgb(213, 0, 0)",
+"fontSize": "16px",
+"lineHeight": "24px",
+"placeholder": "Search fruit"
+},
+"trailing": {
+"rect": {
+"x": 36,
+"y": 28,
+"width": 60,
+"height": 48
+},
+"backgroundColor": "rgb(243, 229, 245)"
+},
+"clear": {
+"rect": {
+"x": 44,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"opacity": "1",
+"color": "rgb(202, 196, 208)",
+"transform": "matrix(1, 0, 0, 1, 0, 0)",
+"backgroundColor": "rgb(255, 204, 188)"
+},
+"voice": null,
+"loading": null,
+"trigger": null,
+"panel": {
+"rect": {
+"x": 36,
+"y": 88,
+"width": 396,
+"height": 68
+},
+"backgroundColor": "rgb(255, 253, 231)",
+"borderTopLeftRadius": "16px",
+"borderBottomLeftRadius": "16px",
+"opacity": "1",
+"color": "rgb(230, 225, 229)",
+"boxShadow": "none",
+"transform": "matrix(1, 0, 0, 1, 0, 0)"
+},
+"divider": null,
+"empty": {
+"rect": {
+"x": 36,
+"y": 88,
+"width": 396,
+"height": 68
+},
+"color": "rgb(183, 28, 28)",
+"text": "No results available"
+},
+"viewport": {
+"rect": {
+"x": 0,
+"y": 0,
+"width": 0,
+"height": 0
+},
+"backgroundColor": "rgb(232, 234, 246)"
+},
+"triggerBox": null,
+"panelBody": {
+"rect": {
+"x": 36,
+"y": 88,
+"width": 396,
+"height": 68
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"resultsHost": {
+"rect": {
+"x": 0,
+"y": 0,
+"width": 0,
+"height": 0
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"loadingPart": null,
+"loadingShape": null,
+"statusPart": {
+"rect": {
+"x": 444,
+"y": 23,
+"width": 1,
+"height": 1
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"rows": [],
+"status": "",
+"clip": {
+"x": 16,
+"y": 16,
+"width": 436,
+"height": 316
+},
+"ax": [
+{
+"role": "button",
+"name": "Run"
+},
+{
+"role": "status",
+"name": ""
+},
+{
+"role": "button",
+"name": "Close search"
+},
+{
+"role": "combobox",
+"name": "Search fruit",
+"value": "zzz",
+"expanded": true,
+"focused": true,
+"haspopup": "listbox",
+"autocomplete": "list",
+"required": false
+},
+{
+"role": "button",
+"name": "Clear search"
+},
+{
+"role": "status",
+"name": ""
+}
+],
+"partRules": {
+"bar": {
+"background-color": "#FFF59D"
+},
+"state-layer": {
+"background-color": "#E91E63",
+"opacity": "0.2"
+},
+"leading": {
+"background-color": "#E1F5FE"
+},
+"leading-state-layer": {
+"background-color": "#2E7D32",
+"opacity": "0.3"
+},
+"input": {
+"color": "#1A237E",
+"caret-color": "#D50000"
+},
+"trailing": {
+"background-color": "#F3E5F5"
+},
+"clear-button": {
+"background-color": "#FFCCBC"
+},
+"voice-button": {
+"background-color": "#C8E6C9"
+},
+"trigger-button": {
+"background-color": "#B3E5FC"
+},
+"divider": {
+"background-color": "#FF6F00"
+},
+"panel": {
+"background-color": "#FFFDE7"
+},
+"empty": {
+"color": "#B71C1C"
+},
+"results-viewport": {
+"background-color": "#E8EAF6"
+}
+}
+},
+{
+"name": "search-parts-dark-rtl-icon-closed",
+"theme": "dark",
+"dir": "rtl",
+"width": 420,
+"props": {
+"placeholder": "Search fruit",
+"layout": "full-screen"
+},
+"hooks": {},
+"avatar": false,
+"list": false,
+"open": false,
+"focused": false,
+"host": {
+"x": 396,
+"y": 24,
+"width": 48,
+"height": 48
+},
+"classes": "sp md-search md-search--contained md-search--full-screen md-search--trigger-icon md-search--closed md-search--elevation-0 hydrated",
+"bar": null,
+"stateLayer": null,
+"leading": null,
+"leadingStateLayer": null,
+"triggerButton": {
+"rect": {
+"x": 396,
+"y": 24,
+"width": 48,
+"height": 48
+},
+"backgroundColor": "rgb(179, 229, 252)"
+},
+"leadingButton": null,
+"input": null,
+"trailing": null,
+"clear": null,
+"voice": null,
+"loading": null,
+"trigger": {
+"x": 396,
+"y": 24,
+"width": 48,
+"height": 48
+},
+"panel": {
+"rect": {
+"x": 0,
+"y": 0,
+"width": 0,
+"height": 0
+},
+"backgroundColor": "rgb(255, 253, 231)",
+"borderTopLeftRadius": "0px",
+"borderBottomLeftRadius": "0px",
+"opacity": "0",
+"color": "rgb(230, 225, 229)",
+"boxShadow": "none",
+"transform": "none"
+},
+"divider": null,
+"empty": null,
+"viewport": {
+"rect": {
+"x": 0,
+"y": 0,
+"width": 0,
+"height": 0
+},
+"backgroundColor": "rgb(232, 234, 246)"
+},
+"triggerBox": {
+"rect": {
+"x": 0,
+"y": 0,
+"width": 0,
+"height": 0
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"panelBody": {
+"rect": {
+"x": 0,
+"y": 0,
+"width": 0,
+"height": 0
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"resultsHost": {
+"rect": {
+"x": 0,
+"y": 0,
+"width": 0,
+"height": 0
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"loadingPart": null,
+"loadingShape": null,
+"statusPart": {
+"rect": {
+"x": 419.5,
+"y": 47.5,
+"width": 1,
+"height": 1
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"rows": [],
+"status": "",
+"clip": {
+"x": 16,
+"y": 16,
+"width": 436,
+"height": 64
+},
+"ax": [
+{
+"role": "button",
+"name": "Run"
+},
+{
+"role": "status",
+"name": ""
+},
+{
+"role": "button",
+"name": "Search fruit"
+}
+],
+"partRules": {
+"bar": {
+"background-color": "#FFF59D"
+},
+"state-layer": {
+"background-color": "#E91E63",
+"opacity": "0.2"
+},
+"leading": {
+"background-color": "#E1F5FE"
+},
+"leading-state-layer": {
+"background-color": "#2E7D32",
+"opacity": "0.3"
+},
+"input": {
+"color": "#1A237E",
+"caret-color": "#D50000"
+},
+"trailing": {
+"background-color": "#F3E5F5"
+},
+"clear-button": {
+"background-color": "#FFCCBC"
+},
+"voice-button": {
+"background-color": "#C8E6C9"
+},
+"trigger-button": {
+"background-color": "#B3E5FC"
+},
+"divider": {
+"background-color": "#FF6F00"
+},
+"panel": {
+"background-color": "#FFFDE7"
+},
+"empty": {
+"color": "#B71C1C"
+},
+"results-viewport": {
+"background-color": "#E8EAF6"
+}
+}
+},
+{
+"name": "search-parts-light-ltr-x-docked-open",
+"theme": "light",
+"dir": "ltr",
+"width": 420,
+"props": {
+"placeholder": "Search fruit",
+"layout": "docked",
+"variant": "divided",
+"value": "alp"
+},
+"hooks": {},
+"avatar": false,
+"list": true,
+"open": true,
+"focused": true,
+"host": {
+"x": 24,
+"y": 24,
+"width": 420,
+"height": 56
+},
+"classes": "spx md-search md-search--divided md-search--docked md-search--trigger-bar md-search--has-value md-search--elevation-0 hydrated md-search--open md-search--panel-content md-search--focused",
+"bar": {
+"rect": {
+"x": 36,
+"y": 24,
+"width": 396,
+"height": 56
+},
+"backgroundColor": "rgb(236, 230, 240)",
+"borderTopLeftRadius": "28px",
+"borderBottomLeftRadius": "0px",
+"opacity": "1",
+"color": "rgb(28, 27, 31)",
+"boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+"transform": "none"
+},
+"stateLayer": {
+"rect": {
+"x": 36,
+"y": 24,
+"width": 396,
+"height": 56
+},
+"opacity": "0",
+"backgroundColor": "rgb(28, 27, 31)"
+},
+"leading": {
+"rect": {
+"x": 36,
+"y": 28,
+"width": 56,
+"height": 48
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"leadingStateLayer": {
+"rect": {
+"x": 40,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"opacity": "0",
+"backgroundColor": "rgb(28, 27, 31)"
+},
+"triggerButton": null,
+"leadingButton": {
+"rect": {
+"x": 40,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"value": "",
+"label": "Close search",
+"expanded": null,
+"color": "rgb(28, 27, 31)",
+"caretColor": "rgb(28, 27, 31)",
+"fontSize": "13.3333px",
+"lineHeight": "normal",
+"placeholder": null
+},
+"input": {
+"rect": {
+"x": 92,
+"y": 39,
+"width": 280,
+"height": 26
+},
+"value": "alp",
+"label": "Search fruit",
+"expanded": "true",
+"color": "rgb(28, 27, 31)",
+"caretColor": "rgb(28, 27, 31)",
+"fontSize": "16px",
+"lineHeight": "24px",
+"placeholder": "Search fruit"
+},
+"trailing": {
+"rect": {
+"x": 372,
+"y": 28,
+"width": 60,
+"height": 48
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"clear": {
+"rect": {
+"x": 376,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"opacity": "1",
+"color": "rgb(73, 69, 79)",
+"transform": "matrix(1, 0, 0, 1, 0, 0)",
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"voice": null,
+"loading": null,
+"trigger": null,
+"panel": {
+"rect": {
+"x": 36,
+"y": 80,
+"width": 396,
+"height": 185
+},
+"backgroundColor": "rgb(236, 230, 240)",
+"borderTopLeftRadius": "0px",
+"borderBottomLeftRadius": "28px",
+"opacity": "1",
+"color": "rgb(28, 27, 31)",
+"boxShadow": "none",
+"transform": "matrix(1, 0, 0, 1, 0, 0)"
+},
+"divider": {
+"rect": {
+"x": 36,
+"y": 80,
+"width": 396,
+"height": 1
+},
+"backgroundColor": "rgb(121, 116, 126)"
+},
+"empty": null,
+"viewport": {
+"rect": {
+"x": 36,
+"y": 81,
+"width": 396,
+"height": 184
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"triggerBox": null,
+"panelBody": {
+"rect": {
+"x": 36,
+"y": 81,
+"width": 396,
+"height": 184
+},
+"backgroundColor": "rgb(255, 224, 178)"
+},
+"resultsHost": {
+"rect": {
+"x": 36,
+"y": 81,
+"width": 396,
+"height": 184
+},
+"backgroundColor": "rgb(220, 237, 200)"
+},
+"loadingPart": null,
+"loadingShape": null,
+"statusPart": {
+"rect": {
+"x": 23,
+"y": 23,
+"width": 1,
+"height": 1
+},
+"backgroundColor": "rgb(255, 0, 0)",
+"text": "3 results available"
+},
+"rows": [
+{
+"x": 36,
+"y": 81,
+"width": 396,
+"height": 72
+},
+{
+"x": 36,
+"y": 153,
+"width": 396,
+"height": 56
+},
+{
+"x": 36,
+"y": 209,
+"width": 396,
+"height": 56
+}
+],
+"status": "3 results available",
+"clip": {
+"x": 16,
+"y": 16,
+"width": 436,
+"height": 436
+},
+"ax": [
+{
+"role": "button",
+"name": "Run"
+},
+{
+"role": "status",
+"name": ""
+},
+{
+"role": "button",
+"name": "Close search"
+},
+{
+"role": "combobox",
+"name": "Search fruit",
+"value": "alp",
+"expanded": true,
+"focused": true,
+"haspopup": "listbox",
+"autocomplete": "list",
+"required": false
+},
+{
+"role": "button",
+"name": "Clear search"
+},
+{
+"role": "button",
+"name": "Alpha First result"
+},
+{
+"role": "button",
+"name": "Alpine"
+},
+{
+"role": "button",
+"name": "Alpaca"
+}
+],
+"partRules": {
+"trigger": {
+"background-color": "#D1C4E9"
+},
+"panel-body": {
+"background-color": "#FFE0B2"
+},
+"results-host": {
+"background-color": "#DCEDC8"
+},
+"loading": {
+"background-color": "#F8BBD0"
+},
+"loading-shape": {
+"background-color": "#6A1B9A"
+},
+"status": {
+"background-color": "#FF0000"
+}
+}
+},
+{
+"name": "search-parts-light-ltr-x-docked-empty",
+"theme": "light",
+"dir": "ltr",
+"width": 420,
+"props": {
+"placeholder": "Search fruit",
+"layout": "docked",
+"value": "zzz"
+},
+"hooks": {},
+"avatar": false,
+"list": false,
+"open": true,
+"focused": true,
+"host": {
+"x": 24,
+"y": 24,
+"width": 420,
+"height": 56
+},
+"classes": "spx md-search md-search--contained md-search--docked md-search--trigger-bar md-search--has-value md-search--elevation-0 hydrated md-search--open md-search--panel-content md-search--focused",
+"bar": {
+"rect": {
+"x": 36,
+"y": 24,
+"width": 396,
+"height": 56
+},
+"backgroundColor": "rgb(236, 230, 240)",
+"borderTopLeftRadius": "9999px",
+"borderBottomLeftRadius": "9999px",
+"opacity": "1",
+"color": "rgb(28, 27, 31)",
+"boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+"transform": "none"
+},
+"stateLayer": {
+"rect": {
+"x": 36,
+"y": 24,
+"width": 396,
+"height": 56
+},
+"opacity": "0",
+"backgroundColor": "rgb(28, 27, 31)"
+},
+"leading": {
+"rect": {
+"x": 36,
+"y": 28,
+"width": 56,
+"height": 48
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"leadingStateLayer": {
+"rect": {
+"x": 40,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"opacity": "0",
+"backgroundColor": "rgb(28, 27, 31)"
+},
+"triggerButton": null,
+"leadingButton": {
+"rect": {
+"x": 40,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"value": "",
+"label": "Close search",
+"expanded": null,
+"color": "rgb(28, 27, 31)",
+"caretColor": "rgb(28, 27, 31)",
+"fontSize": "13.3333px",
+"lineHeight": "normal",
+"placeholder": null
+},
+"input": {
+"rect": {
+"x": 92,
+"y": 39,
+"width": 280,
+"height": 26
+},
+"value": "zzz",
+"label": "Search fruit",
+"expanded": "true",
+"color": "rgb(28, 27, 31)",
+"caretColor": "rgb(28, 27, 31)",
+"fontSize": "16px",
+"lineHeight": "24px",
+"placeholder": "Search fruit"
+},
+"trailing": {
+"rect": {
+"x": 372,
+"y": 28,
+"width": 60,
+"height": 48
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"clear": {
+"rect": {
+"x": 376,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"opacity": "1",
+"color": "rgb(73, 69, 79)",
+"transform": "matrix(1, 0, 0, 1, 0, 0)",
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"voice": null,
+"loading": null,
+"trigger": null,
+"panel": {
+"rect": {
+"x": 36,
+"y": 88,
+"width": 396,
+"height": 68
+},
+"backgroundColor": "rgb(236, 230, 240)",
+"borderTopLeftRadius": "16px",
+"borderBottomLeftRadius": "16px",
+"opacity": "1",
+"color": "rgb(28, 27, 31)",
+"boxShadow": "none",
+"transform": "matrix(1, 0, 0, 1, 0, 0)"
+},
+"divider": null,
+"empty": {
+"rect": {
+"x": 36,
+"y": 88,
+"width": 396,
+"height": 68
+},
+"color": "rgb(73, 69, 79)",
+"text": "No results available"
+},
+"viewport": {
+"rect": {
+"x": 0,
+"y": 0,
+"width": 0,
+"height": 0
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"triggerBox": null,
+"panelBody": {
+"rect": {
+"x": 36,
+"y": 88,
+"width": 396,
+"height": 68
+},
+"backgroundColor": "rgb(255, 224, 178)"
+},
+"resultsHost": {
+"rect": {
+"x": 0,
+"y": 0,
+"width": 0,
+"height": 0
+},
+"backgroundColor": "rgb(220, 237, 200)"
+},
+"loadingPart": null,
+"loadingShape": null,
+"statusPart": {
+"rect": {
+"x": 23,
+"y": 23,
+"width": 1,
+"height": 1
+},
+"backgroundColor": "rgb(255, 0, 0)"
+},
+"rows": [],
+"status": "",
+"clip": {
+"x": 16,
+"y": 16,
+"width": 436,
+"height": 316
+},
+"ax": [
+{
+"role": "button",
+"name": "Run"
+},
+{
+"role": "status",
+"name": ""
+},
+{
+"role": "button",
+"name": "Close search"
+},
+{
+"role": "combobox",
+"name": "Search fruit",
+"value": "zzz",
+"expanded": true,
+"focused": true,
+"haspopup": "listbox",
+"autocomplete": "list",
+"required": false
+},
+{
+"role": "button",
+"name": "Clear search"
+},
+{
+"role": "status",
+"name": ""
+}
+],
+"partRules": {
+"trigger": {
+"background-color": "#D1C4E9"
+},
+"panel-body": {
+"background-color": "#FFE0B2"
+},
+"results-host": {
+"background-color": "#DCEDC8"
+},
+"loading": {
+"background-color": "#F8BBD0"
+},
+"loading-shape": {
+"background-color": "#6A1B9A"
+},
+"status": {
+"background-color": "#FF0000"
+}
+}
+},
+{
+"name": "search-parts-light-ltr-x-docked-loading",
+"theme": "light",
+"dir": "ltr",
+"width": 420,
+"props": {
+"placeholder": "Search fruit",
+"layout": "docked",
+"value": "alp",
+"loading": true
+},
+"hooks": {},
+"avatar": false,
+"list": false,
+"open": false,
+"focused": false,
+"host": {
+"x": 24,
+"y": 24,
+"width": 420,
+"height": 56
+},
+"classes": "spx md-search md-search--contained md-search--docked md-search--trigger-bar md-search--closed md-search--has-value md-search--elevation-0 hydrated",
+"bar": {
+"rect": {
+"x": 48,
+"y": 24,
+"width": 372,
+"height": 56
+},
+"backgroundColor": "rgb(236, 230, 240)",
+"borderTopLeftRadius": "9999px",
+"borderBottomLeftRadius": "9999px",
+"opacity": "1",
+"color": "rgb(28, 27, 31)",
+"boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+"transform": "none"
+},
+"stateLayer": {
+"rect": {
+"x": 48,
+"y": 24,
+"width": 372,
+"height": 56
+},
+"opacity": "0",
+"backgroundColor": "rgb(28, 27, 31)"
+},
+"leading": {
+"rect": {
+"x": 48,
+"y": 28,
+"width": 56,
+"height": 48
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"leadingStateLayer": {
+"rect": {
+"x": 52,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"opacity": "0",
+"backgroundColor": "rgb(28, 27, 31)"
+},
+"triggerButton": null,
+"leadingButton": {
+"rect": {
+"x": 52,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"value": "",
+"label": "Search",
+"expanded": null,
+"color": "rgb(28, 27, 31)",
+"caretColor": "rgb(28, 27, 31)",
+"fontSize": "13.3333px",
+"lineHeight": "normal",
+"placeholder": null
+},
+"input": {
+"rect": {
+"x": 104,
+"y": 39,
+"width": 256,
+"height": 26
+},
+"value": "alp",
+"label": "Search fruit",
+"expanded": "false",
+"color": "rgb(28, 27, 31)",
+"caretColor": "rgb(28, 27, 31)",
+"fontSize": "16px",
+"lineHeight": "24px",
+"placeholder": "Search fruit"
+},
+"trailing": {
+"rect": {
+"x": 360,
+"y": 28,
+"width": 60,
+"height": 48
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"clear": {
+"rect": {
+"x": 373.6,
+"y": 37.6,
+"width": 28.8,
+"height": 28.8
+},
+"opacity": "0",
+"color": "rgb(73, 69, 79)",
+"transform": "matrix(0, 0.6, -0.6, 0, 0, 0)",
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"voice": null,
+"loading": {
+"x": 364,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"trigger": null,
+"panel": {
+"rect": {
+"x": 36,
+"y": 84,
+"width": 396,
+"height": 0
+},
+"backgroundColor": "rgba(0, 0, 0, 0)",
+"borderTopLeftRadius": "0px",
+"borderBottomLeftRadius": "0px",
+"opacity": "0",
+"color": "rgb(28, 27, 31)",
+"boxShadow": "none",
+"transform": "matrix(1, 0, 0, 1, 0, -4)"
+},
+"divider": null,
+"empty": null,
+"viewport": {
+"rect": {
+"x": 36,
+"y": 84,
+"width": 396,
+"height": 0
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"triggerBox": null,
+"panelBody": {
+"rect": {
+"x": 36,
+"y": 84,
+"width": 396,
+"height": 0
+},
+"backgroundColor": "rgb(255, 224, 178)"
+},
+"resultsHost": {
+"rect": {
+"x": 36,
+"y": 84,
+"width": 396,
+"height": 0
+},
+"backgroundColor": "rgb(220, 237, 200)"
+},
+"loadingPart": {
+"rect": {
+"x": 364,
+"y": 28,
+"width": 48,
+"height": 48
+},
+"backgroundColor": "rgb(248, 187, 208)"
+},
+"loadingShape": {
+"rect": {
+"x": 372.677,
+"y": 36.677,
+"width": 30.646,
+"height": 30.646
+},
+"backgroundColor": "rgb(106, 27, 154)"
+},
+"statusPart": {
+"rect": {
+"x": 23,
+"y": 23,
+"width": 1,
+"height": 1
+},
+"backgroundColor": "rgb(255, 0, 0)"
+},
+"rows": [],
+"status": "",
+"clip": {
+"x": 16,
+"y": 16,
+"width": 436,
+"height": 136
+},
+"ax": [
+{
+"role": "button",
+"name": "Run"
+},
+{
+"role": "status",
+"name": ""
+},
+{
+"role": "button",
+"name": "Search"
+},
+{
+"role": "combobox",
+"name": "Search fruit",
+"value": "alp",
+"expanded": false,
+"haspopup": "listbox",
+"autocomplete": "list",
+"required": false
+},
+{
+"role": "progressbar",
+"name": "Searching",
+"valuemin": 0,
+"valuemax": 100
+},
+{
+"role": "button",
+"name": "Clear search"
+}
+],
+"partRules": {
+"trigger": {
+"background-color": "#D1C4E9"
+},
+"panel-body": {
+"background-color": "#FFE0B2"
+},
+"results-host": {
+"background-color": "#DCEDC8"
+},
+"loading": {
+"background-color": "#F8BBD0"
+},
+"loading-shape": {
+"background-color": "#6A1B9A"
+},
+"status": {
+"background-color": "#FF0000"
+}
+}
+},
+{
+"name": "search-parts-light-ltr-x-icon-closed",
+"theme": "light",
+"dir": "ltr",
+"width": 420,
+"props": {
+"placeholder": "Search fruit",
+"layout": "full-screen"
+},
+"hooks": {},
+"avatar": false,
+"list": false,
+"open": false,
+"focused": false,
+"host": {
+"x": 24,
+"y": 24,
+"width": 48,
+"height": 48
+},
+"classes": "spx md-search md-search--contained md-search--full-screen md-search--trigger-icon md-search--closed md-search--elevation-0 hydrated",
+"bar": null,
+"stateLayer": null,
+"leading": null,
+"leadingStateLayer": null,
+"triggerButton": {
+"rect": {
+"x": 24,
+"y": 24,
+"width": 48,
+"height": 48
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"leadingButton": null,
+"input": null,
+"trailing": null,
+"clear": null,
+"voice": null,
+"loading": null,
+"trigger": {
+"x": 24,
+"y": 24,
+"width": 48,
+"height": 48
+},
+"panel": {
+"rect": {
+"x": 0,
+"y": 0,
+"width": 0,
+"height": 0
+},
+"backgroundColor": "rgba(0, 0, 0, 0)",
+"borderTopLeftRadius": "0px",
+"borderBottomLeftRadius": "0px",
+"opacity": "0",
+"color": "rgb(28, 27, 31)",
+"boxShadow": "none",
+"transform": "none"
+},
+"divider": null,
+"empty": null,
+"viewport": {
+"rect": {
+"x": 0,
+"y": 0,
+"width": 0,
+"height": 0
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"triggerBox": {
+"rect": {
+"x": 0,
+"y": 0,
+"width": 0,
+"height": 0
+},
+"backgroundColor": "rgb(209, 196, 233)"
+},
+"panelBody": {
+"rect": {
+"x": 0,
+"y": 0,
+"width": 0,
+"height": 0
+},
+"backgroundColor": "rgb(255, 224, 178)"
+},
+"resultsHost": {
+"rect": {
+"x": 0,
+"y": 0,
+"width": 0,
+"height": 0
+},
+"backgroundColor": "rgb(220, 237, 200)"
+},
+"loadingPart": null,
+"loadingShape": null,
+"statusPart": {
+"rect": {
+"x": 47.5,
+"y": 47.5,
+"width": 1,
+"height": 1
+},
+"backgroundColor": "rgb(255, 0, 0)"
+},
+"rows": [],
+"status": "",
+"clip": {
+"x": 16,
+"y": 16,
+"width": 436,
+"height": 64
+},
+"ax": [
+{
+"role": "button",
+"name": "Run"
+},
+{
+"role": "status",
+"name": ""
+},
+{
+"role": "button",
+"name": "Search fruit"
+}
+],
+"partRules": {
+"trigger": {
+"background-color": "#D1C4E9"
+},
+"panel-body": {
+"background-color": "#FFE0B2"
+},
+"results-host": {
+"background-color": "#DCEDC8"
+},
+"loading": {
+"background-color": "#F8BBD0"
+},
+"loading-shape": {
+"background-color": "#6A1B9A"
+},
+"status": {
+"background-color": "#FF0000"
+}
+}
+},
+{
+"name": "search-parts-fullscreen-open",
+"theme": "light",
+"dir": "ltr",
+"width": 1140,
+"props": {
+"layout": "full-screen",
+"trigger": "bar",
+"placeholder": "Search fruit",
+"value": "alp"
+},
+"hooks": {},
+"avatar": false,
+"list": true,
+"open": true,
+"focused": true,
+"host": {
+"x": 0,
+"y": 0,
+"width": 1200,
+"height": 900
+},
+"classes": "sp md-search md-search--contained md-search--full-screen md-search--trigger-bar md-search--has-value md-search--elevation-0 hydrated md-search--open md-search--panel-content md-search--focused",
+"bar": {
+"rect": {
+"x": 8,
+"y": 16,
+"width": 1184,
+"height": 56
+},
+"backgroundColor": "rgb(255, 245, 157)",
+"borderTopLeftRadius": "9999px",
+"borderBottomLeftRadius": "9999px",
+"opacity": "1",
+"color": "rgb(28, 27, 31)",
+"boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+"transform": "matrix(1, 0, 0, 1, 0, 0)"
+},
+"stateLayer": {
+"rect": {
+"x": 8,
+"y": 16,
+"width": 1184,
+"height": 56
+},
+"opacity": "0.2",
+"backgroundColor": "rgb(233, 30, 99)"
+},
+"leading": {
+"rect": {
+"x": 8,
+"y": 20,
+"width": 56,
+"height": 48
+},
+"backgroundColor": "rgb(225, 245, 254)"
+},
+"leadingStateLayer": {
+"rect": {
+"x": 12,
+"y": 20,
+"width": 48,
+"height": 48
+},
+"opacity": "0.3",
+"backgroundColor": "rgb(46, 125, 50)"
+},
+"triggerButton": null,
+"leadingButton": {
+"rect": {
+"x": 12,
+"y": 20,
+"width": 48,
+"height": 48
+},
+"value": "",
+"label": "Close search",
+"expanded": null,
+"color": "rgb(28, 27, 31)",
+"caretColor": "rgb(28, 27, 31)",
+"fontSize": "13.3333px",
+"lineHeight": "normal",
+"placeholder": null
+},
+"input": {
+"rect": {
+"x": 64,
+"y": 31,
+"width": 1068,
+"height": 26
+},
+"value": "alp",
+"label": "Search fruit",
+"expanded": "true",
+"color": "rgb(26, 35, 126)",
+"caretColor": "rgb(213, 0, 0)",
+"fontSize": "16px",
+"lineHeight": "24px",
+"placeholder": "Search fruit"
+},
+"trailing": {
+"rect": {
+"x": 1132,
+"y": 20,
+"width": 60,
+"height": 48
+},
+"backgroundColor": "rgb(243, 229, 245)"
+},
+"clear": {
+"rect": {
+"x": 1136,
+"y": 20,
+"width": 48,
+"height": 48
+},
+"opacity": "1",
+"color": "rgb(73, 69, 79)",
+"transform": "matrix(1, 0, 0, 1, 0, 0)",
+"backgroundColor": "rgb(255, 204, 188)"
+},
+"voice": null,
+"loading": null,
+"trigger": null,
+"panel": {
+"rect": {
+"x": 0,
+"y": 0,
+"width": 1200,
+"height": 900
+},
+"backgroundColor": "rgb(255, 253, 231)",
+"borderTopLeftRadius": "0px",
+"borderBottomLeftRadius": "0px",
+"opacity": "1",
+"color": "rgb(28, 27, 31)",
+"boxShadow": "none",
+"transform": "matrix(1, 0, 0, 1, 0, 0)"
+},
+"divider": null,
+"empty": null,
+"viewport": {
+"rect": {
+"x": 0,
+"y": 80,
+"width": 1200,
+"height": 820
+},
+"backgroundColor": "rgb(232, 234, 246)"
+},
+"triggerBox": null,
+"panelBody": {
+"rect": {
+"x": 0,
+"y": 80,
+"width": 1200,
+"height": 820
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"resultsHost": {
+"rect": {
+"x": 0,
+"y": 80,
+"width": 1200,
+"height": 820
+},
+"backgroundColor": "rgba(0, 0, 0, 0)"
+},
+"loadingPart": null,
+"loadingShape": null,
+"statusPart": {
+"rect": {
+"x": -1,
+"y": -1,
+"width": 1,
+"height": 1
+},
+"backgroundColor": "rgba(0, 0, 0, 0)",
+"text": "3 results available"
+},
+"rows": [
+{
+"x": 0,
+"y": 80,
+"width": 1200,
+"height": 72
+},
+{
+"x": 0,
+"y": 152,
+"width": 1200,
+"height": 56
+},
+{
+"x": 0,
+"y": 208,
+"width": 1200,
+"height": 56
+}
+],
+"status": "3 results available",
+"clip": {
+"x": 16,
+"y": 16,
+"width": 1156,
+"height": 916
+},
+"ax": [
+{
+"role": "button",
+"name": "Run"
+},
+{
+"role": "status",
+"name": ""
+},
+{
+"role": "button",
+"name": "Close search"
+},
+{
+"role": "combobox",
+"name": "Search fruit",
+"value": "alp",
+"expanded": true,
+"focused": true,
+"haspopup": "listbox",
+"autocomplete": "list",
+"required": false
+},
+{
+"role": "button",
+"name": "Clear search"
+},
+{
+"role": "dialog",
+"name": "Search fruit",
+"modal": true
+},
+{
+"role": "button",
+"name": "Alpha First result"
+},
+{
+"role": "button",
+"name": "Alpine"
+},
+{
+"role": "button",
+"name": "Alpaca"
+}
+],
+"partRules": {
+"bar": {
+"background-color": "#FFF59D"
+},
+"state-layer": {
+"background-color": "#E91E63",
+"opacity": "0.2"
+},
+"leading": {
+"background-color": "#E1F5FE"
+},
+"leading-state-layer": {
+"background-color": "#2E7D32",
+"opacity": "0.3"
+},
+"input": {
+"color": "#1A237E",
+"caret-color": "#D50000"
+},
+"trailing": {
+"background-color": "#F3E5F5"
+},
+"clear-button": {
+"background-color": "#FFCCBC"
+},
+"voice-button": {
+"background-color": "#C8E6C9"
+},
+"trigger-button": {
+"background-color": "#B3E5FC"
+},
+"divider": {
+"background-color": "#FF6F00"
+},
+"panel": {
+"background-color": "#FFFDE7"
+},
+"empty": {
+"color": "#B71C1C"
+},
+"results-viewport": {
+"background-color": "#E8EAF6"
+}
+}
+}
+]
+}

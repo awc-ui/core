@@ -251,12 +251,13 @@ struct AWCMenuSurfacePlacement: Equatable {
     static func resolve(anchor: CGRect, surfaceWidth: Double, chrome: Double, content: Double, viewport: CGSize, model: AWCMenuModel,
                         appearance: AWCMenuAppearance, minWidth: Double) -> Self {
         let gap = 4.0, vw = Double(viewport.width), vh = Double(viewport.height)
-        let m = AWCMenuLength(appearance.viewportMargin)?.resolve(viewport: viewport) ?? 8
-        let baseCap = defaultCap(model: model, appearance: appearance, viewport: viewport, margin: m)
+        // positionMenu() clamps with VIEWPORT_MARGIN (8); --md-menu-viewport-margin sizes the CSS caps (max-width, max-block-size).
+        let hm = AWCMenuLength(appearance.viewportMargin)?.resolve(viewport: viewport) ?? 8, m = 8.0
+        let baseCap = defaultCap(model: model, appearance: appearance, viewport: viewport, margin: hm)
         func height(_ cap: Double) -> Double { chrome + min(content, cap) }
         let a = anchor
         if model.responsive && vw <= 600 {
-            let w = vw - 2 * m, h = height(baseCap)
+            let w = vw - 2 * hm, h = height(baseCap)
             var top = Double(a.maxY) + gap, vertical = "bottom"
             if top + h + m > vh && Double(a.minY) - gap - h >= m { top = Double(a.minY) - gap - h; vertical = "top" }
             top = max(m, min(top, vh - h - m))
@@ -284,6 +285,8 @@ struct AWCMenuSurfacePlacement: Equatable {
         let hook = AWCMenuLength(appearance.maxBlockSize)?.resolve(viewport: viewport) ?? 250
         return min(mh ?? hook, Double(viewport.height) - 2 * margin)
     }
+    /// `--md-menu-section-gap` (default 2px): the space under a row marked `gap` in a sectioned baseline menu.
+    static func sectionGap(appearance: AWCMenuAppearance, viewport: CGSize) -> Double { AWCMenuLength(appearance.sectionGap)?.resolve(viewport: viewport) ?? 2 }
     /// Transform origin of the open / close motion (physical, as the source writes it).
     var unitAnchor: UnitPoint { .init(x: horizontal == "start" ? 0 : 1, y: vertical == "bottom" ? 0 : 1) }
 }

@@ -69,7 +69,14 @@ final class TPHostingView: NSHostingView<TimePickerStatesFixture> {
     static var host: NSHostingView<TimePickerStatesFixture>!, window: NSWindow!
     static var checks = 0, failures: [String] = [], report: [[String: Any]] = []
     static let env = ProcessInfo.processInfo.environment
-    static func check(_ value: Bool, _ name: String) { checks += 1; if !value { failures.append(name); print("FAIL: " + name); fflush(stdout) } }
+    static func dgSuffix() -> String {
+        #if !canImport(AppKit)
+        return AWCDG.suffix()
+        #else
+        return ""
+        #endif
+    }
+    static func check(_ value: Bool, _ name: String) { checks += 1; if !value { failures.append(name); print("FAIL: " + name + dgSuffix()); fflush(stdout) } }
     static func now() -> Double { CACurrentMediaTime() * 1000 }
     static func pump(_ duration: Double = 0.004) { let end = Date().addingTimeInterval(duration); repeat { while let e = NSApp.nextEvent(matching: .any, until: .distantPast, inMode: .default, dequeue: true) { NSApp.sendEvent(e) }; host.layoutSubtreeIfNeeded(); host.displayIfNeeded(); _ = RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.002)) } while Date() < end }
     static func mouseEvent(_ type: NSEvent.EventType, _ p: CGPoint) -> NSEvent {
@@ -86,8 +93,20 @@ final class TPHostingView: NSHostingView<TimePickerStatesFixture> {
             if !NSApp.isActive { inactivePresses += 1 }
             #endif
         }
+        #if canImport(UIKit)
+        if [.leftMouseDown, .leftMouseDragged, .leftMouseUp].contains(type) { queuedAt.append(now()) }
+        #endif
         window.sendEvent(mouseEvent(type, p))
     }
+    /// iOS: the queue time of every synthesized touch phase and key press, paired in order with the harness's delivery stamps
+    /// (`AWCShimTouch.deliveredAt`): a synthesized input reaches the app when UIKit delivers it, one touch phase per frame.
+    static var queuedAt: [Double] = []
+    /// Per run: (queue time relative to t0, delivery delay) of each phase's first and last input (the press / key-down and the
+    /// release / key-up: the harness coalesces drag moves, one touch phase per frame, so inputs and stamps are not one to one);
+    /// a Chrome sample is compared with the native frames at its time plus the delay of the latest of those queued by then (the
+    /// check is timed from the delivered input, not the queue).
+    static var deliveryShift: [(Double, Double)] = []
+    static func shift(_ st: Double) -> Double { deliveryShift.last(where: { $0.0 <= st + 1 })?.1 ?? 0 }
     /// The modal scope's AppKit host (its local event monitor routes Escape and Tab to the top modal owner).
     static func modalSession() -> AWCModalSession? {
         func find(_ v: NSView) -> AWCModalHostView? { if let h = v as? AWCModalHostView { return h }; for s in v.subviews { if let h = find(s) { return h } }; return nil }
@@ -101,7 +120,15 @@ final class TPHostingView: NSHostingView<TimePickerStatesFixture> {
                 session.lastInputPointer = false
                 if session.isActive && (code == 53 && session.escape() || code == 48 && session.tab(backward: flags.contains(.shift))) { continue }
             }
-            window.sendEvent(NSEvent.keyEvent(with: type, location: .zero, modifierFlags: flags, timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber, context: nil, characters: chars, charactersIgnoringModifiers: chars, isARepeat: false, keyCode: code)!)
+            let event = NSEvent.keyEvent(with: type, location: .zero, modifierFlags: flags, timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber, context: nil, characters: chars, charactersIgnoringModifiers: chars, isARepeat: false, keyCode: code)!
+            #if canImport(UIKit)
+            queuedAt.append(now()); window.sendEvent(event)
+            #else
+            // As a hardware key arrives: the application's current event while the window handles it (md-text-field reads
+            // NSApp.currentEvent to report the vertical arrows of a number field, `navigationKeys`).
+            NSApp.postEvent(event, atStart: true)
+            window.sendEvent(NSApp.nextEvent(matching: [.keyDown, .keyUp], until: .distantPast, inMode: .default, dequeue: true) ?? event)
+            #endif
         }
     }
     static let keys: [String: (UInt16, String)] = ["ArrowLeft": (123, "\u{F702}"), "ArrowRight": (124, "\u{F703}"), "ArrowDown": (125, "\u{F701}"), "ArrowUp": (126, "\u{F700}"),
@@ -176,11 +203,36 @@ final class TPHostingView: NSHostingView<TimePickerStatesFixture> {
         // Drags: down at the start angle, `n` moves spread over Chrome's drag, release when Chrome's did.
         func drag(_ a0: Double, _ a1: Double, _ f: Double, _ n: Int) -> (Double, Double) -> Void {
             { start, end in
-                down(dialPoint(a0, f)); pump()
+                // S932-DRAGPLAN: the moves that change the value fire when Chrome's value changed (its mdInput events in the phase),
+                // as a tap presses when Chrome's pointerdown landed; the moves between are spread evenly. A move that sits exactly on
+                // a rounding boundary (k + 0.5 steps) is moved 0.4 deg on in the drag direction, so the sub-point position of the
+                // synthesized touch does not decide whether it changes the value. Without a one-to-one match the moves stay even.
+                let hourMode = runtime?.selecting == .hour
+                let stepDeg = hourMode ? 30.0 : 6.0, mod = hourMode ? 12 : 60, dir: Double = a1 >= a0 ? 1 : -1
+                func norm(_ a: Double) -> Double { (a.truncatingRemainder(dividingBy: 360) + 360).truncatingRemainder(dividingBy: 360) }
+                func value(_ a: Double) -> Int { Int(AWCTimeMath.jsRound(norm(a) / stepDeg)) % mod }
+                var angles = (0...n).map { a0 + (a1 - a0) * Double($0) / Double(n) }
+                var times = (0...n).map { start + (end - start) * Double($0) / Double(n + 1) }
+                let nudged = angles.map { a -> Double in let x = norm(a) / stepDeg; return abs(x - x.rounded(.down) - 0.5) * stepDeg < 0.3 ? a + 0.4 * dir : a }
+                let crossings = (1...n).filter { value(nudged[$0]) != value(nudged[$0 - 1]) }
+                let chrome = r["events"].array.filter { $0["name"].string == "mdInput" }.compactMap { $0["t"].number }.filter { $0 > start + 10 && $0 <= end + 1 }.sorted()
+                var planned = false
+                if !crossings.isEmpty, crossings.count == chrome.count {
+                    var anchors: [(Int, Double)] = [(0, start)]
+                    for (k, c) in crossings.enumerated() { anchors.append((c, chrome[k] - 2)) }
+                    if crossings.last != n { anchors.append((n, times[n])) }
+                    if zip(anchors, anchors.dropFirst()).allSatisfy({ $0.1 < $1.1 && $0.0 < $1.0 }), let last = anchors.last, last.1 < end {
+                        for (p, q) in zip(anchors, anchors.dropFirst()) {
+                            for i in p.0...q.0 { times[i] = p.1 + (q.1 - p.1) * Double(i - p.0) / Double(q.0 - p.0) }
+                        }
+                        angles = nudged; planned = true
+                    }
+                }
+                if env["AWC_TP_DEBUG"] != nil { print("  DRAGPLAN \(planned) crossings \(crossings) chrome \(chrome.map { Int($0) }) times \(times.map { Int($0) })"); fflush(stdout) }
+                down(dialPoint(angles[0], f)); pump()
                 for i in 1...n {
-                    let at = start + (end - start) * Double(i) / Double(n + 1)
-                    while now() - t0 < at { pump() }
-                    move(dialPoint(a0 + (a1 - a0) * Double(i) / Double(n), f)); pump()
+                    while now() - t0 < times[i] { pump() }
+                    move(dialPoint(angles[i], f)); pump()
                 }
                 while now() - t0 < end { pump() }
                 up(dialPoint(a1, f))
@@ -211,6 +263,26 @@ final class TPHostingView: NSHostingView<TimePickerStatesFixture> {
         state.pointer.update(phase: .leave); state.events = []; state.measurements = []; state.epoch += 1; pump(0.4)
         let phases = r["phases"].array, acts = actions(r)
         t0 = now() + 50; debugT0 = t0
+        #if !canImport(AppKit)
+        AWCDG.start()
+        #endif
+        deliveryShift = []
+        #if canImport(UIKit)
+        var qMark = queuedAt.count, dMark = AWCShimTouch.deliveredAt.count
+        func pairDeliveries(_ fired: Double, _ lbl: String) {
+            let q = Array(queuedAt[qMark...]), d = Array(AWCShimTouch.deliveredAt[dMark...])
+            qMark = queuedAt.count; dMark = AWCShimTouch.deliveredAt.count
+            guard env["AWC_TP_STEP_ANCHOR"] != "queue" else { return }
+            // A phase without a delivered input (a Tab / Escape the modal scope takes at once) is timed from its step.
+            guard let q0 = q.first, let d0 = d.first else { deliveryShift.append((fired, 0)); return }
+            // 6-2: a mode-toggle click: the release (posted, not in queuedAt) fires the action; time it from its delivery.
+            if env["AWC_TP_RELEASE_CLOCK"] != "0", lbl == "to-input" || lbl == "to-dial", q.count == 1, d.count > 1, let dl = d.last, dl - q0 >= 0, dl - q0 < 150 {
+                if env["AWC_TP_DEBUG"] == "1" { print(String(format: "  releaseclock %@ press %.1f release %.1f (+%.1f)", lbl, d0 - t0, dl - t0, dl - q0)) }
+                deliveryShift.append((q0 - t0, dl - q0)); return }
+            var pairs = [(q0, d0)]; if q.count > 1, d.count > 1, let q1 = q.last, let d1 = d.last { pairs.append((q1, d1)) }
+            for (qq, dd) in pairs where dd - qq >= 0 && dd - qq < 150 { deliveryShift.append((qq - t0, dd - qq)) }
+        }
+        #endif
         let anims = r["anims"].array.map { (kind: $0["kind"].string, start: $0["start"].number ?? 0) }
         func latency(_ kind: String) -> Double { ["scrim", "dialog", "mode"].contains(kind) ? openLatency : stateLatency }
         let multi = ["drag", "type-"]
@@ -260,9 +332,18 @@ final class TPHostingView: NSHostingView<TimePickerStatesFixture> {
             let next = i + 1 < phases.count ? phases[i + 1]["t"].number! : p.start + 900
             let nextInput = i + 1 < phases.count ? plans[i + 1].start - 2 : next
             while now() - t0 < min(next - 20, nextInput) { pump() }
+            #if canImport(UIKit)
+            pairDeliveries(fired, lbl)
+            #endif
+            #if !canImport(AppKit)
+            AWCDG.input(planned: t0 + p.start)
+            #endif
             checkPhase(label + "/" + lbl, ph)
         }
         pump(0.2)
+        #if canImport(UIKit)
+        if env["AWC_TP_DEBUG"] == "1", !deliveryShift.isEmpty { print("  delivery \(label): " + deliveryShift.map { String(format: "%.0f+%.0f", $0.0, $0.1) }.joined(separator: " ")) }
+        #endif
         for a in anchored where a.0.hasPrefix(label + "/") {
             let keys = (runtime?.motion.keys).map(Array.init)?.filter { a.1 == "hand" ? $0 == "hand" : a.1 == "number" ? $0.hasPrefix("number") : a.1 == "period" ? $0.hasPrefix("period") : ["scrim", "dialog"].contains(a.1) ? $0 == a.1 : a.1 == "mode" ? $0.hasPrefix("mode") : false } ?? []
             var starts: [Double] = []
@@ -332,16 +413,27 @@ final class TPHostingView: NSHostingView<TimePickerStatesFixture> {
         // Motion: every Chrome sample against the native presented values within one frame.
         for smp in ph["samples"].array {
             guard let st = smp["t"].number else { continue }
-            let at = t0 + st
+            let at = t0 + st + shift(st)
             func mx(_ o: AWCValue) -> [Double]? {
                 guard case .object(let v) = o, let op = Double(v["opacity"]?.string ?? "") else { return nil }
                 let m = matrix(v["transform"]?.string ?? "none"); return [op, m[0], m[5]]
             }
             if let v = mx(smp["dialog"]) { motion("dialog", at, v, [0.03, 0.006, 0.35], "\(label) t=\(Int(st))") }
             if case .object(let o) = smp["scrim"], let op = Double(o["opacity"]?.string ?? "") { motion("scrim", at, [op, 0, 0], [0.03, 99, 99], "\(label) t=\(Int(st))", component: 0) }
-            if let v = mx(smp["dialWrap"]) { motion("mode-dial", at, v, [0.03, 0.006, 0.35], "\(label) t=\(Int(st))") }
-            if let v = mx(smp["inputArea"]) { motion("mode-input", at, v, [0.03, 0.006, 0.35], "\(label) t=\(Int(st))") }
-            if case .object(let h) = smp["hand"], let a = h["angle"]?.number { motion("hand", at, [a], [0.8], "\(label) t=\(Int(st))", angle: true) }
+            // While the modes swap, Chrome's two selectors resolve to the one blooming wrapper (equal samples): it is the incoming
+            // mode's area natively (the outgoing one is removed, as its content is in the source).
+            if let v = mx(smp["dialWrap"]), let w = mx(smp["inputArea"]), v == w,
+               let mode = state.measurements.first(where: { $0.name == "md-time-picker" })?.metrics["mode"]?.string {
+                motion("mode-" + mode, at, v, [0.03, 0.006, 0.35], "\(label) t=\(Int(st))")
+            } else {
+                if let v = mx(smp["dialWrap"]) { motion("mode-dial", at, v, [0.03, 0.006, 0.35], "\(label) t=\(Int(st))") }
+                if let v = mx(smp["inputArea"]) { motion("mode-input", at, v, [0.03, 0.006, 0.35], "\(label) t=\(Int(st))") }
+            }
+            if case .object(let h) = smp["hand"], let a = h["angle"]?.number {
+                let phT = ph["t"].number ?? 0
+                let handShift = label.contains("/tap-") ? (deliveryShift.first(where: { $0.0 >= phT - 40 && $0.0 <= st + 1 })?.1 ?? shift(st)) : shift(st)
+                motion("hand", t0 + st + handShift, [a], [0.8], "\(label) t=\(Int(st))", angle: true)
+            }
             if case .object(let p) = smp["period"] {
                 for (k, key) in [("amBg", "period-am"), ("pmBg", "period-pm")] {
                     guard let css = p[k]?.string else { continue }
@@ -405,6 +497,13 @@ final class TPHostingView: NSHostingView<TimePickerStatesFixture> {
         // Chrome's oracle page was warm.
         state.node = AWCNode(id: "tp", tag: "md-time-picker", properties: ["value": .string("14:30")]); state.epoch += 1; pump(0.3)
         runtime?.show(); pump(0.8); runtime?.hide(); pump(0.5); state.events = []
+        #if canImport(UIKit)
+        // S932-WARMUP, not checked, always run: the first focus of a text input in a process (here the trigger field, which the open phase presses)
+        // takes about 0.4 s on the simulator (UIKit keyboard task queue + becomeFirstResponder, KNOWN-CAUSES row 40); Chrome's oracle page was warm.
+        // It pays that once-per-process system cost before the first checked case. It touches no later case: the dialog is hidden, the pointer and focus reset.
+        do { let w0 = now(); click(center("md-text-field")); pump(0.9); runtime?.hide(); pump(0.5); state.pointer.update(phase: .leave); _ = window.makeFirstResponder(nil); pump(0.3); state.events = []
+            if env["AWC_TP_TRACE"] != nil { print(String(format: "WARMUP first-focus done in %.0f ms", now() - w0)) } }
+        #endif
         for (file, reduced) in [("timepicker-web-states", false), ("timepicker-web-states-reduced", true)] {
             let oracle = try! JSONDecoder().decode(AWCValue.self, from: Data(contentsOf: fixtures.appendingPathComponent(file + ".json")))
             for r in oracle["runs"].array where only.map({ r["name"].string.contains($0) }) ?? true { run(r, reduced: reduced) }

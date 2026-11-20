@@ -227,6 +227,62 @@
       "description": "Optional outline width (default 0)"
     },
     {
+      "name": "--md-avatar-palette-1-container",
+      "description": "Container fill for palette bucket 1"
+    },
+    {
+      "name": "--md-avatar-palette-1-label",
+      "description": "Label color for palette bucket 1"
+    },
+    {
+      "name": "--md-avatar-palette-2-container",
+      "description": "Container fill for palette bucket 2"
+    },
+    {
+      "name": "--md-avatar-palette-2-label",
+      "description": "Label color for palette bucket 2"
+    },
+    {
+      "name": "--md-avatar-palette-3-container",
+      "description": "Container fill for palette bucket 3"
+    },
+    {
+      "name": "--md-avatar-palette-3-label",
+      "description": "Label color for palette bucket 3"
+    },
+    {
+      "name": "--md-avatar-palette-4-container",
+      "description": "Container fill for palette bucket 4"
+    },
+    {
+      "name": "--md-avatar-palette-4-label",
+      "description": "Label color for palette bucket 4"
+    },
+    {
+      "name": "--md-avatar-palette-5-container",
+      "description": "Container fill for palette bucket 5"
+    },
+    {
+      "name": "--md-avatar-palette-5-label",
+      "description": "Label color for palette bucket 5"
+    },
+    {
+      "name": "--md-avatar-palette-6-container",
+      "description": "Container fill for palette bucket 6"
+    },
+    {
+      "name": "--md-avatar-palette-6-label",
+      "description": "Label color for palette bucket 6"
+    },
+    {
+      "name": "--md-avatar-palette-7-container",
+      "description": "Container fill for palette bucket 7"
+    },
+    {
+      "name": "--md-avatar-palette-7-label",
+      "description": "Label color for palette bucket 7"
+    },
+    {
       "name": "--md-avatar-label-letter-spacing"
     }
   ],
@@ -299,7 +355,7 @@
     "styleUrl": "md-avatar.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "9de6cfe5d2298fafaa6ab130233a85b07bbbf3c5a37edbdd0d98ec4e563de4d1"
+    "sha256": "0d7d9fe705e68729c265c2aaa85956b09b5a21dcdceacd5105f45dfc1ce9f61a"
   },
   "styles": [
     {
@@ -1005,9 +1061,9 @@
       "notes": [
         "Dedicated native avatar: all eleven properties (image → initials → default slot → person icon; size presets with density 0…−4 and custom CSS lengths: unitless px, px, rem, em, vw, vh, vmin, vmax, pt, pc, in, cm, mm, q with calc/min/max/clamp; circle, rounded and square shapes with physical corners), mdLoad/mdError with { src }, the default slot, twenty-five appearance hooks and three typed part targets.",
         "Identity as in the source: explicit initials (trimmed, three graphemes, locale upper-case) or the first and last name tokens; the name palette bucket uses the source's JavaScript hash; role img with the label, alt or name, otherwise hidden from assistive technology.",
-        "As in the source, a name palette wins over containerColor/labelColor (they color neutral avatars); the fourteen palette hooks (missing from the CEM) recolor their own bucket.",
+        "As in the source, a name palette wins over containerColor/labelColor (they color neutral avatars); the fourteen palette hooks recolor their own bucket.",
         "Images decode natively from data:, file: and http(s) sources; loading=lazy has no viewport deferral and crossorigin has no CORS semantics (a crossorigin change re-requests a displayed image, as Chrome does). Inline SVG slot content has no native equivalent; native views go in the slot.",
-        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
+        "macOS SwiftUI/AppKit, iOS simulator (iPhone and iPad on iOS 26.3, iPhone on iOS 18.6; docs/native-parity/ios-harness.md) and Android emulator renderers are verified against the Chrome oracles; their accessibility trees are compared with Chrome's on all three platforms by tools/ax (docs/native-parity/accessibility.md). Spoken VoiceOver/TalkBack output is not automated."
       ],
       "verification": "not-device-verified",
       "visualParts": [
@@ -1076,9 +1132,9 @@
       "notes": [
         "Dedicated native avatar: all eleven properties (image → initials → default slot → person icon; size presets with density 0…−4 and custom CSS lengths: unitless px, px, rem, em, vw, vh, vmin, vmax, pt, pc, in, cm, mm, q with calc/min/max/clamp; circle, rounded and square shapes with physical corners), mdLoad/mdError with { src }, the default slot, twenty-five appearance hooks and three typed part targets.",
         "Identity as in the source: explicit initials (trimmed, three graphemes, locale upper-case) or the first and last name tokens; the name palette bucket uses the source's JavaScript hash; role img with the label, alt or name, otherwise hidden from assistive technology.",
-        "As in the source, a name palette wins over containerColor/labelColor (they color neutral avatars); the fourteen palette hooks (missing from the CEM) recolor their own bucket.",
+        "As in the source, a name palette wins over containerColor/labelColor (they color neutral avatars); the fourteen palette hooks recolor their own bucket.",
         "Images decode natively from data:, file: and http(s) sources; loading=lazy has no viewport deferral and crossorigin has no CORS semantics (a crossorigin change re-requests a displayed image, as Chrome does). Inline SVG slot content has no native equivalent; native views go in the slot.",
-        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
+        "macOS SwiftUI/AppKit, iOS simulator (iPhone and iPad on iOS 26.3, iPhone on iOS 18.6; docs/native-parity/ios-harness.md) and Android emulator renderers are verified against the Chrome oracles; their accessibility trees are compared with Chrome's on all three platforms by tools/ax (docs/native-parity/accessibility.md). Spoken VoiceOver/TalkBack output is not automated."
       ],
       "verification": "not-device-verified",
       "visualParts": [

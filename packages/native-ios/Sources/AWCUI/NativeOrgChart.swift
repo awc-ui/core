@@ -214,6 +214,8 @@ struct AWCNativeOrgChart: View {
     let dispatch: (String, AWCValue) -> Void
     let setSelectedIDs: ([String]) -> Void
     @Environment(\.awcOrgChartAppearance) private var appearance
+    @Environment(\.awcOrgChartParts) private var partRules
+    @Environment(\.awcOrgChartPartTargets) private var partTargets
     @Environment(\.layoutDirection) private var direction
     @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
     @Environment(\.awcOrgChartReducedMotion) private var reducedOverride
@@ -235,7 +237,13 @@ struct AWCNativeOrgChart: View {
     private var selection: [String] { (properties["selectedIds"]?.array ?? []).map(\.string) }
     private var vertical: Bool { s("orientation", "vertical") != "horizontal" }
     private var rtl: Bool { direction == .rightToLeft }
-    private var metrics: AWCOrgChartMetrics { .init(density: density, appearance: appearance) }
+    /// The chart's ::part() declarations (OrgChartParts.swift): the shared rules under this chart's own.
+    private var parts: AWCOrgChartParts {
+        var out = partRules
+        for (p, s) in partTargets[nodeID] ?? [:] { out[p] = (out[p] ?? .init()).merging(s) }
+        return .init(styles: out)
+    }
+    private var metrics: AWCOrgChartMetrics { var m = AWCOrgChartMetrics(density: density, appearance: appearance); m.parts = parts; return m }
     private var duration: Double { reduceMotion ? 0 : metrics.duration }
     private var hold: Double { reduceMotion ? 0 : 100 }
     private var tokens: [String: String] { theme.tokens.merging(inheritedTokens) { _, b in b } }
@@ -288,15 +296,24 @@ struct AWCNativeOrgChart: View {
     // MARK: empty state
     @ViewBuilder private var empty: some View {
         // `role=status`: the `empty` slot or the default "No data" (body-medium 14px, on-surface-variant, padding 32/16).
+        let e = parts[.empty], vp = parts[.viewport], size = e.fontSize ?? 14
         VStack(spacing: 0) {
             if let emptySlot { AWCOrgChartLineBox { emptySlot } } else {
-                Text("No data").frame(height: 16, alignment: .center)
+                Text("No data").frame(height: AWCOrgChartFonts.normalLine(size), alignment: .center)
             }
         }
-        // Slotted content inherits the empty state's text style (body-medium 14px, on-surface-variant), as CSS does.
-        .font(AWCNativeFonts.label(size: 14, regular: true)).foregroundStyle(Color(awcHex: token("on-surface-variant", "#49454F")))
-        .frame(maxWidth: .infinity).padding(.vertical, 32).padding(.horizontal, 16)
-        .padding(.top, 8).padding(.horizontal, 8).padding(.bottom, metrics.toggle / 2 + 10)
+        // Slotted content inherits the empty state's text style (body-medium 14px, on-surface-variant), as CSS does;
+        // ::part(empty) restyles the text and its box, ::part(viewport) the box around it.
+        .font(e.fontWeight.map { Font.custom(AWCOrgChartFonts.face($0), fixedSize: size) } ?? AWCNativeFonts.label(size: size, regular: true))
+        .tracking(e.letterSpacing ?? 0)
+        .foregroundStyle(e.color(over: Color(awcHex: token("on-surface-variant", "#49454F"))))
+        .frame(maxWidth: .infinity)
+        .padding(e.edges(EdgeInsets(top: 32, leading: 16, bottom: 32, trailing: 16), rtl: rtl))
+        .background { e.backgroundView }
+        .opacity(e.opacity ?? 1)
+        .padding(vp.edges(EdgeInsets(top: 8, leading: 8, bottom: metrics.toggle / 2 + 10, trailing: 8), rtl: rtl))
+        .background { vp.backgroundView }
+        .opacity(vp.opacity ?? 1)
         .accessibilityElement(children: .combine)   // role=status: its text in reading order (as WebKit reads a status)
     }
 
@@ -316,6 +333,9 @@ struct AWCNativeOrgChart: View {
         .defaultScrollAnchor(rtl ? .trailing : .leading)
         .environment(\.layoutDirection, .leftToRight)
         .frame(height: layout.hostHeight)
+        // ::part(viewport): the scroll box's background (clipped to its radius) and opacity.
+        .background { parts[.viewport].backgroundView }
+        .opacity(parts[.viewport].opacity ?? 1)
     }
 
     // MARK: chart
@@ -326,6 +346,7 @@ struct AWCNativeOrgChart: View {
             let _ = clock == nil ? state.startPending(now) : false
             ZStack(alignment: .topLeading) {
                 Canvas { ctx, _ in
+                    drawBackgrounds(&ctx, layout: layout, now: now)
                     for box in layout.connectors { draw(box, in: &ctx, layout: layout, now: now) }
                 }
                 .frame(width: W, height: layout.hostHeight)
@@ -410,7 +431,7 @@ struct AWCNativeOrgChart: View {
     private func draw(_ box: AWCOrgChartBorderBox, in ctx: inout GraphicsContext, layout: AWCOrgChartLayout, now: Double) {
         let (opacity, t) = motion(group: box.owner, layout: layout, now: now)
         guard opacity > 0 else { return }
-        var c = ctx; c.opacity = opacity; c.concatenate(t)
+        var c = ctx; c.opacity = opacity * connectorFade(box, layout); c.concatenate(t)
         let connector = color(appearance.connectorColor, "outline-variant", "#CAC4D0"), selected = color(appearance.selectedColor, "primary", "#6750A4")
         let r = box.rect
         let inner = CGRect(x: r.minX + box.left, y: r.minY + box.top, width: max(0, r.width - box.left - box.right), height: max(0, r.height - box.top - box.bottom))
@@ -429,6 +450,48 @@ struct AWCNativeOrgChart: View {
             var w = Path(); w.addLines(points); w.closeSubpath()
             var sc = c; sc.clip(to: w)
             sc.fill(ring, with: .color(box.roles[side] == .selected ? selected : connector), style: FillStyle(eoFill: true))
+        }
+    }
+
+    // MARK: ::part() list boxes
+    /// The part opacities around a tree item: its branch (and branch-on-path), every group and branch above it, the tree. A
+    /// part opacity makes the element a stacking group: its descendants (cards, togglers, connectors) fade with it.
+    private func fade(_ id: String, _ layout: AWCOrgChartLayout) -> Double {
+        let p = parts; guard p.fades else { return 1 }
+        var out = 1.0, cur: String? = id
+        while let c = cur, let item = layout.items.first(where: { $0.node.id == c }) {
+            out *= p.branch(onPath: item.onPath).opacity ?? 1
+            out *= item.parent != nil ? (p[.group].opacity ?? 1) : (p[.tree].opacity ?? 1)
+            cur = item.parent
+        }
+        return out
+    }
+    /// A connector fades with its owner: a branch's ::before / ::after with the branch, a group's drop and trail run with the group.
+    private func connectorFade(_ box: AWCOrgChartBorderBox, _ layout: AWCOrgChartLayout) -> Double {
+        guard parts.fades else { return 1 }
+        if let b = box.branch { return fade(b, layout) }
+        return box.owner.map { (parts[.group].opacity ?? 1) * fade($0, layout) } ?? 1
+    }
+    /// ::part(tree) / ::part(branch) / ::part(branch-on-path) / ::part(group) backgrounds in tree order, under the connectors:
+    /// the list boxes are positioned (z-index auto) and paint before their own and later pseudo-elements; cards stack above.
+    private func drawBackgrounds(_ ctx: inout GraphicsContext, layout: AWCOrgChartLayout, now: Double) {
+        let p = parts, tree = p[.tree], g = p[.group]
+        func fill(_ c: inout GraphicsContext, _ r: CGRect, _ s: AWCPartStyle) {
+            guard let bg = s.backgroundColor else { return }
+            c.fill(Path(roundedRect: r, cornerRadius: s.cornerRadius ?? 0, style: .circular), with: .color(AWCTableColor.color(bg, "#00000000")))
+        }
+        if tree.backgroundColor != nil { var c = ctx; c.opacity = tree.opacity ?? 1; fill(&c, layout.tree, tree) }
+        guard p[.branch].backgroundColor != nil || p[.branchOnPath].backgroundColor != nil || g.backgroundColor != nil else { return }
+        for item in layout.items {
+            let b = p.branch(onPath: item.onPath)
+            if b.backgroundColor != nil {
+                let (o, t) = motion(group: item.groupID, layout: layout, now: now)
+                var c = ctx; c.opacity = o * fade(item.node.id, layout); c.concatenate(t); fill(&c, item.branch, b)
+            }
+            if let box = item.group, g.backgroundColor != nil {
+                let (o, t) = motion(group: item.node.id, layout: layout, now: now)
+                var c = ctx; c.opacity = o * (g.opacity ?? 1) * fade(item.node.id, layout); c.concatenate(t); fill(&c, box, g)
+            }
         }
     }
 
@@ -490,33 +553,38 @@ struct AWCNativeOrgChart: View {
         let border = presented(n.id + ".border", v.border, now: now), layer = presented(n.id + ".layer", [v.layer], now: now)[0]
         let shadow = AWCOrgChartVisual.layers(presented(n.id + ".shadow", v.shadow, now: now))
         let (opacity, t) = motion(group: item.groupID, layout: layout, now: now)
-        let c = item.card, corner = AWCCornerRadius(.init(points: m.radius, fraction: 0))
+        // ::part(node) / ::part(node-selected): the card's fill, radius, opacity and padding (the layout sized it with that padding).
+        let selected = model.isSelected(n), ns = parts.node(selected: selected), radius = ns.cornerRadius ?? m.radius
+        let pad = m.padding(selected: selected), bw = m.border(selected: selected), sl = parts[.stateLayer]
+        let c = item.card, corner = AWCCornerRadius(.init(points: radius, fraction: 0))
         ZStack(alignment: .topLeading) {
             if !shadow.isEmpty {
                 AWCNativeBoxShadow(corners: .init(topLeft: corner, topRight: corner, bottomRight: corner, bottomLeft: corner), layers: shadow, placement: .outer)
             }
             // Paint order of the source card: background and border, the in-flow text, the positioned state layer and
             // md-ripple, then md-avatar (its host is `position: relative`, later in the DOM) above them.
-            RoundedRectangle(cornerRadius: m.radius, style: .circular).fill(color(appearance.nodeColor, "surface-container-low", "#F7F2FA"))
-            RoundedRectangle(cornerRadius: m.radius, style: .circular)
+            RoundedRectangle(cornerRadius: radius, style: .circular).fill(ns.backgroundColor.map { AWCTableColor.color($0, "#00000000") } ?? color(appearance.nodeColor, "surface-container-low", "#F7F2FA"))
+            RoundedRectangle(cornerRadius: radius, style: .circular)
                 .strokeBorder(Color(.sRGB, red: border[0], green: border[1], blue: border[2], opacity: border[3]), lineWidth: v.borderWidth)
-            text(n, size: c.size)
-            RoundedRectangle(cornerRadius: m.radius, style: .circular).fill(Color(awcHex: v.layerColor)).padding(v.borderWidth).opacity(layer)
-                .modifier(AWCOrgChartRippleIf(enabled: selectable, radius: m.radius, color: selectedHex(n)))
+            text(n, size: c.size, padding: pad, border: bw)
+            // ::part(state-layer): its colour, and an opacity that replaces the hover / pressed / selected ones.
+            RoundedRectangle(cornerRadius: radius, style: .circular).fill(sl.backgroundColor.map { AWCTableColor.color($0, "#00000000") } ?? Color(awcHex: v.layerColor))
+                .padding(v.borderWidth).opacity(sl.opacity ?? layer)
+                .modifier(AWCOrgChartRippleIf(enabled: selectable, radius: radius, color: selectedHex(n)))
                 .allowsHitTesting(selectable)
             avatar(n, accent: accent)
-                .padding(.horizontal, m.padInline + m.outline)
+                .padding(EdgeInsets(top: pad.top + bw, leading: pad.left + bw, bottom: pad.bottom + bw, trailing: pad.right + bw))
                 .frame(width: c.width, height: c.height, alignment: rtl ? .trailing : .leading)
             if state.focused == n.id && state.handle(n.id).isFocusVisible {
                 // `outline: 3px solid; outline-offset: 2px` follows the border radius.
-                RoundedRectangle(cornerRadius: m.radius + 3.5, style: .circular)
+                RoundedRectangle(cornerRadius: radius + 3.5, style: .circular)
                     .stroke(color(appearance.focusRingColor, "secondary", "#625B71"), lineWidth: 3)
                     .frame(width: c.width + 7, height: c.height + 7).offset(x: -3.5, y: -3.5)
             }
         }
         .frame(width: c.width, height: c.height, alignment: .topLeading)
-        .contentShape(RoundedRectangle(cornerRadius: m.radius))
-        .opacity(opacity)
+        .contentShape(RoundedRectangle(cornerRadius: radius))
+        .opacity(opacity * (ns.opacity ?? 1) * fade(n.id, layout))
         .transformEffect(CGAffineTransform(translationX: c.minX, y: c.minY).concatenating(t))
         .accessibilityHidden(true)
     }
@@ -530,6 +598,9 @@ struct AWCNativeOrgChart: View {
             .awcAvatarAppearance(.init(containerColor: token("primary-container", "#EADDFF"), labelColor: token("on-primary-container", "#21005D")))
             .frame(width: m.avatar, height: m.avatar)
             .overlay { if let accent { Circle().stroke(Color(awcHex: accent), lineWidth: 2).padding(-1) } }
+            // ::part(avatar-image) is md-avatar's image part; ::part(avatar) fades the avatar with its accent ring.
+            .awcAvatarPartAppearance(.init(imageOpacity: parts[.avatarImage].opacity), for: "org-avatar-" + n.id)
+            .opacity(parts[.avatar].opacity ?? 1)
             .environment(\.layoutDirection, rtl ? .rightToLeft : .leftToRight)
             .accessibilityHidden(true)
     }
@@ -538,22 +609,24 @@ struct AWCNativeOrgChart: View {
     /// direction). `text-overflow: ellipsis` cuts at the line's end edge: a run whose own direction differs from the
     /// card's is cut at its head.
     private func cut(_ s: String) -> Text.TruncationMode { AWCOrgChartText.isRTL(s) == rtl ? .tail : .head }
-    @ViewBuilder private func text(_ n: AWCOrgChartNode, size: CGSize) -> some View {
-        let m = metrics
+    @ViewBuilder private func text(_ n: AWCOrgChartNode, size: CGSize, padding p: AWCTableEdges, border b: Double) -> some View {
+        let m = metrics, np = parts[.name], tp = parts[.title]
         HStack(spacing: m.gap) {
             Color.clear.frame(width: m.avatar, height: m.avatar)
             VStack(alignment: .leading, spacing: 2) {
-                Text(n.name).font(.custom("Roboto-Bold", fixedSize: m.nameSize)).foregroundStyle(Color(awcHex: token("on-surface", "#1C1B1F")))
-                    .lineLimit(1).truncationMode(cut(n.name)).frame(height: m.nameLine)
+                // ::part(name) / ::part(title): colour, font (size, weight, letter-spacing) and opacity of each run.
+                Text(n.name).font(.custom(AWCOrgChartFonts.face(np.fontWeight ?? 600), fixedSize: np.fontSize ?? m.nameSize)).tracking(np.letterSpacing ?? 0)
+                    .foregroundStyle(np.color(over: Color(awcHex: token("on-surface", "#1C1B1F"))))
+                    .lineLimit(1).truncationMode(cut(n.name)).frame(height: m.nameLine).opacity(np.opacity ?? 1)
                 if !n.title.isEmpty {
-                    Text(n.title).font(AWCNativeFonts.label(size: m.titleSize, regular: true)).foregroundStyle(Color(awcHex: token("on-surface-variant", "#49454F")))
-                        .lineLimit(1).truncationMode(cut(n.title)).frame(height: m.titleLine)
+                    Text(n.title).font(.custom(AWCOrgChartFonts.face(tp.fontWeight ?? 400), fixedSize: tp.fontSize ?? m.titleSize)).tracking(tp.letterSpacing ?? 0)
+                        .foregroundStyle(tp.color(over: Color(awcHex: token("on-surface-variant", "#49454F"))))
+                        .lineLimit(1).truncationMode(cut(n.title)).frame(height: m.titleLine).opacity(tp.opacity ?? 1)
                 }
             }
             .frame(minWidth: 0, alignment: .leading)
         }
-        .padding(.horizontal, m.padInline + m.outline)
-        .padding(.vertical, m.padBlock + m.outline)
+        .padding(EdgeInsets(top: p.top + b, leading: (rtl ? p.right : p.left) + b, bottom: p.bottom + b, trailing: (rtl ? p.left : p.right) + b))
         .frame(width: size.width, height: size.height, alignment: .leading)
         .environment(\.layoutDirection, rtl ? .rightToLeft : .leftToRight)
         .allowsHitTesting(false)
@@ -574,7 +647,9 @@ struct AWCNativeOrgChart: View {
             })
             .awcIconButtonAppearance(.init(containerColor: token("surface-container-high", "#ECE6F0"), iconSize: m.toggle * 0.66, width: m.toggle, height: m.toggle))
             .frame(width: m.toggle, height: m.toggle)
-            .opacity(opacity)
+            // ::part(toggle) is the md-icon-button host (inside the card: it fades with the card's ::part(node) opacity too).
+            .background { parts[.toggle].backgroundView }
+            .opacity(opacity * (parts[.toggle].opacity ?? 1) * (parts.node(selected: model.isSelected(n)).opacity ?? 1) * fade(n.id, layout))
             .transformEffect(CGAffineTransform(translationX: t.minX, y: t.minY).concatenating(transform))
             .accessibilityHidden(true)
     }

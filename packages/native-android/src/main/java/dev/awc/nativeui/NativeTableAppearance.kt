@@ -4,6 +4,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.unit.dp
 
 // md-table family appearance: the source's 52 public custom properties (md-table 18, md-table-cell 10, md-table-container 5,
 // md-table-expand-toggle 1, md-table-pagination 5, md-table-row 1, md-table-sort-label 5, md-table-toolbar 7).
@@ -194,4 +203,119 @@ private fun Map<*, *>.num(k: String): Double? = (this[k] as? Number)?.toDouble()
         fun fromValues(v: Map<*, *>) = AWCTableToolbarAppearance(v.txt("color"), v.txt("background"), v.txt("selectionBackground"), v.txt("selectionColor"),
             v.num("paddingBlock"), v.num("paddingInline"), v.num("minHeight"))
     }
+}
+
+
+// ---- ::part() styling (r5 R5-07) ------------------------------------------------------------------------------------------
+/** The md-table family's exported `::part()` targets (33 on 7 tags). */
+enum class AWCTablePart(val tag: String, val part: String) {
+    Caption("md-table", "caption"), Grid("md-table", "grid"), HeaderGrid("md-table", "header-grid"),
+    Hscrollbar("md-table", "hscrollbar"), HscrollbarThumb("md-table", "hscrollbar-thumb"), Vscrollbar("md-table", "vscrollbar"), VscrollbarThumb("md-table", "vscrollbar-thumb"),
+    SkeletonRow("md-table", "skeleton-row"), Loading("md-table", "loading"), Progress("md-table", "progress"), Empty("md-table", "empty"),
+    CellContent("md-table-cell", "content"), CellPin("md-table-cell", "pin"),
+    ContainerTop("md-table-container", "top"), ContainerScroll("md-table-container", "scroll"), ContainerBottom("md-table-container", "bottom"),
+    RowExpanded("md-table-row", "expanded"), SortLabelIcon("md-table-sort-label", "icon"), SortLabelLabel("md-table-sort-label", "label"),
+    ToolbarMain("md-table-toolbar", "main"), ToolbarLeading("md-table-toolbar", "leading"), ToolbarHeadline("md-table-toolbar", "headline"),
+    ToolbarSupportingText("md-table-toolbar", "supporting-text"), ToolbarSelectionCaption("md-table-toolbar", "selection-caption"), ToolbarActions("md-table-toolbar", "actions"),
+    PaginationDisplay("md-table-pagination", "display"), PaginationRpp("md-table-pagination", "rpp"), PaginationRppSelect("md-table-pagination", "rpp-select"),
+    PaginationNav("md-table-pagination", "nav"), PaginationFirstButton("md-table-pagination", "first-button"), PaginationPrevButton("md-table-pagination", "prev-button"),
+    PaginationNextButton("md-table-pagination", "next-button"), PaginationLastButton("md-table-pagination", "last-button");
+    companion object { fun of(tag: String, part: String): AWCTablePart? = entries.firstOrNull { it.tag == tag && it.part == part } }
+}
+
+/** Physical box edges (CSS padding: top, right, bottom, left — not mirrored in right-to-left). */
+@Immutable data class AWCTableEdges(val top: Double = 0.0, val right: Double = 0.0, val bottom: Double = 0.0, val left: Double = 0.0)
+
+/**
+ * Sparse `::part()` declarations of a table-family part. Part rules come from the outer tree, so they win over the hooks
+ * and the internal state rules of the part's own box: color, background-color (clipped to border-radius), opacity,
+ * border-radius, padding (physical), font-size / font-weight / letter-spacing.
+ */
+@Immutable data class AWCTablePartStyle(
+    val color: String? = null, val backgroundColor: String? = null, val opacity: Double? = null, val cornerRadius: Double? = null,
+    val padding: AWCTableEdges? = null, val fontSize: Double? = null, val fontWeight: Double? = null, val letterSpacing: Double? = null,
+) {
+    fun merging(o: AWCTablePartStyle) = AWCTablePartStyle(o.color ?: color, o.backgroundColor ?: backgroundColor, o.opacity ?: opacity, o.cornerRadius ?: cornerRadius,
+        o.padding ?: padding, o.fontSize ?: fontSize, o.fontWeight ?: fontWeight, o.letterSpacing ?: letterSpacing)
+    val isEmpty: Boolean get() = this == AWCTablePartStyle()
+    companion object {
+        /** From CSS declarations (property → value) as a `::part()` rule authors them; unknown properties are ignored. */
+        fun declarations(d: Map<String, String>): AWCTablePartStyle {
+            fun px(v: String) = v.trim().removeSuffix("px").toDoubleOrNull()?.takeIf { it.isFinite() }
+            fun hex(v: String?) = v?.trim()?.lowercase()?.takeIf { it.matches(Regex("#([0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})")) }?.let {
+                if (it.length <= 5) "#" + it.drop(1).map { c -> "$c$c" }.joinToString("") else it }?.uppercase(java.util.Locale.ROOT)
+            var pad: AWCTableEdges? = null
+            for ((k, v) in d.toSortedMap()) if (k.startsWith("padding")) {
+                val n = v.trim().split(Regex("\\s+")).mapNotNull(::px).takeIf { it.isNotEmpty() } ?: continue
+                val e = pad ?: AWCTableEdges()
+                pad = when (k) {
+                    "padding" -> { val t = n[0]; val r = n.getOrElse(1) { t }; val b = n.getOrElse(2) { t }; AWCTableEdges(t, r, b, n.getOrElse(3) { r }) }
+                    "padding-block" -> e.copy(top = n[0], bottom = n.getOrElse(1) { n[0] })
+                    "padding-inline" -> e.copy(left = n[0], right = n.getOrElse(1) { n[0] })
+                    "padding-top", "padding-block-start" -> e.copy(top = n[0]); "padding-bottom", "padding-block-end" -> e.copy(bottom = n[0])
+                    "padding-left" -> e.copy(left = n[0]); "padding-right" -> e.copy(right = n[0]); else -> e
+                }
+            }
+            val weight = d["font-weight"]?.trim()?.let { mapOf("normal" to 400.0, "bold" to 700.0)[it] ?: it.toDoubleOrNull() }?.takeIf { it in 1.0..1000.0 }
+            return AWCTablePartStyle(hex(d["color"]), hex(d["background-color"] ?: d["background"]), d["opacity"]?.trim()?.toDoubleOrNull()?.takeIf { it.isFinite() }?.coerceIn(0.0, 1.0),
+                d["border-radius"]?.let(::px)?.takeIf { it >= 0 }, pad, d["font-size"]?.let(::px)?.takeIf { it >= 0 }, weight, d["letter-spacing"]?.let(::px))
+        }
+    }
+}
+internal val LocalAWCTableParts = staticCompositionLocalOf { emptyMap<AWCTablePart, AWCTablePartStyle>() }
+internal val LocalAWCTablePartTargets = staticCompositionLocalOf { emptyMap<String, Map<AWCTablePart, AWCTablePartStyle>>() }
+/** `::part()` styling for the md-table family parts inside [content] (`id`: only the component with that node id). */
+@Composable fun AWCTablePartAppearanceScope(styles: Map<AWCTablePart, AWCTablePartStyle>, id: String? = null, content: @Composable () -> Unit) {
+    if (id != null) {
+        val t = LocalAWCTablePartTargets.current; val own = (t[id] ?: emptyMap()).toMutableMap()
+        for ((p, st) in styles) own[p] = (own[p] ?: AWCTablePartStyle()).merging(st)
+        CompositionLocalProvider(LocalAWCTablePartTargets provides t + (id to own), content = content)
+    } else {
+        val all = LocalAWCTableParts.current.toMutableMap(); for ((p, st) in styles) all[p] = (all[p] ?: AWCTablePartStyle()).merging(st)
+        CompositionLocalProvider(LocalAWCTableParts provides all, content = content)
+    }
+}
+@Composable fun AWCTablePartAppearanceScope(part: AWCTablePart, style: AWCTablePartStyle, id: String? = null, content: @Composable () -> Unit) =
+    AWCTablePartAppearanceScope(mapOf(part to style), id, content)
+/** A part's effective style for the component with node id [id]. */
+@Composable @ReadOnlyComposable internal fun tablePart(part: AWCTablePart, id: String): AWCTablePartStyle {
+    val base = LocalAWCTableParts.current[part] ?: AWCTablePartStyle()
+    val style = LocalAWCTablePartTargets.current[id]?.get(part)?.let { base.merging(it) } ?: base
+    return if (LocalAWCTableForcedColors.current) style.withoutColors else style
+}
+/** Forced colours: Chrome replaces author colours with the system palette (the part's box declarations stay). */
+internal val AWCTablePartStyle.withoutColors: AWCTablePartStyle get() = copy(color = null, backgroundColor = null)
+/** The part's text colour over the hook / state colour. */
+internal fun AWCTablePartStyle.colorOver(base: androidx.compose.ui.graphics.Color): androidx.compose.ui.graphics.Color = color?.let { tableColor(it) } ?: base
+/** A fill the part's background-color replaces (a scrollbar thumb's colour, a skeleton row's tint). */
+internal fun AWCTablePartStyle.fillOver(base: androidx.compose.ui.graphics.Color): androidx.compose.ui.graphics.Color = backgroundColor?.let { tableColor(it) } ?: base
+internal fun AWCTablePartStyle.sizeOver(base: Double): Double = fontSize ?: base
+internal fun AWCTablePartStyle.weightOver(base: Int): Int = fontWeight?.let { kotlin.math.round(it).toInt() } ?: base
+internal fun AWCTablePartStyle.trackingOver(base: Double): Double = letterSpacing ?: base
+/** The part's padding (physical edges) in place of the renderer's own. */
+internal fun AWCTablePartStyle.paddingOr(fallback: PaddingValues, rtl: Boolean): PaddingValues =
+    padding?.let { e -> PaddingValues((if (rtl) e.right else e.left).dp, e.top.dp, (if (rtl) e.left else e.right).dp, e.bottom.dp) } ?: fallback
+/** A text run in CSS line boxes of [line] dp: a ::part() font larger than the line height overflows its line box (centred)
+ *  instead of growing it, as the source's fixed line-height does. */
+internal fun Modifier.tableLineBox(line: Double): Modifier = this.then(Modifier.layout { m, c ->
+    val p = m.measure(c.copy(minHeight = 0, maxHeight = androidx.compose.ui.unit.Constraints.Infinity))
+    val lh = line.dp.roundToPx().coerceAtLeast(1)
+    val h = kotlin.math.max(1, (p.height + lh / 2) / lh) * lh
+    layout(p.width, h) { p.placeRelative(0, (h - p.height) / 2) }
+})
+/** The part's background (clipped to border-radius) and opacity, without its padding (the renderer pads with [paddingOr]). */
+internal fun Modifier.tablePartSurface(style: AWCTablePartStyle): Modifier {
+    var m = this
+    style.opacity?.let { m = m.alpha(it.toFloat()) }
+    style.backgroundColor?.let { m = m.background(tableColor(it), RoundedCornerShape((style.cornerRadius ?: 0.0).dp)) }
+    return m
+}
+/** The part's box declarations: background (clipped to border-radius), padding (physical), opacity. */
+internal fun Modifier.tablePartBox(style: AWCTablePartStyle, rtl: Boolean): Modifier {
+    if (style.isEmpty) return this
+    var m = this
+    style.opacity?.let { m = m.alpha(it.toFloat()) }
+    style.backgroundColor?.let { m = m.background(tableColor(it), RoundedCornerShape((style.cornerRadius ?: 0.0).dp)) }
+    style.padding?.let { e -> m = m.padding(PaddingValues((if (rtl) e.right else e.left).dp, e.top.dp, (if (rtl) e.left else e.right).dp, e.bottom.dp)) }
+    return m
 }

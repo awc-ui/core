@@ -1,4 +1,5 @@
-import { Component, Host, h, Prop } from '@stencil/core';
+import { Component, Element, Host, h, Prop } from '@stencil/core';
+import { refreshNewSlots } from '../../utils/slot-refresh';
 
 /**
  * A single tab panel. Place inside `md-tab-panels`, one per tab, in tab
@@ -14,8 +15,15 @@ import { Component, Host, h, Prop } from '@stencil/core';
   shadow: true,
 })
 export class MdTabPanel {
+  @Element() el!: HTMLElement;
+
   /** Managed by md-tab-panels — reflects the associated tab's selection. */
   @Prop({ reflect: true }) active: boolean = false;
+
+  /** Chrome can build the panel's new slot into its accessibility tree without the slotted content (R6-15). */
+  componentDidRender() {
+    refreshNewSlots(this.el.shadowRoot);
+  }
 
   render() {
     return (

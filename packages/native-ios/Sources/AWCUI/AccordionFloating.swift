@@ -17,11 +17,29 @@ extension EnvironmentValues {
         set { self[AWCAccordionViewportKey.self] = newValue }
     }
 }
+private struct AWCAccordionViewportOriginKey: EnvironmentKey { static let defaultValue: CGPoint = .zero }
+private struct AWCFloatingEntryKey: EnvironmentKey { static let defaultValue = false }
+extension EnvironmentValues {
+    /// Global origin of the nearest `awcAccordionViewport()` (zero without one): the overlay entry of a floating
+    /// panel measures its own global origin and subtracts this to place the panel in viewport coordinates (r3-19).
+    var awcAccordionViewportOrigin: CGPoint {
+        get { self[AWCAccordionViewportOriginKey.self] }
+        set { self[AWCAccordionViewportOriginKey.self] = newValue }
+    }
+    /// True inside the modal-layer entry of a floating panel (the placeholder in place must not publish again).
+    var awcFloatingEntry: Bool {
+        get { self[AWCFloatingEntryKey.self] }
+        set { self[AWCFloatingEntryKey.self] = newValue }
+    }
+}
 private struct AWCAccordionViewportModifier: ViewModifier {
     @State private var size: CGSize = .zero
+    @State private var origin: CGPoint = .zero
     func body(content: Content) -> some View {
         content
             .environment(\.awcAccordionViewport, size)
+            .environment(\.awcAccordionViewportOrigin, origin)
+            .onGeometryChange(for: CGPoint.self) { $0.frame(in: .global).origin } action: { origin = $0 }
             .coordinateSpace(name: AWCAccordionViewport.space)
             .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
     }
@@ -39,13 +57,53 @@ public extension View {
 /// `position: fixed; top: 0; left: 0; transform: translate(x, y)`: the panel leaves
 /// layout (zero footprint) and is drawn at physical viewport coordinates. One modifier
 /// chain serves both modes, so toggling `floating` never replaces the subtree.
-struct AWCAccordionFloatingPlacement: ViewModifier {
+struct AWCAccordionFloatingHost<Content: View>: View {
     let active: Bool, x: Double, y: Double, z: Double, width: Double
+    let entryID: String
+    let content: Content
+    @Environment(\.awcModalSession) private var session
+    @Environment(\.awcFloatingEntry) private var inEntry
+    @Environment(\.self) private var environment
+    var body: some View {
+        // Mechanism 2 (r3-19): under an `AWCModalScope` the panel is an entry of the scope's overlay, so no ancestor clips it and it
+        // orders against sheets and dialogs by z-index; a zero-size placeholder stays in the flow. Without a scope: mechanism 1 (lift).
+        if active, !inEntry, let session {
+            let env = environment
+            Color.clear.frame(width: 0, height: 0).allowsHitTesting(false)
+                .preference(key: AWCModalEntries.self, value: [AWCModalEntry(
+                    id: "floating-panel#" + entryID, zIndex: z + 0.001,
+                    content: AnyView(AWCAccordionFloatingPanelBody(active: true, x: x, y: y, z: z, width: width, content: content)
+                        .environment(\.awcFloatingEntry, true).environment(\.self, env)
+                        .allowsHitTesting(!session.isActive)))])
+        } else {
+            AWCAccordionFloatingPanelBody(active: active, x: x, y: y, z: z, width: width, content: content)
+        }
+    }
+}
+
+struct AWCAccordionFloatingPanelBody<Content: View>: View {
+    let active: Bool, x: Double, y: Double, z: Double, width: Double
+    let content: Content
     @Environment(\.awcAccordionViewport) private var viewport
+    @Environment(\.awcAccordionViewportOrigin) private var viewportOrigin
+    @Environment(\.awcFloatingEntry) private var inEntry
     @Environment(\.layoutDirection) private var direction
     @State private var anchor: CGPoint = .zero
-    func body(content: Content) -> some View {
+    var body: some View {
         let used = viewport.map { min(width, max(0, $0.width - 16)) } ?? width
+        if inEntry && active {
+            // In the overlay the panel takes layout position (padding from the entry's top-left), so inspection and
+            // accessibility geometry follow it; an `.offset` inside a zero-size frame is not reflected in measured frames.
+            content
+                .environment(\.layoutDirection, direction)
+                .frame(width: used)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.leading, x - anchor.x).padding(.top, y - anchor.y)
+                .onGeometryChange(for: CGPoint.self) { proxy in
+                    let o = proxy.frame(in: .global).origin; return CGPoint(x: o.x - viewportOrigin.x, y: o.y - viewportOrigin.y)
+                } action: { anchor = $0 }
+                .environment(\.layoutDirection, .leftToRight)
+        } else {
         content
             .environment(\.layoutDirection, direction)
             .frame(width: active ? used : nil)
@@ -53,10 +111,13 @@ struct AWCAccordionFloatingPlacement: ViewModifier {
             .offset(x: active ? x - anchor.x : 0, y: active ? y - anchor.y : 0)
             .frame(width: active ? 0 : nil, height: active ? 0 : nil, alignment: .topLeading)
             .onGeometryChange(for: CGPoint.self) { proxy in
-                (viewport != nil ? proxy.frame(in: .named(AWCAccordionViewport.space)) : proxy.frame(in: .global)).origin
+                if inEntry { let o = proxy.frame(in: .global).origin; return CGPoint(x: o.x - viewportOrigin.x, y: o.y - viewportOrigin.y) }
+                return (viewport != nil ? proxy.frame(in: .named(AWCAccordionViewport.space)) : proxy.frame(in: .global)).origin
             } action: { anchor = $0 }
             .environment(\.layoutDirection, .leftToRight)
-            .zIndex(active ? z : 0)
+            // `z-index` of the fixed panel stacks against the document (r3-19): the hosts above rise with it.
+            .modifier(AWCStackingLift(own: active && !inEntry ? z : 0, publish: !inEntry))
+        }
     }
 }
 
@@ -112,6 +173,10 @@ struct AWCAccordionChassisHandle: View {
     let barColor: Color, tint: Color, hoverTint: Color?, timing: AWCAccordionInteractionTiming
     /// Hit area in "awc-native-preview" space, for the header underneath (hover exclusion).
     var onFrame: (CGRect) -> Void = { _ in }
+    /// forced-colors: `.md-accordion-item__chassis-handle-bar { background-color: CanvasText; opacity: 1 }`.
+    var forced = false
+    /// `::part(chassis-handle)` / `::part(chassis-handle-bar)` declarations.
+    var handlePart = AWCAccordionPartAppearance(), barPart = AWCAccordionPartAppearance()
     @Environment(\.awcNativePointerState) private var pointer
     @Environment(\.awcAccordionViewport) private var viewport
     @State private var hovered = false
@@ -127,7 +192,7 @@ struct AWCAccordionChassisHandle: View {
     private struct Targets: Hashable { var width: Double, opacity: Double, background: Color, bar: Color }
     private var targets: Targets {
         let active = pressed || dragging
-        return .init(width: active ? 40 : hover ? 38 : 32, opacity: active ? 1 : hover ? 0.9 : 0.45,
+        return .init(width: active ? 40 : hover ? 38 : 32, opacity: forced || active ? 1 : hover ? 0.9 : 0.45,
                      background: pressed ? hoverTint ?? tint.opacity(0.16) : hover ? hoverTint ?? tint.opacity(0.10) : .clear, bar: barColor)
     }
     private func apply(_ next: Targets) {
@@ -142,15 +207,20 @@ struct AWCAccordionChassisHandle: View {
         let instant = timing.effects.duration <= 0, instantWidth = timing.spring.duration <= 0
         let w = instantWidth ? targets.width : width.presented(t), o = instant ? targets.opacity : opacity.presented(t)
         let fill = instant ? targets.background : background.presented(t) ?? .clear, ink = instant ? targets.bar : bar.presented(t) ?? barColor
+        // A declared part value wins in every state (an outer ::part declaration over the inner state rules).
+        let barW = barPart.width ?? w, barH = barPart.height ?? 4, barO = barPart.opacity ?? o
+        let barInk = barPart.backgroundColor.map { Color(awcHex: $0) } ?? ink, handleFill = handlePart.backgroundColor.map { Color(awcHex: $0) } ?? fill
         return ZStack {
-            Capsule().fill(fill)
-            Capsule().fill(ink).frame(width: w, height: 4).opacity(o)
+            AWCAccordionPartShape(corners: handlePart.cornerShape).fill(handleFill)
+            AWCAccordionPartShape(corners: barPart.cornerShape).fill(barInk).frame(width: barW, height: barH).opacity(barO)
                 .awcInspect(nodeID: nodeID, part: "chassis-handle-bar", parentPart: "chassis-handle", name: "chassis-handle-bar") { _ in
-                    let r = ink.resolve(in: EnvironmentValues())
-                    return ["width": .number(w), "opacity": .number(o), "color": .array([.number(Double(r.red)), .number(Double(r.green)), .number(Double(r.blue))]), "renderTime": .number(t)]
+                    let r = barInk.resolve(in: EnvironmentValues())
+                    return ["width": .number(barW), "opacity": .number(barO), "color": .array([.number(Double(r.red)), .number(Double(r.green)), .number(Double(r.blue))]), "renderTime": .number(t)]
                 }
         }
-        .frame(width: 52, height: 16)
+        .frame(width: handlePart.width ?? 52, height: handlePart.height ?? 16)
+        .opacity(handlePart.opacity ?? 1)
+        .awcCursor(pressed || dragging ? .grabbing : .grab, active: .grabbing)
         .awcInspect(nodeID: nodeID, part: "chassis-handle", name: "chassis-handle") { _ in
             let r = fill.resolve(in: EnvironmentValues()); return ["background": .array([.number(Double(r.red)), .number(Double(r.green)), .number(Double(r.blue)), .number(Double(r.opacity))]), "renderTime": .number(t)]
         }

@@ -61,10 +61,24 @@ class LivePreviewTabsHostTest {
     @Test fun tabPanelPage() { withHost { token,command->
         command(configure("md-tab-panel",JSONObject()));Thread.sleep(700);root(command(frameCommand),"md-tab-panel")
         // A retained update must change the panel (an identical property set draws nothing new to acknowledge).
-        command(update(JSONObject().put("active",true)));Thread.sleep(200)
+        command(update(JSONObject().put("active",true)));Thread.sleep(400)
+        // Gate-7 R6-23: inherited text in a panel paints the theme's on-surface colour (as the SwiftUI preview).
+        val shown=command(frameCommand);assertPanelInk("the panel's copy",shown,root(shown,"md-tab-panel"),0x1C1B1F)
         command(update(JSONObject().put("active",false)));Thread.sleep(200)
         assertRejected(token,update(JSONObject().put("label","x")))
     } }
+    /** Glyph ink (gate-7 R6-22 / R6-23): in the band 15–60 % of a box, inset by a quarter of its height at both ends (a pill's round
+     *  ends), the dominant colour (the background) and the pixel farthest from it. */
+    private fun ink(frame:JSONObject,box:JSONObject):Pair<Int,Int> { val b=bitmap(frame);val s=b.width/640.0;val inset=box.getDouble("height")*.25
+        val x0=((box.getDouble("x")+inset)*s).toInt().coerceAtLeast(0);val x1=((box.getDouble("x")+box.getDouble("width")-inset)*s).toInt().coerceAtMost(b.width)
+        val y0=((box.getDouble("y")+box.getDouble("height")*.15)*s).toInt().coerceAtLeast(0);val y1=((box.getDouble("y")+box.getDouble("height")*.6)*s).toInt().coerceAtMost(b.height)
+        val counts=HashMap<Int,Int>();for(y in y0 until y1)for(x in x0 until x1){val k=b.getPixel(x,y) and 0xFFFFFF;counts[k]=(counts[k]?:0)+1}
+        val bg=counts.maxByOrNull { it.value }?.key?:0;var best=bg;var far=-1
+        for(y in y0 until y1)for(x in x0 until x1){val p=b.getPixel(x,y) and 0xFFFFFF;val d=listOf(16,8,0).maxOf { abs((p shr it and 255)-(bg shr it and 255)) };if(d>far){far=d;best=p}}
+        return bg to best }
+    private fun assertPanelInk(label:String,frame:JSONObject,box:JSONObject,color:Int,alpha:Double=1.0) { val (bg,got)=ink(frame,box)
+        val ok=listOf(16,8,0).all { abs(((bg shr it and 255)*(1-alpha)+(color shr it and 255)*alpha)-(got shr it and 255))<=12 }
+        assertTrue("$label: label ink #%06X on #%06X, expected #%06X at %.2f".format(got,bg,color,alpha),ok) }
     private fun assertRejected(token:String,body:JSONObject) { val response=request("POST","/command",token,body);assertTrue("$body rejected: $response",response.first>=400 || response.second.has("error")) }
     private fun nodes(frame:JSONObject)=frame.getJSONObject("inspection").getJSONArray("nodes").let { a->(0 until a.length()).map { a.getJSONObject(it) } }
     private fun root(frame:JSONObject,tag:String):JSONObject {

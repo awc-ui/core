@@ -79,10 +79,14 @@ struct SnapshotRenderer {
     let radioAppearance:[String:AWCValue]?
     let chipAppearanceDefaults:[String:AWCValue]?
     let chipAppearance:[String:AWCValue]?
+    let transferListAppearanceDefaults:[String:AWCValue]?
+    let transferListAppearance:[String:AWCValue]?
     let orgChartAppearanceDefaults:[String:AWCValue]?
     let orgChartAppearance:[String:AWCValue]?
     let rippleAppearanceDefaults:[String:AWCValue]?
     let rippleAppearance:[String:AWCValue]?
+    let searchAppearanceDefaults:[String:AWCValue]?
+    let searchAppearance:[String:AWCValue]?
     let breadcrumbsAppearanceDefaults:[String:AWCValue]?
     let breadcrumbsAppearance:[String:AWCValue]?
     let breadcrumbItemAppearanceDefaults:[String:AWCValue]?
@@ -97,12 +101,20 @@ struct SnapshotRenderer {
     let navigationTabAppearance:[String:AWCValue]?
     let textFieldAppearanceDefaults:[String:AWCValue]?
     let textFieldAppearance:[String:AWCValue]?
+    let selectAppearanceDefaults:[String:AWCValue]?
+    let selectAppearance:[String:AWCValue]?
+    let multiSelectAppearanceDefaults:[String:AWCValue]?
+    let multiSelectAppearance:[String:AWCValue]?
     let colorPickerAppearanceDefaults:[String:AWCValue]?
     let colorPickerAppearance:[String:AWCValue]?
     let timePickerAppearanceDefaults:[String:AWCValue]?
     let timePickerAppearance:[String:AWCValue]?
+    let datePickerAppearanceDefaults:[String:AWCValue]?
+    let datePickerAppearance:[String:AWCValue]?
     let numberFieldAppearanceDefaults:[String:AWCValue]?
     let numberFieldAppearance:[String:AWCValue]?
+    let autocompleteAppearanceDefaults:[String:AWCValue]?
+    let autocompleteAppearance:[String:AWCValue]?
     let otpFieldAppearanceDefaults:[String:AWCValue]?
     let otpFieldAppearance:[String:AWCValue]?
     let meterAppearanceDefaults:[String:AWCValue]?
@@ -245,8 +257,10 @@ struct SnapshotRenderer {
             .awcCheckboxAppearance(AWCCheckboxAppearance(values:request.checkboxAppearanceDefaults ?? [:]).merging(.init(values:request.checkboxAppearance ?? [:])))
             .awcRadioAppearance(AWCRadioAppearance(values:request.radioAppearanceDefaults ?? [:]).merging(.init(values:request.radioAppearance ?? [:])))
             .awcChipAppearance(AWCChipHookAppearance(values:request.chipAppearanceDefaults ?? [:]).merging(.init(values:request.chipAppearance ?? [:])))
+            .awcTransferListAppearance(AWCTransferListAppearance(values:request.transferListAppearanceDefaults ?? [:]).merging(.init(values:request.transferListAppearance ?? [:])))
             .awcOrgChartAppearance(AWCOrgChartAppearance(values:request.orgChartAppearanceDefaults ?? [:]).merging(.init(values:request.orgChartAppearance ?? [:])))
             .awcRippleAppearance(AWCRippleAppearance(values:request.rippleAppearanceDefaults ?? [:]).merging(.init(values:request.rippleAppearance ?? [:])))
+            .awcSearchAppearance(AWCSearchAppearance(values:request.searchAppearanceDefaults ?? [:]).merging(.init(values:request.searchAppearance ?? [:])))
             .awcStepperSnapshot(stepperRequest)
             .awcSRSnapshot(srRequest)
             .awcNavigationBarAppearance(AWCNavigationBarAppearance(values:request.navigationBarAppearanceDefaults ?? [:]).merging(.init(values:request.navigationBarAppearance ?? [:])))
@@ -255,9 +269,13 @@ struct SnapshotRenderer {
             .awcTabAppearance(AWCTabAppearance(values:request.tabAppearanceDefaults ?? [:]).merging(.init(values:request.tabAppearance ?? [:])))
             .awcBreadcrumbsAppearance(AWCBreadcrumbsAppearance(values:request.breadcrumbsAppearanceDefaults ?? [:]).merging(.init(values:request.breadcrumbsAppearance ?? [:])).merging(.init(values:request.breadcrumbItemAppearanceDefaults ?? [:])).merging(.init(values:request.breadcrumbItemAppearance ?? [:])))
             .awcTextFieldAppearance(AWCTextFieldAppearance(values:request.textFieldAppearanceDefaults ?? [:]).merging(.init(values:request.textFieldAppearance ?? [:])))
+            .awcSelectAppearance(AWCSelectAppearance(values:request.selectAppearanceDefaults ?? [:]).merging(.init(values:request.selectAppearance ?? [:])))
+            .awcMultiSelectAppearance(AWCMultiSelectAppearance(values:request.multiSelectAppearanceDefaults ?? [:]).merging(.init(values:request.multiSelectAppearance ?? [:])))
             .awcColorPickerAppearance(AWCColorPickerAppearance(values:request.colorPickerAppearanceDefaults ?? [:]).merging(.init(values:request.colorPickerAppearance ?? [:])))
             .awcTimePickerAppearance(AWCTimePickerAppearance(values:request.timePickerAppearanceDefaults ?? [:]).merging(.init(values:request.timePickerAppearance ?? [:])))
+            .awcDatePickerAppearance(AWCDatePickerAppearance(values:request.datePickerAppearanceDefaults ?? [:]).merging(.init(values:request.datePickerAppearance ?? [:])))
             .awcNumberFieldAppearance(AWCNumberFieldAppearance(values:request.numberFieldAppearanceDefaults ?? [:]).merging(.init(values:request.numberFieldAppearance ?? [:])))
+            .awcAutocompleteAppearance(AWCAutocompleteAppearance(values:request.autocompleteAppearanceDefaults ?? [:]).merging(.init(values:request.autocompleteAppearance ?? [:])))
             .awcOTPFieldAppearance(AWCOTPFieldAppearance(values:request.otpFieldAppearanceDefaults ?? [:]).merging(.init(values:request.otpFieldAppearance ?? [:])))
             .awcChartSnapshot(chartRequest, tag: request.tag)
             .awcNavSnapshot(navRequest)
@@ -415,10 +433,16 @@ extension View {
 // n5's navigation components in the snapshot renderer: the typed hooks of the request.
 struct AWCNavSnapshotRequest: Decodable {
     var toolbarAppearanceDefaults: [String: AWCValue]? = nil; var toolbarAppearance: [String: AWCValue]? = nil
+    var navigationRailAppearanceDefaults: [String: AWCValue]? = nil; var navigationRailAppearance: [String: AWCValue]? = nil
+    var navigationRailTabAppearanceDefaults: [String: AWCValue]? = nil; var navigationRailTabAppearance: [String: AWCValue]? = nil
+    var appBarAppearanceDefaults: [String: AWCValue]? = nil; var appBarAppearance: [String: AWCValue]? = nil
 }
 extension View {
     func awcNavSnapshot(_ r: AWCNavSnapshotRequest) -> some View {
         awcToolbarAppearance(AWCToolbarAppearance(values: r.toolbarAppearanceDefaults ?? [:]).merging(.init(values: r.toolbarAppearance ?? [:])))
+            .awcNavigationRailAppearance(AWCNavigationRailAppearance(values: r.navigationRailAppearanceDefaults ?? [:]).merging(.init(values: r.navigationRailAppearance ?? [:])))
+            .awcNavigationRailTabAppearance(AWCNavigationRailTabAppearance(values: r.navigationRailTabAppearanceDefaults ?? [:]).merging(.init(values: r.navigationRailTabAppearance ?? [:])))
+            .awcAppBarAppearance((AWCAppBarAppearance(values: r.appBarAppearanceDefaults ?? [:]) ?? .init()).merging(AWCAppBarAppearance(values: r.appBarAppearance ?? [:]) ?? .init()))
     }
 }
 // ---- end navigation snapshot hooks ----

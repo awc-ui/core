@@ -1,69 +1,74 @@
 # `md-progress-indicator` — gate 7 independent audit
 
-**Verdict: FAIL (gate 5: default palette not compared) — accepted exception: extreme-input bounds**
+**Verdict (re-check 2026-11-05): PASS WITH ACCEPTED EXCEPTIONS (E3)**
 
-All re-runs pass, including retained Laboratory updates. The component's own record already lists the fresh default-palette comparison as pending, and it is still missing (R2-D4).
+R2-D4 (default palette) and R2-D9 (Android open-after-close) are verified. Every suite passes on macOS, all three iOS runtimes and Android.
 
-Reviewer: gate-7 reviewer r2, 2026-10-31. Independent of the implementing forks; no product code, tests or fixtures were changed.
+Reviewer: gate-7 reviewer r2. First audit 2026-10-31, re-check 2026-11-05 after fork d2 marked R2-D1…D9 fixed. Independent of the
+implementing forks; no product code, tests or fixtures were changed (diagnostics ran on r2-only copies in `work/audit/r2/diag`).
 
-Snapshot: `work/audit/r2-tree`, an rsync of the canonical tree taken 2026-10-31 00:12 UTC by job `r2-001-snapshot`
-(42 install jobs present, latest `fx-072-install-orgchart-apk`), build products excluded and rebuilt privately.
-Runtimes: macOS 15.6.1 (24G90) arm64, Swift 6.1.2; iOS simulators iPhone 17 Pro iOS 26.3.1 (`AWC-r2`), iPad Pro 11-inch (M5)
-iOS 26.3.1 (`AWC-r2-ipad`), iPhone 16 Pro iOS 18.6 (`AWC-r2-ios18`); Android 16 / API 36 emulator `emulator-5564` (AwcNative6);
-Chrome 153.0.8010.36 for tools/ax Web captures. Raw outputs: [`work/audit/r2/runs`](../../../../audit/r2/runs); job logs: [`claude-runner/done/r2-*`](../../../../claude-runner/done).
+Re-check snapshot: `work/audit/r2-tree2`, an rsync of the canonical tree taken 2026-11-05 19:43 UTC by job `r2-021-snapshot2` (77 install
+jobs present, latest `di-032-install-key-repeat`; no git commands), build products rebuilt privately. Runtimes: macOS 15.6.1 arm64, Swift 6.1.2;
+iOS simulators iPhone 17 Pro iOS 26.3.1 (`AWC-r2`), iPad Pro 11-inch (M5) iOS 26.3.1 (`AWC-r2-ipad`), iPhone 16 Pro iOS 18.6 (`AWC-r2-ios18`);
+Android 16 / API 36 emulator `emulator-5564`; Chrome 153.0.8010.36 for tools/ax Web captures. Timing-sensitive suites ran through
+`tools/slot.sh timing 4`; every simulator was shut down on job exit. Raw outputs: [`work/audit/r2/runs2`](../../../../audit/r2/runs2) (first audit:
+[`runs`](../../../../audit/r2/runs)); job logs: [`claude-runner/done/r2-*`](../../../../claude-runner/done) and `work/audit/r2/runs2/<job>.log`.
 
-Evidence freshness: the component's recorded manifests were produced on earlier trees. Their source hashes still match the
-component's own TSX/CSS, but shared native files (for example `AWCNativeView.swift`, `Theme.swift`, `AWCComponent.kt`) changed
-afterwards, so every count below was re-run on the snapshot. No `checkpoint.json` exists for this component; the per-suite
-manifests (`*-evidence.json`, `examples/verification.json`, platform audits) play that role.
+Component sources (TSX/CSS) are unchanged since the first audit (same hashes) and the catalog matches them. Regenerated public
+examples are byte-identical to the recorded ones.
 
 ## Gates
 
 | Gate | Result | Basis |
 |---|---|---|
-| 1 Source contract | PASS | 14 properties, event `mdComplete` (void, exactly once), 13 hooks, parts track/stop-indicator/active-indicator: complete in SwiftUI (`NativeProgressIndicator.swift`, geometry/motion/appearance), Compose (`NativeProgressIndicator.kt`, `NativeProgressPath.kt`, …), Laboratory (`progress-indicator-appearance.js`, retained `PROGRESS_UPDATE_PROPERTIES`) and tests; initial `complete=true` inert as in the source |
-| 2 Implementation | PASS | Real wave paths, four-colour cycling, completion sequences, RTL phase |
-| 3 Laboratory | PASS (note) | Retained update applied on both platforms; one transient Android 502 on open right after another session closed, 5/5 later opens fine (R2-D9, non-blocking); 20+20 examples compile |
-| 4 Behaviour | PASS | Web 193/193; Swift 51 contracts; Android 6 unit + 12 device methods |
-| 5 Visual | **FAIL** | 2,757 native checks against 92 configurations per theme + 52 edges, all under the recorded Laboratory maps. primary, primary-container, secondary-container and tertiary are overridden, and the "dark" track colour is the light #d5e8df. The AUDIT row itself lists "default-palette … pending" (R2-D4) |
-| 6 Runtime + AX | PASS | macOS, three iOS runtimes, Android; tools/ax 3 cases, 0 open |
-| 7 Final audit | FAIL | R2-D4 |
+| 1 Source contract | PASS | 14 properties, `mdComplete`, 13 hooks, 3 parts: complete |
+| 2 Implementation | PASS | Wave paths, four-colour cycling, completion |
+| 3 Laboratory | PASS | Retained updates on both platforms; 20/20 Android open-after-close sequences (R2-D9); 20+20 examples compile |
+| 4 Behaviour | PASS | Web 193/193; Swift 51 contracts; Android 6 unit + 13 device methods |
+| 5 Visual | PASS | Fresh default palette (92 configurations per theme incl. the four-colour roles, no injection): Swift 4,580 checks in total, Android `all184PristineDefaultPaletteCasesMatchWithoutTokenInjection` |
+| 6 Runtime + AX | PASS | macOS, three iOS runtimes, Android; tools/ax 3 cases, 0 open on macOS, iOS and Android |
+| 7 Final audit | PASS WITH ACCEPTED EXCEPTIONS | E3 |
+
+## Re-check of the 2026-10-31 findings
+
+- **R2-D4 — VERIFIED.** `progress-web-default-{light,dark}.json` carry the library maps (49/49 roles; dark secondary-container #4A4458, not the Laboratory #d5e8df). The Swift default pass sets `state.tokens=[:]`, and the Android pristine test passes.
+- **R2-D9 — VERIFIED** (non-blocking): 20/20 meter → progress open-after-close sequences on the Android Laboratory host (`../../../../audit/r2/runs2/lab/r2d9.json`); `android-live.mjs` now waits until the closed host's token stops answering.
 
 ## Gate 1 — source contract matrix
 
-Built by `work/audit/r2/tools/contract.py` (TSX `@Prop/@Event/@Method`, `<slot>`, `part=`, CSS `var(--md-…)` versus `packages/native-compiler/generated/catalog.json`; catalog source hash = sha256(TSX + CSS) matches today's source) and `tools/matrix.mjs` (each row located in the SwiftUI sources, Compose sources, Laboratory module and Swift/Android/Studio tests), followed by manual inspection of every zero cell. Result: 31/31 rows complete. The parts `stop-indicator` and `active-indicator` are addressed as `stopIndicator`/`activeIndicator` enum cases on both platforms.
+Re-run of `work/audit/r2/tools/contract.py` and `tools/matrix.mjs` on `r2-tree2`: the catalog's source hash (sha256 of TSX + CSS) matches, and all 31 contract rows have a SwiftUI and a Compose implementation, Laboratory exposure and tests (zero cells were checked by hand).
 
-## Re-run counts (claimed → r2)
+## Re-run counts (2026-11-05)
 
-| Suite | Claimed | r2 result | Job |
+| Suite | Recorded / first audit | r2 re-check | Job |
 |---|---|---|---|
-| Web spec + axe + frames | 193 | 193/193 | r2-009 |
-| Swift macOS `NativeProgressIndicatorViewIntegration` | 2,808 (51 + 2,757) | 2808/2808 | r2-002 |
-| iOS ×3 runtimes | 2808/2808 ×3 | 2808/2808 ×3, 0 FAIL | r2-003, r2-008 |
-| Swift live host `test-live-progress.mjs` | 39 | 39/39 | r2-004 |
-| Android device `NativeProgressParityTest`, `NativeProgressPathOracleTest`, host (2), `NativeInteractionTest#genericProgressUsesSourceDefaultMaximum` | 9 + 4 focused + 8 host | 5/5 + 4/4 + 2/2 + 1/1 | r2-A001, r2-A002 |
-| Android unit `NativeProgressContractTest` | 6 methods (112-case suite) | 6/6 | r2-A001 |
-| Generated examples | 20 + 20 | byte-identical; Swift macOS + iOS-sim typecheck; Kotlin compile | r2-004, r2-A002 |
-| Studio tests | 119 | component 59/59 (incl. 2 progress files), shared 173/173 | r2-010 |
-| tools/ax | pass ×3 | pass ×3, 0 open | r2-006, r2-A003 |
+| Web spec + axe + frames | 193 | 193/193 | r2-A023 |
+| Swift macOS | 2,808 → 4,580 (d2-007) | 4580/4580 | r2-022 |
+| iOS ×3 runtimes | 4580 (d2-012, iPhone) | 4580/4580 ×3 | r2-025 |
+| Swift live host | 39 | 39/39 | r2-024 |
+| Android device: Parity (6), PathOracle (4), host (2), generic max (1) | 5 + 4 + 2 + 1 | 6/6 + 4/4 + 2/2 + 1/1 | r2-A021 |
+| Android unit | 6 | 6/6 | r2-A021 |
+| Examples | 20 + 20 | Swift macOS + iOS-sim typecheck, Kotlin compile | r2-024, r2-025, r2-A021 |
+| tools/ax | 0 open | 0 open on all three native platforms (Android in 2 batched runs) | r2-026, r2-A026 |
 
 ## Gate 3 — Laboratory
 
-`../../../../audit/r2/runs/lab/lab-probe.json` + `lab-probe-progress-android.json`: the SwiftUI session opens (300×10), and `update {value: 20}` is applied in place (200, revision advanced, same root). On Android the first open in r2-005 returned 502 `ANDROID_HOST_FAILED` immediately after the md-meter session closed; four repeated opens and a full pass (r2-007) all succeeded and the retained update applied. Completion behaviour (`complete` toggling) is covered by the live-host and Android host tests (39 and 2 methods). There are no methods.
+Sessions open on both platforms; the retained `update` returns 200 and a new frame revision on SwiftUI and Compose (`../../../../audit/r2/runs2/lab/lab-probe.json`, r2-A022). There are no methods.
 
 ## Gate 6 — runtime and accessibility
 
-tools/ax `../../../../audit/r2/runs/ax/md-progress-indicator/report.md`: determinate/indeterminate/circular, 0 open on all platforms.
+tools/ax: [`../../../../audit/r2/runs2/ax2/md-progress-indicator/report.md`](../../../../audit/r2/runs2/ax2/md-progress-indicator/report.md) — 3 cases, captured with Chrome 153 (Web), the macOS host, the iOS 26.3 probe on AWC-r2 (r2-026) and Android (r2-A026, two full batches): 0 open findings.
 
 ## Exception decisions
 
-**Extreme-input representable bounds (proposed as explicit boundaries in the platform audits) — ACCEPTED.** Source: absurd finite lengths (for example `1e308px`) saturate at Chrome's layout limit (16,777,214 units). Affected: Compose layout constraints (32,766 physical pixels, the Constraints encoding limit), SwiftUI/CoreGraphics allocation (bounded at the measured Chrome limit). Technical reason: a native layout cannot measure or allocate beyond its constraint encoding; the source itself saturates. User impact: none for representable sizes; the inputs involved are millions of pixels. Tested native equivalent: finite saturation with applied geometry reported by inspection (Android `extremeFiniteCircleSizeAndStrokeUseAppliedFiniteDimensions`, Swift extreme-size checks inside the main fixture). Scope: inputs beyond the platform's representable layout range only.
-
-Named native equivalents, not waivers: explicit forced-colors palette (tested) for CSS `forced-colors`; isolated reduced-motion overrides.
+**E3 — Extreme-input representable bounds — ACCEPTED (unchanged from 2026-10-31).** Lengths beyond the platform's representable layout range (Compose constraints 32,766 px; SwiftUI bounded at Chrome's measured 16,777,214) saturate, and inspection reports the applied geometry; the source itself saturates. There is no impact at representable sizes.
 
 ## Findings
 
 Defect records: [`work/audit/DEFECTS.md`](../../../../audit/DEFECTS.md), section "Gate 7 reviewer r2".
 
-- **R2-D4 (blocking, gate 5):** fresh default light/dark palette comparison missing (already "pending" in the ledger).
-- R2-D9 (non-blocking): transient Android live-host 502 on open.
+None open.
+
+## History
+
+2026-10-31: FAIL (gate 5, R2-D4; R2-D9 non-blocking). 2026-11-05: R2-D4 and R2-D9 verified → PASS WITH ACCEPTED EXCEPTIONS.

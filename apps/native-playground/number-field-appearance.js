@@ -11,6 +11,8 @@ export const NUMBER_FIELD_APPEARANCE_FIELDS = Object.freeze([
   nf('stepperColor', 'Stepper color', 'stepper-color', 'color'),
   nf('splitStepperSize', 'Split stepper size', 'split-stepper-size', 'length'),
 ]);
+/** The source's ::part names with their typed native part fields (AWCNumberFieldPartAppearance). */
+export const NUMBER_FIELD_PARTS = Object.freeze({ field: ['field', 'fieldBackgroundColor', 'fieldOpacity'] });
 export const numberFieldAppearance = appearanceProfile(NUMBER_FIELD_APPEARANCE_FIELDS, 'INVALID_NUMBER_FIELD_APPEARANCE', 'Number Field');
 
 // ---- retained property updates (every source property) ----

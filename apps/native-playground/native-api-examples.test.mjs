@@ -124,7 +124,8 @@ test('native appearance examples honor declared field coverage rather than inven
 
 test('supported declarative method alternatives show state changes and disclose behavioral differences', () => {
   for (const platform of platforms) {
-    const show = nativeApiExample(component('md-date-picker'), 'method', 'show', platform);
+    // md-date-picker's methods have a verified controller bridge (date-picker-integration.test.mjs).
+    const show = nativeApiExample(component('md-autocomplete'), 'method', 'show', platform);
     assert.equal(show.status, 'native-equivalent');
     assert.match(show.description, /no native method bridge/);
     assert.match(show.code, /value = true/);
@@ -132,7 +133,7 @@ test('supported declarative method alternatives show state changes and disclose 
     assert.match(show.code, /"mdClose"/);
     assert.match(show.notes.join(' '), /does not invoke the source method/);
     assert.doesNotMatch(show.code, /\.show\(/);
-    const close = nativeApiExample(component('md-date-picker'), 'method', 'close', platform);
+    const close = nativeApiExample(component('md-autocomplete'), 'method', 'close', platform);
     assert.match(close.code, /(?:value: Bool = true|mutableStateOf\(true\))/);
     assert.match(close.code, /value = false/);
     // md-otp-field bridges clear() through AWCOTPFieldController: a real call, not a declarative alternative.
@@ -147,14 +148,16 @@ test('unbridged methods and web parts never produce fake native calls', () => {
   for (const platform of platforms) {
     // md-text-field getInputElement() has a native counterpart (text-field-integration.test.mjs).
     // md-menu show/close/whenClosed have a verified handle bridge (menu-integration.test.mjs).
-    for (const [tag, method] of [['md-search', 'startVoice'], ['md-slider', 'setFocus'], ['md-line-chart', 'getInstance']]) {
+    // md-search's methods have a native controller (search-integration.test.mjs).
+    for (const [tag, method] of [['md-slider', 'setFocus'], ['md-line-chart', 'getInstance']]) {
       const result = nativeApiExample(component(tag), 'method', method, platform);
       assert.equal(result.status, 'unsupported');
       assert.equal(result.code, null);
       assert.match(result.description, /no public .* method bridge/);
     }
-    // md-toolbar ::part(fab-container) is a layout wrapper (exception record in md-toolbar.md): theme fallback only.
-    const part = nativeApiExample(component('md-toolbar'), 'cssPart', 'fab-container', platform);
+    // A Web-only part never produces a fake native call: md-list-item ::part(headline-tooltip-popup) has no native target (theme
+    // fallback only).
+    const part = nativeApiExample(component('md-list-item'), 'cssPart', 'headline-tooltip-popup', platform);
     assert.equal(part.status, 'unknown');
     assert.match(part.code, platform === 'swift' ? /awcTheme/ : /AWCTheme\(tokenOverrides/);
     assert.match(part.description, /Web styling hook/);
@@ -165,6 +168,20 @@ test('unbridged methods and web parts never produce fake native calls', () => {
     assert.match(typed.code, platform === 'swift' ? /\.awcTabsPartAppearance\(\.init\(containerColor: / : /AWCTabsPartAppearanceScope\(AWCTabsPartAppearance\(containerColor = /);
     assert.match(typed.description, /^Style the tabs' container part/);
     assert.match(nativeApiExample(component('md-navigation-tab'), 'cssPart', 'badge', platform).description, /^Style the navigation tab's badge part/);
+    // The five wrapper parts take a typed box since gate-7 R6-17 (AWCPartBox); md-toolbar ::part(container) keeps its typed fill (R6-03).
+    for (const [tag, name, type, field] of [['md-tab', 'content', 'Tab', 'content'], ['md-navigation-tab', 'container', 'NavigationTab', 'container'],
+      ['md-navigation-tab', 'icon-container', 'NavigationTab', 'iconContainer'], ['md-breadcrumbs', 'overflow', 'Breadcrumbs', 'overflow'], ['md-toolbar', 'fab-container', 'Toolbar', 'fabContainer']]) {
+      const box = nativeApiExample(component(tag), 'cssPart', name, platform);
+      assert.equal(box.status, 'native-equivalent', `${tag} ${name}`);
+      assert.match(box.code, platform === 'swift'
+        ? new RegExp(`\\.awc${type}PartAppearance\\(\\.init\\(${field}: AWCPartBox\\(background: "#[0-9A-F]{6}", borderWidth: [0-9.]+, borderColor: "#[0-9A-F]{6}", cornerRadius: [0-9.]+, padding: \\[[0-9., ]+\\]\\)\\)\\)`)
+        : new RegExp(`AWC${type}PartAppearanceScope\\(AWC${type}PartAppearance\\(${field} = AWCPartBox\\(background = "#[0-9A-F]{6}", borderWidth = [0-9.]+, borderColor = "#[0-9A-F]{6}", cornerRadius = [0-9.]+, padding = listOf\\([0-9., ]+\\)\\)\\)\\)`), `${tag} ${name}`);
+    }
+    const fill = nativeApiExample(component('md-toolbar'), 'cssPart', 'container', platform);
+    assert.equal(fill.status, 'native-equivalent');
+    assert.match(fill.code, platform === 'swift' ? /\.awcToolbarPartAppearance\(\.init\(containerColor: / : /AWCToolbarPartAppearanceScope\(AWCToolbarPartAppearance\(containerColor = /);
+    // The toolbar host pairs a FAB, so the fab-container box has something to wrap.
+    assert.match(nativeApiExample(component('md-toolbar'), 'cssPart', 'fab-container', platform).code, /"md-fab"/);
   }
 });
 
@@ -257,12 +274,13 @@ test('data and navigation starters include actual fixtures and multiple actionab
 
 test('declarative method alternatives cover verified selection, option-data, pagination and expansion APIs', () => {
   for (const platform of platforms) for (const [tag, name, property] of [
-    ['md-date-picker', 'show', 'open'],
+    ['md-autocomplete', 'show', 'open'],
+    // md-date-picker show() / close() / clear() / focusInput() have a verified controller bridge (date-picker-integration.test.mjs).
     // md-time-picker show() / hide() and md-color-picker show() / close() have a verified controller bridge (picker-integration.test.mjs).
     // md-navigation-bar select() has a verified controller bridge (navbar-integration.test.mjs).
     // md-tabs selectTab() has a verified controller bridge (tabs-integration.test.mjs).
     // md-stepper next() / prev() have a verified controller bridge (stepper-integration.test.mjs).
-    ['md-select', 'loadOptions', 'options'], ['md-multi-select', 'reset', 'value'],
+    // md-select / md-multi-select methods have a verified controller bridge (select-integration.test.mjs).
     // md-table-pagination goToPage() / setRowsPerPage() have a verified controller bridge (table-integration.test.mjs).
     // md-accordion-item toggle() has a verified controller bridge (accordion-integration.test.mjs).
     // md-radio select() has a verified controller bridge (selection-integration.test.mjs).

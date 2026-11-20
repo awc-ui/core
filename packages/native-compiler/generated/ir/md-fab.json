@@ -367,7 +367,7 @@
     "styleUrl": "md-fab.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "92fd657e9c901f6e6b57d09ff0049e889e65a8ad12cecd6a742e28e9a4048a9b"
+    "sha256": "7fa5d037a0aa9f86b73408a3b63fda988d08dc0701c9c37fbf604027139e8347"
   },
   "styles": [
     {
@@ -1378,6 +1378,17 @@
     },
     {
       "selector": ".md-fab__state-layer",
+      "context": "@media (prefers-reduced-motion: reduce)",
+      "declarations": [
+        {
+          "property": "transition",
+          "value": "none",
+          "important": false
+        }
+      ]
+    },
+    {
+      "selector": ".md-fab__label,\n  .md-fab__icon,\n  ::slotted([slot=\"icon\"])",
       "context": "@media (prefers-reduced-motion: reduce)",
       "declarations": [
         {

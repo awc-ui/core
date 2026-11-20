@@ -162,6 +162,14 @@ class NativeTableStatesTest {
         val factor = android.view.ViewConfiguration.get(compose.activity).scaledVerticalScrollFactor
         compose.onRoot().performMouseInput { moveTo(p); if (dy != 0f) scroll(dy / factor, ScrollWheel.Vertical); if (dx != 0f) scroll(dx / factor, ScrollWheel.Horizontal) }
     }
+    // Keys reach the activity's window only once it has window focus: run after other test classes (r5-A001), the window
+    // gained it after the first keyboard run had started (Tab focused nothing, Enter / Space were lost). Wait for it.
+    private fun awaitWindowFocus(why: String) {
+        val v = compose.activity.window.decorView; val t0 = android.os.SystemClock.uptimeMillis(); var focused = false
+        while (android.os.SystemClock.uptimeMillis() - t0 < 5000) { compose.runOnUiThread { focused = v.hasWindowFocus() }; if (focused) break; Thread.sleep(20) }
+        val waited = android.os.SystemClock.uptimeMillis() - t0
+        if (waited > 40 || !focused) log("DIAG window focus ${if (focused) "after $waited ms" else "missing after 5 s"} ($why)")
+    }
     private fun blur() = compose.runOnUiThread { runCatching { sink.requestFocus() }.onFailure { focusManager?.clearFocus(force = true) } }
     // The harness's blank-page click resets focus to the document start: a press on an empty spot of the page right of every
     // fixture (inside the root, far from any control's touch target), then the focus sink before the table.
@@ -212,6 +220,15 @@ class NativeTableStatesTest {
             "Space-closes-row-1" -> { { key(KeyEvent.KEYCODE_SPACE) } }
             "row-2-toggle()-method" -> { { bodyRows().getOrNull(2)?.let { compose.runOnUiThread { table.toggleRow(it.id) } } } }
             else -> { { bodyRows().getOrNull(2)?.let { r -> update(r.id) { it.copy(props = it.props + ("expanded" to false)) } } } }
+        }
+        if (run == "tb-contract") return when (label) {
+            "click-calories-default-desc" -> { { sortLabel("cal")?.let { click(it) } } }
+            "click-dessert-custom-label", "click-dessert-again-desc" -> { { sortLabel("name")?.let { click(it) } } }
+            "click-row-1-checkbox-not-selectable" -> { { cellCenter(1, 0)?.let { click(it) } } }
+            "click-row-2-checkbox" -> { { cellCenter(2, 0)?.let { click(it) } } }
+            "click-head-checkbox-select-all" -> { { labelCenter("Select all rows")?.let { click(it) } } }
+            "click-lone-sort-label" -> { { sortLabel("lone")?.let { click(it) } } }
+            else -> { { leave() } }
         }
         if (run.startsWith("tb-sort")) return when (label) {
             "click-calories", "click-calories-again-desc", "click-calories-third" -> { { sortLabel("cal")?.let { click(it) } } }
@@ -324,7 +341,7 @@ class NativeTableStatesTest {
     }
 
     // MARK: Comparisons
-    private val eventNames = setOf("mdSelectionChange", "mdRowSelectionChange", "mdRowClick", "mdRowExpandedChange", "mdSortChange", "mdPageChange", "mdRowsPerPageChange", "mdPinChange", "mdColumnVisibilityChange", "mdChange", "mdClick")
+    private val eventNames = setOf("mdSelectionChange", "mdRowSelectionChange", "mdRowClick", "mdRowExpandedChange", "mdSortChange", "mdPageChange", "mdRowsPerPageChange", "mdPinChange", "mdColumnVisibilityChange", "mdChange", "mdClick", "mdSortRequest")
     private fun dbl(v: Any?) = (v as? Number)?.toDouble()
     private fun keyOf(name: String, raw: Any?): String { val d = if (raw is JSONObject) raw.toMap() else map(raw)
         fun list(v: Any?): List<String> = when (v) { is JSONArray -> (0 until v.length()).map { v.get(it).toString() }; is List<*> -> v.map { it.toString() }; else -> emptyList() }
@@ -357,7 +374,7 @@ class NativeTableStatesTest {
             // ±2 frames of latency: the native curve passes through the web value within 33 ms either side (between frames too).
             if (cands.isNotEmpty() && v >= cands.min() - tolerance && v <= cands.max() + tolerance) ok++ else bad += "${tau.toInt()}ms web ${"%.2f".format(v)} native ${cands.map { "%.2f".format(it) }}"
         }
-        check(ok >= web.size * 0.9) { "$tag: motion $key $ok/${web.size} frames within $tolerance (±2 frames) — ${bad.take(4)}" }
+        check(ok >= web.size * 0.9) { "$tag: motion $key $ok/${web.size} frames within $tolerance (±2 frames) — ${bad.take(8)} | native ${samples.filter { it.second.containsKey(key) }.take(30).joinToString(" ") { "${it.first.toInt()}:${"%.2f".format(it.second[key]?.let(map) ?: Double.NaN)}" }} | web ${web.take(30).joinToString(" ") { "${it.first.toInt()}:${"%.2f".format(it.second)}" }}" }
         if (bad.isNotEmpty() && ok >= web.size * 0.9) gaps += "$tag: ${bad.size} frame(s) beyond ±2 frames for $key"
     }
     private fun compareState(tag: String, w: JSONObject) {
@@ -374,7 +391,8 @@ class NativeTableStatesTest {
                 if (!a.isNull(5)) check((inspection.metrics["expanded:" + node.id] == true) == (a.getString(5) == "true")) { "$tag: row $k expanded ${inspection.metrics["expanded:" + node.id]} vs ${a.getString(5)}" }
             }
         }
-        val labels = find(nodes) { it.tag == "md-table-sort-label" }
+        // The head's sort labels (the oracle's `head` cells); a label outside a table (tb-contract's lone label) is not one.
+        val labels = find(find(nodes) { it.tag == "md-table-head" }) { it.tag == "md-table-sort-label" }
         val head = w.optJSONArray("head") ?: JSONArray()
         val webLabels = (0 until head.length()).map { head.getJSONArray(it) }.filter { !it.isNull(1) }.map { it.getJSONArray(1) }
         webLabels.forEachIndexed { k, a -> labels.getOrNull(k)?.let { l -> (inspection.metrics["sort:" + l.id] as? List<*>)?.let { m ->
@@ -427,7 +445,8 @@ class NativeTableStatesTest {
                 if (cut != null) gaps += "$tag: Chrome cancels $name's FLIP glide at ${cut!!.toInt()} ms (transitioncancel); native completes it (captureFlip contract)"
                 else motionCheck(tag, entries.map { (s, a) -> tau(s) to (a.getDouble(2) - base) / 53 }, "y:" + r.id, 0.2) { (it - nativeBase) / 53 } }
         }
-        val labels = find(nodes) { it.tag == "md-table-sort-label" }
+        // The head's sort labels (the oracle's `head` cells); a label outside a table (tb-contract's lone label) is not one.
+        val labels = find(find(nodes) { it.tag == "md-table-head" }) { it.tag == "md-table-sort-label" }
         labels.forEachIndexed { k, l ->
             fun head(s: JSONObject) = s.getJSONArray("head").let { h -> (0 until h.length()).map { h.getJSONArray(it) }.filter { !it.isNull(1) }.getOrNull(k)?.getJSONArray(1) }
             motionCheck(tag, ss.mapNotNull { s -> head(s)?.let { tau(s) to abs(angle(it.getString(2))) / 180 } }, "sort-rot:" + l.id, 0.12)
@@ -445,6 +464,7 @@ class NativeTableStatesTest {
         compose.runOnUiThread { compose.activity.window.insetsController?.let { it.systemBarsBehavior = android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             it.hide(android.view.WindowInsets.Type.systemBars()) } }
         Thread.sleep(400)
+        awaitWindowFocus("start")
         for (r in fixture.getJSONArray("runs").objects()) {
             val name = r.getString("name"); val set = r.getString("set"); val label0 = (if (set == "full") "" else "reduced/") + name
             if (only != null && !"$set/$name".contains(only)) continue
@@ -463,6 +483,7 @@ class NativeTableStatesTest {
             // The page inserts the rows after load (keep-height floors the table at that first layout).
             if (paged) { compose.waitForIdle(); compose.mainClock.advanceTimeBy(100); compose.waitForIdle(); render() }
             compose.waitForIdle(); compose.mainClock.advanceTimeBy(400); compose.waitForIdle()
+            awaitWindowFocus(label0)
             blur()
             events.clear()
             val phases = r.getJSONArray("phases").objects(); val webEvents = r.getJSONArray("events").objects()
@@ -547,11 +568,7 @@ class NativeTableStatesTest {
                 // The nested md-select draws its focus indicator outside its box (owned by md-select's suite).
                 val o = if ((it.config.getOrNull(SemanticsProperties.ContentDescription)?.joinToString() ?: "").startsWith("Rows per page")) 6.0 else 2.0
                 out += listOf(b.left - o, b.top - o, b.width + 2 * o, b.height + 2 * o) }
-        // Chrome places the right-to-left custom thumb from the track's inline start translated by (1 − p)·travel (source defect);
-        // the native thumb follows the source's documented intent (starts at the right end, travels left): its track is masked.
-        if (runName == "tb-frozen-scroll-rtl") (inspection.metrics["hthumb.y"] as? Double)?.let { y ->
-            gaps += "tb-frozen-scroll-rtl: right-to-left h-thumb track masked (Chrome's translateX on the inline-start thumb is a source defect; native follows the documented intent)"
-            out += listOf(24.0, y - 8.0, 760.0, 16.0) }
+        // (The right-to-left custom thumb is compared too: the source defect that pushed it out of its track is fixed, d5 2026-11.)
         // The rows-per-page select from the pagination's own inspection box (its semantics bounds move while it is focused).
         (inspection.metrics["pagination.rpp"] as? List<*>)?.mapNotNull { (it as? Number)?.toDouble() }?.takeIf { it.size == 4 }?.let { b -> out += listOf(b[0] - 6, b[1] - 6, b[2] + 12, b[3] + 12) }
         find(nodes) { it.tag == "md-table" && it.props["loading"] == true }.firstOrNull()?.let { t -> inspection.rows.values.minByOrNull { it.y }?.let { r -> out += listOf(r.x, r.y + 57, 760.0, 600.0) } }

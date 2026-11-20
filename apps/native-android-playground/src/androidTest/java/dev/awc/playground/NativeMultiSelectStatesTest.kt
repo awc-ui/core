@@ -206,12 +206,16 @@ class NativeMultiSelectStatesTest {
             val clip=p.getJSONObject("clip");val webG=CardWeb.webGrid("$file/${p.getString("shot")}",clip)
             val masks=selectionMask(webG)
             var best:Pair<Double,JSONObject>?=null;var shots=0
-            fun shoot() { val r=CardWeb.compare(webG,MenuEvidence.capture(compose,clip) { s-> shiftScene(s) }.also { shiftScene(base) },masks).put("selectionMask",masks.size);shots++
-                if(best==null || r.getInt("over6")*1e6+r.getDouble("mean")<best!!.second.getInt("over6")*1e6+best!!.second.getDouble("mean")) best=(now()-actual) to r }
+            // Chrome's capture lies between two native frames: each candidate frame and the span of consecutive ones are compared.
+            var prev:CardWeb.Grid?=null
+            fun shoot() { val g=MenuEvidence.capture(compose,clip) { s-> shiftScene(s) }.also { shiftScene(base) };shots++
+                for(c in listOfNotNull(g,prev?.let { CardWeb.between(webG,it,g) })) { val r=CardWeb.compare(webG,c,masks).put("selectionMask",masks.size)
+                    if(best==null || r.getInt("over6")*1e6+r.getDouble("mean")<best!!.second.getInt("over6")*1e6+best!!.second.getDouble("mean")) best=(now()-actual) to r }
+                prev=g }
             var nextShot=lastWeb-start+17
             while(now()<actual+duration) {
                 frame();samples+=sample().let { it.copy(t=it.t-actual) }
-                if(now()>=actual+nextShot && now()<=actual+duration+1) { shoot();nextShot+=16 }
+                if(now()>=actual+nextShot && now()<=actual+duration+17) { shoot();nextShot+=16 }
             }
             if(shots==0) shoot()
             phaseSamples+=samples;phaseStarts+=actual;phaseShots+=best

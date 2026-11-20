@@ -625,9 +625,20 @@ export class MdListItem {
     if (!target) return;
     if (target.getAttribute('tabindex') === null) {
       target.setAttribute('tabindex', this.tabbable ? '0' : '-1');
+      /* A host whose render owns no tabindex keeps this one only while it holds
+         focus: left behind, '0' is a second tab stop and '-1' takes the row's
+         caret out of the Tab order (gate-7 r3-25). */
+      if (target === this.el) target.addEventListener('blur', this.dropStampedTabIndex, { once: true });
     }
     target.focus(options);
   }
+
+  /** The host tabindex the last render wrote (null: none). */
+  private renderedHostTabIndex: string | null = null;
+
+  private dropStampedTabIndex = () => {
+    if (this.renderedHostTabIndex === null) this.el.removeAttribute('tabindex');
+  };
 
   /** Programmatically focus this row (delegates to {@link setFocus}). */
   @Method()
@@ -1428,8 +1439,17 @@ export class MdListItem {
        INNER primary element for `hasPrimaryAction` rows and on the HOST for the
        host-widget rows — selection (option), menu (menuitem), reorderable. */
     const focusable = (isInteractive && !isExpandableOnly) || this.reorderable;
-    const rovingTabIndex = focusable ? (this.tabbable ? '0' : '-1') : null;
+    /* In a selection list `md-list` roves over every enabled row (its
+       `isItemFocusable`), expandable-only ones included. Such a row's host is
+       the tab stop while it is the list's active row. Otherwise it carries NO
+       tabindex: a negative tabindex on a shadow host takes the whole shadow
+       tree out of sequential focus navigation, and the caret must stay
+       reachable. Before, `setFocus()` stamped a tabindex here that no render
+       updated, so the row stayed a second tab stop (gate-7 r3-25). */
+    const rovedExpandable = isInteractive && isExpandableOnly && this.hostedByList && this.inSelectionMode;
+    const rovingTabIndex = focusable ? (this.tabbable ? '0' : '-1') : rovedExpandable && this.tabbable ? '0' : null;
     const hostTabIndex = hasPrimaryAction ? null : rovingTabIndex;
+    this.renderedHostTabIndex = hostTabIndex;
     const primaryTabIndex = hasPrimaryAction ? rovingTabIndex : null;
 
     /* Expanded-panel role. Its slotted `md-list-item` rows render as

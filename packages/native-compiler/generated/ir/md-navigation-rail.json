@@ -3204,17 +3204,33 @@
     "ios": {
       "status": "adapter-implemented",
       "properties": [
-        "activeIndex",
-        "orientation",
+        "variant",
+        "modal",
+        "fullHeight",
+        "alignment",
         "expandable",
-        "toggleLabel"
+        "toggleLabel",
+        "labelVisibility",
+        "activeIndex",
+        "label",
+        "disableFocusManagement",
+        "density",
+        "orientation",
+        "maxVisible",
+        "overflowLabel",
+        "overflowIcon"
       ],
       "events": [
         "mdTabChange",
         "mdExpand",
         "mdCollapse"
       ],
-      "methods": [],
+      "methods": [
+        "expand",
+        "collapse",
+        "toggle",
+        "focusTab"
+      ],
       "slots": [
         "",
         "logo",
@@ -3225,47 +3241,62 @@
         "footer-content",
         "footer"
       ],
-      "unsupportedProperties": [
-        "variant",
-        "modal",
-        "fullHeight",
-        "alignment",
-        "labelVisibility",
-        "label",
-        "disableFocusManagement",
-        "density",
-        "maxVisible",
-        "overflowLabel",
-        "overflowIcon"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
-      "unsupportedMethods": [
-        "expand",
-        "collapse",
-        "toggle",
-        "focusTab"
-      ],
+      "unsupportedMethods": [],
       "unsupportedSlots": [],
       "notes": [
-        "Native rail expansion event supplied, but responsive maxVisible/overflow/modal positioning are not implemented."
+        "Dedicated native rail (SwiftUI / Compose): standard (80) and expanded (220) widths with the width transition and the destinations' FLIP, the modal overlay with its scrim, the horizontal bar, top / middle / bottom alignment, full height, density, the logo, toggle, header, FAB and footer profile slots, and the overflow trigger with its menu (maxVisible).",
+        "Selection and focus as the source: one roving tab stop, arrows on the visual axis (wrapping), Home / End, Enter / Space, Escape and the scrim in a modal; mdTabChange (only when the selection moves), mdExpand / mdCollapse; a silent activeIndex write.",
+        "The 19 rail hooks (the stylesheet's list; the CEM lists 18, not horizontal-height) through .awcNavigationRailAppearance(…) / AWCNavigationRailAppearanceScope; every exported part through the typed part appearances; expand / collapse / toggle / focusTab through AWCNavigationRailController.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: paint and geometry of every configuration (variants, label visibility, density, slots, the modal overlay, the horizontal bar, overflow, badges, links, a dropdown destination, every hook and every exported part), the interaction states and motion (pointer, keyboard, the expand / collapse transition with the destinations' FLIP, reduced motion) and the events."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "scrim",
+        "container",
+        "logo",
+        "logo-contracted",
+        "logo-expanded",
+        "toggle",
+        "header",
+        "fab",
+        "destinations",
+        "overflow",
+        "overflow-trigger",
+        "footer",
+        "footer-profile",
+        "footer-leading",
+        "footer-content"
+      ],
+      "appearance": {
+        "api": ".awcNavigationRailAppearance(AWCNavigationRailAppearance)",
+        "fields": [
+          "containerColor",
+          "containerElevation",
+          "containerShape",
+          "containerWidth",
+          "contentColor",
+          "destinationsGap",
+          "expandedMaxWidth",
+          "expandedWidth",
+          "fabSize",
+          "footerGap",
+          "footerLeadingSize",
+          "gap",
+          "headerSpace",
+          "horizontalHeight",
+          "horizontalPaddingBlock",
+          "horizontalPaddingInline",
+          "logoIconSize",
+          "paddingBlock",
+          "paddingInline"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "activeIndex"
-      ],
-      "events": [
-        "mdTabChange"
-      ],
-      "methods": [],
-      "slots": [
-        "",
-        "footer",
-        "header"
-      ],
-      "unsupportedProperties": [
         "variant",
         "modal",
         "fullHeight",
@@ -3273,6 +3304,7 @@
         "expandable",
         "toggleLabel",
         "labelVisibility",
+        "activeIndex",
         "label",
         "disableFocusManagement",
         "density",
@@ -3281,27 +3313,79 @@
         "overflowLabel",
         "overflowIcon"
       ],
-      "unsupportedEvents": [
+      "events": [
+        "mdTabChange",
         "mdExpand",
         "mdCollapse"
       ],
-      "unsupportedMethods": [
+      "methods": [
         "expand",
         "collapse",
         "toggle",
         "focusTab"
       ],
-      "unsupportedSlots": [
+      "slots": [
+        "",
         "logo",
         "logo-expanded",
+        "header",
         "fab",
+        "footer-leading",
+        "footer-content",
+        "footer"
+      ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
+      "notes": [
+        "Dedicated native rail (SwiftUI / Compose): standard (80) and expanded (220) widths with the width transition and the destinations' FLIP, the modal overlay with its scrim, the horizontal bar, top / middle / bottom alignment, full height, density, the logo, toggle, header, FAB and footer profile slots, and the overflow trigger with its menu (maxVisible).",
+        "Selection and focus as the source: one roving tab stop, arrows on the visual axis (wrapping), Home / End, Enter / Space, Escape and the scrim in a modal; mdTabChange (only when the selection moves), mdExpand / mdCollapse; a silent activeIndex write.",
+        "The 19 rail hooks (the stylesheet's list; the CEM lists 18, not horizontal-height) through .awcNavigationRailAppearance(…) / AWCNavigationRailAppearanceScope; every exported part through the typed part appearances; expand / collapse / toggle / focusTab through AWCNavigationRailController.",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: paint and geometry of every configuration (variants, label visibility, density, slots, the modal overlay, the horizontal bar, overflow, badges, links, a dropdown destination, every hook and every exported part), the interaction states and motion (pointer, keyboard, the expand / collapse transition with the destinations' FLIP, reduced motion) and the events."
+      ],
+      "verification": "not-device-verified",
+      "visualParts": [
+        "scrim",
+        "container",
+        "logo",
+        "logo-contracted",
+        "logo-expanded",
+        "toggle",
+        "header",
+        "fab",
+        "destinations",
+        "overflow",
+        "overflow-trigger",
+        "footer",
+        "footer-profile",
         "footer-leading",
         "footer-content"
       ],
-      "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
-      ],
-      "verification": "not-device-verified"
+      "appearance": {
+        "api": "AWCNavigationRailAppearanceScope(AWCNavigationRailAppearance)",
+        "fields": [
+          "containerColor",
+          "containerElevation",
+          "containerShape",
+          "containerWidth",
+          "contentColor",
+          "destinationsGap",
+          "expandedMaxWidth",
+          "expandedWidth",
+          "fabSize",
+          "footerGap",
+          "footerLeadingSize",
+          "gap",
+          "headerSpace",
+          "horizontalHeight",
+          "horizontalPaddingBlock",
+          "horizontalPaddingInline",
+          "logoIconSize",
+          "paddingBlock",
+          "paddingInline"
+        ]
+      }
     }
   }
 }

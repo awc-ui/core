@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { MENU_APPEARANCE_FIELDS, menuAppearance } from './menu-appearance.js';
+import { MENU_PARTS, MENU_ITEM_PARTS, SUB_MENU_ITEM_PARTS, MENU_APPEARANCE_FIELDS, menuAppearance } from './menu-appearance.js';
 import { componentAppearance } from './component-appearance.js';
 import { nativeThemeOptions } from './native-theme-options.js';
 import { MENU_UPDATE_PROPERTIES, MENU_ITEM_UPDATE_PROPERTIES, SUB_MENU_ITEM_UPDATE_PROPERTIES, MENU_ITEM_GROUP_UPDATE_PROPERTIES, nativePropertyUpdate, supportsRetainedPropertyUpdates } from './native-property-updates.js';
@@ -32,13 +32,17 @@ test('the hooks cover the IRs and the released policies', () => {
       assert.deepEqual(policy.slots, names(ir[tag].slots), `${tag} ${platform}`);
       if (platform === 'ios') { assert.equal(policy.status, 'native-adapter'); assert.deepEqual(policy.unsupportedProperties, []); assert.deepEqual(policy.unsupportedSlots, []); }
     }
-    assert.deepEqual(support[platform]['md-menu'].methods, ['getScrollViewport', 'show', 'reposition', 'whenClosed', 'close'], platform);
+    assert.deepEqual(support[platform]['md-menu'].methods, ['getScrollViewport', 'show', 'reposition', 'whenClosed', 'close', 'setComboboxElement', 'setVirtualProvider'], platform);
+    for (const [tag, parts] of [['md-menu', MENU_PARTS], ['md-menu-item', MENU_ITEM_PARTS], ['md-sub-menu-item', SUB_MENU_ITEM_PARTS]]) {
+      assert.deepEqual([...parts].sort(), ir[tag].cssParts.map(p => p.name).sort(), tag);
+      assert.deepEqual(support[platform][tag].visualParts, [...parts], `${tag} ${platform}`);
+    }
     assert.deepEqual(support[platform]['md-sub-menu-item'].methods, ['collapse'], platform);
     assert.deepEqual(support[platform]['md-menu'].appearance.fields, MENU_APPEARANCE_FIELDS.map(f => f.name), platform);
     assert.equal(support[platform]['md-menu-item'].appearance, undefined);
-    assert.match(support[platform]['md-menu'].notes.join(' '), /setComboboxElement\(\) and setVirtualProvider\(\)/);
+    assert.match(support[platform]['md-menu'].notes.join(' '), /setComboboxElement\(id\) and setVirtualProvider\(provider\)/);
   }
-  assert.deepEqual(support.ios['md-menu'].unsupportedMethods, ['setComboboxElement', 'setVirtualProvider']);
+  assert.deepEqual(support.ios['md-menu'].unsupportedMethods, []);
   const registry = componentAppearance('md-menu');
   assert.equal(registry.key, 'menuAppearance'); assert.equal(registry.swiftModifier, 'awcMenuAppearance'); assert.equal(registry.nativeType, 'AWCMenuAppearance');
   assert.deepEqual(registry.groups.flatMap(([, fields]) => fields), MENU_APPEARANCE_FIELDS.map(f => f.name));
@@ -107,7 +111,15 @@ test('examples present the anchored menu in an AWCMenuScope with its handle', ()
     assert.match(nativeApiExample(component('md-menu'), 'method', 'getScrollViewport', platform).notes.join(' '), /geometry/);
     const collapse = nativeApiExample(component('md-sub-menu-item'), 'method', 'collapse', platform);
     assert.equal(collapse.status, 'supported'); assert.match(collapse.code, swift ? /collapse\(row: "demo-menu-export"\)/ : /collapse\("demo-menu-export"\)/);
-    for (const method of ['setComboboxElement', 'setVirtualProvider']) assert.equal(nativeApiExample(component('md-menu'), 'method', method, platform).status, 'unsupported', method);
+    for (const [method, call] of [['setComboboxElement', /\.setComboboxElement\("demo-menu-search"\)/], ['setVirtualProvider', swift ? /\.setVirtualProvider\(nil\)/ : /\.setVirtualProvider\(null\)/]]) {
+      const example = nativeApiExample(component('md-menu'), 'method', method, platform);
+      assert.equal(example.status, 'supported', method); assert.match(example.code, call, method);
+    }
+    for (const [tag, kind, part, call] of [['md-menu', 'Menu', 'surface', swift ? /\.awcMenuPartAppearance\(\.init\(background: "#F7F2FA", cornerRadius: 12\), part: \.surface\)/ : /AWCMenuPartAppearanceScope\(AWCMenuPart\.Surface, AWCMenuPartAppearance\(background = "#F7F2FA", cornerRadius = 12\.0\)\)/],
+      ['md-menu-item', 'MenuItem', 'supporting-text', swift ? /part: \.supportingText\)/ : /AWCMenuItemPart\.SupportingText/], ['md-sub-menu-item', 'SubMenuItem', 'badge', swift ? /\.awcSubMenuItemPartAppearance\(/ : /AWCSubMenuItemPartAppearanceScope\(AWCSubMenuItemPart\.Badge/]]) {
+      const example = nativeApiExample(component(tag), 'cssPart', part, platform);
+      assert.equal(example.status, 'native-equivalent', `${tag} ${part}`); assert.match(example.code, call, `${tag} ${part}`); assert.match(example.code, /AWCMenuScope/);
+    }
     const event = nativeApiExample(component('md-menu'), 'event', 'mdClose', platform);
     assert.match(event.code, /"mdClose"/); assert.match(event.code, /AWCMenuScope/);
     assert.match(nativeApiExample(component('md-menu-item'), 'event', 'mdClick', platform).code, /"mdClick"/);

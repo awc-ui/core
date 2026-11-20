@@ -124,6 +124,33 @@ struct TabsGrid {
     static func m(_ id: String, _ name: String) -> AWCNativeInspectionNode? {
         state.measurements.first { $0.name == name && ($0.id == id || $0.id.hasPrefix(id + ":") || $0.id.hasSuffix(":" + id) || $0.id.contains(":" + id + ":") || $0.id.hasPrefix(id + ".")) }
     }
+    /// Gate-7 R6-17: the declarations of `tag::part(part){…}` in a case's rules.
+    static func boxRule(_ css: String, _ tag: String, _ part: String) -> [String: String]? {
+        guard let r = css.range(of: tag + "::part(" + part + "){") else { return nil }
+        var out: [String: String] = [:]
+        for decl in css[r.upperBound...].prefix(while: { $0 != "}" }).split(separator: ";") {
+            let kv = decl.split(separator: ":", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespaces) }; if kv.count == 2 { out[kv[0]] = kv[1] } }
+        return out.isEmpty ? nil : out
+    }
+    /// A wrapper part's rule as the typed box: background(-color), border (width style colour), border-radius, padding shorthand.
+    static func partBox(_ r: [String: String]?) -> AWCPartBox? {
+        guard let r, ["background-color", "background", "border", "border-radius", "padding"].contains(where: { r[$0] != nil }) else { return nil }
+        func n(_ s: String) -> Double { Double(s.replacingOccurrences(of: "px", with: "")) ?? 0 }
+        let border = (r["border"] ?? "").split(separator: " ").map(String.init)
+        return AWCPartBox(background: r["background-color"] ?? r["background"], borderWidth: border.first.map(n), borderColor: border.last.flatMap { $0.hasPrefix("#") ? $0 : nil },
+                          cornerRadius: r["border-radius"].map(n), padding: r["padding"].map { $0.split(separator: " ").map { n(String($0)) } })
+    }
+    /// The inspected box of a wrapper part against Chrome's computed box.
+    static func boxCheck(_ label: String, _ node: AWCNativeInspectionNode?, bg: String, bw: String, bc: String, radius: String, pad: [String]) {
+        guard let node else { check(false, "\(label) box measured"); return }
+        func n(_ s: String) -> Double { Double(s.replacingOccurrences(of: "px", with: "")) ?? 0 }
+        check(colorClose(node.metrics["background"], bg), "\(label) box background \(String(describing: node.metrics["background"])) vs \(bg)")
+        check(abs((node.metrics["borderWidth"]?.number ?? -1) - n(bw)) < 0.01, "\(label) box border width \(String(describing: node.metrics["borderWidth"])) vs \(bw)")
+        if n(bw) > 0 { check(colorClose(node.metrics["borderColor"], bc), "\(label) box border colour \(String(describing: node.metrics["borderColor"])) vs \(bc)") }
+        check(abs((node.metrics["radius"]?.number ?? -1) - n(radius)) < 0.01, "\(label) box radius \(String(describing: node.metrics["radius"])) vs \(radius)")
+        let p = node.metrics["padding"]?.array.compactMap(\.number) ?? []
+        check(p.count == 4 && zip(p, pad.map(n)).allSatisfy { abs($0 - $1) < 0.01 }, "\(label) box padding \(p) vs \(pad)")
+    }
     static func run(_ c: AWCValue, shots: URL) {
         let name = c["name"].string
         state.dark = c["theme"].string == "dark"; state.rtl = c["dir"].string == "rtl"
@@ -132,7 +159,8 @@ struct TabsGrid {
         state.appearance = appearance(nodes.first?.properties["_hooks"] ?? .null)
         let rules = partRules(c["parts"].string), tp = { (part: String, prop: String) in rules["md-tab::" + part]?[prop] }
         state.tabParts = .init(stateLayerColor: tp("state-layer", "background-color"), stateLayerOpacity: tp("state-layer", "opacity").flatMap(Double.init),
-                               iconColor: tp("icon", "color"), labelColor: tp("label", "color"), indicatorColor: tp("indicator", "background-color"), dividerColor: tp("divider", "background-color"))
+                               iconColor: tp("icon", "color"), labelColor: tp("label", "color"), indicatorColor: tp("indicator", "background-color"), dividerColor: tp("divider", "background-color"),
+                               content: partBox(boxRule(c["parts"].string, "md-tab", "content")))
         state.tabsParts = .init(containerColor: rules["md-tabs::container"]?["background-color"])
         state.nodes = nodes; state.density = c["density"].number ?? 0
         state.width = c["wrapped"] == .bool(true) ? (hostRect["width"].number ?? 480) : (c["width"].number ?? 480)
@@ -168,6 +196,11 @@ struct TabsGrid {
             if let cont = m(id, "content"), wt["content"] != .null, !authoredSlot {
                 let wr = wt["content"]["rect"]
                 near(cont.bounds.minX, wr["x"].number, "\(lbl) content x"); near(cont.bounds.minY, wr["y"].number, "\(lbl) content y"); near(cont.bounds.width, wr["width"].number, "\(lbl) content width", 1); near(cont.bounds.height, wr["height"].number, "\(lbl) content height", 1)
+            }
+            // ::part(content) box (gate-7 R6-17): the typed box against Chrome's computed box (its rect is checked above).
+            if boxRule(c["parts"].string, "md-tab", "content") != nil, wt["content"] != .null {
+                boxCheck("\(name) \(lbl) content", m(id, "content"), bg: wt["content"]["bg"].string, bw: wt["content"]["bw"].string, bc: wt["content"]["bc"].string,
+                         radius: wt["content"]["radius"].string, pad: wt["content"]["pad"].array.map(\.string))
             }
             if wt["icon"] != .null, (wt["icon"]["rect"]["width"].number ?? 0) > 0, let icon = m(id, "icon") {
                 let wr = wt["icon"]["rect"]

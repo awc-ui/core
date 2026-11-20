@@ -29,7 +29,7 @@ export function nodeToHTML(node, props, counter = { n: 0 }, siblings = 1) {
     else values[name] = value;
   }
   // md-time-picker opens in the variant it was given: `open` is assigned last (markup initialises all properties first).
-  if (node.tag === 'md-time-picker' && 'open' in values) { const open = values.open; delete values.open; values.open = open; }
+  if (['md-time-picker', 'md-date-picker'].includes(node.tag) && 'open' in values) { const open = values.open; delete values.open; values.open = open; }
   props[key] = values;
   const kids = node.children ?? [];
   const inner = kids.map(child => nodeToHTML(child, props, counter, kids.length)).join('');
@@ -84,12 +84,36 @@ export async function captureWeb(ctx, { html, props, dir = 'ltr', tag, tabs = 0,
       await customElements.whenDefined(tagName);
       for (const el of document.querySelectorAll('[data-ax-node]')) {
         await customElements.whenDefined(el.localName).catch(() => {});
-        Object.assign(el, window.__axProps[el.dataset.axNode] ?? {});
+        const props = { ...(window.__axProps[el.dataset.axNode] ?? {}) };
+        // The select family opens after it has loaded with its options (6-7): its menu stays closed when `open` is part of the first write.
+        if (['md-select', 'md-multi-select'].includes(el.localName) && 'open' in props) { el.__axOpen = props.open; delete props.open; }
+        Object.assign(el, props);
       }
+      await Promise.all([...document.querySelectorAll('#ax-root *')].map(el => el.componentOnReady?.()));
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+      for (const el of document.querySelectorAll('[data-ax-node]')) if ('__axOpen' in el) el.open = el.__axOpen;
       await Promise.all([...document.querySelectorAll('#ax-root *')].map(el => el.componentOnReady?.()));
       await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
     }, tag);
     await new Promise(r => setTimeout(r, settle));
+    // 9-11, 9-16 (S7-15-02): md-table decides table vs treegrid in syncRows (any row with [expandable]); a capture taken before that pass names no rows.
+    // Wait for every md-table to show the role its rows call for (treegrid iff some md-table-row has [expandable], else table) in 8 consecutive frames; best effort, 8 s.
+    await page.waitForFunction((noNudge) => {
+      const w = (window.__axRoleStable ??= { n: 0 });
+      const tables = [...document.querySelectorAll('md-table')];
+      const ok = tables.length > 0 && tables.every(t => {
+        // 9-16: rows not yet in the light DOM would read as 'table' and end the wait before syncRows has run.
+        if (!t.querySelector('md-table-row')) return false;
+        const want = t.querySelector('md-table-row[expandable]') ? 'treegrid' : 'table';
+        const have = t.shadowRoot?.querySelector('[role="treegrid"],[role="table"]')?.getAttribute('role');
+        // 9-16 (S7-15-02): a row's reflected [expandable] can land after the table's last syncRows with no slotchange after it: the role then stays `table` for good.
+        // Ask the table to re-run syncRows the way a rowgroup does (mdRowgroupSlotChange), a bounded number of times; the Web source is unchanged.
+        if (!noNudge && have !== want && (w.nudges ??= 0) < 40) { w.nudges++; t.dispatchEvent(new CustomEvent('mdRowgroupSlotChange', { bubbles: true, composed: true })); }
+        return have === want;
+      });
+      w.n = ok ? w.n + 1 : 0;
+      return w.n >= 8;
+    }, { polling: 'raf', timeout: 8000 }, !!process.env.AX_NO_NUDGE).catch(() => {});
     const cdp = await page.createCDPSession();
     await cdp.send('Accessibility.enable'); await cdp.send('DOM.enable');
     const { nodes } = await cdp.send('Accessibility.getFullAXTree');
@@ -117,6 +141,11 @@ export async function captureWeb(ctx, { html, props, dir = 'ltr', tag, tabs = 0,
       const controls = (n.properties ?? []).find(p => p.name === 'controls')?.value?.relatedNodes ?? [];
       if (controls.length) out.controls = controls.map(r => nodes.find(x => x.backendDOMNodeId === r.backendDOMNodeId)?.name?.value ?? '');
       if (n.backendDOMNodeId && !n.ignored) out.frame = await frame(n.backendDOMNodeId);
+      // R5-12 (9-11): a cell's row span (aria-rowspan on its DOM node; CDP's AX properties carry none).
+      if (n.backendDOMNodeId && !n.ignored && ['cell', 'gridcell', 'columnheader', 'rowheader'].includes(out.role)) {
+        const a = (await cdp.send('DOM.describeNode', { backendNodeId: n.backendDOMNodeId }).catch(() => null))?.node?.attributes ?? [], i = a.indexOf('aria-rowspan');
+        if (i >= 0 && Number(a[i + 1]) > 1) out.rowSpan = Number(a[i + 1]);
+      }
       const kids = [];
       for (const childId of n.childIds ?? []) { const c = byId.get(childId); if (c && !skipIds.has(c.backendDOMNodeId)) kids.push(await convert(c)); }
       if (kids.length) out.children = kids;

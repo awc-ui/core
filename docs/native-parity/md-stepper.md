@@ -1,7 +1,8 @@
 # md-stepper native checkpoint
 
 Status: **gates 2–3 and accessibility verified on macOS SwiftUI, the iOS simulator and the Android emulator** against
-Mac Chrome 153 oracles (2026-10-30), for `md-stepper` and its child `md-step`. Independent final audit pending.
+Mac Chrome 153 oracles (2026-10-30), for `md-stepper` and its child `md-step`; gate-7 fixes (typed parts, rendered views,
+duration-hook runs) verified 2026-11-11. Independent final audit pending.
 Source contract: [md-stepper-source-review.md](md-stepper-source-review.md); plan: [md-stepper-native-plan.md](md-stepper-native-plan.md).
 
 ## Native API
@@ -11,6 +12,7 @@ Source contract: [md-stepper-source-review.md](md-stepper-source-review.md); pla
 | Stepper / step nodes (`AWCNativeView` / `AWCComponent`) | dedicated renderers (`Stepper/NativeStepper.swift`, model + layout in `StepperModel.swift`, `StepperLayout.swift`) | dedicated renderers (`NativeStepper.kt`, `stepper/StepperModel.kt`, `StepperLayout.kt`, `StepperMeasure.kt`) |
 | Hooks: 23 stepper + 22 step (`--md-stepper-*`, `--md-step-*`, including the connector / expand / collapse durations) | `AWCStepperAppearance` + `.awcStepperAppearance(_:)`; a step's own `style` hooks win for that step | `AWCStepperAppearance` + `AWCStepperAppearanceScope`; same per-step rule |
 | `next()`, `prev()`, `goTo(index)`, `reset()` | `AWCStepperController` + `.awcStepperController(_:)` | `AWCStepperController` + `AWCStepperControllerScope` |
+| Parts — md-stepper: `list`, `content`, `nav`, `mobile-nav`; md-step: `bubble`, `dot`, `state-layer`, `label`, `optional`, `description`, `connector`, `connector-trailing`, `content`, `actions` | `AWCStepperPart` / `AWCStepPart` + `.awcStepperPartAppearance(_:part:)` / `.awcStepPartAppearance(_:part:)` (`Stepper/StepperParts.swift`) | `AWCStepperPart` / `AWCStepPart` + `AWCStepperPartAppearanceScope` / `AWCStepPartAppearanceScope` (`StepperParts.kt`) |
 | Reduced motion / settled rendering | `.environment(\.awcStepperReducedMotion, _)`, `\.awcStepperSettled` (snapshots) | `AWCStepperReducedMotionScope`, `AWCStepperSettledScope` |
 
 Behaviour mirrors the source: horizontal row (shared `content` slot or per-step panels), vertical rail with per-step
@@ -37,7 +39,14 @@ gunzip in every Android job; Swift reads the same files.
 | iOS simulator AWC-fa (iPhone 17 Pro, iOS 26.3.1) | 189/189 (fa-063) |
 | iOS gate-6 runtimes (r6) | iPhone 17 Pro iOS 26.3 (fa-063, fa-064), iPad Pro 11-inch (M5) iOS 26.3 and iPhone 16 Pro iOS 18.6 (r6-011, `work/audit/r6/out/ios-ipad/`, `ios-ios18/`): all pass |
 | Android emulator-5556 `StepperParityTest` paint + extra / states / reduced | 142/142 + 6/6 · 20/20 · 20/20 (fa-A030) |
-| Android `StepperViewsTest` (renders, semantics, navigation and focus, methods, host updates, lifecycle) | 93/93 (fa-A030) |
+| Android `StepperViewsTest` (renders, semantics, navigation and focus, methods, host updates, lifecycle) | 93/93 (fa-A030; fa-A044) |
+| Gate 7: `web-paint-extra2.json` (9 cases: `::part()` rules on md-stepper and md-step) — macOS "paint (extra2)" / Android | 9/9 · 9/9 (fa-089, fa-A044) |
+| Gate 7 (R6-11): `web-states-extra.json` / `-reduced` (4 runs each: `--md-step-connector-duration`, `-expand-duration`, `-collapse-duration`) — macOS / Android | 4/4 + 4/4 · 4/4 + 4/4 (fa-089, fa-A044) |
+| Gate 7: all suites on the final sources — macOS `NativeStepperIntegration` / Android `StepperParityTest` / iOS simulator | 206/206 (paint 142 + 6 + 9, states 20 + 20 + 4 + 4, density rungs) (fa-089) · paint 142 + 6 + 9, states 20 + 20 + 4 + 4 (fa-A044) · iOS 206/206 on AWC-fa iPhone 17 Pro, iOS 26.3 (fa-092) |
+| Gate 7 (R6-07): iOS gate-6 runtimes on the final sources — `NativeStepperIntegration` | iPhone 17 Pro · iOS 26.3 **206/206** (fa-092) · iPad Pro 11-inch (M5) · iOS 26.3 **206/206** (fa-094) · iPhone 16 Pro · iOS 18.6 **206/206** (fa-094) |
+| Gate 7 (R6-05): rendered views against the Chrome shots — macOS `NativeFaViewsIntegration` | paint 140/140 · extra 6/6 · extra2 9/9 (fa-089; 2 focus-visible cases are runtime states) |
+| Gate 7 (R6-05): rendered views — Android `FaViewsParityTest` | paint 140/140 · extra 6/6 · extra2 9/9 (fa-A044) |
+| Gate 7 (R6-05): rendered views — iOS harness | paint 140/140 · extra 6/6 · extra2 9/9 on iPad Pro 11-inch (M5) · iOS 26.3 (fa-087) and iPad Pro 11-inch (M4) · iOS 18.6 (fa-095) — iPads: the view reads the screen width for the compact row, and a ≥ 600 pt device matches the 1200 px oracle viewport |
 
 States runs compare every sampled frame (positions, sizes, colours, opacities, connector fill, panel rows) and each
 phase's keyframe-animation starts with Chrome's `anims` in the same window.
@@ -49,6 +58,7 @@ phase's keyframe-animation starts with Chrome's `anims` in the same window.
   labels, density, …) and step property.
 - **Methods:** `next()`, `prev()`, `goTo(index)`, `reset()` through `AWCStepperController` on both live hosts, events
   returned.
+- **Parts:** 4 stepper + 10 step visual parts (`visualParts`) with a copyable typed example each.
 - **Examples:** the copyable examples (46 per platform with md-slider, md-rating, md-step: usage, theme, copied default,
   hooks, hook defaults, a variant, every method, event and slot) typecheck as SwiftUI (fa-063) and compile as Compose in
   the androidTest source set (fa-A029, fa-A030).
@@ -74,31 +84,51 @@ while they speak (Compose). Reviewed expectations: decisions 9 (phone-width capt
   collapsed with a panel; Back / Continue follow; Tab order matches Web.
 - macOS: the stepper is the AXGroup named by `label`; iOS a labelled container; Android a traversal group.
 
-## Exception proposed: part selectors
+## Parts (typed native part appearance, R6-03)
 
-| Field | Record |
-| --- | --- |
-| Scope | author `::part()` rules on the component's shadow parts; the parts' own styling and their CSS custom properties are implemented |
-| Exact source behaviour | Shadow-DOM nodes carry `part` attributes: md-stepper: `list`, `content`, `nav`, `mobile-nav`, `mobile-progress`; md-step: `inner`, `indicator`, `bubble`, `dot`, `state-layer`, `text`, `label`, `optional`, `description`, `connector`, `connector-leading`, `connector-trailing`, `content`, `actions` (`md-stepper.tsx`, `md-step.tsx`); page CSS can restyle any of them with `md-stepper::part(<name>)` rules. |
-| Affected platforms and API | macOS SwiftUI, iOS SwiftUI, Android Compose — `AWCStepperAppearance` (`.awcStepperAppearance(_:)` / `AWCStepperAppearanceScope`), 23 stepper + 22 step typed hooks, a step's own `style` hooks, theme tokens. |
-| Technical reason | `::part()` is CSS selector syntax over a shadow tree; SwiftUI and Compose have no stylesheet, shadow DOM or selector matching (AUDIT.md: CSS selector syntax is a browser-only facility). |
-| User impact | Arbitrary per-part CSS cannot be applied natively; apps restyle through the typed hooks (every `--md-*` property the stylesheet reads). |
-| Tested native equivalent | The stylesheet's styling of every part is reproduced (paint 142 + 6 / states 20 + 20 against Chrome); each custom property it reads is a typed hook with subtree defaults and local values (Laboratory styles panel, live hosts). |
-| Alternative | A typed part surface (as md-avatar / md-list / md-card) is implementable if the reviewer rejects this record. |
-| Evidence | `outputs/native-parity/md-stepper/checkpoint.json`, `web-oracle/`, this document's Evidence section |
-| Reviewer | gate-7 reviewer r6 (R6-03) |
-| Acceptance | **NOT ACCEPTED — proposed; needs the reviewer's explicit acceptance (AUDIT.md exception policy)** |
+`.awcStepperPartAppearance(_:part:)` / `.awcStepPartAppearance(_:part:)` (SwiftUI) and `AWCStepperPartAppearanceScope` /
+`AWCStepPartAppearanceScope` (Compose) with the shared `AWCAccordionPartAppearance` fields; a step part declared on the
+stepper (or any container of steps) applies to every step below it. Metric fields feed the layout (so boxes move as in
+CSS), colour fields the painted result; semantics measured in Mac Chrome with the same `::part(…)` rules
+(`web-paint-extra2.json`):
 
-## Gate 7 (reviewer r6, 2026-10-31)
+| Part | Fields | Source semantics |
+| --- | --- | --- |
+| md-stepper `list` | backgroundColor | the header row / rail box |
+| md-stepper `content` | backgroundColor, padding | the slotted content's box; a top padding stops the slotted child's margin collapsing through it |
+| md-stepper `nav`, `mobile-nav` | backgroundColor, padding | the Back / Continue row (flex-end at the padding edge) and the mobile bar |
+| md-step `bubble`, `dot` | backgroundColor, color, cornerShape | the indicator (its halo follows the radius) |
+| md-step `state-layer` | backgroundColor | the hover / focus / press layer |
+| md-step `label`, `optional`, `description` | color, fontSize, fontWeight, lineHeight, letterSpacing | the text lines (their metrics move the header) |
+| md-step `connector`, `connector-trailing` | backgroundColor | the connector line |
+| md-step `content` | backgroundColor, padding | the panel box; padding outside the animated grid track |
+| md-step `actions` | gap | the vertical Back / Continue row |
 
-- R6-03 parts: exception proposed below.
-- R6-05 rendered views measured against the oracles: in progress.
+Wrapper parts (story 5-3, typed `AWCAccordionPartAppearance` boxes: backgroundColor, border, radius, padding with layout shift;
+content-box sizes, physical padding swapped in RTL): md-stepper `mobile-progress`; md-step `inner`, `indicator`, `text`,
+`connector-leading` (`display: none` in the source in both orientations: accepted, no visible effect, Chrome case
+`box-step-connector-leading` passes). The part padding replaces the source's own; the connector and panel offsets stay as Chrome
+(the connector top is independent of the inner padding). Evidence: web-paint-extra2 25/25 (16 new box and slotted-text cases) on
+macOS, the iOS simulator and Android, the rendered views (R6-05), one copyable typed example per part in the Laboratory.
+
+## Gate 7 (reviewer r6, 2026-10-31; fixes 2026-11-11)
+
+- R6-03 parts: typed part appearance for 4 stepper and 10 step parts (section above) — FIXED, awaiting re-check.
+- R6-05 rendered views measured against the oracles: every paint case is rendered by the view itself at Chrome's host box and compared with the Chrome shot: the rendered host box (the view's own inspection node / layout bounds, ±0.75 px), every flat CSS pixel of the clip (3 × 3 flat in both images, limit 6: mean ≤ 1.0 and ≤ 0.5 % over 6) and every ink pixel (off the page background; Chrome ink covered by native ink within 1 px and vice versa, ≥ 0.97) — boxes, colours, the slot, the native md-buttons and the placement of every text run and glyph.
+  macOS 140/140 + 6/6 + 9/9, Android 140/140 + 6/6 + 9/9; iOS: paint 140/140 · extra 6/6 · extra2 9/9 on iPad Pro 11-inch (M5) · iOS 26.3 (fa-087) and iPad Pro 11-inch (M4) · iOS 18.6 (fa-095) — iPads: the view reads the screen width for the compact row, and a ≥ 600 pt device matches the 1200 px oracle viewport. Found and fixed by it: panels, the
+  vertical Back / Continue row and the slotted content flowed left-to-right in RTL (both platforms); a vertical RTL step's
+  text lines ended at the column's left edge; the optional caption's oblique. The mobile stepper's slotted content keeps its
+  collapsed 24 px top margin as leading space inside the native frame (the host box starts below it).
 - R6-06 `NativeStepperIntegration` registered in `test-native-views.sh`.
-- R6-07 iOS runtimes: rows above.
-- R6-11 duration hooks (`--md-step-connector-duration`, `-expand-duration`, `-collapse-duration`): motion oracle cases in progress.
-- R6-13 macOS navigation landmark (decision 16): an AppKit landmark container that keeps the panels' content is being implemented / probed.
-- R6-14 CEM drift (`--md-stepper-step-count`, `--md-step-idx` listed as hooks): source annotation + CEM regeneration with the other owners.
-- R6-15 decision 18: md-step source fix (as fa-051 for md-accordion-item) to be proposed test-first.
+- R6-07 iOS runtimes: the three gate-6 runtimes on the final sources (rows above).
+- R6-11 duration hooks (`--md-step-connector-duration`, `-expand-duration`, `-collapse-duration`): motion runs
+  `web-states-extra.json` + reduced (the connector fill and the panel rows sampled per frame) on macOS, the iOS simulator and Android — FIXED.
+- R6-13 macOS navigation landmark (decision 16): FIXED (story 5-3) with construction (B) of the probe `work/fa-lab/stepper/probe/LandmarkProbe.swift`
+  (fa-085, fa-090): `AWCNestedLandmark` (NativeInspection.swift) puts the stepper content in an `NSHostingController` inside an AppKit container
+  (role group, subrole `AXLandmarkNavigation`, the label); environment, layout direction, sizing and inspection pass through. tools/ax:
+  landmark present, md-step 0 open, md-stepper only the four `controls` relations (coordinator patch).
+- R6-14 CEM drift (`--md-stepper-step-count`, `--md-step-idx` listed as hooks): fixed with the other owners (d6).
+- R6-15 decision 18: md-step source fix measured (fa-071 / fa-072: the header ripple is not the whole cause); open, Web source (shared with d6).
 - R2-D10 Laboratory: a standalone md-step renders no panel (source), so its default slot is not a native previewable text slot (LivePreviewSlots.kt).
 
 ## Decisions (autonomous, 2026-10-27, reversible)
@@ -124,9 +154,16 @@ listed oracle cases fail on purpose: change the source first (test-first), recap
    Revert: `StepperModel.sync` / `setStepError`.
 8. **Connector origin in RTL.** The source uses `:host-context([dir=rtl])` (Chromium-only); native follows the stepper's
    direction everywhere, as Chrome. Alternative: the step's own `dir` only (Safari / Firefox). Nothing to revert.
-9. **The compact rule (`@media (max-width: 599px)`) uses the screen width** — iOS `UIScreen` bounds, Android
-   `screenWidthDp`, macOS 1200 (a window is not a viewport). Alternative: the stepper's container width. Revert:
-   `viewportWidth` in the views' layout input. On a phone the compact horizontal row hides the supporting captions, so
+9. **The compact rule means the layout viewport width** (story 9-12, s7-5-01). Web source: `md-step.css:608`
+   `@media (max-width: 599px)` — a viewport media query, not a container query (nothing in md-stepper.tsx / md-step.tsx
+   measures a width; `variant="mobile"` is a separate property). Native: the width is an input, the environment value
+   `awcViewportWidth` (`EnvironmentValues`, `NativeStepper.swift`). Not set: the hosting width — on iOS the width of the
+   window scene the view lives in (split view and Stage Manager included), on macOS 1200 (a window is not a viewport);
+   Android reads `LocalConfiguration.screenWidthDp` (the window's width; the fixture sets `Configuration.screenWidthDp`).
+   The views fixtures set the value to the oracle case's `viewport` (1200 for the 140+6+25 desktop cases, 390 / 599 / 600
+   for `web-paint-compact.json`). Before 9-12 iOS read `UIScreen.main.bounds` (402 pt on an iPhone), so the phone showed
+   the compact row where the 1200 px oracle shows the full one (88 cases). Alternative: the stepper's container width.
+   Revert: `viewportWidth` in the views' layout input. On a phone the compact horizontal row hides the supporting captions, so
    tools/ax (Web captured at desktop width) records them as an expected text-missing on iOS / Android.
 10. **A standalone md-step** renders like the source with its data-* defaults (first, horizontal, shared panel: no panel),
     named "Step 1 of 0" (data-total absent) and active from its own `active`. Alternative: hide the index. Revert:
@@ -146,9 +183,15 @@ listed oracle cases fail on purpose: change the source first (test-first), recap
     `AXLandmarkNavigation` subrole on a container, so the stepper is the AXGroup named by `label` holding headers, panels and
     Back / Continue in source order; iOS: a labelled `.contain` container (UIKit has landmarks only as container types);
     Android: a traversal group with the label as contentDescription. Recorded as tools/ax expectations (macOS role, iOS /
-    Android missing, Android label text). Alternative: the AppKit landmark bridge of md-breadcrumbs / md-navigation-bar —
-    rejected because it re-hosts only focus elements and would drop the panels' light-DOM content. Revert: delete the
-    md-stepper landmark entries from tools/ax/expectations.mjs and add a bridge in `NativeStepper.swift`.
+    Android missing, Android label text). R6-13 (built, story 5-3): the stepper's content in its own
+    `NSHostingView` inside an AppKit container whose element is the landmark (role group, subrole `AXLandmarkNavigation`,
+    the label) — probe fa-085, fa-090, `work/fa-lab/stepper/probe/LandmarkProbe.swift`: Chrome's tree without duplicates, and
+    the content's preferences still reach the outer view; SwiftUI's own container node takes no subrole and a landmark
+    element behind the SwiftUI container duplicates every element. Built: environment pass-through, the nested host's
+    sizing, the inspection coordinate space, an explicit layout direction (the nested host's own environment reports LTR on
+    updates), no fade on the nested panel (a faded panel is dropped from the nested AX tree). The four md-stepper macOS landmark
+    entries are removed from tools/ax/expectations.mjs. Revert: `AWCNativeStepper` back to the old container (backup
+    `work/fa-lab/s53/NativeStepper.before-landmark.swift`) and restore the expectations.
 17. **Panels are named groups.** A step panel (Web `role=region`, named by the step label) is a named AXGroup on macOS, a
     labelled container on iOS and in-place content on Android. tools/ax reads a named macOS group with no controls as its
     words, so a text-only panel is reported "missing region", its name becomes a word on macOS (readonly "Account"), and in
@@ -165,9 +208,17 @@ listed oracle cases fail on purpose: change the source first (test-first), recap
     "Account"). Only reduces false text-missing findings; no other comparison changes. Revert: the `bare` helper in
     `tools/ax/compare.mjs` (lab-patch-stepper.py `replace`).
 
+20. **Slotted text direction (shared `#text` node).** Under `dir=rtl` Chrome resolves a slotted text's trailing punctuation at the
+    element's base direction ("text." shows ".text"); SwiftUI's `Text` takes the paragraph direction from the first strong
+    character. `awcBidiParagraph` (AWCNativeView.swift) prefixes the layout direction's invisible mark (RLM / LRM) and the node
+    keeps the plain text as its accessibility label. Test-first: the rendered-views stepper cases `slotted-text-rtl` and
+    `-rtl-vertical` (ink within 1 px, limit 0.99, through the production `#text` node) fail 492/494 without it, 494/494 with it
+    (jobs 5-3-...-047-rtltest). Android has no shared text node (slotted text is the host's Compose Text). Revert: the `#text`
+    case in AWCNativeView.swift back to `Text(s("text"))`.
+
 ## Installation
 
-Installed in the canonical tree through the main queue by fa-065 (2026-10-30): renderers and dispatch, the Swift
+Gate-7 fixes installed by fa-098 (2026-11-11; see md-slider). First installed in the canonical tree through the main queue by fa-065 (2026-10-30): renderers and dispatch, the Swift
 fixtures (`packages/native-ios/Tests/Fixtures/{slider,rating,stepper}-web-oracle/`, byte-identical copies of the
 oracles) and the Android assets (`androidTest/assets/{sr,stepper}/`, gzip, verified identical after gunzip), the
 Laboratory integration (lab-patch-sr.py, lab-patch-stepper.py), tools/ax cases and expectations, this document and the
@@ -178,5 +229,5 @@ SwiftUI examples, Android compile, Laboratory APK on emulator-5554, the 4177 ser
 
 ## Remaining
 
-The gate-7 items above marked in progress; then the reviewer's re-check. To report to the md-step source owner: decision 18 (the open panel's slotted text is
+The reviewer's re-check of the gate-7 fixes; R6-13 (landmark) and R6-15 (Web source). To report to the md-step source owner: decision 18 (the open panel's slotted text is
 intermittently missing from Chrome's accessibility tree, as md-accordion-item's was).

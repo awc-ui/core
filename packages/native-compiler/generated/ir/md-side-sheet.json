@@ -1748,7 +1748,7 @@
         "Dedicated native side sheet: standard (in-flow, no scrim) and modal variants on the start or end side, attached or detached; all twelve properties, mdOpen/mdClose/mdCancel/mdBack with null payloads, show/close/whenClosed through AWCSideSheetController, all five slots, nine appearance hooks and nine typed part targets.",
         "Shared modal layer: one owner stack for dialogs and sheets (only the top owner handles Escape/back, Tab and scrim dismissal; content under an open modal is inert; focus moves in on open and is restored on close, forwarded when a lower owner closes first) and the source z-index paint order, measured against Chrome in thirteen mixed-stack runs.",
         "Outside an AWCModalScope the component keeps the previous platform presentation (a SwiftUI sheet / a Compose dialog window).",
-        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
+        "macOS SwiftUI/AppKit, iOS simulator (iPhone and iPad on iOS 26.3, iPhone on iOS 18.6; docs/native-parity/ios-harness.md) and Android emulator renderers are verified against the Chrome oracles; their accessibility trees are compared with Chrome's on all three platforms by tools/ax (docs/native-parity/accessibility.md). Spoken VoiceOver/TalkBack output is not automated."
       ],
       "verification": "not-device-verified",
       "visualParts": [
@@ -1819,7 +1819,7 @@
         "Dedicated native side sheet: standard (in-flow, no scrim) and modal variants on the start or end side, attached or detached; all twelve properties, mdOpen/mdClose/mdCancel/mdBack with null payloads, show/close/whenClosed through AWCSideSheetController, all five slots, nine appearance hooks and nine typed part targets.",
         "Shared modal layer: one owner stack for dialogs and sheets (only the top owner handles Escape/back, Tab and scrim dismissal; content under an open modal is inert; focus moves in on open and is restored on close, forwarded when a lower owner closes first) and the source z-index paint order, measured against Chrome in thirteen mixed-stack runs.",
         "Outside an AWCModalScope the component keeps the previous platform presentation (a SwiftUI sheet / a Compose dialog window).",
-        "macOS SwiftUI/AppKit and Android emulator renderers are verified against the Chrome oracles; iOS SDK, simulator/device and VoiceOver/TalkBack execution remain unverified."
+        "macOS SwiftUI/AppKit, iOS simulator (iPhone and iPad on iOS 26.3, iPhone on iOS 18.6; docs/native-parity/ios-harness.md) and Android emulator renderers are verified against the Chrome oracles; their accessibility trees are compared with Chrome's on all three platforms by tools/ax (docs/native-parity/accessibility.md). Spoken VoiceOver/TalkBack output is not automated."
       ],
       "verification": "not-device-verified",
       "visualParts": [

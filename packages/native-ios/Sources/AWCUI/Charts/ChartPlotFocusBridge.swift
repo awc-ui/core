@@ -41,7 +41,7 @@ final class AWCChartPlotFocusView: NSView, AXChart {
         case 123: key = "ArrowLeft"; case 124: key = "ArrowRight"; case 125: key = "ArrowDown"; case 126: key = "ArrowUp"
         case 115: key = "Home"; case 119: key = "End"; case 53: key = "Escape"; case 36, 76: key = "Enter"; case 49: key = " "
         case 48:
-            if event.modifierFlags.contains(.shift) { window?.selectPreviousKeyView(self) } else { window?.selectNextKeyView(self) }
+            AWCDocumentTabOrder.select(from: self, backward: event.modifierFlags.contains(.shift))
             return
         default: return super.keyDown(with: event)
         }

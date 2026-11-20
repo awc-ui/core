@@ -109,9 +109,18 @@ struct AWCTableSlotContent: View {
                 AWCMaterialSymbol(node.authoredTextContent.trimmingCharacters(in: .whitespacesAndNewlines), size: 24).foregroundStyle(color)
             } else {
                 let style = AWCTableInlineStyle(node.properties["style"]?.string ?? "")
-                VStack(alignment: style.center ? .center : .leading, spacing: 0) { ForEach(node.children) { AWCTableSlotContent(node: $0, theme: theme, color: color, metrics: metrics, weight: weight, tracking: tracking, size: size, lineHeight: lineHeight, onEvent: onEvent) } }
-                    .frame(maxWidth: style.center ? .infinity : nil)
+                let ink = style.color.map { AWCTableColor.color($0, "#000000") } ?? color
+                let kids = ForEach(node.children) { AWCTableSlotContent(node: $0, theme: theme, color: ink, metrics: metrics, weight: style.fontWeight ?? weight, tracking: tracking,
+                                                                         size: style.fontSize ?? size, lineHeight: style.fontSize != nil ? nil : lineHeight, onEvent: onEvent) }
+                let centred = style.center || (style.flex && style.justifyCenter)
+                Group {
+                    if style.flex { HStack(alignment: style.alignCenter ? .center : .top, spacing: style.gap ?? 0) { kids } }
+                    else { VStack(alignment: style.center ? .center : .leading, spacing: 0) { kids } }
+                }
+                    .frame(maxWidth: centred || style.fill ? .infinity : nil, maxHeight: style.fill ? .infinity : nil,
+                           alignment: Alignment(horizontal: centred ? .center : .leading, vertical: style.flex && style.alignCenter ? .center : .top))
                     .padding(EdgeInsets(top: style.padding[0], leading: style.padding[3], bottom: style.padding[2], trailing: style.padding[1]))
+                    .background { if let bg = style.background { Rectangle().fill(AWCTableColor.color(bg, "#00000000")) } }
             }
         default:
             AWCNativeView(node: node, onEvent: onEvent)
@@ -119,20 +128,44 @@ struct AWCTableSlotContent: View {
     }
 }
 
-/// The inline `style` subset slotted content uses in the table family (padding shorthand, text-align).
+/// The inline `style` subset slotted content uses in the table family: padding shorthand, text-align, a box that fills its
+/// positioned ancestor (`position: absolute; inset: 0`), flex centring, background / text colour, font shorthand and gap.
 struct AWCTableInlineStyle {
     var padding: [Double] = [0, 0, 0, 0]   // top, right, bottom, left
     var center = false
+    var fill = false, absolute = false, flex = false, alignCenter = false, justifyCenter = false
+    var background: String?, color: String?, fontSize: Double?, fontWeight: Double?, gap: Double?
     init(_ raw: String) {
         for decl in raw.split(separator: ";") {
             let kv = decl.split(separator: ":", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespaces) }
             guard kv.count == 2 else { continue }
-            if kv[0] == "padding" {
-                let v = kv[1].split(separator: " ").compactMap { AWCTableTemplate.length(String($0)) }
-                switch v.count { case 1: padding = [v[0], v[0], v[0], v[0]]; case 2: padding = [v[0], v[1], v[0], v[1]]; case 3: padding = [v[0], v[1], v[2], v[1]]; case 4: padding = v; default: break }
+            let v = kv[1].lowercased()
+            switch kv[0].lowercased() {
+            case "padding":
+                let n = v.split(separator: " ").compactMap { AWCTableTemplate.length(String($0)) }
+                switch n.count { case 1: padding = [n[0], n[0], n[0], n[0]]; case 2: padding = [n[0], n[1], n[0], n[1]]; case 3: padding = [n[0], n[1], n[2], n[1]]; case 4: padding = n; default: break }
+            case "text-align": center = v == "center"
+            case "position": absolute = v == "absolute" || v == "fixed"
+            case "inset": fill = v.split(separator: " ").allSatisfy { $0 == "0" || $0 == "0px" }
+            case "display": flex = v == "flex" || v == "inline-flex"
+            case "align-items": alignCenter = v == "center"
+            case "justify-content": justifyCenter = v == "center"
+            case "background", "background-color": background = AWCTableColor.parse(v) != nil ? v : nil
+            case "color": color = AWCTableColor.parse(v) != nil ? v : nil
+            case "font-size": fontSize = AWCTableTemplate.length(v)
+            case "font-weight": fontWeight = Double(v) ?? (v == "bold" ? 700 : v == "normal" ? 400 : nil)
+            case "gap": gap = AWCTableTemplate.length(v)
+            case "font":
+                // font: [style] [weight] size[/line-height] family — the weight and size tokens.
+                for t in v.split(separator: " ").map(String.init) {
+                    if let w = Double(t), (1...1000).contains(w), fontSize == nil { fontWeight = w }
+                    else if t == "bold" { fontWeight = 700 }
+                    else if fontSize == nil, let px = AWCTableTemplate.length(String(t.split(separator: "/").first ?? "")) { fontSize = px }
+                }
+            default: break
             }
-            if kv[0] == "text-align" { center = kv[1] == "center" }
         }
+        fill = fill && absolute
     }
 }
 
@@ -209,14 +242,23 @@ struct AWCTableRowOverlay: View {
             .onAppear { registry?.handles[row.id] = focus }
     }
 }
+/// ::part(icon) colour and box (its opacity is applied by the owner over the state opacity).
+struct AWCTableIconPart: ViewModifier {
+    let style: AWCTablePartStyle
+    @ViewBuilder func body(content: Content) -> some View {
+        if let c = style.color { content.foregroundStyle(AWCTableColor.color(c, "#000000")).background { style.backgroundView } }
+        else { content.background { style.backgroundView } }
+    }
+}
 /// An expandable row's detail zone (`part="expanded"`): clipped, revealed with the row.
 struct AWCTableExpandedZone: View {
     let row: AWCTableRowEntry, env: AWCTableEnvironment, open: Bool, theme: AWCTheme
     let onEvent: (AWCEvent) -> Void
     var body: some View {
+        let ex = env.part(.rowExpanded, row.id)
         VStack(alignment: .leading, spacing: 0) {
             ForEach(row.expandedContent) { item in
-                AWCTableSlotContent(node: item, theme: theme, color: env.palette.color("on-surface"), metrics: env.metrics, onEvent: onEvent)
+                AWCTableSlotContent(node: item, theme: theme, color: ex.color(over: env.palette.color("on-surface")), metrics: env.metrics, onEvent: onEvent)
             }
         }
         .padding(.top, 12).padding(.horizontal, env.metrics.padInline).padding(.bottom, 16)
@@ -227,6 +269,8 @@ struct AWCTableExpandedZone: View {
         .animation(env.reducedMotion ? nil : open ? .timingCurve(0.38, 1.21, 0.22, 1, duration: 0.35).delay(0.06) : .timingCurve(0.3, 0, 0.8, 0.15, duration: 0.15), value: open)
         .opacity(open ? 1 : 0)
         .animation(env.reducedMotion ? nil : open ? .timingCurve(0.34, 0.8, 0.34, 1, duration: 0.2).delay(0.06) : .linear(duration: 0.1), value: open)
+        // ::part(expanded) is the panel around the inner content (its background does not slide with the inner offset).
+        .awcTablePartBox(ex)
         // __expanded panel opacity: 200 ms effects curve / 200 ms exit curve.
         .opacity(open ? 1 : 0)
         .animation(env.reducedMotion ? nil : open ? .timingCurve(0.34, 0.8, 0.34, 1, duration: 0.2) : .timingCurve(0.3, 0, 0.8, 0.15, duration: 0.2), value: open)
@@ -239,7 +283,11 @@ struct AWCTableExpandedZone: View {
 }
 struct AWCTableSkeletonChrome: View {
     let env: AWCTableEnvironment
-    var body: some View { Color.clear.overlay(alignment: .bottom) { Rectangle().fill(AWCTableColor.color(env.dividerHex, "#00000000")).frame(height: 1) }.accessibilityHidden(true) }
+    var body: some View {
+        // ::part(skeleton-row): the row box behind its bars.
+        let st = env.part(.skeletonRow, env.tableID)
+        st.fill(over: .clear).overlay(alignment: .bottom) { Rectangle().fill(AWCTableColor.color(env.dividerHex, "#00000000")).frame(height: 1) }.accessibilityHidden(true)
+    }
 }
 /// `.md-table__bar` shimmer (1.4s ease infinite; static under reduced motion).
 struct AWCTableSkeletonBar: View {
@@ -296,6 +344,8 @@ struct AWCTableCellView: View {
     let expanded: Bool
     let onEvent: (AWCEvent) -> Void
     var column = -1, span = 1
+    /// aria-rowindex of the cell's row (row-count set): the data-table position on iOS.
+    var ariaRowIndex: Int? = nil
     func s(_ k: String, _ f: String = "") -> String { cell.properties[k]?.string ?? f }
     func b(_ k: String) -> Bool { cell.properties[k]?.bool ?? false }
     var head: Bool { b("head") }
@@ -312,7 +362,9 @@ struct AWCTableCellView: View {
     var vars: AWCTableVars { env.vars.merging(rowOwn).merging(style: s("style")) }
     /// Author colours give way to the system palette under forced colours (like the source's forced-colors rules).
     func hookColor(_ name: String) -> String? { env.forcedColors ? nil : vars.color(name) }
-    var color: Color {
+    /// ::part(content) colour over the cell's own (the part wraps the slotted content).
+    var color: Color { env.part(.cellContent, cell.id).color(over: baseColor) }
+    var baseColor: Color {
         let pal = env.palette
         if let c = hookColor("--md-table-cell-color") { return AWCTableColor.color(c, "#1C1B1F") }
         if env.forcedColors && selected && row.group == .body { return pal.color("on-primary") }
@@ -369,7 +421,7 @@ struct AWCTableCellView: View {
         AWCTableCellBox(align: justify) {
             HStack(spacing: 0) {
                 if showPin { pinGlyph.padding(.trailing, 4) }
-                content(size: size, line: line).awcInspect(nodeID: cell.id, part: "content", name: "content")
+                content(size: size, line: line).awcTablePartBox(env.part(.cellContent, cell.id)).awcInspect(nodeID: cell.id, part: "content", name: "content")
             }
         }
         .padding(.top, padding == "default" ? padBlock : 0).padding(.bottom, padding == "default" ? padBlock : 0)
@@ -388,27 +440,33 @@ struct AWCTableCellView: View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityAddTraits(head ? .isHeader : [])
-        #if canImport(AppKit)
-        // cell / gridcell / columnheader / rowheader named from content (AXCell with its row / column; controls inside it).
+        // cell / gridcell / columnheader / rowheader named from content (macOS AXCell with its row / column, controls inside it;
+        // iOS a data-table cell).
         .background {
             AWCTableAXMarker(info: .init(kind: .cell, label: AWCTableAX.name(cell, env: env), identifier: cell.id, header: head, rowIndex: rowIndex, columnIndex: column,
-                                         columnSpan: span, ownerID: row.node.awcTablePresentational ? "" : row.id))
+                                         columnSpan: span, rowSpan: axRowSpan,
+                                         ariaRowIndex: ariaRowIndex, ownerID: row.node.awcTablePresentational ? "" : row.id))
         }
-        #endif
         .awcInspect(nodeID: cell.id, name: "md-table-cell") { size in
             ["role": .string(head ? (["row", "rowgroup"].contains(s("scope")) ? "rowheader" : "columnheader") : "cell"), "pinned": .string(pinned ?? ""),
-             "width": .number(Double(size.width)), "height": .number(Double(size.height))]
+             "width": .number(Double(size.width)), "height": .number(Double(size.height)), "rowSpan": .number(Double(axRowSpan)), "colSpan": .number(Double(span))]
         }
     }
+    /// aria-rowspan as the semantics receive it (R5-12: asserted by the paint suites through the cell's inspection metrics).
+    var axRowSpan: Int { Int(cell.properties["rowSpan"]?.number ?? cell.properties["rowspan"]?.number ?? 1).clamped(1, 65534) }
     @ViewBuilder var pinGlyph: some View {
         let icon = s("pinIcon").isEmpty ? env.pinIcon : s("pinIcon")
-        let tint = env.forcedColors ? env.palette.color("on-surface") : AWCTableColor.color(vars.color("--md-table-cell-pin-color") ?? env.palette.hex("primary"), "#6750A4")
+        let pin = env.part(.cellPin, cell.id)
+        let tint = pin.color(over: env.forcedColors ? env.palette.color("on-surface") : AWCTableColor.color(vars.color("--md-table-cell-pin-color") ?? env.palette.hex("primary"), "#6750A4"))
         let size = vars.length("--md-table-cell-pin-size")
+        Group {
         if icon.isEmpty {
             AWCTablePinShape().fill(tint).frame(width: size ?? 16, height: size ?? 16).rotationEffect(.degrees(45)).accessibilityHidden(true)
         } else {
             AWCMaterialSymbol(icon, size: size ?? 14).foregroundStyle(tint).accessibilityHidden(true)
         }
+        }
+        .awcTablePartBox(pin)
     }
     @ViewBuilder func content(size: Double, line: Double) -> some View {
         let kids = cell.children.filter { ($0.slot ?? "").isEmpty }
@@ -481,6 +539,10 @@ struct AWCTableSortLabelView: View {
     var disabled: Bool { b("disabled") }
     @Environment(\.awcTableForcedColors) private var forcedColors
     @Environment(\.awcTableVars) private var inheritedVars
+    @Environment(\.awcTableParts) private var partRules
+    @Environment(\.awcTablePartTargets) private var partTargets
+    /// ::part(label) / ::part(icon) of this label.
+    func part(_ p: AWCTablePart) -> AWCTablePartStyle { .resolve(p, node.id, partRules, partTargets, forced: forcedColors) }
     var palette: AWCTablePalette { env?.palette ?? AWCTablePalette(tokens: (customTheme ?? .generated(dark: scheme == .dark)).tokens, forced: forcedColors) }
     /// --md-table-sort-label-* (the label's own declarations over the cell's / container's).
     var hooks: AWCTableVars { (vars ?? inheritedVars).merging(style: s("style")) }
@@ -509,7 +571,10 @@ struct AWCTableSortLabelView: View {
         Button { withTransaction(Transaction(animation: nil)) { _ = focus.requestPointerFocus?(); activate() } } label: {
             HStack(spacing: hooks.length("--md-table-sort-label-gap") ?? gapXS) {
                 if s("iconPosition") == "start" { arrow }
-                AWCTableText(text: awcCollapsedInlineText(node.authoredTextContent), size: textSize, lineHeight: lineHeight, weight: weight, tracking: tracking, color: AWCTableColor.color(colorHex, "#1C1B1F"))
+                let lbl = part(.sortLabelLabel)
+                AWCTableText(text: awcCollapsedInlineText(node.authoredTextContent), size: lbl.size(over: textSize), lineHeight: lineHeight, weight: lbl.weight(over: weight), tracking: lbl.letterSpacing ?? tracking,
+                             color: lbl.color(over: AWCTableColor.color(colorHex, "#1C1B1F")))
+                    .awcTablePartBox(lbl)
                 if s("iconPosition") != "start" { arrow }
             }
             .foregroundStyle(AWCTableColor.color(colorHex, "#1C1B1F"))
@@ -548,8 +613,9 @@ struct AWCTableSortLabelView: View {
             if s("icon").isEmpty { AWCTableArrowShape().frame(width: iconSize, height: iconSize) }
             else { AWCMaterialSymbol(s("icon"), size: iconSize).frame(width: iconSize, height: iconSize) }
         }
-        .opacity(iconOpacity)
-        .awcTableMotion("sort-op:" + node.id, iconOpacity, env?.motion)
+        .modifier(AWCTableIconPart(style: part(.sortLabelIcon)))
+        .opacity(part(.sortLabelIcon).opacity ?? iconOpacity)
+        .awcTableMotion("sort-op:" + node.id, part(.sortLabelIcon).opacity ?? iconOpacity, env?.motion)
         // Every opacity change (hover, focus-visible, active) runs the source's opacity transition (150 ms effects curve).
         .animation((env?.reducedMotion ?? false) ? nil : .timingCurve(0.31, 0.94, 0.34, 1, duration: 0.15), value: iconOpacity)
         .rotationEffect(.degrees(active && order == "desc" ? 180 : 0))

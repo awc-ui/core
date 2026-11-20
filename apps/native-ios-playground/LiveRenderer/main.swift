@@ -57,6 +57,8 @@ private struct PreviewRequest: Decodable {
     let cardAppearance:[String:AWCValue]?
     let avatarAppearanceDefaults:[String:AWCValue]?
     let avatarAppearance:[String:AWCValue]?
+    let transferListAppearanceDefaults:[String:AWCValue]?
+    let transferListAppearance:[String:AWCValue]?
     let orgChartAppearanceDefaults:[String:AWCValue]?
     let orgChartAppearance:[String:AWCValue]?
     let switchAppearanceDefaults:[String:AWCValue]?
@@ -69,6 +71,8 @@ private struct PreviewRequest: Decodable {
     let chipAppearance:[String:AWCValue]?
     let rippleAppearanceDefaults:[String:AWCValue]?
     let rippleAppearance:[String:AWCValue]?
+    let searchAppearanceDefaults:[String:AWCValue]?
+    let searchAppearance:[String:AWCValue]?
     let breadcrumbsAppearanceDefaults:[String:AWCValue]?
     let breadcrumbsAppearance:[String:AWCValue]?
     let breadcrumbItemAppearanceDefaults:[String:AWCValue]?
@@ -83,12 +87,20 @@ private struct PreviewRequest: Decodable {
     let navigationTabAppearance:[String:AWCValue]?
     let textFieldAppearanceDefaults:[String:AWCValue]?
     let textFieldAppearance:[String:AWCValue]?
+    let selectAppearanceDefaults:[String:AWCValue]?
+    let selectAppearance:[String:AWCValue]?
+    let multiSelectAppearanceDefaults:[String:AWCValue]?
+    let multiSelectAppearance:[String:AWCValue]?
     let colorPickerAppearanceDefaults:[String:AWCValue]?
     let colorPickerAppearance:[String:AWCValue]?
     let timePickerAppearanceDefaults:[String:AWCValue]?
     let timePickerAppearance:[String:AWCValue]?
+    let datePickerAppearanceDefaults:[String:AWCValue]?
+    let datePickerAppearance:[String:AWCValue]?
     let numberFieldAppearanceDefaults:[String:AWCValue]?
     let numberFieldAppearance:[String:AWCValue]?
+    let autocompleteAppearanceDefaults:[String:AWCValue]?
+    let autocompleteAppearance:[String:AWCValue]?
     let otpFieldAppearanceDefaults:[String:AWCValue]?
     let otpFieldAppearance:[String:AWCValue]?
     let listAppearanceDefaults:[String:AWCValue]?
@@ -138,6 +150,7 @@ private struct PreviewRequest: Decodable {
     let enabled: Bool?
     let text: String?
     let slots: [String: AWCValue]?
+    let rowSpanFixture: Bool?
     let key: String?
     let modifiers: [String]?
 }
@@ -299,6 +312,9 @@ private final class PreviewInspection {
     var buttonGroupSelection: [Bool]?
     var segmentedSelection: [Bool]?
     var splitButtonChecked:Bool?
+    /// When the inspection last arrived (`onPreferenceChange`; R4-26), and how many times it has (d2 host robustness).
+    var published = ProcessInfo.processInfo.systemUptime
+    var publications = 0
 
     func metadata(name: String) -> AWCValue? {
         let measuredLeaf = ["md-status-dot","md-loading-indicator","md-meter","md-progress-indicator"].contains(name)
@@ -383,6 +399,8 @@ private struct PreviewRoot: View {
     let accordionItemController:AWCAccordionItemController
     let cardAppearance:AWCCardAppearance
     let avatarAppearance:AWCAvatarAppearance
+    var transferListAppearance:AWCTransferListAppearance = .init()
+    var transferListController = AWCTransferListController()
     var orgChartAppearance:AWCOrgChartAppearance = .init()
     let switchAppearance:AWCSwitchAppearance
     let checkboxAppearance:AWCCheckboxAppearance
@@ -391,6 +409,8 @@ private struct PreviewRoot: View {
     let selectionController:AWCSelectionControlController
     let rippleAppearance:AWCRippleAppearance
     let rippleController:AWCRippleController
+    let searchAppearance:AWCSearchAppearance
+    let searchController:AWCSearchController
     let breadcrumbsAppearance:AWCBreadcrumbsAppearance
     let breadcrumbsController:AWCBreadcrumbsController
     let tabsAppearance:AWCTabsAppearance
@@ -402,12 +422,20 @@ private struct PreviewRoot: View {
     let navigationTabController:AWCNavigationTabController
     let textFieldAppearance:AWCTextFieldAppearance
     let textFieldController:AWCTextFieldController
+    let selectAppearance:AWCSelectAppearance
+    let selectController:AWCSelectController
+    let multiSelectAppearance:AWCMultiSelectAppearance
+    let multiSelectController:AWCMultiSelectController
     let colorPickerAppearance:AWCColorPickerAppearance
     let colorPickerController:AWCColorPickerController
     let timePickerAppearance:AWCTimePickerAppearance
     let timePickerController:AWCTimePickerController
+    let datePickerAppearance:AWCDatePickerAppearance
+    let datePickerController:AWCDatePickerController
     let numberFieldAppearance:AWCNumberFieldAppearance
     let numberFieldController:AWCNumberFieldController
+    let autocompleteAppearance:AWCAutocompleteAppearance
+    let autocompleteController:AWCAutocompleteController
     let otpFieldAppearance:AWCOTPFieldAppearance
     let otpFieldController:AWCOTPFieldController
     let listAppearance:AWCListAppearance
@@ -429,15 +457,21 @@ private struct PreviewRoot: View {
         if scenario == "button-behavior" { AWCButtonBehaviorDemo(properties: node.properties, onEvent: onEvent) }
         else if scenario == "navigation-events" { AWCButtonNavigationDemo(properties: node.properties, onEvent: onEvent) }
         else if scenario == "focus-accessibility" { AWCButtonAccessibilityDemo(properties: node.properties, onEvent: onEvent) }
+        else if scenario == "tabs-panels" { AWCTabsPanelsDemo(node: node, onEvent: onEvent) }
         else if node.tag == "md-divider" { AWCNativeView(node:node,onEvent:onEvent).frame(width:300,height:96) }
         else if node.tag == "md-snackbar" { AWCSnackbarScope{AWCNativeView(node:node,onEvent:onEvent).awcSnackbarController(snackbarController)}.frame(width:width,height:height) }
         else if node.tag == "md-tooltip" { AWCTooltipScope{AWCNativeView(node:node,onEvent:onEvent).awcTooltipController(tooltipController)}.frame(width:width,height:height) }
         // Dialogs and sheets present in the preview's own viewport through the shared modal layer.
-        else if ["md-dialog","md-bottom-sheet","md-side-sheet"].contains(node.tag) { AWCModalScope{ZStack(alignment:.topLeading){AWCNativeView(node:node,onEvent:onEvent).frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.topLeading);LiveModalLauncher(tag:node.tag){showModal()}}}.frame(width:width,height:height) }
+        // The recipe's page order (LivePreviewModalHost on Android): the launcher, then the component. A standard side sheet is
+        // inline below the launcher, so its reading and Tab order follow the source as on Web (R4-25).
+        else if ["md-dialog","md-bottom-sheet","md-side-sheet"].contains(node.tag) { AWCModalScope{VStack(alignment:.leading,spacing:0){LiveModalLauncher(tag:node.tag){showModal()};AWCNativeView(node:node,onEvent:onEvent).padding(.leading,24)}.frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.topLeading)}.frame(width:width,height:height) }
         // Dialogs and sheets present in the preview's own viewport through the shared modal layer.
         else if ["md-dialog","md-bottom-sheet","md-side-sheet"].contains(node.tag) { AWCModalScope{AWCNativeView(node:node,onEvent:onEvent).frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.topLeading)}.frame(width:width,height:height) }
         // The pickers' overlays use the preview viewport: the time picker's dialog in its modal layer, the colour picker's popover
         // below its trigger. Both sit 24 points in from the top-leading corner (LivePreviewPicker on Android).
+        // md-date-picker: the dialog in the viewport's modal layer, the docked panel under the field; 24 points in, as the pickers.
+        else if node.tag == "md-date-picker" { AWCModalScope{AWCNativeView(node:node,onEvent:onEvent).padding(24).frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.topLeading)}.frame(width:width,height:height) }
+        else if node.tag == "md-search" { AWCModalScope{AWCNativeView(node:node,onEvent:onEvent).frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.topLeading)}.frame(width:width,height:height) }
         else if node.tag == "md-time-picker" { AWCModalScope{AWCNativeView(node:node,onEvent:onEvent).padding(24).frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.topLeading)}.frame(width:width,height:height) }
         else if node.tag == "md-color-picker" { AWCNativeView(node:node,onEvent:onEvent).padding(24).frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.topLeading).frame(width:width,height:height) }
         else if node.tag == "md-skeleton" { AWCNativeView(node:node,onEvent:onEvent).awcSkeletonSizingContext(.init(parentHeight:160)).frame(width:260,height:160,alignment:.topLeading) }
@@ -452,6 +486,8 @@ private struct PreviewRoot: View {
                 .awcBadgeOverlay { AWCNativeView(node:node,onEvent:onEvent) }
         }
         else if ["md-segmented-button","md-segmented-button-set"].contains(node.tag) {AWCPreviewSegmented(node:node,context:segmentedContext.retaining(node),onEvent:onEvent)}
+        // md-autocomplete's suggestions present in the preview's menu layer (anchored below the field).
+        else if node.tag == "md-autocomplete" { AWCMenuScope(state: menuState) { AWCNativeView(node:node,onEvent:onEvent).padding(.top,12).frame(maxWidth:.infinity,alignment:.top) }.frame(minWidth:320,maxWidth:.infinity,minHeight:320,alignment:.top) }
         else if AWCPreviewMenu.tags.contains(node.tag) {AWCPreviewMenu(node:node,state:menuState,onEvent:onEvent)}
         else if ["md-fab-menu","md-fab-menu-item"].contains(node.tag) {AWCPreviewFabMenu(node:node,controller:fabMenuController,onEvent:onEvent)}
         // A floating accordion leaves the flow: the padded preview area is its viewport.
@@ -467,9 +503,9 @@ private struct PreviewRoot: View {
                 }.allowsHitTesting(false)
             }
         }
-            .padding(["md-snackbar","md-tooltip","md-dialog","md-bottom-sheet","md-side-sheet","md-time-picker","md-color-picker"].contains(node.tag) ? 0:32)
+            .padding(["md-snackbar","md-tooltip","md-dialog","md-bottom-sheet","md-side-sheet","md-time-picker","md-color-picker","md-date-picker"].contains(node.tag) ? 0:32)
             .frame(width: width, alignment: .center)
-            .frame(minHeight: ["md-snackbar","md-tooltip","md-dialog","md-bottom-sheet","md-side-sheet","md-time-picker","md-color-picker"].contains(node.tag) ? height:100, alignment: .center)
+            .frame(minHeight: ["md-snackbar","md-tooltip","md-dialog","md-bottom-sheet","md-side-sheet","md-time-picker","md-color-picker","md-date-picker"].contains(node.tag) ? height:100, alignment: .center)
             .background {
                 ZStack {
                     themeTokens.isEmpty ? (dark ? Color(white: 0.08) : .white) : theme.background
@@ -523,17 +559,24 @@ private struct PreviewRoot: View {
             .awcAccordionItemController(accordionItemController,for:node.id)
             .awcCardAppearance(cardAppearance)
             .awcAvatarAppearance(avatarAppearance)
+            .awcTransferListAppearance(transferListAppearance)
+            .awcTransferListController(transferListController,for:node.id)
             .awcOrgChartAppearance(orgChartAppearance)
             .awcSwitchAppearance(switchAppearance).awcCheckboxAppearance(checkboxAppearance).awcRadioAppearance(radioAppearance).awcChipAppearance(chipAppearance)
             .awcSelectionControlController(selectionController,for:node.id)
             .awcRippleAppearance(rippleAppearance).awcRippleController(rippleController)
+            .awcSearchAppearance(searchAppearance).awcSearchController(searchController,for:node.id)
             .awcBreadcrumbsAppearance(breadcrumbsAppearance).awcBreadcrumbsController(breadcrumbsController)
             .awcTabsAppearance(tabsAppearance).awcTabAppearance(tabAppearance).awcTabsController(tabsController)
             .awcNavigationBarAppearance(navigationBarAppearance).awcNavigationTabAppearance(navigationTabAppearance).awcNavigationBarController(navigationBarController).awcNavigationTabController(navigationTabController)
             .awcTextFieldAppearance(textFieldAppearance).awcTextFieldController(textFieldController,for:node.id)
+            .awcSelectAppearance(selectAppearance).awcSelectController(selectController,for:node.id)
+            .awcMultiSelectAppearance(multiSelectAppearance).awcMultiSelectController(multiSelectController,for:node.id)
             .awcColorPickerAppearance(colorPickerAppearance).awcColorPickerController(colorPickerController,for:node.id)
             .awcTimePickerAppearance(timePickerAppearance).awcTimePickerController(timePickerController,for:node.id)
+            .awcDatePickerAppearance(datePickerAppearance).awcDatePickerController(datePickerController,for:node.id)
             .awcNumberFieldAppearance(numberFieldAppearance).awcNumberFieldController(numberFieldController,for:node.id)
+            .awcAutocompleteAppearance(autocompleteAppearance).awcAutocompleteController(autocompleteController,for:node.id)
             .awcOTPFieldAppearance(otpFieldAppearance).awcOTPFieldController(otpFieldController,for:node.id)
             .awcListAppearance(listAppearance)
             .awcListItemAppearance(listItemAppearance)
@@ -554,7 +597,7 @@ private struct PreviewRoot: View {
             .environment(\.awcNativePointerState, pointerState)
             .coordinateSpace(name: "awc-native-preview")
             .onPreferenceChange(ComponentBoundsPreference.self) { inspection.bounds = $0 }
-            .awcNativeInspection(rootID: scenario == nil ? node.id : "", coordinateSpace: "awc-native-preview") { inspection.nodes = $0 }
+            .awcNativeInspection(rootID: scenario == nil ? node.id : "", coordinateSpace: "awc-native-preview") { inspection.nodes = $0; inspection.published = ProcessInfo.processInfo.systemUptime; inspection.publications += 1 }
     }
 }
 
@@ -579,16 +622,22 @@ private final class NativeSession {
     private let accordionItemController=AWCAccordionItemController()
     private let listController=AWCListController()
     private let listItemController=AWCListItemController()
+    private let transferListController=AWCTransferListController()
     private let selectionController=AWCSelectionControlController()
     private let rippleController=AWCRippleController()
+    private let searchController=AWCSearchController()
     private let breadcrumbsController=AWCBreadcrumbsController()
     private let tabsController=AWCTabsController()
     private let navigationBarController=AWCNavigationBarController()
     private let navigationTabController=AWCNavigationTabController()
     private let textFieldController=AWCTextFieldController()
+    private let selectController=AWCSelectController()
+    private let multiSelectController=AWCMultiSelectController()
     private let colorPickerController=AWCColorPickerController()
     private let timePickerController=AWCTimePickerController()
+    private let datePickerController=AWCDatePickerController()
     private let numberFieldController=AWCNumberFieldController()
+    private let autocompleteController=AWCAutocompleteController()
     private let otpFieldController=AWCOTPFieldController()
     private let chartController=AWCChartController()
     private let toolbarController=AWCToolbarController()
@@ -651,8 +700,9 @@ private final class NativeSession {
             if let inputNotice { response["inputIgnored"] = .string(inputNotice) }
             return response
         }
-        // Keep legacy input settling, but a plain frame never adds an artificial wait.
-        if request.command != "frame" { Self.pump(request.command == "pointer" ? 0.008 : 0.04) }
+        // Inputs, methods, configure and resize settle before their frame (d2 host robustness: the former fixed 40 ms, or 8 ms
+        // for pointer input, is the minimum); a plain frame never adds an artificial wait.
+        if request.command != "frame" { settle(atLeast: request.command == "pointer" ? 0.008 : 0.04) }
         var response = try frame()
         response["id"] = request.id ?? .null
         if request.command=="resize"{response["ack"]=true}
@@ -707,6 +757,11 @@ private final class NativeSession {
         if AWCChartPreview.methodTags.contains(tag),let method=request.method {
             methodResult = try AWCChartPreview.invoke(tag: tag, method: method, arguments: request.arguments ?? [], chart: chartController)
             Self.pump(0.05);host?.layoutSubtreeIfNeeded();return
+        }
+        if tag=="md-transfer-list",let method=request.method,["moveSelectedRight","moveSelectedLeft"].contains(method) {
+            guard (request.arguments ?? []).isEmpty else {throw PreviewFailure("\(method) requires no arguments.")}
+            if method=="moveSelectedRight" {transferListController.moveSelectedRight()} else {transferListController.moveSelectedLeft()}
+            Self.pump(0.02);return
         }
         if tag=="md-list",let method=request.method,["activateNext","activatePrevious","selectItem","getSelectedIndices"].contains(method) {
             let arguments=request.arguments ?? []
@@ -772,6 +827,36 @@ private final class NativeSession {
             }
             Self.pump(0.03);return
         }
+        if tag=="md-autocomplete",let method=request.method,["focusInput","showMenu","closeMenu","loadOptions","getLabels","getValidity","checkValidity","reportValidity","setCustomValidity"].contains(method) {
+            let arguments=request.arguments ?? []
+            guard autocompleteController.isConnected else {throw PreviewFailure("The md-autocomplete is not mounted.")}
+            func text(_ v:AWCValue)->String? { if case .string(let s)=v,s.utf8.count<=4096 { return s }; return nil }
+            switch method {
+            case "setCustomValidity":
+                guard arguments.count==1,let message=text(arguments[0]) else {throw PreviewFailure("setCustomValidity requires one string of at most 4096 UTF-8 bytes.")}
+                autocompleteController.setCustomValidity(message)
+            case "loadOptions":
+                guard arguments.count==1,case .array(let options)=arguments[0],options.count<=1000 else {throw PreviewFailure("loadOptions requires one array of at most 1000 options.")}
+                autocompleteController.loadOptions(options)
+            case "getLabels":
+                guard arguments.count==1,case .array(let values)=arguments[0],values.count<=1000 else {throw PreviewFailure("getLabels requires one array of at most 1000 value strings.")}
+                let strings=values.compactMap(text)
+                guard strings.count==values.count else {throw PreviewFailure("getLabels requires one array of at most 1000 value strings.")}
+                // A labels map travels in its own envelope (a bare object is the validity record).
+                methodResult = .object(["awcAutocompleteLabels": .object(autocompleteController.getLabels(strings).mapValues { .string($0) })])
+            default:
+                guard arguments.isEmpty else {throw PreviewFailure("\(method) requires no arguments.")}
+                switch method {
+                case "focusInput": autocompleteController.focusInput()
+                case "showMenu": autocompleteController.showMenu()
+                case "closeMenu": autocompleteController.closeMenu()
+                case "checkValidity": methodResult = .bool(autocompleteController.checkValidity())
+                case "reportValidity": methodResult = .bool(autocompleteController.reportValidity())
+                default: methodResult = autocompleteController.getValidity().value
+                }
+            }
+            Self.pump(0.03);return
+        }
         if tag=="md-number-field",let method=request.method,["setFocus","select","stepUp","stepDown","getValidity","checkValidity","reportValidity","setCustomValidity"].contains(method) {
             let arguments=request.arguments ?? []
             guard numberFieldController.isConnected else {throw PreviewFailure("The md-number-field is not mounted.")}
@@ -795,6 +880,25 @@ private final class NativeSession {
             }
             Self.pump(0.03);return
         }
+        if tag=="md-date-picker",let method=request.method,["show","close","clear","focusInput","checkValidity","reportValidity","getValidity","setCustomValidity"].contains(method) {
+            let arguments=request.arguments ?? []
+            guard datePickerController.isConnected else {throw PreviewFailure("The md-date-picker is not mounted.")}
+            if method=="setCustomValidity" {
+                guard arguments.count==1,case .string(let message)=arguments[0],message.utf8.count<=4096 else {throw PreviewFailure("setCustomValidity requires one string up to 4096 UTF-8 bytes.")}
+                datePickerController.setCustomValidity(message);Self.pump(0.03);return
+            }
+            guard arguments.isEmpty else {throw PreviewFailure("\(method) requires no arguments.")}
+            switch method {
+            case "show": datePickerController.show()
+            case "close": datePickerController.close()
+            case "clear": datePickerController.clear()
+            case "focusInput": datePickerController.focusInput()
+            case "checkValidity": methodResult = .bool(datePickerController.checkValidity())
+            case "reportValidity": methodResult = .bool(datePickerController.reportValidity())
+            default: methodResult = datePickerController.getValidity().value
+            }
+            Self.pump(0.03);return
+        }
         if tag=="md-color-picker",let method=request.method,["show","close"].contains(method) {
             guard (request.arguments ?? []).isEmpty else {throw PreviewFailure("\(method) requires no arguments.")}
             guard colorPickerController.isConnected else {throw PreviewFailure("The md-color-picker is not mounted.")}
@@ -812,6 +916,39 @@ private final class NativeSession {
             default: methodResult = timePickerController.getValidity().value
             }
             Self.pump(0.03);return
+        }
+        if tag=="md-select"||tag=="md-multi-select",let method=request.method,["show","close","focusTrigger","reset","loadOptions","setQuery","getLabels","getValidity","checkValidity","reportValidity","setCustomValidity"].contains(method) {
+            let arguments=request.arguments ?? [],multi=tag=="md-multi-select"
+            guard multi ? multiSelectController.isConnected : selectController.isConnected else {throw PreviewFailure("The \(tag) is not mounted.")}
+            func oneString() throws -> String {
+                guard arguments.count==1,case .string(let s)=arguments[0],s.utf8.count<=4096 else {throw PreviewFailure("\(method) requires one string of at most 4096 UTF-8 bytes.")}
+                return s
+            }
+            switch method {
+            case "setCustomValidity": let s=try oneString(); if multi {multiSelectController.setCustomValidity(s)} else {selectController.setCustomValidity(s)}
+            case "setQuery": let s=try oneString(); if multi {multiSelectController.setQuery(s)} else {selectController.setQuery(s)}
+            case "loadOptions":
+                guard arguments.count==1,case .array(let rows)=arguments[0],rows.count<=500,rows.allSatisfy(Self.validSelectOption) else {throw PreviewFailure("loadOptions requires one array of at most 500 options.")}
+                if multi {multiSelectController.loadOptions(rows)} else {selectController.loadOptions(rows)}
+            case "getLabels":
+                guard arguments.count==1,case .array(let values)=arguments[0],values.count<=500 else {throw PreviewFailure("getLabels requires one array of at most 500 value strings.")}
+                var strings:[String]=[]
+                for v in values { guard case .string(let s)=v,s.utf8.count<=1024 else {throw PreviewFailure("getLabels requires one array of at most 500 value strings.")}; strings.append(s) }
+                let labels=multi ? multiSelectController.getLabels(strings) : selectController.getLabels(strings)
+                methodResult = .object(["awcSelectLabels": .object(labels.mapValues { AWCValue.string($0) })])
+            default:
+                guard arguments.isEmpty else {throw PreviewFailure("\(method) requires no arguments.")}
+                switch method {
+                case "show": if multi {multiSelectController.show()} else {selectController.show()}
+                case "close": if multi {multiSelectController.close()} else {selectController.close()}
+                case "focusTrigger": if multi {multiSelectController.focusTrigger()} else {selectController.focusTrigger()}
+                case "reset": if multi {multiSelectController.reset()} else {selectController.reset()}
+                case "checkValidity": methodResult = .bool(multi ? multiSelectController.checkValidity() : selectController.checkValidity())
+                case "reportValidity": methodResult = .bool(multi ? multiSelectController.reportValidity() : selectController.reportValidity())
+                default: methodResult = (multi ? multiSelectController.getValidity() : selectController.getValidity()).value
+                }
+            }
+            Self.pump(0.05);return
         }
         if tag=="md-text-field",let method=request.method,["setFocus","select","getValidity","checkValidity","reportValidity","setCustomValidity"].contains(method) {
             let arguments=request.arguments ?? []
@@ -847,6 +984,17 @@ private final class NativeSession {
             guard (request.arguments ?? []).isEmpty else {throw PreviewFailure("\(method) requires no arguments.")}
             if method=="expand" { breadcrumbsController.expand() } else { breadcrumbsController.collapse() }
             Self.pump(0.03); return
+        }
+        if tag=="md-search",let method=request.method,["show","close","toggle","focusInput"].contains(method) {
+            guard (request.arguments ?? []).isEmpty else {throw PreviewFailure("\(method) requires no arguments.")}
+            guard searchController.isConnected else {throw PreviewFailure("The md-search is not mounted.")}
+            switch method {
+            case "show": searchController.show()
+            case "close": searchController.close()
+            case "toggle": searchController.toggle()
+            default: searchController.focusInput()
+            }
+            Self.pump(0.03);return
         }
         if tag=="md-ripple",let method=request.method,["trigger","whenSettled"].contains(method) {
             guard (request.arguments ?? []).isEmpty else {throw PreviewFailure("\(method) requires no arguments.")}
@@ -912,6 +1060,9 @@ private final class NativeSession {
                 self.methodCalls[id]?.status="fulfilled";self.methodCalls[id]?.task=nil
             }
             methodCalls[id]?.task=task
+            // d2 host robustness: the lifecycle method starts before the acknowledgment, and the frames that follow carry its
+            // first render's inspection (the method's completion is reported by method-results).
+            settle(atLeast: 0)
             result=["callId":.string(id),"status":"accepted"]
         }
         return ["id":request.id ?? .null,"ack":true,"methodCall":result,"events":events.drain()]
@@ -1043,6 +1194,40 @@ private final class NativeSession {
             else{throw PreviewFailure("Unknown property for md-otp-field: \(key)")}
         }
     }
+    /// Source property types of md-autocomplete (retained preview updates; the filterer closure is native API only and the
+    /// virtualization properties have no native counterpart).
+    private func validateAutocompletePatch(_ patch:[String:AWCValue]) throws {
+        let booleans:Set<String>=["reserveSupportingSpace","error","disabled","softDisabled","required","multiple","freeSolo","loading","disableCloseOnSelect","clearOnBlur","clearable","open","matchTriggerWidth"]
+        let strings:Set<String>=["valueMissingLabel","label","placeholder","supportingText","errorText","inputValue","noOptionsText","noResultsText","loadingText","statusTemplate","clearIcon","dropdownIcon","name"]
+        func text(_ v:AWCValue)->Bool { if case .string(let s)=v { return s.utf8.count<=4096 }; return false }
+        func option(_ v:AWCValue)->Bool {
+            guard case .object(let o)=v, o["value"] != nil else { return false }
+            return o.allSatisfy { entry in
+                switch entry.key {
+                case "disabled": if case .bool=entry.value { return true }; return false
+                case "value","label","supportingText","description","icon","iconColor": return text(entry.value)
+                default: return false
+                }
+            }
+        }
+        for (key,value) in patch {
+            if booleans.contains(key){guard case .bool=value else{throw PreviewFailure("\(key) requires a boolean.")}}
+            else if strings.contains(key){guard text(value) else{throw PreviewFailure("\(key) requires a string of at most 4096 UTF-8 bytes.")}}
+            else if key=="variant"{guard case .string(let s)=value,["filled","outlined"].contains(s) else{throw PreviewFailure("Invalid variant.")}}
+            else if key=="density"{guard case .number(let n)=value,[0,-1,-2,-3,-4].contains(n) else{throw PreviewFailure("Invalid density.")}}
+            else if key=="chipPosition"{guard case .string(let s)=value,["below","top","left","right","inline"].contains(s) else{throw PreviewFailure("chipPosition requires below, top, left, right or inline.")}}
+            else if key=="placement"{guard case .string(let s)=value,["bottom-start","bottom-end","top-start","top-end"].contains(s) else{throw PreviewFailure("Invalid placement.")}}
+            else if key=="value"{
+                if text(value) {} else if case .array(let a)=value,a.count<=1000,a.allSatisfy(text) {} else {throw PreviewFailure("value requires a string or a list of strings.")}
+            }
+            else if key=="options"{
+                if text(value) {} else if case .array(let a)=value,a.count<=1000,a.allSatisfy(option) {} else {throw PreviewFailure("options requires an array of at most 1000 options.")}
+            }
+            else if ["maxSelected","limitResults"].contains(key){guard case .number(let n)=value,n>=0,n==n.rounded(),n<=9007199254740991 else{throw PreviewFailure("\(key) requires a non-negative integer.")}}
+            else if key=="maxHeight"{ if case .null=value {} else { guard case .number(let n)=value,n.isFinite,n>=0 else{throw PreviewFailure("maxHeight requires a non-negative number or null.")} } }
+            else{throw PreviewFailure("Unknown property for md-autocomplete: \(key)")}
+        }
+    }
     /// Source property types of md-number-field (retained preview updates; formatOptions is Intl.NumberFormat options data).
     private func validateNumberFieldPatch(_ patch:[String:AWCValue]) throws {
         let booleans:Set<String>=["error","disabled","readOnly","required","snapOnStep","allowOutOfRange","allowWheelScrub","reserveSupportingSpace"]
@@ -1071,6 +1256,24 @@ private final class NativeSession {
             else{throw PreviewFailure("Unknown property for md-number-field: \(key)")}
         }
     }
+    /// Source property types of md-date-picker (date-picker-appearance.js validDatePickerUpdate; `isDateDisabled` is native API).
+    private func validateDatePickerPatch(_ patch:[String:AWCValue]) throws {
+        let declared:Set<String>=["valueMissingLabel","reserveSupportingSpace","variant","value","label","placeholder","min","max","open","disabled","required","clearable","clearLabel",
+            "error","errorText","supportingText","locale","dateSeparator","fieldVariant","firstDayOfWeek","headline","cancelLabel","okLabel","selectDateLabel","enterDatesLabel",
+            "invalidDateLabel","previousMonthLabel","nextMonthLabel","previousYearLabel","nextYearLabel","chooseMonthLabel","chooseYearLabel","chooseMonthYearLabel",
+            "chooseMonthAndYearLabel","toggleCalendarLabel","toggleTextLabel","openCalendarLabel","closeCalendarLabel","calendarIcon","yearGridLabel","scrimDismissible",
+            "outsideClickDismissible","commitOnSelect","name","density"]
+        let booleans:Set<String>=["reserveSupportingSpace","open","disabled","required","clearable","error","scrimDismissible","outsideClickDismissible","commitOnSelect"]
+        let enums:[String:Set<String>]=["variant":["modal","modal-input","docked"],"fieldVariant":["outlined","filled"]]
+        for (key,value) in patch {
+            guard declared.contains(key) else {throw PreviewFailure("Unknown md-date-picker property: \(key)")}
+            if booleans.contains(key) { guard case .bool=value else {throw PreviewFailure("\(key) requires a boolean.")} }
+            else if let allowed=enums[key] { guard case .string(let s)=value,allowed.contains(s) else {throw PreviewFailure("Invalid \(key).")} }
+            else if key=="density" { guard case .number(let n)=value,[0.0,-1,-2,-3,-4].contains(n) else {throw PreviewFailure("Invalid density rung.")} }
+            else if key=="firstDayOfWeek" { guard case .number(let n)=value,n.rounded()==n,n >= -1,n<=6 else {throw PreviewFailure("firstDayOfWeek requires an integer from -1 to 6.")} }
+            else { guard case .string(let s)=value,s.utf8.count<=4096 else {throw PreviewFailure("\(key) requires a string of at most 4096 UTF-8 bytes.")} }
+        }
+    }
     /// Source property types of md-color-picker / md-time-picker (picker-appearance.js validPickerUpdate).
     private func validatePickerPatch(_ tag:String,_ patch:[String:AWCValue]) throws {
         let color=tag=="md-color-picker"
@@ -1092,6 +1295,47 @@ private final class NativeSession {
             else { guard text(value) else {throw PreviewFailure("\(key) requires a string of at most 4096 UTF-8 bytes.")} }
         }
     }
+    /// Source property types of md-select / md-multi-select (retained preview updates). virtualize / filterMode / rowHeight /
+    /// searchingLabel and the countFormatter closure are unsupported natively (support policies).
+    private func validateSelectPatch(_ patch:[String:AWCValue],tag:String) throws {
+        let multi=tag=="md-multi-select"
+        let booleans:Set<String>=multi ? ["reserveSupportingSpace","error","disabled","softDisabled","required","filterable","showSelectAll","matchTriggerWidth","loading","clearable","open"]
+            : ["reserveSupportingSpace","disabled","required","error","clearable","matchTriggerWidth","filterable","loading","fullWidth","open"]
+        let strings:Set<String>=multi ? ["valueMissingLabel","label","placeholder","supportingText","errorText","selectAllLabel","triggerIcon","triggerLabel","searchPlaceholder",
+            "filterLabel","noResultsText","noOptionsText","loadingText","clearIcon","clearLabel","dropdownIcon","name"]
+            : ["valueMissingLabel","label","placeholder","value","errorText","supportingText","name","searchPlaceholder","filterLabel","noResultsText","noOptionsText",
+               "clearLabel","loadingText","clearIcon","dropdownIcon"]
+        let enums:[String:Set<String>]=["variant":["filled","outlined"],"placement":["bottom-start","bottom-end","top-start","top-end"]]
+            .merging(multi ? ["displayMode":["chips","chips-inline","count","text"],"chipOverflow":["count","wrap"],"chipPosition":["bottom","top","left","right"],"trigger":["field","button"]] : [:]) { a, _ in a }
+        func text(_ v:AWCValue,_ limit:Int=4096)->Bool { if case .string(let s)=v { return s.utf8.count<=limit }; return false }
+        for (key,value) in patch {
+            if booleans.contains(key){guard case .bool=value else{throw PreviewFailure("\(key) requires a boolean.")}}
+            else if strings.contains(key){guard text(value) else{throw PreviewFailure("\(key) requires a string of at most 4096 UTF-8 bytes.")}}
+            else if let allowed=enums[key]{guard case .string(let s)=value,allowed.contains(s) else{throw PreviewFailure("Invalid \(key).")}}
+            else if key=="density"{guard case .number(let n)=value,[0,-1,-2,-3,-4].contains(n) else{throw PreviewFailure("Invalid density.")}}
+            else if key=="maxHeight"{ switch value { case .null: break; case .number(let n): guard n.isFinite,n>=0,n<=1e5 else{throw PreviewFailure("Invalid maxHeight.")}
+                default: guard !multi,text(value) else{throw PreviewFailure("Invalid maxHeight.")} } }
+            else if key=="options"{ switch value { case .string(let s): guard s.utf8.count<=65536 else{throw PreviewFailure("options text is too long.")}
+                case .array(let rows): guard rows.count<=500,rows.allSatisfy(Self.validSelectOption) else{throw PreviewFailure("options requires at most 500 options.")}
+                default: throw PreviewFailure("options requires an array of options or JSON text.") } }
+            else if multi && key=="value"{guard case .array(let values)=value,values.count<=500,values.allSatisfy({ text($0,1024) }) else{throw PreviewFailure("value requires an array of at most 500 strings.")}}
+            else if multi && key=="maxSelected"{guard case .number(let n)=value,n>=0,n<=1e6,n==n.rounded() else{throw PreviewFailure("maxSelected requires a nonnegative integer.")}}
+            else{throw PreviewFailure("Unknown property for \(tag): \(key)")}
+        }
+    }
+    /// One SelectOptionInit: a string value (≤ 1024 UTF-8 bytes) and the optional row fields.
+    static func validSelectOption(_ row:AWCValue)->Bool {
+        guard case .object(let o)=row,case .string(let v)?=o["value"],v.utf8.count<=1024 else{return false}
+        for (k,x) in o {
+            switch k {
+            case "value": continue
+            case "disabled","selected","hidden": guard case .bool=x else{return false}
+            case "label","icon","iconColor","supportingText": guard case .string(let s)=x,s.utf8.count<=4096 else{return false}
+            default: return false
+            }
+        }
+        return true
+    }
     /// Source property types of md-text-field (retained preview updates; formatter/parser are closures, native API only).
     private func validateTextFieldPatch(_ patch:[String:AWCValue]) throws {
         let booleans:Set<String>=["reserveSupportingSpace","spellcheck","disabled","readOnly","required","error","appearFocused","chipsWrap","inputExpanded"]
@@ -1112,6 +1356,21 @@ private final class NativeSession {
             else if key=="multiline"{ if case .bool(false)=value {} else { guard case .string(let s)=value,["auto-grow","fixed"].contains(s) else{throw PreviewFailure("multiline requires false, auto-grow or fixed.")} } }
             else if key=="focusBorderWidth"{guard case .number(let n)=value,n.isFinite,n>=0,n<=64 else{throw PreviewFailure("Invalid focusBorderWidth.")}}
             else{throw PreviewFailure("Unknown property for md-text-field: \(key)")}
+        }
+    }
+    /// Source property types of md-search (retained preview updates; triggerElement is a DOM reference with no native counterpart).
+    private func validateSearchPatch(_ patch:[String:AWCValue]) throws {
+        let booleans:Set<String>=["fullWidth","open","disabled","showClearButton","voiceSearch","escapeCloses","dismissOnOutsideClick","scrollShadow","announceResults","loading"]
+        let strings:Set<String>=["triggerIcon","triggerFor","value","placeholder","leadingIcon","openLeadingIcon","maxBlockSize","inputAriaLabel","resultsLabel","noResultsLabel","loadingLabel"]
+        let enums:[String:Set<String>]=["variant":["contained","divided"],"layout":["full-screen","docked"],"trigger":["","bar","icon"],"initialFocus":["auto","input","leading"]]
+        for (key,value) in patch {
+            if booleans.contains(key){guard case .bool=value else{throw PreviewFailure("\(key) requires a boolean.")}}
+            else if strings.contains(key){guard case .string(let s)=value,s.utf8.count<=4096 else{throw PreviewFailure("\(key) requires a string of at most 4096 UTF-8 bytes.")}}
+            else if let allowed=enums[key]{guard case .string(let s)=value,allowed.contains(s) else{throw PreviewFailure("Invalid \(key).")}}
+            else if key=="elevation"{guard case .number(let n)=value,[0,1,2,3,4,5].contains(n) else{throw PreviewFailure("Invalid elevation.")}}
+            else if key=="density"{guard case .number(let n)=value,[0,-1,-2,-3,-4].contains(n) else{throw PreviewFailure("Invalid density.")}}
+            else if key=="debounce" || key=="throttle"{guard case .number(let n)=value,n.isFinite,n>=0,n<=1e6 else{throw PreviewFailure("Invalid \(key).")}}
+            else{throw PreviewFailure("Unknown property for md-search: \(key)")}
         }
     }
     /// Source property types of md-avatar (retained preview updates).
@@ -1149,6 +1408,23 @@ private final class NativeSession {
             }
         }
     }
+    /// Source property types of md-transfer-list (retained preview updates).
+    private func validateTransferListPatch(_ patch:[String:AWCValue]) throws {
+        let strings:Set<String>=["sourceTitle","targetTitle","sourceSearchPlaceholder","targetSearchPlaceholder","searchIcon","moveRightIcon","moveLeftIcon","moveAllRightIcon","moveAllLeftIcon","emptyIcon","emptyText","countTemplate","moveRightLabel","moveLeftLabel","moveAllRightLabel","moveAllLeftLabel","selectAllLabel"]
+        for (key,value) in patch {
+            switch key {
+            case "items":
+                switch value { case .array: break; case .string(let text) where text.utf8.count<=262_144: break
+                default: throw PreviewFailure("items requires an array of items or its JSON string.") }
+            case "value":
+                guard case .array(let ids)=value,ids.count<=4096,ids.allSatisfy({ if case .string(let t)=$0 { return t.utf8.count<=4096 }; return false }) else{throw PreviewFailure("value requires an array of strings.")}
+            case "searchable","showSelectAll","disabled","singleStepOnly": guard case .bool=value else{throw PreviewFailure("\(key) requires a boolean.")}
+            case "density": guard case .number(let n)=value,[0,-1,-2,-3,-4].contains(n) else{throw PreviewFailure("Invalid density.")}
+            case _ where strings.contains(key): guard case .string(let text)=value,text.utf8.count<=4096 else{throw PreviewFailure("\(key) requires a string of at most 4096 UTF-8 bytes.")}
+            default: throw PreviewFailure("Unknown property for md-transfer-list: \(key)")
+            }
+        }
+    }
     /// Source property types of md-card (retained preview updates).
     private func validateCardPatch(_ patch:[String:AWCValue]) throws {
         let booleans:Set<String>=["interactive","dragEnabled","disabled","softDisabled","ripple","fullWidth","fullHeight"]
@@ -1159,77 +1435,127 @@ private final class NativeSession {
             else{throw PreviewFailure("Unknown property for md-card: \(key)")}
         }
     }
+    /// A retained update renders in the SwiftUI updates that follow the property change (AWCNativeView applies the properties
+    /// to its state in `onChange(of: node.properties)`), and the inspection reaches the host through `onPreferenceChange`,
+    /// which SwiftUI delivers with a later display update than the layout and drawing it describes. A frame taken 13 ms after
+    /// the change could pair the new pixels with the previous inspection (R4-26). Every retained update settles (d2 host
+    /// robustness: all tags, not only the selection controls), so the next frame's inspection describes its pixels.
+    private func settleRetainedUpdate() { settle(atLeast: 0.012) }
+    /// d2 host robustness: every update, method and input pumps for its path's minimum, then until the inspection has been
+    /// quiet for two display intervals, or, while it keeps changing (two or more publications since the command: a glide, a
+    /// ripple, an indicator slide), right after a publication, so continuous motion is sampled from its start rather than
+    /// waited out. At most 0.3 s beyond the minimum.
+    private func settle(atLeast minimum: Double) {
+        let start = ProcessInfo.processInfo.systemUptime, first = inspection.publications
+        var seen = inspection.publications
+        // Only SwiftUI's own updates run while settling: a layout forced in the middle of them can run an update whose
+        // onChange actions change state without a follow-up render (md-otp-field kept showing '' after {length,value}).
+        defer { host?.layoutSubtreeIfNeeded() }
+        while true {
+            Self.pump(0.002)
+            let now = ProcessInfo.processInfo.systemUptime, fresh = inspection.publications != seen
+            seen = inspection.publications
+            if now - start >= minimum {
+                if now - max(start, inspection.published) >= 0.034 { return }
+                if fresh && inspection.publications - first >= 2 { return }
+            }
+            if now - start >= minimum + 0.3 { return }
+        }
+    }
     private func updateProperties(_ request:PreviewRequest) throws {
         try requireConfigured()
         // Gate-7 R1-04: the button family updates its mounted root in place (contract generated from the source: the block at the end of this file).
         if AWCButtonFamilyPreviewUpdate.tags.contains(tag),let rootState,let patch=request.properties,!patch.isEmpty,request.target==nil,request.tag==nil {
             try AWCButtonFamilyPreviewUpdate.validate(tag: tag, patch: patch)
             rootState.node.properties.merge(patch){_,new in new}
-            Self.pump(0.012);host?.layoutSubtreeIfNeeded();return
+            settleRetainedUpdate();return
         }
         if AWCStepperPreview.updateTags.contains(tag),let rootState,let patch=request.properties,!patch.isEmpty,request.target==nil,request.tag==nil {
             try AWCStepperPreview.validate(tag: tag, patch: patch)
             rootState.node.properties.merge(patch){_,new in new}
-            Self.pump(0.012);host?.layoutSubtreeIfNeeded();return
+            settleRetainedUpdate();return
         }
         if AWCSRPreview.updateTags.contains(tag),let rootState,let patch=request.properties,!patch.isEmpty,request.target==nil,request.tag==nil {
             try AWCSRPreview.validate(tag: tag, patch: patch)
             rootState.node.properties.merge(patch){_,new in new}
-            Self.pump(0.012);host?.layoutSubtreeIfNeeded();return
+            settleRetainedUpdate();return
         }
         if AWCTablePreview.updateTags.contains(tag) {
             guard let rootState,let patch=request.properties,!patch.isEmpty,request.target==nil,request.tag==nil else{throw PreviewFailure("Update requires a nonempty property patch for a supported mounted root.")}
             try AWCTablePreview.validate(tag: tag, patch: patch)
             rootState.node.properties.merge(patch){_,new in new}
-            Self.pump(0.012);host?.layoutSubtreeIfNeeded();return
+            settleRetainedUpdate();return
         }
         if AWCPreviewMenu.tags.contains(tag) {
             guard let rootState,let patch=request.properties,!patch.isEmpty,request.target==nil,request.tag==nil else{throw PreviewFailure("Update requires a nonempty property patch for a supported mounted root.")}
             try validateMenuPatch(patch)
             rootState.node.properties.merge(patch){_,new in new}
-            Self.pump(0.012);host?.layoutSubtreeIfNeeded();return
+            settleRetainedUpdate();return
         }
-        guard ["md-color-picker","md-time-picker","md-otp-field","md-number-field","md-toolbar","md-line-chart","md-area-chart","md-bar-chart","md-pie-chart","md-sparkline","md-text-field","md-navigation-bar","md-navigation-tab","md-tabs","md-tab","md-tab-panels","md-tab-panel","md-breadcrumbs","md-breadcrumb-item","md-ripple","md-progress-indicator","md-skeleton","md-snackbar","md-tooltip","md-badge","md-loading-indicator","md-meter","md-status-dot","md-accordion","md-accordion-item","md-card","md-avatar","md-organization-chart","md-switch","md-checkbox","md-radio","md-chip","md-list","md-list-item","md-dialog","md-bottom-sheet","md-side-sheet"].contains(tag),let rootState,let patch=request.properties,!patch.isEmpty,
+        guard ["md-search","md-autocomplete","md-multi-select","md-select","md-divider","md-date-picker","md-color-picker","md-time-picker","md-otp-field","md-number-field","md-app-bar","md-navigation-rail","md-navigation-rail-tab","md-toolbar","md-line-chart","md-area-chart","md-bar-chart","md-pie-chart","md-sparkline","md-text-field","md-navigation-bar","md-navigation-tab","md-tabs","md-tab","md-tab-panels","md-tab-panel","md-breadcrumbs","md-breadcrumb-item","md-ripple","md-progress-indicator","md-skeleton","md-snackbar","md-tooltip","md-badge","md-loading-indicator","md-meter","md-status-dot","md-accordion","md-accordion-item","md-transfer-list","md-card","md-avatar","md-organization-chart","md-switch","md-checkbox","md-radio","md-chip","md-list","md-list-item","md-dialog","md-bottom-sheet","md-side-sheet"].contains(tag),let rootState,let patch=request.properties,!patch.isEmpty,
               request.target==nil,request.tag==nil else{throw PreviewFailure("Update requires a nonempty property patch for a supported mounted root.")}
+        if tag=="md-divider"{ // gate-7 r3-03: the four boolean source properties
+            for (key,value) in patch{
+                guard ["vertical","inset","insetStart","insetEnd"].contains(key) else{throw PreviewFailure("Unknown property for md-divider: \(key)")}
+                guard case .bool=value else{throw PreviewFailure("md-divider \(key) must be Boolean.")}
+            }
+            rootState.node.properties.merge(patch){_,new in new}
+            settleRetainedUpdate();return
+        }
         if ["md-dialog","md-bottom-sheet","md-side-sheet"].contains(tag){
             try validateModalPatch(patch)
             rootState.node.properties.merge(patch){_,new in new}
-            Self.pump(0.012);host?.layoutSubtreeIfNeeded();return
+            settleRetainedUpdate();return
         }
         if ["md-list","md-list-item"].contains(tag){
             try validateListPatch(patch)
             rootState.node.properties.merge(patch){_,new in new}
-            Self.pump(0.012);host?.layoutSubtreeIfNeeded();return
+            settleRetainedUpdate();return
         }
         if AWCNavPreview.updateTags.contains(tag){
             try AWCNavPreview.validate(tag: tag, patch: patch)
             rootState.node.properties.merge(patch){_,new in new}
-            Self.pump(0.012);host?.layoutSubtreeIfNeeded();return
+            settleRetainedUpdate();return
         }
         if AWCChartPreview.updateTags.contains(tag){
             try AWCChartPreview.validate(tag: tag, patch: patch)
             rootState.node.properties.merge(patch){_,new in new}
-            Self.pump(0.012);host?.layoutSubtreeIfNeeded();return
+            settleRetainedUpdate();return
         }
         if tag=="md-otp-field"{
             try validateOTPFieldPatch(patch)
             rootState.node.properties.merge(patch){_,new in new}
-            Self.pump(0.012);host?.layoutSubtreeIfNeeded();return
+            settleRetainedUpdate();return
+        }
+        if tag=="md-autocomplete"{
+            try validateAutocompletePatch(patch)
+            rootState.node.properties.merge(patch){_,new in new}
+            settleRetainedUpdate();return
         }
         if tag=="md-number-field"{
             try validateNumberFieldPatch(patch)
             rootState.node.properties.merge(patch){_,new in new}
-            Self.pump(0.012);host?.layoutSubtreeIfNeeded();return
+            settleRetainedUpdate();return
+        }
+        if tag=="md-date-picker"{
+            try validateDatePickerPatch(patch)
+            rootState.node.properties.merge(patch){_,new in new}
+            settleRetainedUpdate();return
         }
         if ["md-color-picker","md-time-picker"].contains(tag){
             try validatePickerPatch(tag,patch)
             rootState.node.properties.merge(patch){_,new in new}
-            Self.pump(0.012);host?.layoutSubtreeIfNeeded();return
+            settleRetainedUpdate();return
+        }
+        if tag=="md-select"||tag=="md-multi-select"{
+            try validateSelectPatch(patch,tag:tag)
+            rootState.node.properties.merge(patch){_,new in new}
+            settleRetainedUpdate();return
         }
         if tag=="md-text-field"{
             try validateTextFieldPatch(patch)
             rootState.node.properties.merge(patch){_,new in new}
-            Self.pump(0.012);host?.layoutSubtreeIfNeeded();return
+            settleRetainedUpdate();return
         }
         if ["md-navigation-bar","md-navigation-tab"].contains(tag){
             let declared:Set<String>=tag=="md-navigation-bar" ? ["activeIndex","labelBehavior","manualActivation","density"]:["active","disabled","softDisabled","label","icon","activeIcon","badge","badgeValue","badgeMax","href","target","labelBehavior","density"]
@@ -1244,7 +1570,7 @@ private final class NativeSession {
                 }
             }
             rootState.node.properties.merge(patch){_,new in new}
-            Self.pump(0.012);host?.layoutSubtreeIfNeeded();return
+            settleRetainedUpdate();return
         }
         if ["md-tabs","md-tab","md-tab-panels","md-tab-panel"].contains(tag){
             let declared:[String:Set<String>]=["md-tabs":["activeTabIndex","variant","divider","ariaLabelProp","tabWidth","width"],"md-tab":["label","icon","active","disabled","inlineIcon","variant","badge","controls","density"],"md-tab-panels":["for","sizing"],"md-tab-panel":["active"]]
@@ -1261,7 +1587,7 @@ private final class NativeSession {
                 }
             }
             rootState.node.properties.merge(patch){_,new in new}
-            Self.pump(0.012);host?.layoutSubtreeIfNeeded();return
+            settleRetainedUpdate();return
         }
         if ["md-breadcrumbs","md-breadcrumb-item"].contains(tag){
             let trail=tag=="md-breadcrumbs"
@@ -1274,47 +1600,57 @@ private final class NativeSession {
                 else {throw PreviewFailure("Unknown property for \(tag): \(key)")}
             }
             rootState.node.properties.merge(patch){_,new in new}
+            settleRetainedUpdate();return
+        }
+        if tag=="md-search"{
+            try validateSearchPatch(patch)
+            rootState.node.properties.merge(patch){_,new in new}
             Self.pump(0.012);host?.layoutSubtreeIfNeeded();return
         }
         if tag=="md-ripple"{
             for (key,value) in patch { guard key=="disabled" else {throw PreviewFailure("Unknown property for md-ripple: \(key)")}; guard case .bool=value else {throw PreviewFailure("disabled requires a boolean.")} }
             rootState.node.properties.merge(patch){_,new in new}
-            Self.pump(0.012);host?.layoutSubtreeIfNeeded();return
+            settleRetainedUpdate();return
         }
         if ["md-switch","md-checkbox","md-radio","md-chip"].contains(tag){
             try validateSelectionPatch(tag,patch)
             rootState.node.properties.merge(patch){_,new in new}
-            Self.pump(0.012);host?.layoutSubtreeIfNeeded();return
+            settleRetainedUpdate();return
         }
         if tag=="md-avatar"{
             try validateAvatarPatch(patch)
             rootState.node.properties.merge(patch){_,new in new}
-            Self.pump(0.012);host?.layoutSubtreeIfNeeded();return
+            settleRetainedUpdate();return
         }
         if tag=="md-organization-chart"{
             try validateOrgChartPatch(patch)
+            rootState.node.properties.merge(patch){_,new in new}
+            settleRetainedUpdate();return
+        }
+        if tag=="md-transfer-list"{
+            try validateTransferListPatch(patch)
             rootState.node.properties.merge(patch){_,new in new}
             Self.pump(0.012);host?.layoutSubtreeIfNeeded();return
         }
         if tag=="md-card"{
             try validateCardPatch(patch)
             rootState.node.properties.merge(patch){_,new in new}
-            Self.pump(0.012);host?.layoutSubtreeIfNeeded();return
+            settleRetainedUpdate();return
         }
         if ["md-accordion","md-accordion-item"].contains(tag){
             try validateAccordionPatch(patch)
             rootState.node.properties.merge(patch){_,new in new}
-            Self.pump(0.012);host?.layoutSubtreeIfNeeded();return
+            settleRetainedUpdate();return
         }
         if ["md-badge","md-loading-indicator","md-meter","md-status-dot"].contains(tag){ // R2-D6
             try validateCommunicationPatch(tag,patch)
             rootState.node.properties.merge(patch){_,new in new}
-            Self.pump(0.012);host?.layoutSubtreeIfNeeded();return
+            settleRetainedUpdate();return
         }
         if tag=="md-tooltip"{
             try validateTooltipPatch(patch)
             rootState.node.properties.merge(patch){_,new in new}
-            Self.pump(0.012);host?.layoutSubtreeIfNeeded();return
+            settleRetainedUpdate();return
         }
         let skeleton=tag=="md-skeleton",snackbar=tag=="md-snackbar"
         let numbers:Set<String>=snackbar ? ["autoHideDuration"]:skeleton ? ["lines"]:["value","max","thickness","waveAmplitude","waveLength","waveSpeed","size"]
@@ -1333,8 +1669,7 @@ private final class NativeSession {
         rootState.node.properties.merge(patch){_,new in new}
         // Drain SwiftUI's property observer before accepting the next queued
         // patch, so false→true remains two watcher changes on the same root.
-        Self.pump(0.012)
-        host?.layoutSubtreeIfNeeded()
+        settleRetainedUpdate()
     }
     /// R2-D6: the source property set and value domains of the four communication leaves. formatOptions null = absent.
     private func validateCommunicationPatch(_ tag:String,_ patch:[String:AWCValue]) throws{
@@ -1377,7 +1712,7 @@ private final class NativeSession {
     }
     private func resize(_ request:PreviewRequest) throws {
         try requireConfigured()
-        guard ["md-snackbar","md-tooltip","md-dialog","md-bottom-sheet","md-side-sheet","md-time-picker","md-color-picker"].contains(tag),let state=rootState,let width=request.width,let height=request.height,
+        guard ["md-snackbar","md-tooltip","md-dialog","md-bottom-sheet","md-side-sheet","md-time-picker","md-color-picker","md-date-picker"].contains(tag),let state=rootState,let width=request.width,let height=request.height,
               width.isFinite,height.isFinite,width>0,height>0 else{throw PreviewFailure("Resize requires positive finite width and height for a mounted overlay.")}
         let appliedWidth=min(1200,max(320,width)).rounded()
         let appliedHeight=min(min(2000,floor(2_000_000/appliedWidth)),max(1,height)).rounded()
@@ -1397,9 +1732,10 @@ private final class NativeSession {
             throw PreviewFailure("Native interaction requires access to the macOS WindowServer. Run the preview server in a desktop session outside a restricted process sandbox.")
         }
         logicalWidth = min(1200, max(320, width)).rounded()
-        if let height=request.height{guard ["md-snackbar","md-tooltip","md-dialog","md-bottom-sheet","md-side-sheet","md-time-picker","md-color-picker"].contains(requestedTag),height.isFinite,height>0 else{throw PreviewFailure("height requires a positive finite overlay viewport.")}}
+        if let height=request.height{guard ["md-snackbar","md-tooltip","md-dialog","md-bottom-sheet","md-side-sheet","md-time-picker","md-color-picker","md-date-picker"].contains(requestedTag),height.isFinite,height>0 else{throw PreviewFailure("height requires a positive finite overlay viewport.")}}
         logicalHeight=min(min(2000,floor(2_000_000/logicalWidth)),max(1,request.height ?? 240)).rounded()
-        guard request.scenario == nil || (["button-behavior", "navigation-events", "focus-accessibility"].contains(request.scenario ?? "") && requestedTag == "md-button") else { throw PreviewFailure("Unknown native example.") }
+        guard request.scenario == nil || (["button-behavior", "navigation-events", "focus-accessibility"].contains(request.scenario ?? "") && requestedTag == "md-button")
+              || (request.scenario == "tabs-panels" && requestedTag == "md-tabs") else { throw PreviewFailure("Unknown native example.") }
         guard request.direction == nil || ["ltr", "rtl"].contains(request.direction ?? "") else { throw PreviewFailure("Direction must be ltr or rtl.") }
         for values in [request.menuAppearanceDefaults,request.menuAppearance] { if let values,AWCMenuAppearance(values:values)==nil { throw PreviewFailure("Invalid menu appearance.") } }
         var node = AWCExamples.node(for: requestedTag)
@@ -1409,6 +1745,12 @@ private final class NativeSession {
         if ["md-dialog","md-bottom-sheet","md-side-sheet"].contains(requestedTag) {node.id="component";node.children=[.text("Every great project starts with a shared workspace.")]}
         if let context=request.segmentedContext {try context.validate(tag:requestedTag)}
         node.properties.merge(request.properties ?? [:]) { _, supplied in supplied }
+        // tools/ax R5-12 fixture: the Status cell of the first body row spans two rows (the second row has no Status cell).
+        if request.rowSpanFixture == true, requestedTag == "md-table", let b = node.children.firstIndex(where: { $0.tag == "md-table-body" }), node.children[b].children.count > 1 {
+            node.children[b].children[0].children[1].properties["rowSpan"] = .number(2); node.children[b].children[1].children.remove(at: 1)
+        }
+        // The md-tab-panel page takes `active` from the request; absent means the component default, inactive (gate-7 R6-21).
+        if requestedTag == "md-tab-panel" { node.properties["active"] = request.properties?["active"] ?? .bool(false) }
         if let text = request.text {
             guard requestedTag == "md-button", text.utf8.count <= 4096 else { throw PreviewFailure("Button text must be at most 4096 UTF-8 bytes.") }
             if request.scenario == nil {
@@ -1428,9 +1770,9 @@ private final class NativeSession {
         inspectionName = request.scenario.map { "\(requestedTag) · \($0) demo" } ?? requestedTag
         let retained=PreviewNodeState(node,width:logicalWidth,height:logicalHeight);rootState=retained
         let newHost = NSHostingView(rootView: PreviewRoot(nodeState: retained, dark: request.dark ?? false, onEvent: { [weak self] event in
-            if ["md-snackbar","md-tooltip","md-dialog","md-bottom-sheet","md-side-sheet","md-time-picker","md-color-picker"].contains(event.tag),["mdOpen","mdClose"].contains(event.name){retained.node.properties["open"] = .bool(event.name=="mdOpen")}
+            if ["md-snackbar","md-tooltip","md-dialog","md-bottom-sheet","md-side-sheet","md-time-picker","md-color-picker","md-date-picker"].contains(event.tag),["mdOpen","mdClose"].contains(event.name){retained.node.properties["open"] = .bool(event.name=="mdOpen")}
             self?.events.append(event)
-        }, pointerState: pointerState, scenario: request.scenario, themeTokens: request.themeTokens ?? [:], direction: request.direction ?? "ltr", buttonAppearance: AWCButtonAppearance(values: request.buttonAppearanceDefaults ?? [:]).merging(.init(values: request.buttonAppearance ?? [:])), iconButtonAppearance: AWCIconButtonAppearance(values: request.iconButtonAppearanceDefaults ?? [:]).merging(.init(values: request.iconButtonAppearance ?? [:])), buttonGroupAppearance: AWCButtonGroupAppearance(values: request.buttonGroupAppearanceDefaults ?? [:]).merging(.init(values: request.buttonGroupAppearance ?? [:])), progressIndicatorAppearance:AWCProgressIndicatorAppearance(values:request.progressIndicatorAppearanceDefaults ?? [:]).merging(.init(values:request.progressIndicatorAppearance ?? [:])), skeletonAppearance:AWCSkeletonAppearance(values:request.skeletonAppearanceDefaults ?? [:]).merging(.init(values:request.skeletonAppearance ?? [:])), snackbarAppearance:AWCSnackbarAppearance(values:request.snackbarAppearanceDefaults ?? [:]).merging(.init(values:request.snackbarAppearance ?? [:])), snackbarController:snackbarController, tooltipAppearance:AWCTooltipAppearance(values:request.tooltipAppearanceDefaults ?? [:]).merging(.init(values:request.tooltipAppearance ?? [:])), tooltipController:tooltipController, meterAppearance:AWCMeterAppearance(values:request.meterAppearanceDefaults ?? [:]).merging(.init(values:request.meterAppearance ?? [:])), loadingIndicatorAppearance:AWCLoadingIndicatorAppearance(values:request.loadingIndicatorAppearanceDefaults ?? [:]).merging(.init(values:request.loadingIndicatorAppearance ?? [:])), splitButtonAppearance:AWCSplitButtonAppearance(values:request.splitButtonAppearanceDefaults ?? [:]).merging(.init(values:request.splitButtonAppearance ?? [:])), segmentedContext:request.segmentedContext ?? .defaults(for:node), segmentedButtonAppearanceDefaults:AWCSegmentedButtonAppearance(values:request.segmentedButtonAppearanceDefaults ?? [:]), segmentedButtonAppearance:AWCSegmentedButtonAppearance(values:request.segmentedButtonAppearance ?? [:]), dividerAppearance: AWCDividerAppearance(values:request.dividerAppearanceDefaults ?? [:]).merging(.init(values:request.dividerAppearance ?? [:])), badgeAppearance: AWCBadgeAppearance(values:request.badgeAppearanceDefaults ?? [:]).merging(.init(values:request.badgeAppearance ?? [:])), statusDotAppearance: AWCStatusDotAppearance(values:request.statusDotAppearanceDefaults ?? [:]).merging(.init(values:request.statusDotAppearance ?? [:])), fabAppearance: AWCFabAppearance(values:request.fabAppearanceDefaults ?? [:]).merging(.init(values:request.fabAppearance ?? [:])), fabController:fabController, fabMenuAppearance:AWCFabMenuAppearance(values:request.fabMenuAppearanceDefaults ?? [:]).merging(.init(values:request.fabMenuAppearance ?? [:])), fabMenuItemAppearanceDefaults:AWCFabMenuItemAppearance(values:request.fabMenuItemAppearanceDefaults ?? [:]), fabMenuItemAppearance:AWCFabMenuItemAppearance(values:request.fabMenuItemAppearance ?? [:]), fabMenuController:fabMenuController, menuAppearanceDefaults:AWCMenuAppearance(values:request.menuAppearanceDefaults ?? [:]) ?? AWCMenuAppearance(), menuAppearance:AWCMenuAppearance(values:request.menuAppearance ?? [:]) ?? AWCMenuAppearance(), menuState:menuState, accordionAppearance:AWCAccordionAppearance(values:request.accordionAppearanceDefaults ?? [:]).merging(.init(values:request.accordionAppearance ?? [:])), accordionItemAppearance:AWCAccordionItemAppearance(values:request.accordionItemAppearanceDefaults ?? [:]).merging(.init(values:request.accordionItemAppearance ?? [:])), accordionItemController:accordionItemController, cardAppearance: AWCCardAppearance(values: request.cardAppearanceDefaults ?? [:]).merging(.init(values: request.cardAppearance ?? [:])), avatarAppearance: AWCAvatarAppearance(values: request.avatarAppearanceDefaults ?? [:]).merging(.init(values: request.avatarAppearance ?? [:])), orgChartAppearance: AWCOrgChartAppearance(values: request.orgChartAppearanceDefaults ?? [:]).merging(.init(values: request.orgChartAppearance ?? [:])), switchAppearance: AWCSwitchAppearance(values: request.switchAppearanceDefaults ?? [:]).merging(.init(values: request.switchAppearance ?? [:])), checkboxAppearance: AWCCheckboxAppearance(values: request.checkboxAppearanceDefaults ?? [:]).merging(.init(values: request.checkboxAppearance ?? [:])), radioAppearance: AWCRadioAppearance(values: request.radioAppearanceDefaults ?? [:]).merging(.init(values: request.radioAppearance ?? [:])), chipAppearance: AWCChipHookAppearance(values: request.chipAppearanceDefaults ?? [:]).merging(.init(values: request.chipAppearance ?? [:])), selectionController: selectionController, rippleAppearance: AWCRippleAppearance(values: request.rippleAppearanceDefaults ?? [:]).merging(.init(values: request.rippleAppearance ?? [:])), rippleController: rippleController, breadcrumbsAppearance: requestedTag == "md-breadcrumb-item" ? AWCBreadcrumbsAppearance(values: request.breadcrumbItemAppearanceDefaults ?? [:]).merging(.init(values: request.breadcrumbItemAppearance ?? [:])) : AWCBreadcrumbsAppearance(values: request.breadcrumbsAppearanceDefaults ?? [:]).merging(.init(values: request.breadcrumbsAppearance ?? [:])), breadcrumbsController: breadcrumbsController, tabsAppearance: AWCTabsAppearance(values: request.tabsAppearanceDefaults ?? [:]).merging(.init(values: request.tabsAppearance ?? [:])), tabAppearance: AWCTabAppearance(values: request.tabAppearanceDefaults ?? [:]).merging(.init(values: request.tabAppearance ?? [:])), tabsController: tabsController, navigationBarAppearance: AWCNavigationBarAppearance(values: request.navigationBarAppearanceDefaults ?? [:]).merging(.init(values: request.navigationBarAppearance ?? [:])), navigationTabAppearance: AWCNavigationTabAppearance(values: request.navigationTabAppearanceDefaults ?? [:]).merging(.init(values: request.navigationTabAppearance ?? [:])), navigationBarController: navigationBarController, navigationTabController: navigationTabController, textFieldAppearance: AWCTextFieldAppearance(values: request.textFieldAppearanceDefaults ?? [:]).merging(.init(values: request.textFieldAppearance ?? [:])), textFieldController: textFieldController, colorPickerAppearance: AWCColorPickerAppearance(values: request.colorPickerAppearanceDefaults ?? [:]).merging(.init(values: request.colorPickerAppearance ?? [:])), colorPickerController: colorPickerController, timePickerAppearance: AWCTimePickerAppearance(values: request.timePickerAppearanceDefaults ?? [:]).merging(.init(values: request.timePickerAppearance ?? [:])), timePickerController: timePickerController, numberFieldAppearance: AWCNumberFieldAppearance(values: request.numberFieldAppearanceDefaults ?? [:]).merging(.init(values: request.numberFieldAppearance ?? [:])), numberFieldController: numberFieldController, otpFieldAppearance: AWCOTPFieldAppearance(values: request.otpFieldAppearanceDefaults ?? [:]).merging(.init(values: request.otpFieldAppearance ?? [:])), otpFieldController: otpFieldController, listAppearance: AWCListAppearance(values: request.listAppearanceDefaults ?? [:]).merging(.init(values: request.listAppearance ?? [:])), listItemAppearance: AWCListItemAppearance(values: request.listItemAppearanceDefaults ?? [:]).merging(.init(values: request.listItemAppearance ?? [:])), listController: listController, listItemController: listItemController, dialogAppearance: AWCDialogAppearance(values: request.dialogAppearanceDefaults ?? [:]).merging(.init(values: request.dialogAppearance ?? [:])), bottomSheetAppearance: AWCBottomSheetAppearance(values: request.bottomSheetAppearanceDefaults ?? [:]).merging(.init(values: request.bottomSheetAppearance ?? [:])), sideSheetAppearance: AWCSideSheetAppearance(values: request.sideSheetAppearanceDefaults ?? [:]).merging(.init(values: request.sideSheetAppearance ?? [:])), dialogController: dialogController, bottomSheetController: bottomSheetController, sideSheetController: sideSheetController, inspection: inspection, chartPreview: AWCChartPreview.options(tag: requestedTag, chart: chartController), navPreview: AWCNavPreview.options(tag: requestedTag, toolbar: toolbarController)))
+        }, pointerState: pointerState, scenario: request.scenario, themeTokens: request.themeTokens ?? [:], direction: request.direction ?? "ltr", buttonAppearance: AWCButtonAppearance(values: request.buttonAppearanceDefaults ?? [:]).merging(.init(values: request.buttonAppearance ?? [:])), iconButtonAppearance: AWCIconButtonAppearance(values: request.iconButtonAppearanceDefaults ?? [:]).merging(.init(values: request.iconButtonAppearance ?? [:])), buttonGroupAppearance: AWCButtonGroupAppearance(values: request.buttonGroupAppearanceDefaults ?? [:]).merging(.init(values: request.buttonGroupAppearance ?? [:])), progressIndicatorAppearance:AWCProgressIndicatorAppearance(values:request.progressIndicatorAppearanceDefaults ?? [:]).merging(.init(values:request.progressIndicatorAppearance ?? [:])), skeletonAppearance:AWCSkeletonAppearance(values:request.skeletonAppearanceDefaults ?? [:]).merging(.init(values:request.skeletonAppearance ?? [:])), snackbarAppearance:AWCSnackbarAppearance(values:request.snackbarAppearanceDefaults ?? [:]).merging(.init(values:request.snackbarAppearance ?? [:])), snackbarController:snackbarController, tooltipAppearance:AWCTooltipAppearance(values:request.tooltipAppearanceDefaults ?? [:]).merging(.init(values:request.tooltipAppearance ?? [:])), tooltipController:tooltipController, meterAppearance:AWCMeterAppearance(values:request.meterAppearanceDefaults ?? [:]).merging(.init(values:request.meterAppearance ?? [:])), loadingIndicatorAppearance:AWCLoadingIndicatorAppearance(values:request.loadingIndicatorAppearanceDefaults ?? [:]).merging(.init(values:request.loadingIndicatorAppearance ?? [:])), splitButtonAppearance:AWCSplitButtonAppearance(values:request.splitButtonAppearanceDefaults ?? [:]).merging(.init(values:request.splitButtonAppearance ?? [:])), segmentedContext:request.segmentedContext ?? .defaults(for:node), segmentedButtonAppearanceDefaults:AWCSegmentedButtonAppearance(values:request.segmentedButtonAppearanceDefaults ?? [:]), segmentedButtonAppearance:AWCSegmentedButtonAppearance(values:request.segmentedButtonAppearance ?? [:]), dividerAppearance: AWCDividerAppearance(values:request.dividerAppearanceDefaults ?? [:]).merging(.init(values:request.dividerAppearance ?? [:])), badgeAppearance: AWCBadgeAppearance(values:request.badgeAppearanceDefaults ?? [:]).merging(.init(values:request.badgeAppearance ?? [:])), statusDotAppearance: AWCStatusDotAppearance(values:request.statusDotAppearanceDefaults ?? [:]).merging(.init(values:request.statusDotAppearance ?? [:])), fabAppearance: AWCFabAppearance(values:request.fabAppearanceDefaults ?? [:]).merging(.init(values:request.fabAppearance ?? [:])), fabController:fabController, fabMenuAppearance:AWCFabMenuAppearance(values:request.fabMenuAppearanceDefaults ?? [:]).merging(.init(values:request.fabMenuAppearance ?? [:])), fabMenuItemAppearanceDefaults:AWCFabMenuItemAppearance(values:request.fabMenuItemAppearanceDefaults ?? [:]), fabMenuItemAppearance:AWCFabMenuItemAppearance(values:request.fabMenuItemAppearance ?? [:]), fabMenuController:fabMenuController, menuAppearanceDefaults:AWCMenuAppearance(values:request.menuAppearanceDefaults ?? [:]) ?? AWCMenuAppearance(), menuAppearance:AWCMenuAppearance(values:request.menuAppearance ?? [:]) ?? AWCMenuAppearance(), menuState:menuState, accordionAppearance:AWCAccordionAppearance(values:request.accordionAppearanceDefaults ?? [:]).merging(.init(values:request.accordionAppearance ?? [:])), accordionItemAppearance:AWCAccordionItemAppearance(values:request.accordionItemAppearanceDefaults ?? [:]).merging(.init(values:request.accordionItemAppearance ?? [:])), accordionItemController:accordionItemController, cardAppearance: AWCCardAppearance(values: request.cardAppearanceDefaults ?? [:]).merging(.init(values: request.cardAppearance ?? [:])), avatarAppearance: AWCAvatarAppearance(values: request.avatarAppearanceDefaults ?? [:]).merging(.init(values: request.avatarAppearance ?? [:])), transferListAppearance: AWCTransferListAppearance(values: request.transferListAppearanceDefaults ?? [:]).merging(.init(values: request.transferListAppearance ?? [:])), transferListController: transferListController, orgChartAppearance: AWCOrgChartAppearance(values: request.orgChartAppearanceDefaults ?? [:]).merging(.init(values: request.orgChartAppearance ?? [:])), switchAppearance: AWCSwitchAppearance(values: request.switchAppearanceDefaults ?? [:]).merging(.init(values: request.switchAppearance ?? [:])), checkboxAppearance: AWCCheckboxAppearance(values: request.checkboxAppearanceDefaults ?? [:]).merging(.init(values: request.checkboxAppearance ?? [:])), radioAppearance: AWCRadioAppearance(values: request.radioAppearanceDefaults ?? [:]).merging(.init(values: request.radioAppearance ?? [:])), chipAppearance: AWCChipHookAppearance(values: request.chipAppearanceDefaults ?? [:]).merging(.init(values: request.chipAppearance ?? [:])), selectionController: selectionController, rippleAppearance: AWCRippleAppearance(values: request.rippleAppearanceDefaults ?? [:]).merging(.init(values: request.rippleAppearance ?? [:])), rippleController: rippleController, searchAppearance: AWCSearchAppearance(values: request.searchAppearanceDefaults ?? [:]).merging(.init(values: request.searchAppearance ?? [:])), searchController: searchController, breadcrumbsAppearance: requestedTag == "md-breadcrumb-item" ? AWCBreadcrumbsAppearance(values: request.breadcrumbItemAppearanceDefaults ?? [:]).merging(.init(values: request.breadcrumbItemAppearance ?? [:])) : AWCBreadcrumbsAppearance(values: request.breadcrumbsAppearanceDefaults ?? [:]).merging(.init(values: request.breadcrumbsAppearance ?? [:])), breadcrumbsController: breadcrumbsController, tabsAppearance: AWCTabsAppearance(values: request.tabsAppearanceDefaults ?? [:]).merging(.init(values: request.tabsAppearance ?? [:])), tabAppearance: AWCTabAppearance(values: request.tabAppearanceDefaults ?? [:]).merging(.init(values: request.tabAppearance ?? [:])), tabsController: tabsController, navigationBarAppearance: AWCNavigationBarAppearance(values: request.navigationBarAppearanceDefaults ?? [:]).merging(.init(values: request.navigationBarAppearance ?? [:])), navigationTabAppearance: AWCNavigationTabAppearance(values: request.navigationTabAppearanceDefaults ?? [:]).merging(.init(values: request.navigationTabAppearance ?? [:])), navigationBarController: navigationBarController, navigationTabController: navigationTabController, textFieldAppearance: AWCTextFieldAppearance(values: request.textFieldAppearanceDefaults ?? [:]).merging(.init(values: request.textFieldAppearance ?? [:])), textFieldController: textFieldController, selectAppearance: AWCSelectAppearance(values: request.selectAppearanceDefaults ?? [:]).merging(.init(values: request.selectAppearance ?? [:])), selectController: selectController, multiSelectAppearance: AWCMultiSelectAppearance(values: request.multiSelectAppearanceDefaults ?? [:]).merging(.init(values: request.multiSelectAppearance ?? [:])), multiSelectController: multiSelectController, colorPickerAppearance: AWCColorPickerAppearance(values: request.colorPickerAppearanceDefaults ?? [:]).merging(.init(values: request.colorPickerAppearance ?? [:])), colorPickerController: colorPickerController, timePickerAppearance: AWCTimePickerAppearance(values: request.timePickerAppearanceDefaults ?? [:]).merging(.init(values: request.timePickerAppearance ?? [:])), timePickerController: timePickerController, datePickerAppearance: AWCDatePickerAppearance(values: request.datePickerAppearanceDefaults ?? [:]).merging(.init(values: request.datePickerAppearance ?? [:])), datePickerController: datePickerController, numberFieldAppearance: AWCNumberFieldAppearance(values: request.numberFieldAppearanceDefaults ?? [:]).merging(.init(values: request.numberFieldAppearance ?? [:])), numberFieldController: numberFieldController, autocompleteAppearance: AWCAutocompleteAppearance(values: request.autocompleteAppearanceDefaults ?? [:]).merging(.init(values: request.autocompleteAppearance ?? [:])), autocompleteController: autocompleteController, otpFieldAppearance: AWCOTPFieldAppearance(values: request.otpFieldAppearanceDefaults ?? [:]).merging(.init(values: request.otpFieldAppearance ?? [:])), otpFieldController: otpFieldController, listAppearance: AWCListAppearance(values: request.listAppearanceDefaults ?? [:]).merging(.init(values: request.listAppearance ?? [:])), listItemAppearance: AWCListItemAppearance(values: request.listItemAppearanceDefaults ?? [:]).merging(.init(values: request.listItemAppearance ?? [:])), listController: listController, listItemController: listItemController, dialogAppearance: AWCDialogAppearance(values: request.dialogAppearanceDefaults ?? [:]).merging(.init(values: request.dialogAppearance ?? [:])), bottomSheetAppearance: AWCBottomSheetAppearance(values: request.bottomSheetAppearanceDefaults ?? [:]).merging(.init(values: request.bottomSheetAppearance ?? [:])), sideSheetAppearance: AWCSideSheetAppearance(values: request.sideSheetAppearanceDefaults ?? [:]).merging(.init(values: request.sideSheetAppearance ?? [:])), dialogController: dialogController, bottomSheetController: bottomSheetController, sideSheetController: sideSheetController, inspection: inspection, chartPreview: AWCChartPreview.options(tag: requestedTag, chart: chartController), navPreview: AWCNavPreview.options(tag: requestedTag, toolbar: toolbarController)))
         // The window is realized outside every display, never activated, and never made key.
         let left = NSScreen.screens.map { $0.frame.minX }.min() ?? 0
         let bottom = NSScreen.screens.map { $0.frame.minY }.min() ?? 0
@@ -1507,7 +1849,7 @@ private final class NativeSession {
 
     private func pointer(_ request: PreviewRequest) throws {
         try requireConfigured()
-        guard ["md-button", "md-icon-button", "md-button-group", "md-fab","md-fab-menu","md-fab-menu-item","md-segmented-button","md-segmented-button-set","md-split-button","md-snackbar","md-tooltip","md-accordion","md-accordion-item","md-card","md-list","md-list-item","md-dialog","md-bottom-sheet","md-side-sheet","md-organization-chart"].contains(tag) || AWCTablePreview.pointerTags.contains(tag) else { throw PreviewFailure("Held pointer input is unsupported for this preview.") }
+        guard ["md-button", "md-icon-button", "md-button-group", "md-fab","md-fab-menu","md-fab-menu-item","md-segmented-button","md-segmented-button-set","md-split-button","md-snackbar","md-tooltip","md-accordion","md-accordion-item","md-card","md-list","md-list-item","md-dialog","md-bottom-sheet","md-side-sheet","md-organization-chart","md-transfer-list"].contains(tag) || AWCTablePreview.pointerTags.contains(tag) else { throw PreviewFailure("Held pointer input is unsupported for this preview.") }
         guard let host, let window, let phase = request.phase, ["down", "up", "cancel", "move", "leave"].contains(phase),
               let x = request.x, let y = request.y, x.isFinite, y.isFinite else {
             throw PreviewFailure("Pointer input requires a supported phase and finite coordinates.")
@@ -1581,12 +1923,23 @@ private final class NativeSession {
         if key == "Tab" {
             guard modifiers.isSubset(of: ["shift"]) else { inputNotice = "Tab supports only the shift modifier."; return }
             if ["md-fab-menu","md-fab-menu-item","md-menu","md-menu-item","md-menu-item-group","md-sub-menu-item"].contains(tag),window?.firstResponder is NSView {try sendControlKey(key,modifiers:modifiers);return}
-            // An open modal traps Tab in its surface: route it through the application like a keyboard.
-            // A standard side sheet is not modal: its Tab is the window's key-view loop like any inline content.
-            if tag=="md-otp-field",(window?.firstResponder as? NSTextView)?.isFieldEditor==true {try sendControlKey(key,modifiers:modifiers);return}
+            // An open modal traps Tab in its surface: route it through the application like a keyboard. A standard side sheet is
+            // not modal, but its Tab is a keyboard's too: AWC document order in the modal scope (NativeDocumentOrder.swift), the
+            // order UIKit follows (R4-25), not the window's geometric key-view loop.
+            if ["md-otp-field","md-autocomplete","md-multi-select","md-table-pagination"].contains(tag),(window?.firstResponder as? NSTextView)?.isFieldEditor==true {try sendControlKey(key,modifiers:modifiers);return}
+            if tag=="md-date-picker", case .bool(true)? = rootState?.node.properties["open"] {try sendControlKey(key,modifiers:modifiers);return}
             if tag=="md-time-picker", case .bool(true)? = rootState?.node.properties["open"] {try sendControlKey(key,modifiers:modifiers);return}
-            if ["md-color-picker","md-time-picker"].contains(tag), let editor = window?.firstResponder as? NSTextView, editor.isFieldEditor {try sendControlKey(key,modifiers:modifiers);return}
-            if ["md-dialog","md-bottom-sheet"].contains(tag) || (tag=="md-side-sheet" && rootState?.node.properties["variant"]?.string=="modal") {try sendControlKey(key,modifiers:modifiers);return}
+            if ["md-date-picker","md-color-picker","md-time-picker","md-app-bar"].contains(tag), let editor = window?.firstResponder as? NSTextView, editor.isFieldEditor {try sendControlKey(key,modifiers:modifiers);return}
+            if ["md-dialog","md-bottom-sheet","md-side-sheet"].contains(tag) {try sendControlKey(key,modifiers:modifiers);return}
+            // md-transfer-list's Tab order is AWCKeyViewGroup's (source order: the source column, the movers, the target column), decided by
+            // its key-down monitor as for a keyboard: the key goes through the application; a Tab the monitor leaves to AppKit follows
+            // the window's key-view loop.
+            if tag=="md-transfer-list" {
+                let before=window?.firstResponder
+                try sendControlKey(key,modifiers:modifiers)
+                if window?.firstResponder===before { if modifiers.contains("shift") { window?.selectPreviousKeyView(nil) } else { window?.selectNextKeyView(nil) } }
+                return
+            }
             if modifiers.contains("shift") { window?.selectPreviousKeyView(nil) }
             else { window?.selectNextKeyView(nil) }
             return
@@ -1664,8 +2017,10 @@ private final class NativeSession {
                 isARepeat: false, keyCode: code) else { throw PreviewFailure("Could not construct a native key event.") }
             // NSApplication routes key events to its key window. This borderless, off-screen preview
             // window is not key while the renderer runs in the background, so Enter/Space would be
-            // dropped; deliver them to the preview window directly in that case (as the view fixtures do).
-            if NSApp.keyWindow === window || key == "Escape" || key == "Tab" && (["md-dialog","md-bottom-sheet","md-side-sheet"].contains(tag) || tag == "md-time-picker" && rootState?.node.properties["open"] == .bool(true)) { NSApp.sendEvent(event) } else if !(type == .keyDown && AWCTablePreview.pointerTags.contains(tag) && AWCTableScrollController.routeKeyDown(event)) { window.sendEvent(event) }
+            // dropped; deliver them to the preview window directly in that case (as the view fixtures do). A standard side
+            // sheet's Tab goes through the application only from the document (the modal scope's monitor enters document order);
+            // from a focused control it goes to that control, which moves in document order.
+            if NSApp.keyWindow === window || key == "Escape" || key == "Tab" && (["md-dialog","md-bottom-sheet","md-transfer-list"].contains(tag) || tag == "md-side-sheet" && (rootState?.node.properties["variant"]?.string == "modal" || !(window.firstResponder is NSView)) || ["md-time-picker","md-date-picker"].contains(tag) && rootState?.node.properties["open"] == .bool(true) && rootState?.node.properties["variant"]?.string != "docked") { NSApp.sendEvent(event) } else if !(type == .keyDown && AWCTablePreview.pointerTags.contains(tag) && AWCTableScrollController.routeKeyDown(event)) { window.sendEvent(event) }
         }
     }
 
@@ -1690,7 +2045,7 @@ private final class NativeSession {
         host.layoutSubtreeIfNeeded()
         let fitting = host.fittingSize.height
         guard fitting.isFinite, fitting > 0 else { throw PreviewFailure("Component produced invalid native layout dimensions.") }
-        let height = ["md-snackbar","md-tooltip","md-dialog","md-bottom-sheet","md-side-sheet","md-time-picker","md-color-picker"].contains(tag) ? logicalHeight:min(2000, max(100, fitting.rounded(.up)))
+        let height = ["md-snackbar","md-tooltip","md-dialog","md-bottom-sheet","md-side-sheet","md-time-picker","md-color-picker","md-date-picker"].contains(tag) ? logicalHeight:min(2000, max(100, fitting.rounded(.up)))
         if host.bounds.size != NSSize(width: logicalWidth, height: height) {
             window.setContentSize(NSSize(width: logicalWidth, height: height))
             host.frame = NSRect(x: 0, y: 0, width: logicalWidth, height: height)
@@ -1825,6 +2180,7 @@ enum AWCAccessibilityCapture {
         ("modal", kAXModalAttribute), ("disclosing", kAXDisclosingAttribute), ("disclosureLevel", kAXDisclosureLevelAttribute),
         ("headingLevel", "AXHeadingLevel"), ("hasPopup", "AXHasPopup"), ("popupValue", "AXPopupValue"), ("live", "AXARIALive"),
         ("selectedChildren", kAXSelectedChildrenAttribute), ("index", kAXIndexAttribute),
+        ("rowIndexRange", "AXRowIndexRange"), ("columnIndexRange", "AXColumnIndexRange"),
     ]
 
     /// AX numbers can be non-finite (NaN/∞), which JSON cannot carry: they are reported as null.
@@ -1898,7 +2254,7 @@ enum AWCAccessibilityCapture {
             origin = CGPoint(x: content.minX, y: screen.frame.maxY - content.maxY)
         }
         let o = origin
-        Thread.detachNewThread {
+        let axThread = Thread {
             let app = AXUIElementCreateApplication(pid)
             AXUIElementSetMessagingTimeout(app, 3)
             var out: [String: AWCValue] = [:]
@@ -1914,6 +2270,7 @@ enum AWCAccessibilityCapture {
             box.value = out
             done.signal()
         }
+        axThread.stackSize = 64 << 20; axThread.start()
         let deadline = Date().addingTimeInterval(20)
         while done.wait(timeout: .now()) == .timedOut && Date() < deadline {
             while let event = NSApp.nextEvent(matching: .any, until: Date(), inMode: .default, dequeue: true) { NSApp.sendEvent(event) }
@@ -2401,41 +2758,63 @@ extension View {
 // ---- end stepper live host ----
 
 // ---- begin navigation live host (nav lab patch: LiveNav.swift) ----
-// n5's navigation components in the SwiftUI live host (md-toolbar): typed hook defaults + local values, retained property
-// updates with the source property types, and the methods through their controllers.
+// n5's navigation components in the SwiftUI live host (md-toolbar, md-navigation-rail, md-navigation-rail-tab, md-app-bar): typed hook
+// defaults + local values, retained property updates with the source property types, and the methods through their
+// controllers (the rail's is owned here: a new session gets a fresh one).
 
 struct AWCNavPreviewError: LocalizedError { let message: String; var errorDescription: String? { message }; init(_ m: String) { message = m } }
 
 /// The navigation fields of a Laboratory request (`<key>Defaults` first, the local `<key>` wins — the nearer custom property).
 struct AWCNavPreviewRequest: Decodable {
     var toolbarAppearanceDefaults: [String: AWCValue]? = nil; var toolbarAppearance: [String: AWCValue]? = nil
+    var navigationRailAppearanceDefaults: [String: AWCValue]? = nil; var navigationRailAppearance: [String: AWCValue]? = nil
+    var navigationRailTabAppearanceDefaults: [String: AWCValue]? = nil; var navigationRailTabAppearance: [String: AWCValue]? = nil
+    var appBarAppearanceDefaults: [String: AWCValue]? = nil; var appBarAppearance: [String: AWCValue]? = nil
 }
 
 struct AWCNavPreviewOptions {
     var toolbar = AWCToolbarAppearance()
     let toolbarController: AWCToolbarController
+    var rail = AWCNavigationRailAppearance(), railTab = AWCNavigationRailTabAppearance()
+    var appBar = AWCAppBarAppearance()
+    let railController: AWCNavigationRailController
 }
 
 extension View {
     func awcNavPreview(_ o: AWCNavPreviewOptions) -> some View {
         awcToolbarAppearance(o.toolbar).awcToolbarController(o.toolbarController)
+            .awcNavigationRailAppearance(o.rail).awcNavigationRailTabAppearance(o.railTab).awcNavigationRailController(o.railController)
+            .awcAppBarAppearance(o.appBar)
     }
 }
 
 @MainActor enum AWCNavPreview {
     static var request = AWCNavPreviewRequest()
+    /// The rail's controller (one per configured session: `options` replaces it).
+    static var railController = AWCNavigationRailController()
     /// Called with every request line; `configure` reads the fields of its own line.
     static func capture(_ data: Data) { request = (try? JSONDecoder().decode(AWCNavPreviewRequest.self, from: data)) ?? AWCNavPreviewRequest() }
 
     static func options(tag: String, toolbar: AWCToolbarController) -> AWCNavPreviewOptions {
-        var o = AWCNavPreviewOptions(toolbarController: toolbar)
+        railController = AWCNavigationRailController()
+        var o = AWCNavPreviewOptions(toolbarController: toolbar, railController: railController)
         if tag == "md-toolbar" { o.toolbar = AWCToolbarAppearance(values: request.toolbarAppearanceDefaults ?? [:]).merging(.init(values: request.toolbarAppearance ?? [:])) }
+        if tag == "md-navigation-rail" || tag == "md-navigation-rail-tab" {
+            o.rail = AWCNavigationRailAppearance(values: request.navigationRailAppearanceDefaults ?? [:]).merging(.init(values: request.navigationRailAppearance ?? [:]))
+            o.railTab = AWCNavigationRailTabAppearance(values: request.navigationRailTabAppearanceDefaults ?? [:]).merging(.init(values: request.navigationRailTabAppearance ?? [:]))
+        }
+        if tag == "md-app-bar" {
+            o.appBar = (AWCAppBarAppearance(values: request.appBarAppearanceDefaults ?? [:]) ?? .init()).merging(AWCAppBarAppearance(values: request.appBarAppearance ?? [:]) ?? .init())
+        }
         return o
     }
 
     // ---- retained updates (the source property types) ----
     private static let spec: [String: String] = [
         "md-toolbar": "variant:e=docked|floating color:e=standard|vibrant layout:e=horizontal|vertical alignment:e=start|center|end|space-between containerSemantics:e=toolbar|generic ariaLabelProp:s ariaLabelledby:s density:d",
+        "md-navigation-rail": "variant:e=standard|expanded modal:b fullHeight:b alignment:e=top|middle|bottom expandable:b toggleLabel:s labelVisibility:e=all|selected|none activeIndex:n label:s disableFocusManagement:b density:d orientation:e=vertical|horizontal maxVisible:n overflowLabel:s overflowIcon:s",
+        "md-navigation-rail-tab": "icon:s label:s active:b disabled:b badge:b badgeValue:s href:s target:s value:s labelVisibility:e=all|selected|none expanded:b density:d",
+        "md-app-bar": "variant:e=small|medium|large|search titleAlignment:e=start|center searchPlaceholder:s searchValue:s searchAriaLabel:s searchDisabled:b headline:s subtitle:s scrolled:b density:d leadingIcon:s leadingIconLabel:s",
     ]
     static let updateTags = Set(spec.keys)
     private static func types(_ tag: String) -> [String: String] {
@@ -2460,13 +2839,21 @@ extension View {
     }
 
     // ---- methods ----
-    static let methodTags: Set<String> = ["md-toolbar"]
+    static let methodTags: Set<String> = ["md-toolbar", "md-navigation-rail", "md-navigation-rail-tab"]
     /// setFocus() resolves void on the Web: no result.
     static func invoke(tag: String, method: String, arguments: [AWCValue], toolbar: AWCToolbarController) throws -> AWCValue? {
         switch (tag, method) {
         case ("md-toolbar", "setFocus"):
             guard arguments.isEmpty else { throw AWCNavPreviewError("setFocus requires no arguments.") }
             toolbar.setFocus()
+        // md-navigation-rail: expand / collapse / toggle / focusTab(index); a destination's clearSubmenuSelection() (the configured
+        // destination: index 0). The Web methods resolve void: no results.
+        case ("md-navigation-rail", "expand"), ("md-navigation-rail", "collapse"), ("md-navigation-rail", "toggle"), ("md-navigation-rail-tab", "clearSubmenuSelection"):
+            guard arguments.isEmpty else { throw AWCNavPreviewError("\(method) requires no arguments.") }
+            switch method { case "expand": railController.expand(); case "collapse": railController.collapse(); case "toggle": railController.toggle(); default: railController.clearSubmenuSelection(tabIndex: 0) }
+        case ("md-navigation-rail", "focusTab"):
+            guard arguments.count == 1, case .number(let n) = arguments[0], n.isFinite, n == n.rounded() else { throw AWCNavPreviewError("focusTab requires one destination index (an integer).") }
+            railController.focusTab(Int(n))
         default: throw AWCNavPreviewError("Unsupported native method or arguments.")
         }
         return nil
@@ -2509,3 +2896,16 @@ enum AWCButtonFamilyPreviewUpdate {
     }
 }
 // END generated button-family contract
+
+/// The Studio's composed md-tabs reference (scenario "tabs-panels"): the recipe tabs and md-tab-panels `for` them, so each tab
+/// controls its panel (aria-controls by md-tab-panels' auto-wiring; macOS AXLinkedUIElements — gate-7 R6-09).
+struct AWCTabsPanelsDemo: View {
+    let node: AWCNode
+    let onEvent: (AWCEvent) -> Void
+    var body: some View {
+        var tabs = node
+        tabs.id = "reference-tabs"
+        let panels = AWCNode(id: "reference-panels", tag: "md-tab-panels", properties: ["for": .string("reference-tabs")], children: AWCExamples.node(for: "md-tab-panels").children)
+        return AWCNativeScope { VStack(alignment: .leading, spacing: 0) { AWCNativeView(node: tabs, onEvent: onEvent); AWCNativeView(node: panels, onEvent: onEvent) } }
+    }
+}

@@ -1,75 +1,69 @@
 # md-fab-menu (+ md-fab-menu-item) — gate-7 independent audit
 
-Reviewer: gate-7 reviewer r1, 2026-10-31 ([protocol](../../../../audit/AUDIT-PROTOCOL.md)). Everything below was re-run by r1 on the
-snapshot `work/audit/r1-tree` (canonical tree at 2026-10-31 00:15 UTC after 42 install jobs, latest `fx-072-install-orgchart-apk`; hash
-manifest `work/audit/r1/snap/manifest.sha256`), except the Laboratory probes, which use the running 4177 server (canonical). Job logs:
-`work/claude-runner/done/r1-*.log`; outputs: `work/audit/r1/runs/`; gate-1 matrices: `work/audit/r1/matrix/`; defects:
-[`work/audit/DEFECTS.md`](../../../../audit/DEFECTS.md) (section r1). Mac load average during the runs: 110–940 on 16 cores.
-None of these components has a `checkpoint.json`, so freshness rests on these re-runs (R1-10).
+Reviewer: gate-7 reviewer r1. Round 1: 2026-10-31 (all seven FAIL, defects R1-01…R1-11 in
+[`work/audit/DEFECTS.md`](../../../../audit/DEFECTS.md), section r1). **Re-check (round 2): 2026-11-09**, after the fixes marked FIXED there
+(fx-089-install-button-family, di-054-install-residual-harness, d4-016-install-r104, n3-051). Everything was re-run by r1 on a fresh snapshot
+`work/audit/r1-tree` of the canonical tree taken 2026-11-09 13:42 UTC (latest installs n5-057, n2-082, d6-049, di-054, fx-090, fx-089; hash
+manifest `work/audit/r1/v2/snap/manifest.sha256`); the Laboratory probes use the running 4177 server. Timing runs went through
+`tools/slot.sh timing 4`; Mac load average 5–12. Job logs `work/claude-runner/done/r1-02[0-6]*.log`, `r1-A02[0-6]*.log`; outputs
+`work/audit/r1/v2/` (swift/, ios/, android/, lab/, web/, ax/, examples/, gate1/). Simulators: AWC-r1 (iPhone 17 Pro, iOS 26.3.1) and
+AWC-r1-ios18 (iPhone 16 Pro, iOS 18.6); Android emulator-5564 (AwcNative6, API 36).
 
-## Verdict: FAIL
+The seven `checkpoint.json` files (fx-089, 2026-11-07) are already stale against this snapshot (shared `AWCNativeView.swift`,
+`NativeFocusBridge.swift`, `AWCComponent.kt` changed for all seven; also `NativeFab.swift`/`.kt`, `NativeIconButton.swift`), and they record
+iOS states failures themselves (fab 32, group 2, icon 4, segmented 3, split 1; md-button's has no results): the counts below are r1's re-runs.
+The coordinator's note that fx-092/fx-093 confirmed the family checkpoints does not match the logs: fx-091 found its own iOS gate unmet and
+did not queue fx-092 (no fx-092 job exists in `claude-runner/done`), and fx-093 exited "fx-092 exit '': no records".
 
-Blocking: **R1-03c** (no Chrome paint/state/motion evidence; `rovingFocusVisible` paint untested), **R1-04** (no retained Laboratory
-property updates), **R1-05** (undecided source caveats; proposed authored-style exception rejected), **R1-06** (inspector root differs per
-platform; proposed boundary rejected). Non-blocking: R1-09, R1-10. The supporting tag md-fab-menu-item shares this verdict.
+## Verdict (re-check 2026-11-09): PASS
 
-## Gate 1 — source contract
+All round-1 findings are verified fixed: R1-03c (Chrome 153 fab-menu paint + item states/open-close motion/reduced pass on macOS, iOS 26.3,
+iOS 18.6 and Android — no `fm-` failure on any runtime), **R1-05** (decisions recorded in md-fab-menu-source-review.md: `quick` = close without
+the exit delay, stagger constant removed, anchor inline colours saved and restored — regression specs; Web spec/e2e pass), **R1-06** (open
+`component` = item stack 164×152 on both hosts, overlay is a separate part), R1-04. The two round-1 exception proposals were rejected and are
+now moot (the behaviours were made equal). md-fab-menu-item shares this verdict. Non-blocking: R1-09 residue (md-fab-menu.md still carries the
+old "Swift measures the popup stack" sentence next to the new one; the AUDIT row still says the overlay/popup and authored-style differences
+are "retained for review"), R1-10.
 
-md-fab-menu: 7 properties, `mdOpen`/`mdClose` (void), `show`/`close`/`whenClosed`, default slot, 0 parts, 3 hooks = 16 rows; md-fab-menu-item:
-6 properties, `mdClick` (void), default + `icon` slots, 3 parts, 5 hooks = 17 rows ([menu](../../../../audit/r1/matrix/md-fab-menu.md),
-[item](../../../../audit/r1/matrix/md-fab-menu-item.md)). All rows have SwiftUI and Compose implementations and Laboratory exposure
-(catalog, `fab-menu-appearance.js`, lifecycle Methods panel). Test gaps on review: `menuLabel` is exercised only at its default ("Actions",
-tools/ax) and the item's `rovingFocusVisible` is implemented on both platforms (NativeFabMenuItem.swift:85, NativeFabMenuItem.kt:65) but
-no test checks its focus paint (keyboard tests check the responder only) — part of R1-03c. The source review lists three caveats that
-"require explicit source/native decisions" (`quick` vs entry transitions, unused stagger constant, anchor inline-colour cleanup); no
-decision is recorded (R1-05). Gate 1: not met.
+## Component notes
 
-## Re-run counts (claimed → r1)
+- Gate 1: menu 16 + item 17 rows, no empty column. Gate 3: show → `mdOpen`, whenClosed/close fulfilled with `mdClose` on the first poll,
+  retained update 200. Gate 6: lifecycle 19, view 134 + native pointer 27 on iOS 26.3; tools/ax 2 cases, 0 open.
 
-| Suite | Claimed | r1 macOS | r1 iOS 26.3 | r1 Android |
+## Shared re-check results (all seven tags)
+
+| Suite | macOS (r1-022) | iOS 26.3 (r1-023) | iOS 18.6 (r1-023) | Android (r1-A021) |
 |---|---|---|---|---|
-| `NativeFabMenuLifecycleIntegration` | 19 | **19/19** | **19/19** | — |
-| `NativeFabMenuViewIntegration` | 134 (doc: 133) | **134/134** | **134/134** | — |
-| `… --interactions-only --native-pointer` | 27 | **27/27** | **27/27** | — |
-| Live host `test-live-fab-menu` | 24 | **24/24** | — | — |
-| Android device | 5 component + 1 host + 3 regression methods | — | — | `NativeFabMenuParityTest` **5/5**, `LivePreviewHostTest#fabMenuMethods…` **1/1** (button regressions: see md-button) |
-| Android unit | 6 menu contracts | — | — | `NativeFabMenuContractTest` **6/6** |
-| Web | 155 source tests; e2e 18 | e2e md-fab-menu **18/18** (r1-011; r1-009 hit a dev-server start-up timeout), md-fab-menu-item **5/5** | | |
+| Chrome 153 family paint (`NativeButtonFamilyPaintIntegration` / `NativeButtonFamilyPaintTest`) | **974/974** | **974/974** | — | **974/974** |
+| Chrome 153 family states + reduced motion (`NativeButtonFamilyStatesIntegration` / `NativeButtonFamilyStatesTest`) | **26826/26826** | 24530/24577 (47 fail) | 25710/25732 (22 fail) | **18241/18241** |
+| md-button Chrome paint / states | **1086/1086**, **645/645** | **1086/1086**, **645/645** | **645/645**, **645/645** | **712/712**, **645/645** |
+| View suites (appearance 24, focus 68, inspection 88, icon 284, group 87, fab 94, fab-menu 19 + 134 + 27, segmented 370, split 945, behaviour 35) | all pass | all pass | — | 133/133 device methods (22 classes incl. `LivePreviewButtonFamilyHostTest` 9, `LivePreviewHostTest` 19, `NativeButtonBehaviorTest` 5, `NativeAutomaticFormTest` 6) |
+| Contract mains (ButtonMain 1073, BehaviorMain 164) | pass | pass | — | native-ui unit 195/195 |
+| Live SwiftUI hosts (fab, fab-menu 24, icon-button, button-group, segmented 12, split 13, preview) + button-hosts 2 | all pass | — | — | — |
+| Web (r1-024) | spec 612/612 (11 suites of the 9 tags); e2e button 23, group 8, fab 29, fab-menu 18, item 5, icon 4, segmented 10, set 3, split 12 — all pass; native-compiler 12/12; Studio 865/868 (the 3 failures are md-*-chart / md-organization-chart tests, outside this family) | | | |
+| tools/ax (r1-025, r1-A023) | 30 cases on macOS, iOS and Android: 0 open findings, 0 accepted expectations; reports identical to the installed ones | | | |
+| Copied examples (r1-022, r1-A022/A026) | r1 generic generator 84 + fork generators 67 per platform: 13 Swift files typecheck (exit 0); 13 Kotlin files compile in the playground app (`:app:compileDebugKotlin`; 44 `r1ex` classes built 2026-11-09 16:46) | | | |
+| Laboratory (r1-024) | retained `update` → 200 on all 14 sessions (7 tags × SwiftUI/Android); clicks emit the source events with child identity (group: `md-button`/`segment-0` on both hosts); `setMenuIcon`, `show`/`whenClosed`/`close` fulfilled with `mdOpen`/`mdClose`; open md-fab-menu `component` = item stack 164×152 on both; default md-split-button 232.5×56 SwiftUI / 232×56 Android vs Web 232.219 | | | |
 
-## Gates 2/5 — against Chrome (R1-03c)
+iOS family-states failures by tag (r1-023): **md-fab** 26.3: 33 extend/collapse motion boxes + 5 `click2` shots (fab-pointer-large mean 8.25,
+>6: 7860/17297, one frame in the window); 18.6: 12 motion boxes + 3 `click2`; **md-button-group** `bg-disabled-child/enter` box 221.73 vs Chrome
+219.45–220.11 (26.3 ×3, 18.6 ×1); **md-icon-button** `click2` (26.3: ib-pointer-filled, ib-pointer-xl; 18.6: ib-pointer-dark-filled,
+ib-pointer-toggle-filled); **md-segmented-button** `click2` (26.3: seg-pointer-select; 18.6: seg-pointer-select, -no-checkmark, -rtl,
+reduced/seg-pointer-select); **md-split-button** 26.3: split-pointer-leading-filled/click2, split-pointer-trailing-rtl/click2 (>6: 1404),
+split-keyboard/enter (mean 2.88, >6: 3961); 18.6: none. **md-fab-menu: none on either runtime.** Console logs:
+`work/audit/r1/v2/ios/console-g7v2-{i-buttonfamilystates,o-familystates}.log`.
 
-The Web reference is 22 Chrome 152 computed-geometry configurations (2026-10-20, light only) plus the anchor pointer/Enter/Space event
-oracle. There is no Chrome paint comparison (dark, item palettes as pixels, anchor morph to a 50 % radius), no item state run
-(hover/focus/roving focus/pressed state layers, focus ring) and no open/close motion run (150 ms opacity + scale from 0.8, 180 ms close
-delay, 120 ms anchor icon cross-fade) or reduced-motion run.
+Harness corrections reviewed (gate 5): ios-harness.md items 46 (blend of two straddling frames, `BRACKET`) and 47 (iOS md-button captures two
+display frames past Chrome's window) are iOS-only, documented with probes (`NativeIOSTimelineDateProbe`) and keep the pixel thresholds; r1
+accepts them as capture corrections, not exceptions — with one limit filed as R1-14 (a bracket may span frames 42.5 ms apart when the captures
+in between are identical). The family states fixture on canonical still uses fx's p4 midpoint candidate (all platforms); di's port (p5,
+fx-092) was never installed.
 
-## Gate 3 — Laboratory
+## Exceptions
 
-r1-003 on both hosts: `show` → accepted, frame with `mdOpen`; `whenClosed` accepted and pending; `close` accepted; the first
-`method-results` poll returns all three fulfilled with `mdClose`; the closed frame has no popup node. Open-frame inspection: SwiftUI
-13 nodes, Android 16 (items with icon/label/state-layer on both), but the `component` node is the 360×480 authored context on SwiftUI and the
-640×544 viewport on Android, while Web's box is the 127.85×152 item stack (R1-06). r1-010: variant/open edit through a new session renders
-the open menu on both. Retained `update` refused (R1-04). Examples: r1 generic menu 9 + item 9 and the fork generator's 21 per platform
-compile (Swift typecheck exit 0; Kotlin BUILD SUCCESSFUL).
-
-## Gate 6 — runtime and accessibility
-
-tools/ax: closed/open cases, 0 open, 0 accepted, all three platforms; identical to the installed report. The menu is a labelled `AXMenu`
-on macOS, a labelled container on iOS (`awcMenuAccessibility`: `.accessibilityElement(children: .contain).accessibilityLabel`,
-NativeFocusBridge.swift:404) and a pane titled "Actions" on Android; items are buttons on iOS/Android — the comparator's documented role
-encodings (normalize.mjs ROLE_TABLE), accepted as conventions.
-
-## Exceptions (decisions)
-
-- **Authored-style restoration** ("native restores authored FAB appearance after close; Web deletes its inline overrides including a
-  pre-existing authored inline value"; md-fab-menu.md, packages/native-ios/audits/md-fab-menu.md:55) — **rejected**, gate-7 reviewer r1,
-  2026-10-31. Missing fields: technical reason and tested native equivalent; and it is implementable: the Web source can save and restore
-  the anchor's prior inline values (the native behaviour), test-first, which removes the difference (R1-05).
-- **Inspector root surfaces** (SwiftUI context vs Android overlay) — **rejected**, gate-7 reviewer r1, 2026-10-31: implementable by reporting
-  the item-stack bounds as `component` on both platforms (R1-06).
-- Compose searchable text through `AWCSlotText`/`AWCSearchableLabelScope` instead of DOM `textContent`, and the Android outside-input scope —
-  native equivalents with tests (typeahead, outside activation), not exceptions.
+None accepted or pending for this component (round-1 proposals: md-fab-menu's two were rejected and the behaviours were since made equal).
 
 ## Findings
 
-R1-03c, R1-04, R1-05, R1-06 (blocking); R1-09, R1-10. See [DEFECTS.md](../../../../audit/DEFECTS.md).
+Open and verified items with evidence and suggested fixes: [DEFECTS.md](../../../../audit/DEFECTS.md) (section r1, re-check lines dated
+2026-11-09). Round-1 record of this audit: `work/audit/r1/docs/md-fab-menu.md`.

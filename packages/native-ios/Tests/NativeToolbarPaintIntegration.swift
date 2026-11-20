@@ -19,6 +19,7 @@ import Observation
     var inheritedDensity: Double?
     var origin = CGPoint(x: 40, y: 40)
     var appearance = AWCToolbarAppearance()
+    var parts = AWCToolbarPartAppearance()
     var measurements: [AWCNativeInspectionNode] = []
 }
 struct ToolbarPaintFixture: View {
@@ -45,7 +46,7 @@ struct ToolbarPaintFixture: View {
             .environment(\.layoutDirection, state.rtl ? .rightToLeft : .leftToRight)
             .offset(x: state.origin.x, y: state.origin.y)
         }
-        .awcToolbarAppearance(state.appearance)
+        .awcToolbarAppearance(state.appearance).awcToolbarPartAppearance(state.parts)
         .awcTheme(theme)
         .awcNativeInspection(rootID: ids.joined(separator: "|"), coordinateSpace: "awc-native-preview") { if state.epoch == epoch { state.measurements = $0 } }
         .id(epoch)
@@ -104,11 +105,43 @@ struct ToolbarInheritedDensity: ViewModifier {
     static func m(_ id: String, _ name: String) -> AWCNativeInspectionNode? {
         state.measurements.first { $0.name == name && ($0.id == id || $0.id.hasPrefix(id + ":") || $0.id.hasPrefix(id + ".")) }
     }
+    /// Gate-7 R6-17: the declarations of `tag::part(part){…}` in a case's rules.
+    static func boxRule(_ css: String, _ tag: String, _ part: String) -> [String: String]? {
+        guard let r = css.range(of: tag + "::part(" + part + "){") else { return nil }
+        var out: [String: String] = [:]
+        for decl in css[r.upperBound...].prefix(while: { $0 != "}" }).split(separator: ";") {
+            let kv = decl.split(separator: ":", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespaces) }; if kv.count == 2 { out[kv[0]] = kv[1] } }
+        return out.isEmpty ? nil : out
+    }
+    /// A wrapper part's rule as the typed box: background(-color), border (width style colour), border-radius, padding shorthand.
+    static func partBox(_ r: [String: String]?) -> AWCPartBox? {
+        guard let r, ["background-color", "background", "border", "border-radius", "padding"].contains(where: { r[$0] != nil }) else { return nil }
+        func n(_ s: String) -> Double { Double(s.replacingOccurrences(of: "px", with: "")) ?? 0 }
+        let border = (r["border"] ?? "").split(separator: " ").map(String.init)
+        return AWCPartBox(background: r["background-color"] ?? r["background"], borderWidth: border.first.map(n), borderColor: border.last.flatMap { $0.hasPrefix("#") ? $0 : nil },
+                          cornerRadius: r["border-radius"].map(n), padding: r["padding"].map { $0.split(separator: " ").map { n(String($0)) } })
+    }
+    /// The inspected box of a wrapper part against Chrome's computed box.
+    static func boxCheck(_ label: String, _ node: AWCNativeInspectionNode?, bg: String, bw: String, bc: String, radius: String, pad: [String]) {
+        guard let node else { check(false, "\(label) box measured"); return }
+        func n(_ s: String) -> Double { Double(s.replacingOccurrences(of: "px", with: "")) ?? 0 }
+        check(colorClose(node.metrics["background"], bg), "\(label) box background \(String(describing: node.metrics["background"])) vs \(bg)")
+        check(abs((node.metrics["borderWidth"]?.number ?? -1) - n(bw)) < 0.01, "\(label) box border width \(String(describing: node.metrics["borderWidth"])) vs \(bw)")
+        if n(bw) > 0 { check(colorClose(node.metrics["borderColor"], bc), "\(label) box border colour \(String(describing: node.metrics["borderColor"])) vs \(bc)") }
+        check(abs((node.metrics["radius"]?.number ?? -1) - n(radius)) < 0.01, "\(label) box radius \(String(describing: node.metrics["radius"])) vs \(radius)")
+        let p = node.metrics["padding"]?.array.compactMap(\.number) ?? []
+        check(p.count == 4 && zip(p, pad.map(n)).allSatisfy { abs($0 - $1) < 0.01 }, "\(label) box padding \(p) vs \(pad)")
+    }
     static func run(_ c: AWCValue, shots: URL) {
         let name = c["name"].string
         state.dark = c["theme"].string == "dark"; state.rtl = c["dir"].string == "rtl"
         let nodes = try! JSONDecoder().decode([AWCNode].self, from: Data(c["nodesJSON"].string.utf8))
         state.appearance = AWCToolbarAppearance(css: hooks(nodes.first?.properties["_hooks"] ?? .null))
+        // ::part(container) rules of the case (gate-7 R6-03): the typed part appearance carries background / background-color.
+        let partCSS = c["parts"] == .null ? "" : c["parts"].string
+        let partFill = partCSS.range(of: "md-toolbar::part\\(container\\)\\{[^}]*background(-color)?:\\s*(#[0-9A-Fa-f]{6,8})", options: .regularExpression).flatMap { r in
+            partCSS[r].range(of: "#[0-9A-Fa-f]{6,8}", options: .regularExpression).map { String(partCSS[r][$0]) } }
+        state.parts = AWCToolbarPartAppearance(containerColor: partFill, fabContainer: partBox(boxRule(partCSS, "md-toolbar", "fab-container")))
         state.nodes = nodes
         state.width = c["parent"]["width"].number ?? 720
         var frame: [String: Double] = [:]; if case .object(let o) = c["frame"] { for (k, v) in o { frame[k] = v.number } }; state.frame = frame
@@ -151,6 +184,10 @@ struct ToolbarInheritedDensity: ViewModifier {
                 let fr = c["fab"]["rect"]
                 near(Double(fab.bounds.minX) - ox, fr["x"].number, "fab x"); near(Double(fab.bounds.minY) - oy, fr["y"].number, "fab y")
                 near(Double(fab.bounds.width), fr["width"].number, "fab width", 1); near(Double(fab.bounds.height), fr["height"].number, "fab height", 1)
+                // ::part(fab-container) box (gate-7 R6-17): the typed box against Chrome's computed box.
+                if boxRule(partCSS, "md-toolbar", "fab-container") != nil {
+                    boxCheck("\(name) fab-container", fab, bg: c["fab"]["bg"].string, bw: c["fab"]["bw"].string, bc: c["fab"]["bc"].string, radius: c["fab"]["radius"].string, pad: c["fab"]["pad"].array.map(\.string))
+                }
             } else { check(false, "\(name) fab measured") }
         }
         // Items: boxes (positions only when no raw HTML control was dropped before them), the roving stop, the tints.

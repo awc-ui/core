@@ -224,6 +224,24 @@ Fixes 2–4 share `fixes-after-2.log`, which passed 11/11.
 - **RTL disclosure keys** are not mirrored.
 - **Soft-disabled rows** still press-morph.
 - **Local density** shallower than an inherited density is a hybrid (see Layout).
+- **Stale tab stop (gate-7 r3-24).** In a selection list md-list treats an expandable-only row as a roving stop
+  (`isItemFocusable`), but md-list-item renders no host `tabindex` for it; `setFocus` stamps one (`tabbable ? '0' : '-1'`)
+  that the render never updates (its vdom value stays null). After the row was a roving stop once, Chrome keeps it as a
+  second tab stop: with the roving stop back on the first row, Tab lands on the expandable row (`mdActivate` index 1,
+  `mdRequestActivation`; `d3-lab/web2/roving-web.json`, step "Tab from a"). **Fixed in the source (gate-7 r3-25):** the host
+  carries the roving `tabindex` while it is its selection list's active row (`'0'`, none otherwise: a negative `tabindex` on
+  the shadow host would take its caret out of sequential navigation in Chrome), and a `tabindex` stamped by `setFocus()` on
+  a host whose render owns none is dropped when the host blurs. Spec and e2e tests in `md-list.spec.ts` /
+  `md-list.focus.e2e.ts` (red before the fix: `d3-lab/out/065/spec-red.log`).
+- **Collapsed panel content in the tab order (gate-7 r3-26).** The expanded panel's `hidden` attribute is overridden by its
+  `display: grid` (the 0fr/1fr collapse), so the rows slotted in a collapsed panel stayed tab stops and accessibility
+  nodes: Tab from the caret entered an invisible child row. **Fixed in the source:** the panel's inner wrapper is
+  `visibility: hidden` while collapsed (switched when the collapse transition ends, at once on expand). e2e test in
+  `md-list.focus.e2e.ts`.
+  Both native renderers had the same defect (their retained collapsed panel kept its rows as keyboard stops; the roving
+  oracle of the fixed source showed it): the SwiftUI panel is inert while collapsed, Compose traversal does not enter it.
+- **Caret Enter/Space toggle twice.** md-icon-button activates the caret (`mdExpand`) and the host's key handler then
+  clicks the host (`mdExpand`, `mdClick`): the panel ends where it started. Pointer activation toggles once.
 
 These are source decisions for the owner. None was changed at gate 1, because each one either has no failing contract statement or lives outside md-list (tokens).
 
@@ -253,3 +271,24 @@ Not covered by this reference:
 - forced-colors (source-reviewed only)
 - touch and pen input
 - non-Chromium browsers
+
+## Decisions (autonomous, 2026-10-27, reversible)
+
+- **List-managed item API — public (source contract).** The source's item properties and the `mdItemClick`, `mdItemSelect`,
+  `mdRequestActivation`, `mdItemRequestReorder` events are public, bubbling and composed; native keeps them public and emits the
+  events with the source payloads (gate-7 r3-13). Alternative: make them internal in the source and drop them from the CEM.
+- **Typeahead uses `textContent` — kept.** Native matches the row's full label text, including slotted headline text.
+- **Morph timing — Chrome's rendered timing is the contract** (the source comment is outdated); native follows the oracle.
+- **RTL disclosure keys — kept unmirrored** (ArrowRight expands, ArrowLeft collapses in both directions), as the source does.
+- **Soft-disabled press morph — kept** (`:active` morph without layer/ripple, click cancelled), as Chrome renders it.
+- **Hybrid local density — kept** (local spacing rung inside the inherited scale); native reproduces it on both platforms (r3-15).
+- **Stale tab stop — fixed in the source** (r3-25, with r3-26). The roving oracle is Chrome on the fixed source
+  (`list-roving-web.json` from `d3-lab/web2/roving.mjs`), replayed without exceptions: Tab from the first row goes on to
+  the expandable row's caret, whose focus makes the row the active row (`mdActivate`, then `mdRequestActivation`; the
+  native caret now activates its row the same way), and the next Tab leaves the list (a collapsed panel's rows are not
+  stops). Before the fix the native tests replaced that step with the single-stop result.
+  Revert: restore the previous oracle and the step exception in both roving tests.
+- **Caret Enter/Space double toggle — kept**, as Chrome does (`mdExpand`, `mdExpand`, `mdClick`; panel unchanged); pointer
+  activation and the accessibility press toggle once. Alternative: ignore caret-originated Enter/Space in the host's key
+  handler in the source.
+Revert any item by changing md-list(-item) test-first and the native list/list-item model in the same change.

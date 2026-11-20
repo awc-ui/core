@@ -66,8 +66,10 @@ class LivePreviewTooltipHostTest {
         fun move(x:Double,y:Double)=command(JSONObject().put("command","pointer").put("phase","move").put("x",x).put("y",y))
         var frame=command(JSONObject().put("command","frame"));val anchor=root(frame)
         val ax=anchor.getDouble("x")+anchor.getDouble("width")/2;val ay=anchor.getDouble("y")+anchor.getDouble("height")/2
-        move(ax,ay);Thread.sleep(400);frame=command(JSONObject().put("command","frame"))
-        assertTrue(hasPart(frame,"popup"));assertEquals(1,events(frame).count { it.getString("name")=="mdOpen" })
+        // The pointer reply settles the host's draws (gate-7 R1-15); under heavy load it can outlast the 250 ms show delay and
+        // carry the mdOpen itself, so the single open is counted over the reply and the frame after it.
+        val hovered=events(move(ax,ay));Thread.sleep(400);frame=command(JSONObject().put("command","frame"))
+        assertTrue(hasPart(frame,"popup"));assertEquals(1,(hovered+events(frame)).count { it.getString("name")=="mdOpen" })
         val popup=part(frame,"popup");move(popup.getDouble("x")+popup.getDouble("width")/2,popup.getDouble("y")+popup.getDouble("height")/2)
         Thread.sleep(400);assertTrue(hasPart(command(JSONObject().put("command","frame")),"popup"))
         val escape=events(command(JSONObject().put("command","key").put("key","Escape"))).toMutableList()

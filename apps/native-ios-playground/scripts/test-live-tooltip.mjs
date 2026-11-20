@@ -66,7 +66,9 @@ try{
   check((await live.call({command:'update',properties:patch})).ack===true,'All12 source properties update the retained Tooltip.');
   await sleep(130);frame=await live.call({command:'frame'});
   const a=node(frame).bounds,p=node(frame,'popup').bounds;
-  check(near(p.y,a.y+a.height+12)&&near(p.x,a.x+a.width-Math.round(p.width)-3),'Retained source placement, offset and cross offset change actual geometry.');
+  // SwiftUI places the popup on the device-pixel grid; the anchor's edges can be fractional (a button as wide as its label).
+  const grid=frame.width/frame.logicalWidth,snap=v=>Math.round(v*grid)/grid;
+  check(near(p.y,snap(a.y+a.height+12))&&near(p.x,snap(a.x+a.width-Math.round(p.width)-3)),`Retained source placement, offset and cross offset change actual geometry (popup ${p.x},${p.y}; anchor ${JSON.stringify(a)}).`);
   check(node(frame,'subhead')?.metrics?.typography?.size===13,'Retained density changes actual native text metrics.');
   frame=await live.call({command:'resize',width:360,height:480});
   check(frame.ack===true&&frame.logicalWidth===360&&frame.logicalHeight===480&&typeof frame.png==='string','Retained viewport resize returns committed replacement capture.');

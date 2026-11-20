@@ -1,0 +1,690 @@
+{
+ "tag": "md-app-bar",
+ "at": "2026-11-08T17:59:46.632Z",
+ "rows": [
+  {
+   "case": "default",
+   "web": {
+    "elements": [
+     "banner:",
+     "button:Open navigation",
+     "button:Search"
+    ],
+    "texts": [
+     "Your workspace"
+    ],
+    "focus": [
+     "button:Open navigation",
+     "button:Search"
+    ],
+    "contrast": {
+     "measured": 5,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 3,
+     "nativeElements": 2,
+     "elements": [
+      "button:Open navigation",
+      "button:Search"
+     ],
+     "texts": [
+      "Your workspace"
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Open navigation",
+      "button:Search"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "banner",
+        "name": ""
+       },
+       "detail": "banner \"\" has no macos counterpart",
+       "status": "expected",
+       "reason": "Web <header role=banner> (the host, unnamed). SwiftUI cannot give a container the AXLandmarkBanner subrole, and an AppKit landmark bridge (md-navigation-rail / md-navigation-bar) re-hosts only focus elements, which would drop the headline, the subtitle and the slotted headline / subtitle / search content (the md-stepper decision): the bar's leading button, text, search field and actions are exposed in reading order without the landmark."
+      }
+     ],
+     "contrastMeasured": 5
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 3,
+     "nativeElements": 2,
+     "elements": [
+      "button:Open navigation",
+      "button:Search"
+     ],
+     "texts": [
+      "Your workspace"
+     ],
+     "focus": [
+      "button:Open navigation",
+      "button:Search"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "banner",
+        "name": ""
+       },
+       "detail": "banner \"\" has no ios counterpart",
+       "status": "expected",
+       "reason": "Web <header role=banner>. UIKit exposes landmarks only as a container type, never as an element: the bar is a container (SwiftUI .contain) whose leading button, text, search field and actions VoiceOver reads in order."
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 3,
+     "nativeElements": 2,
+     "elements": [
+      "button:Open navigation",
+      "button:Search"
+     ],
+     "texts": [
+      "Your workspace"
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Open navigation",
+      "button:Search"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "banner",
+        "name": ""
+       },
+       "detail": "banner \"\" has no android counterpart",
+       "status": "expected",
+       "reason": "Web <header role=banner>. Compose has no landmark role: the bar's leading button, text, search field and actions are read in its layout order."
+      }
+     ],
+     "contrastMeasured": 5,
+     "atf": {
+      "elements": 17,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "center",
+   "web": {
+    "elements": [
+     "banner:",
+     "button:Open navigation",
+     "button:Search"
+    ],
+    "texts": [
+     "Your workspace",
+     "12 unread"
+    ],
+    "focus": [
+     "button:Open navigation",
+     "button:Search"
+    ],
+    "contrast": {
+     "measured": 6,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 3,
+     "nativeElements": 2,
+     "elements": [
+      "button:Open navigation",
+      "button:Search"
+     ],
+     "texts": [
+      "Your workspace",
+      "12 unread"
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Open navigation",
+      "button:Search"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "banner",
+        "name": ""
+       },
+       "detail": "banner \"\" has no macos counterpart",
+       "status": "expected",
+       "reason": "Web <header role=banner> (the host, unnamed). SwiftUI cannot give a container the AXLandmarkBanner subrole, and an AppKit landmark bridge (md-navigation-rail / md-navigation-bar) re-hosts only focus elements, which would drop the headline, the subtitle and the slotted headline / subtitle / search content (the md-stepper decision): the bar's leading button, text, search field and actions are exposed in reading order without the landmark."
+      }
+     ],
+     "contrastMeasured": 6
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 3,
+     "nativeElements": 2,
+     "elements": [
+      "button:Open navigation",
+      "button:Search"
+     ],
+     "texts": [
+      "Your workspace",
+      "12 unread"
+     ],
+     "focus": [
+      "button:Open navigation",
+      "button:Search"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "banner",
+        "name": ""
+       },
+       "detail": "banner \"\" has no ios counterpart",
+       "status": "expected",
+       "reason": "Web <header role=banner>. UIKit exposes landmarks only as a container type, never as an element: the bar is a container (SwiftUI .contain) whose leading button, text, search field and actions VoiceOver reads in order."
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 3,
+     "nativeElements": 2,
+     "elements": [
+      "button:Open navigation",
+      "button:Search"
+     ],
+     "texts": [
+      "Your workspace",
+      "12 unread"
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Open navigation",
+      "button:Search"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "banner",
+        "name": ""
+       },
+       "detail": "banner \"\" has no android counterpart",
+       "status": "expected",
+       "reason": "Web <header role=banner>. Compose has no landmark role: the bar's leading button, text, search field and actions are read in its layout order."
+      }
+     ],
+     "contrastMeasured": 6,
+     "atf": {
+      "elements": 18,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "medium",
+   "web": {
+    "elements": [
+     "banner:",
+     "button:Open navigation",
+     "button:Search"
+    ],
+    "texts": [
+     "Your workspace",
+     "12 unread"
+    ],
+    "focus": [
+     "button:Open navigation",
+     "button:Search"
+    ],
+    "contrast": {
+     "measured": 6,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 3,
+     "nativeElements": 2,
+     "elements": [
+      "button:Open navigation",
+      "button:Search"
+     ],
+     "texts": [
+      "Your workspace",
+      "12 unread"
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Open navigation",
+      "button:Search"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "banner",
+        "name": ""
+       },
+       "detail": "banner \"\" has no macos counterpart",
+       "status": "expected",
+       "reason": "Web <header role=banner> (the host, unnamed). SwiftUI cannot give a container the AXLandmarkBanner subrole, and an AppKit landmark bridge (md-navigation-rail / md-navigation-bar) re-hosts only focus elements, which would drop the headline, the subtitle and the slotted headline / subtitle / search content (the md-stepper decision): the bar's leading button, text, search field and actions are exposed in reading order without the landmark."
+      }
+     ],
+     "contrastMeasured": 6
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 3,
+     "nativeElements": 2,
+     "elements": [
+      "button:Open navigation",
+      "button:Search"
+     ],
+     "texts": [
+      "Your workspace",
+      "12 unread"
+     ],
+     "focus": [
+      "button:Open navigation",
+      "button:Search"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "banner",
+        "name": ""
+       },
+       "detail": "banner \"\" has no ios counterpart",
+       "status": "expected",
+       "reason": "Web <header role=banner>. UIKit exposes landmarks only as a container type, never as an element: the bar is a container (SwiftUI .contain) whose leading button, text, search field and actions VoiceOver reads in order."
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 2,
+     "webElements": 3,
+     "nativeElements": 2,
+     "elements": [
+      "button:Open navigation",
+      "button:Search"
+     ],
+     "texts": [
+      "Your workspace",
+      "12 unread"
+     ],
+     "announcements": [],
+     "focus": [
+      "button:Open navigation",
+      "button:Search"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "banner",
+        "name": ""
+       },
+       "detail": "banner \"\" has no android counterpart",
+       "status": "expected",
+       "reason": "Web <header role=banner>. Compose has no landmark role: the bar's leading button, text, search field and actions are read in its layout order."
+      }
+     ],
+     "contrastMeasured": 6,
+     "atf": {
+      "elements": 19,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "case": "search",
+   "web": {
+    "elements": [
+     "banner:",
+     "button:Open navigation",
+     "searchbox:Search mail",
+     "button:Search"
+    ],
+    "texts": [],
+    "focus": [
+     "button:Open navigation",
+     "searchbox:Search mail",
+     "button:Search"
+    ],
+    "contrast": {
+     "measured": 4,
+     "findings": []
+    }
+   },
+   "platforms": {
+    "macos": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 4,
+     "nativeElements": 3,
+     "elements": [
+      "button:Open navigation",
+      "searchbox:Search mail",
+      "button:Search"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "button:Open navigation",
+      "searchbox:Search mail",
+      "button:Search"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "banner",
+        "name": ""
+       },
+       "detail": "banner \"\" has no macos counterpart",
+       "status": "expected",
+       "reason": "Web <header role=banner> (the host, unnamed). SwiftUI cannot give a container the AXLandmarkBanner subrole, and an AppKit landmark bridge (md-navigation-rail / md-navigation-bar) re-hosts only focus elements, which would drop the headline, the subtitle and the slotted headline / subtitle / search content (the md-stepper decision): the bar's leading button, text, search field and actions are exposed in reading order without the landmark."
+      }
+     ],
+     "contrastMeasured": 4
+    },
+    "ios": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 4,
+     "nativeElements": 3,
+     "elements": [
+      "button:Open navigation",
+      "searchbox:Search mail",
+      "button:Search"
+     ],
+     "texts": [],
+     "focus": [
+      "button:Open navigation",
+      "searchbox:Search mail",
+      "button:Search"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "banner",
+        "name": ""
+       },
+       "detail": "banner \"\" has no ios counterpart",
+       "status": "expected",
+       "reason": "Web <header role=banner>. UIKit exposes landmarks only as a container type, never as an element: the bar is a container (SwiftUI .contain) whose leading button, text, search field and actions VoiceOver reads in order."
+      }
+     ],
+     "contrastMeasured": 0
+    },
+    "android": {
+     "status": "pass",
+     "matched": 3,
+     "webElements": 4,
+     "nativeElements": 3,
+     "elements": [
+      "button:Open navigation",
+      "textbox:Search mail",
+      "button:Search"
+     ],
+     "texts": [],
+     "announcements": [],
+     "focus": [
+      "button:Open navigation",
+      "textbox:Search mail",
+      "button:Search"
+     ],
+     "findings": [
+      {
+       "kind": "missing",
+       "web": {
+        "role": "banner",
+        "name": ""
+       },
+       "detail": "banner \"\" has no android counterpart",
+       "status": "expected",
+       "reason": "Web <header role=banner>. Compose has no landmark role: the bar's leading button, text, search field and actions are read in its layout order."
+      },
+      {
+       "kind": "role",
+       "web": {
+        "role": "searchbox",
+        "name": "Search mail"
+       },
+       "native": {
+        "role": "textbox",
+        "name": "Search mail"
+       },
+       "detail": "role searchbox → textbox (\"Search mail\")",
+       "status": "expected",
+       "reason": "Web role=searchbox. Android has no search-field role: the input is an EditText (TalkBack \"edit box\") named by the search label, with the Search IME action."
+      },
+      {
+       "kind": "focus",
+       "detail": "Tab order web [button:Open navigation | searchbox:Search mail | button:Search] → android [button:Open navigation | textbox:Search mail | button:Search]",
+       "status": "expected",
+       "reason": "The same Tab stops and names as the Web; the search input reports textbox (Android has no search-field role, see the role entry)."
+      }
+     ],
+     "contrastMeasured": 6,
+     "atf": {
+      "elements": 20,
+      "results": 0
+     },
+     "childOrder": "semantics (replacedChildren)",
+     "events": [
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.app.Presentation"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_STATE_CHANGED",
+       "via": "system",
+       "text": [
+        "AWC Native"
+       ],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "dev.awc.playground.LivePreviewActivity"
+      },
+      {
+       "type": "TYPE_VIEW_FOCUSED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 0,
+       "class": "android.view.ViewGroup"
+      },
+      {
+       "type": "TYPE_WINDOW_CONTENT_CHANGED",
+       "via": "window",
+       "text": [],
+       "contentDescription": "",
+       "changes": 1,
+       "class": "android.view.ViewGroup"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

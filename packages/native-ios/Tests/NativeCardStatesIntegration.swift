@@ -71,6 +71,21 @@ struct CardStatesGrid {
     static var checks = 0, failures: [String] = []
     static var report: [[String: Any]] = []
     static let captureDir = ProcessInfo.processInfo.environment["AWC_CARD_STATES_CAPTURE_DIRECTORY"].map { URL(fileURLWithPath: $0) }
+    /// Diagnostic only: AWC_CARD_STATES_SHOT_ANCHOR=t0 restores the run-start shot anchoring; AWC_CARD_STATES_TIMING=1 logs input lateness.
+    /// iOS: a phase's shot is timed from its input's delivery (patch-24); `AWC_CARD_STATES_SHOT_AT=queue`: from the queued input.
+    static let shotAtDelivery = ProcessInfo.processInfo.environment["AWC_CARD_STATES_SHOT_AT"] != "queue"
+    static let shotsAnchoredToRunStart = ProcessInfo.processInfo.environment["AWC_CARD_STATES_SHOT_ANCHOR"] == "t0"
+    static let timingLog = ProcessInfo.processInfo.environment["AWC_CARD_STATES_TIMING"] == "1"
+    /// iOS: frames one display frame before and after the phase shot inside Chrome's capture window are candidates too
+    /// (gate-7 r3-11 iPad); AWC_CARD_STATES_WINDOW=0: the phase shot only.
+    static let shotWindow = ProcessInfo.processInfo.environment["AWC_CARD_STATES_WINDOW"] != "0"
+    /// iOS: per-frame value windows read a slipped step's samples on the previous step's clock too; AWC_CARD_STATES_SLIP=0: off.
+    static let slipWindow = ProcessInfo.processInfo.environment["AWC_CARD_STATES_SLIP"] != "0"
+    /// A wave growing or fading at the phase shot (the only transition whose photo moment matters within a frame).
+    static func waveRunning(_ s: Sample?) -> Bool {
+        guard let r = s?.ripple, let o = r["opacity"]?.number, o > 0 else { return false }
+        return (r["scale"]?.number ?? 1) < 0.999 || o < 0.1199
+    }
     static func check(_ value: Bool, _ name: String) { checks += 1; if !value { failures.append(name); print("FAIL: " + name); fflush(stdout) } }
     static func pump(_ duration: Double = 0.1) { let end = Date().addingTimeInterval(duration); repeat { while let e = NSApp.nextEvent(matching: .any, until: .distantPast, inMode: .default, dequeue: true) { NSApp.sendEvent(e) }; host.layoutSubtreeIfNeeded(); host.displayIfNeeded(); _ = RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.002)) } while Date() < end }
     static func now() -> Double { CACurrentMediaTime() * 1000 }
@@ -182,6 +197,7 @@ struct CardStatesGrid {
         // Before keyboard sequences the source focuses #before (scenario-specific placement in the phase list).
         let focusBefore: Set<String> = scenario == "keyboard" ? ["tab"] : scenario == "softDisabled" || scenario == "disabled" ? ["tab"] : scenario == "nested" ? ["tab"] : []
         var samples: [Sample] = [], stepTimes: [(Double, Double)] = [], snaps: [(Int, Shot, [String: AWCValue], CGRect?, String)] = []
+        var windowShots: [String: [Shot]] = [:]
         let t0 = now()
         for (i, phase) in phases.enumerated() {
             let lbl = phase["label"].string, start = phase["t"].number! - webT0
@@ -190,12 +206,46 @@ struct CardStatesGrid {
             let nativeStart = now(); stepTimes.append((phase["t"].number!, nativeStart))
             var queue = actions[lbl] ?? []
             let end = (i + 1 < phases.count ? phases[i + 1]["t"].number! - webT0 : start + 500) - 25
-            while now() - t0 < end {
+            // The phase shot is anchored to the native input time (Chrome shoots a fixed time after its own input), as in
+            // the list states test: when a phase's input starts late (the previous phase's capture ran over its window,
+            // which an iOS hierarchy capture does), a shot at a fixed run time lands earlier in a running transition,
+            // e.g. the second press's ripple in dragClick (gate-7 r3-11). AWC_CARD_STATES_SHOT_ANCHOR=t0: the old timing.
+            let shotAfter = Self.shotsAnchoredToRunStart ? end - (nativeStart - t0) : end - start
+            var anchor = nativeStart
+            #if os(iOS)
+            let deliveryMark = AWCShimTouch.deliveredAt.count
+            // Chrome photographs the phase after its last sample and before the next phase starts (states.html `phase()`): the
+            // native frames one display frame before the shot (when after Chrome's last phase sample) and one after (when
+            // before the next phase, on the input's clock) are candidates too (gate-7 r3-11 iPad: the second press's growing
+            // wave a frame smaller than Chrome's photo at the fixed shot time).
+            let frameMs = 1000.0 / 60, clipRect = CGRect(x: r["clip"]["x"].number!, y: r["clip"]["y"].number!, width: r["clip"]["width"].number!, height: r["clip"]["height"].number!)
+            let lastSample = (phase["samples"].array.last?["t"].number).map { $0 - phase["t"].number! } ?? shotAfter
+            let windowEnd = (i + 1 < phases.count ? phases[i + 1]["t"].number! - webT0 : start + 500) - 3 - start
+            var earlyShot: Shot? = nil
+            #endif
+            while now() - anchor < shotAfter {
                 while let first = queue.first, now() - nativeStart >= first.0 { first.1(); queue.removeFirst() }
                 pump(0.004); samples.append(sample())
+                #if os(iOS)
+                if anchor == nativeStart, !Self.shotsAnchoredToRunStart, Self.shotAtDelivery, AWCShimTouch.deliveredAt.count > deliveryMark {
+                    anchor = AWCShimTouch.deliveredAt[deliveryMark] - 1000.0 / 120
+                }
+                if Self.shotWindow, earlyShot == nil, shotAfter - frameMs > lastSample, now() - anchor >= shotAfter - frameMs, now() - anchor < shotAfter, Self.waveRunning(samples.last) { earlyShot = capture(clipRect) }
+                #endif
             }
+            if Self.timingLog { print(String(format: "CARDTIMING %@/%@ input late %.1f ms, shot %.1f ms after input (Chrome %.1f)", label, lbl, nativeStart - t0 - start, now() - nativeStart, end - start)) }
             let s = sample()
             snaps.append((i, capture(CGRect(x: r["clip"]["x"].number!, y: r["clip"]["y"].number!, width: r["clip"]["width"].number!, height: r["clip"]["height"].number!)), s.card, s.frame, focusedID()))
+            #if os(iOS)
+            if Self.shotWindow {
+                var extra: [Shot] = earlyShot.map { [$0] } ?? []
+                if shotAfter + frameMs <= windowEnd, Self.waveRunning(s) {
+                    while now() - anchor < shotAfter + frameMs { pump(0.004); samples.append(sample()) }
+                    extra.append(capture(clipRect))
+                }
+                windowShots["\(label)/\(lbl)"] = extra
+            }
+            #endif
         }
         let tail = now(); while now() - tail < 150 { pump(0.004); samples.append(sample()) }
         // Events: the card's mdClick / mdDrag* sequence and payloads (DOM click entries excluded).
@@ -234,6 +284,33 @@ struct CardStatesGrid {
             webSamples.insert(.object(seed), at: 0)
         }
         func webTime(_ native: Double) -> Double { guard let step = stepTimes.last(where: { $0.1 <= native }) else { return webT0 + native - t0 }; return step.0 + native - step.1 }
+        // iOS (gate-7 R4-11 ripple-fade samples): a phase input the harness dispatched late (the window before it ran over
+        // with captures) re-anchors the web clock by that slip for every sample after it, though the md-ripple wave is timed
+        // from the press that started it (450 ms grow, then the 150 ms fade) and runs across the next phases; the end of a
+        // window just before a slipped step is folded back the same way. For the wave's values, within 600 ms after a step
+        // that slipped against the step before it, the window also reads Chrome's values on the previous step's clock (SLIP
+        // lines: samples that matched only there). Other properties follow their own step's input: one clock. AWC_CARD_STATES_SLIP=0: one
+        // clock. macOS: one clock.
+        var slipRescued = 0
+        func webTimes(_ native: Double) -> [Double] {
+            guard let k = stepTimes.lastIndex(where: { $0.1 <= native }) else { return [webT0 + native - t0] }
+            var times = [stepTimes[k].0 + native - stepTimes[k].1]
+            #if os(iOS)
+            if Self.slipWindow, k > 0, native - stepTimes[k].1 < 600 {
+                let p = stepTimes[k - 1], slip = (stepTimes[k].1 - p.1) - (stepTimes[k].0 - p.0)
+                if abs(slip) > 2 { times.append(p.0 + native - p.1) }
+            }
+            #endif
+            return times
+        }
+        #if os(iOS)
+        func noteSlip(_ prop: String, _ v: [Double], _ at: Double, _ lo: [Double], _ hi: [Double], _ lo1: [Double]?, _ hi1: [Double]?, _ tol: Double) {
+            guard (0..<v.count).allSatisfy({ v[$0] >= lo[$0] - tol && v[$0] <= hi[$0] + tol }) else { return }
+            if let lo1, let hi1, (0..<v.count).allSatisfy({ v[$0] >= lo1[$0] - tol && v[$0] <= hi1[$0] + tol }) { return }
+            slipRescued += 1
+            if slipRescued <= 6 { print("SLIP \(label) \(prop) rendered \(v) at web \(webTime(at)): within Chrome [\(lo), \(hi)] on the previous step's clock (step clock only: [\(lo1.map { "\($0)" } ?? "none"), \(hi1.map { "\($0)" } ?? "none")])"); fflush(stdout) }
+        }
+        #endif
         func envelope(_ read: (AWCValue) -> [Double]?, _ t: Double) -> ([Double], [Double])? {
             guard let after = webSamples.firstIndex(where: { $0["t"].number! >= t }) else { return read(webSamples.last!).map { ($0, $0) } }
             if after == 0 { return read(webSamples[0]).map { ($0, $0) } }
@@ -278,12 +355,30 @@ struct CardStatesGrid {
                 let (time, value) = read(s); guard let v = value else { continue }
                 let at = time ?? s.t
                 var lo: [Double]? = nil, hi: [Double]? = nil, x = at - 34
-                while x <= at + 40 { if let e = envelope(readWeb, webTime(x)), e.0.count == v.count { lo = zip(lo ?? e.0, e.0).map { min($0, $1) }; hi = zip(hi ?? e.1, e.1).map { max($0, $1) } }; x += 2 }
+                #if os(iOS)
+                var lo1: [Double]? = nil, hi1: [Double]? = nil
+                #endif
+                while x <= at + 40 {
+                    let times = prop.hasPrefix("ripple") ? webTimes(x) : [webTime(x)]
+                    for j in times.indices { if let e = envelope(readWeb, times[j]), e.0.count == v.count {
+                        lo = zip(lo ?? e.0, e.0).map { min($0, $1) }; hi = zip(hi ?? e.1, e.1).map { max($0, $1) }
+                        #if os(iOS)
+                        if j == 0 { lo1 = zip(lo1 ?? e.0, e.0).map { min($0, $1) }; hi1 = zip(hi1 ?? e.1, e.1).map { max($0, $1) } }
+                        #endif
+                    } }
+                    x += 2
+                }
                 guard let lo, let hi else { continue }
+                #if os(iOS)
+                noteSlip(prop, v, at, lo, hi, lo1, hi1, tol)
+                #endif
                 check((0..<v.count).allSatisfy { v[$0] >= lo[$0] - tol && v[$0] <= hi[$0] + tol }, "\(label) \(prop) rendered \(v) at web \(webTime(at)) within Chrome [\(lo), \(hi)]")
                 compared[prop, default: 0] += 1
             }
         }
+        #if os(iOS)
+        if slipRescued > 0 { print("SLIP \(label): \(slipRescued) samples matched on the previous step's clock; step slips (ms) \(zip(stepTimes, stepTimes.dropFirst()).map { String(format: "%.1f", ($1.1 - $0.1) - ($1.0 - $0.0)) }.joined(separator: " "))"); fflush(stdout) }
+        #endif
         check((compared["shadow"] ?? 0) > 50, "\(label) per-frame samples compared \(compared)")
         // Ripple geometry: physical origin and radius to the farthest corner (diameter = 2·radius).
         if let w = phases.flatMap({ $0["samples"].array }).compactMap({ $0["waves"].array.first }).first, let n = samples.compactMap(\.ripple).first(where: { ($0["opacity"]?.number ?? 0) > 0 }) {
@@ -302,15 +397,28 @@ struct CardStatesGrid {
             let phase = lbl.split(separator: "/").last.map(String.init) ?? ""
             guard let source = NSImage(contentsOf: shots.appendingPathComponent(name + "-" + phase + ".png"))?.cgImage(forProposedRect: nil, context: nil, hints: nil) else { check(false, "\(lbl) shot"); continue }
             let cx = Int(clip["x"].number!), cy = Int(clip["y"].number!), cw = Int(clip["width"].number!), ch = Int(clip["height"].number!)
-            let web = grid(.init(cg: source, scale: 1, origin: .init(x: cx, y: cy)), x: cx, y: cy, w: cw, h: ch), nat = grid(shot, x: cx, y: cy, w: cw, h: ch)
-            var n = 0, bad = 0, sum = 0.0, worst = 0.0, worstAt = ""
-            for py in (cy + 1)..<(cy + ch - 1) { for px in (cx + 1)..<(cx + cw - 1) where web.flat(px, py, 6) && nat.flat(px, py, 6) {
-                if scenario == "nested" && CGRect(x: 60 + 16, y: 60 + 16 + 28, width: 160, height: 40).contains(CGPoint(x: px, y: py)) { continue }
-                var d = 0.0; let a = web.at(px, py), b = nat.at(px, py); for c in 0..<3 { d = max(d, abs(a[c] - b[c])) }
-                n += 1; sum += d; if d > 6 { bad += 1 }; if d > worst { worst = d; worstAt = "(\(px),\(py)) web \(a.map { Int($0) }) native \(b.map { Int($0.rounded()) })" }
-            } }
-            check(n > 1000 && Double(bad) / Double(max(n, 1)) <= 0.005 && sum / Double(max(n, 1)) <= 1.0, "\(lbl) flat pixels match (mean \(sum / Double(max(n, 1))), >6: \(bad)/\(n), worst \(worst) at \(worstAt))")
-            if let dir = captureDir { try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true); try? NSBitmapImageRep(cgImage: shot.cg).representation(using: .png, properties: [:])?.write(to: dir.appendingPathComponent(lbl.replacingOccurrences(of: "/", with: "-") + ".png")) }
+            let web = grid(.init(cg: source, scale: 1, origin: .init(x: cx, y: cy)), x: cx, y: cy, w: cw, h: ch)
+            // The phase shot first; on iOS then the frames a display frame before and after it in Chrome's capture window.
+            var options = [shot]
+            #if os(iOS)
+            options += windowShots[lbl] ?? []
+            #endif
+            var n = 0, bad = 0, sum = 0.0, worst = 0.0, worstAt = "", chosen = shot
+            for (k, option) in options.enumerated() {
+                let nat = grid(option, x: cx, y: cy, w: cw, h: ch)
+                var n1 = 0, bad1 = 0, sum1 = 0.0, worst1 = 0.0, worstAt1 = ""
+                for py in (cy + 1)..<(cy + ch - 1) { for px in (cx + 1)..<(cx + cw - 1) where web.flat(px, py, 6) && nat.flat(px, py, 6) {
+                    if scenario == "nested" && CGRect(x: 60 + 16, y: 60 + 16 + 28, width: 160, height: 40).contains(CGPoint(x: px, y: py)) { continue }
+                    var d = 0.0; let a = web.at(px, py), b = nat.at(px, py); for c in 0..<3 { d = max(d, abs(a[c] - b[c])) }
+                    n1 += 1; sum1 += d; if d > 6 { bad1 += 1 }; if d > worst1 { worst1 = d; worstAt1 = "(\(px),\(py)) web \(a.map { Int($0) }) native \(b.map { Int($0.rounded()) })" }
+                } }
+                let ok1 = n1 > 1000 && Double(bad1) / Double(max(n1, 1)) <= 0.005 && sum1 / Double(max(n1, 1)) <= 1.0
+                let okBest = n > 1000 && Double(bad) / Double(max(n, 1)) <= 0.005 && sum / Double(max(n, 1)) <= 1.0
+                if k == 0 || (ok1 && !okBest) || (ok1 == okBest && sum1 / Double(max(n1, 1)) < sum / Double(max(n, 1))) { n = n1; bad = bad1; sum = sum1; worst = worst1; worstAt = worstAt1; chosen = option }
+                if k == 0 && ok1 { break }
+            }
+            check(n > 1000 && Double(bad) / Double(max(n, 1)) <= 0.005 && sum / Double(max(n, 1)) <= 1.0, "\(lbl) flat pixels match (mean \(sum / Double(max(n, 1))), >6: \(bad)/\(n), worst \(worst) at \(worstAt))" + (options.count > 1 ? "; best of \(options.count) frames in Chrome's capture window" : ""))
+            if let dir = captureDir { try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true); try? NSBitmapImageRep(cgImage: chosen.cg).representation(using: .png, properties: [:])?.write(to: dir.appendingPathComponent(lbl.replacingOccurrences(of: "/", with: "-") + ".png")) }
             report.append(["case": lbl, "compared": n, "mean": sum / Double(max(n, 1)), "over6": bad, "worst": worst, "worstAt": worstAt])
         }
         report.append(["case": label, "samples": samples.count, "compared": compared])

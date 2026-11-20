@@ -64,9 +64,38 @@ try{
   await wait(60);f=await frame();
   check(metric(f,'md-number-field','formattedValue')==='1.234,50',`locale + formatOptions (${metric(f,'md-number-field','formattedValue')}).`);
   await method('select');await wait(80);f=await frame();check(metric(f,'md-number-field','focused')===true,'select() focuses the input.');
+  // The preview window is off-screen and never key: keys reach the focused input without a key event (doCommandBy), and
+  // ArrowUp / Shift+ArrowDown still step (fi, 2026-11-05).
+  let k=await live.call({command:'key',key:'ArrowUp'});check(!k.error,`key ArrowUp: ${k.error}`);await wait(60);f=await frame();
+  check(metric(f,'md-number-field','formattedValue')==='1.235,50',`ArrowUp steps in the never-key preview window (${metric(f,'md-number-field','formattedValue')}).`);
+  k=await live.call({command:'key',key:'ArrowDown',modifiers:['shift']});check(!k.error,`key Shift+ArrowDown: ${k.error}`);await wait(60);f=await frame();
+  check(metric(f,'md-number-field','formattedValue')==='1.225,50',`Shift+ArrowDown takes a large step (${metric(f,'md-number-field','formattedValue')}).`);
   for(const bad of [{steppers:'trailing'},{bogus:1},{density:-5},{value:'12'},{step:null},{formatOptions:{style:{nested:1}}}]){u=await update(bad);check(Boolean(u.error),`rejects ${JSON.stringify(bad)}.`);}
   m=await method('stepUp',['3']);check(Boolean(m.error),'stepUp rejects a string count.');
   m=await method('stepDown',[1,2]);check(Boolean(m.error),'stepDown rejects two arguments.');
   m=await method('select',[1]);check(Boolean(m.error),'select rejects arguments.');
+  // S71-02: stepUp/stepDown follow retained property updates (the closure must not keep the first render's node).
+  const val=async()=>metric(await frame(),'md-number-field','value');
+  const upd=async props=>{const r=await update(props);check(!r.error,`update ${JSON.stringify(props)}: ${r.error}`);await wait(120);};
+  await configure('md-number-field',{properties:{label:'Team',value:7,min:0,max:10,variant:'outlined'}});
+  await upd({step:2});await method('stepUp');let got=[await val()];await method('stepUp');got.push(await val());await method('stepDown');got.push(await val());
+  check(JSON.stringify(got)==='[9,10,8]',`stepUp/stepDown after a step update (${JSON.stringify(got)}).`);
+  await configure('md-number-field',{properties:{label:'Team',value:7,min:0,max:10,variant:'outlined'}});
+  await upd({max:8});await method('stepUp');got=[await val()];await method('stepUp');got.push(await val());
+  check(JSON.stringify(got)==='[8,8]',`stepUp after a max update (${JSON.stringify(got)}).`);
+  await configure('md-number-field',{properties:{label:'Team',value:6,min:0,max:10,variant:'outlined'}});
+  await upd({min:5});await method('stepDown');got=[await val()];await method('stepDown');got.push(await val());
+  check(JSON.stringify(got)==='[5,5]',`stepDown after a min update (${JSON.stringify(got)}).`);
+  await configure('md-number-field',{properties:{label:'Team',value:7,min:0,max:10,step:2,variant:'outlined'}});
+  await upd({snapOnStep:true});await method('stepUp');got=[await val()];await method('stepDown');got.push(await val());
+  check(JSON.stringify(got)==='[8,6]',`stepUp/stepDown after a snapOnStep update (${JSON.stringify(got)}).`);
+  // S71-02: validity follows a retained `required` update; S71-05: stepper labels and allowOutOfRange reach the host.
+  await configure('md-number-field',{properties:{label:'Team',value:7,variant:'outlined'}});
+  await upd({required:true,value:null});m=await method('getValidity');
+  check(m.result?.valid===false&&m.result.flags.valueMissing===true,`getValidity after a required update (${JSON.stringify(m.result)}).`);
+  await configure('md-number-field',{properties:{label:'Team',value:7,variant:'outlined',incrementLabel:'Plus one',decrementLabel:'Minus one'}});
+  f=await frame();check(metric(f,'increment','label')==='Plus one'&&metric(f,'decrement','label')==='Minus one',`stepper labels (${metric(f,'increment','label')}/${metric(f,'decrement','label')}).`);
+  await upd({incrementLabel:'More',decrementLabel:'Less'});f=await frame();
+  check(metric(f,'increment','label')==='More'&&metric(f,'decrement','label')==='Less',`stepper labels follow an update (${metric(f,'increment','label')}/${metric(f,'decrement','label')}).`);
   console.log(`md-number-field live host: ${checks} checks passed`);
 }finally{live?.close();}

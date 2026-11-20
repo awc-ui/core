@@ -207,6 +207,37 @@ Each new test failed on the unchanged source and passes after the fix.
 * **axe `aria-required-attr` while open** (documented trade-off of element
   reflection).
 
+## Decisions (autonomous, 2026-11-06, reversible)
+
+Taken by d4 for the native renderers against this source contract and MD3; each lists the alternative and how to revert.
+
+1. **Tab with the popup open.** Native follows the source for the first Tab (focus moves to the clear button, the popup stays
+   open) and does not reproduce the second: Chromium makes `md-menu`'s scroll viewport a keyboard-focusable scroller, which
+   is an engine behaviour, not part of the source (Safari and Firefox skip it), so native Tab leaves the field cluster to the
+   next control. *Alternative:* a focusable viewport stop natively (no accessible role or name; an empty stop). *Revert:* not
+   applicable natively; the shared fix belongs in `md-menu` (`tabindex="-1"` on the viewport). The states harness compares
+   Chrome's "menu-viewport" focus as "outside the component".
+2. **Chip removal emits only `mdChange`** (no `mdRemove`), as the source. *Alternative:* add `mdRemove` as `md-multi-select`
+   does (a source change first). *Revert:* emit `mdRemove` with the removed value in `removeChip` (Swift and Kotlin).
+3. **`chip-position` vocabulary:** the autocomplete's own values (`below`, `top`, `left`, `right`, `inline`); unknown values
+   fall back to `below`. *Alternative:* accept `md-multi-select`'s `bottom` / `chips-inline` as aliases. *Revert:* map the
+   aliases in the chip-position read.
+4. **Escape twice** does not clear the text (the second Escape is a no-op), as the source. *Alternative:* MUI's
+   `clearOnEscape`. *Revert:* clear in `fieldKey("Escape")` when the popup is already closed.
+5. **Carrier rules:** the `selected` hint of a carrier is ignored and all-hidden carriers fall back to `options`, as the source
+   (visible carriers win). A carrier removed from the node tree disappears from the list natively (the node tree is re-read
+   on every update; the source keeps it listed only because it has no slot to observe). *Alternative:* keep a removed
+   carrier until the next `options` change. *Revert:* cache the collected carriers until `options` changes.
+6. **Space on an option row** activates the row (APG listbox, `md-menu-item`) and is not appended to the query. Chrome also
+   appends " " to the text, because the listbox keydown handler sees the key `md-menu-item` already handled; the other
+   printable keys and Backspace on a row move focus back to the input and extend the query, as the source. *Alternative:*
+   append the space too. *Revert:* allow " " in the row-key claim (`rowKey`, Swift and Kotlin).
+7. **Clear button size** stays the autocomplete's own (28 × 28, 18 glyph, 2 margin), not `md-select`'s.
+8. **Options replaced by `loadOptions()`** stay until the authored list changes (a new `options` value or a carrier change),
+   as the source's `refreshOptions` watcher.
+9. **Accessibility while open:** the native combobox exposes its expanded state and the listbox of options (named by the
+   label); the axe `aria-required-attr` trade-off of the source's element reflection does not exist natively.
+
 ## Evidence
 
 * **Source tests** (Linux Chromium 141, Stencil 4.44.0 with the repo

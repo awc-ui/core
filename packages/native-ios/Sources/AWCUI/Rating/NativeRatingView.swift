@@ -37,6 +37,7 @@ struct AWCNativeRatingView: View {
     let emit: (String, AWCValue) -> Void
     @Environment(\.awcThemeTokens) private var envTokens
     @Environment(\.awcRatingAppearance) private var appearance
+    @Environment(\.awcRatingParts) private var ratingParts
     @Environment(\.awcRatingController) private var publicController
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.layoutDirection) private var direction
@@ -95,6 +96,7 @@ struct AWCNativeRatingView: View {
     /// Host properties → the interaction, once per render (the interaction runs Stencil's watchers on changes only).
     private func sync() {
         let r = model.r
+        r.getLabel = publicController?.getLabel
         model.motion.reducedMotion = reduceMotion
         r.onEvent = { [emit] n, v in emit(n, v.map { AWCValue.number($0) } ?? .null) }
         // The component's writes into its own value reach the node after the update (a clamp happens during body).
@@ -108,7 +110,7 @@ struct AWCNativeRatingView: View {
     var body: some View {
         let _ = model.version
         let _ = sync()
-        let th = theme, hk = hooks
+        let th = theme, hk = AWCRatingParts.hooks(hooks, ratingParts)
         let settled = AWCRatingLayout.layout(model.r, theme: th, hooks: hk, size: str("size", "md"), icon: str("icon", "star"),
                                              emptyIcon: str("emptyIcon", "star"), outlineEmpty: flag("outlineEmpty", true),
                                              showValueLabel: flag("showValueLabel"), densityProp: properties["density"]?.number.map { Int($0) })
@@ -145,7 +147,7 @@ struct AWCNativeRatingView: View {
             if let l = p.label, let text = p.labelText {
                 // CSS `direction: rtl` sets the paragraph's base direction ("2.5 Stars" reads "Stars 2.5"); SwiftUI derives it
                 // from the first strong character, so an RTL host leads with a right-to-left mark.
-                Text(direction == .rightToLeft ? "\u{200F}" + text : text).font(AWCNativeFonts.label(size: p.labelFontSize, weight: p.labelFontWeight)).monospacedDigit()
+                Text(direction == .rightToLeft ? "\u{200F}" + text : text).font(AWCNativeFonts.label(size: p.labelFontSize, weight: p.labelFontWeight)).monospacedDigit().tracking(p.labelLetterSpacing)
                     .foregroundStyle(Color(awcSRRGBA: p.labelColor)).lineLimit(1).fixedSize()
                     .frame(width: l.width, height: l.height, alignment: .leading)
                     .offset(x: l.x, y: l.y).accessibilityHidden(true)
@@ -181,13 +183,16 @@ struct AWCNativeRatingView: View {
         let size = p.glyphSize
         func glyph(_ name: String, fill: Double, weight: Double, _ color: AWCSRRGBA) -> some View {
             Text(name).font(awcRatingSymbolFont(size: size, fill: fill, weight: weight)).foregroundStyle(Color(awcSRRGBA: color))
-                .fixedSize().frame(width: it.rect.width, height: it.rect.height)
+                .fixedSize().frame(width: size, height: size)
         }
-        let clipW = it.rect.width * (1 - it.clipPct / 100)
-        return ZStack(alignment: .topLeading) {
+        // The icon box is 1em (`material-symbols-outlined`): at the item box's top-left corner (top-right in RTL) when
+        // ::part(item) makes the box larger than the glyph.
+        let corner: Alignment = it.clipFromLeft ? .topTrailing : .topLeading, gx = it.clipFromLeft ? it.rect.width - size : 0
+        let clipW = size * (1 - it.clipPct / 100)
+        return ZStack(alignment: corner) {
             glyph(p.emptyIcon, fill: Double(p.emptyFill), weight: Double(p.emptyWeight), p.inactiveColor)
             // The filled copy, clipped from the inline-end side (left edge in RTL).
-            glyph(p.icon, fill: 1, weight: 500, p.activeColor)
+            glyph(p.icon, fill: 1, weight: 500, p.iconColor ?? p.activeColor)
                 .mask(alignment: it.clipFromLeft ? .trailing : .leading) { Rectangle().frame(width: Swift.max(0, clipW)) }
             if it.stateVisible && it.stateOpacity > 0 { glyph(p.icon, fill: 1, weight: 500, p.stateLayerColor).opacity(it.stateOpacity) }
             if it.stateVisible, let rad = it.rippleRadiusPct {
@@ -195,11 +200,11 @@ struct AWCNativeRatingView: View {
                 glyph(p.icon, fill: 1, weight: 500, p.stateLayerColor).opacity(it.rippleOpacity)
                     .mask(alignment: .topLeading) {
                         Circle().frame(width: 2 * r, height: 2 * r)
-                            .offset(x: it.rippleXPct / 100 * it.rect.width - r, y: it.rippleYPct / 100 * it.rect.height - r)
+                            .offset(x: it.rippleXPct / 100 * it.rect.width - r - gx, y: it.rippleYPct / 100 * it.rect.height - r)
                     }
             }
         }
-        .frame(width: it.rect.width, height: it.rect.height)
+        .frame(width: it.rect.width, height: it.rect.height, alignment: corner)
         .scaleEffect(it.scale)
         .offset(x: it.rect.x, y: it.rect.y)
         .contentShape(Rectangle())

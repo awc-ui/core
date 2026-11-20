@@ -10,6 +10,7 @@ import {
   State,
 } from '@stencil/core';
 import { triggerRipple } from '../../utils/ripple';
+import { refreshNewSlots } from '../../utils/slot-refresh';
 
 /**
  * `md-step` — one step inside an `<md-stepper>`.
@@ -276,6 +277,12 @@ export class MdStep {
     if (this.active) s += `, ${w('data-current-word', 'current')}`;
     if (this.error) s += `, ${w('data-error-word', 'error')}${this.errorText ? `: ${this.errorText}` : ''}`;
     return s;
+  }
+
+  /** The panel's slot appears on a later render (the stepper sets the panel mode); Chrome can build it into its
+   *  accessibility tree without the slotted content (R6-15). */
+  componentDidRender() {
+    refreshNewSlots(this.el.shadowRoot);
   }
 
   render() {

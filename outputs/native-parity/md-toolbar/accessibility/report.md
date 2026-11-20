@@ -1,6 +1,6 @@
 # md-toolbar — accessibility parity
 
-Generated 2026-10-30T23:00:03.195Z by tools/ax. Web = Chrome AX tree of the same effective node.
+Generated 2026-11-05T01:32:20.791Z by tools/ax. Web = Chrome AX tree of the same effective node.
 
 ## default
 

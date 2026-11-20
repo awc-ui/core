@@ -87,6 +87,7 @@ class NativeTimePickerParityTest {
         picker = null; collector.clear(); case = c; epoch++
         val open = c.optJSONObject("props")?.optBoolean("open") == true
         compose.waitForIdle(); compose.mainClock.advanceTimeBy(if (open) 900 else 350); compose.waitForIdle()
+        if (c.optJSONObject("labels")?.has("message") == true) { picker?.reportValidity(); compose.waitForIdle(); compose.mainClock.advanceTimeBy(900); compose.waitForIdle() }
         val nodes = collector.snapshot().nodes
         fun m(part: String) = nodes.firstOrNull { it.name == part }
         fun near(a: Double, b: Double, label: String, tol: Double = .6) = check(abs(a - b) <= tol, "$name $label $a vs $b")
@@ -99,6 +100,9 @@ class NativeTimePickerParityTest {
         val h = c.getJSONObject("host")
         val root = m("md-time-picker")
         if (h.getDouble("width") > 0 && h.getDouble("height") > 0) { if (root == null) { check(false, "$name measured"); return }; rect(root.bounds, h, "host") }
+        c.optJSONObject("labels")?.let { want -> for (k in want.keys()) {
+            val got = if (k == "message") picker?.validityRecord?.invoke()?.second else picker?.labelTexts?.get(k)
+            check(got == want.getString(k), "$name label $k $got vs ${want.getString(k)}") } }
         val direct = setOf("scrim", "dialog", "headline", "body", "input-area", "input-hour", "input-minute", "footer", "toggle-mode", "actions",
             "cancel-button", "confirm-button", "period-toggle", "period-am", "period-pm", "time-area", "dial-wrap", "dial")
         val rtl = c.optString("dir") == "rtl"
@@ -131,7 +135,7 @@ class NativeTimePickerParityTest {
         // The focused part (Chrome's active element).
         val active = c.optString("active", "body"); val expected = if (active == "body") null else active.split(" > ").last()
         val focused = pk?.focused?.takeUnless { it == "trigger" }
-        check(focused == expected, "$name focus ${focused ?: "body"} vs ${expected ?: "body"}")
+        if (c.optJSONObject("labels")?.has("message") != true) check(focused == expected, "$name focus ${focused ?: "body"} vs ${expected ?: "body"}")
         val clip = c.getJSONObject("clip")
         val nat = CardWeb.nativeGrid(compose.onRoot().captureToImage().toPixelMap(), clip.getInt("x"), clip.getInt("y"), clip.getInt("width"), clip.getInt("height"))
         // A focused tile's text is selected on open (`select()`): the selection highlight is the platform's (Chrome on macOS

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { NUMBER_FIELD_APPEARANCE_FIELDS, NUMBER_FIELD_UPDATE_PROPERTIES, numberFieldAppearance, validNumberFieldUpdate } from './number-field-appearance.js';
+import { NUMBER_FIELD_APPEARANCE_FIELDS, NUMBER_FIELD_PARTS, NUMBER_FIELD_UPDATE_PROPERTIES, numberFieldAppearance, validNumberFieldUpdate } from './number-field-appearance.js';
 import { componentAppearance } from './component-appearance.js';
 import { nativeThemeOptions } from './native-theme-options.js';
 import { validateRenderRequest } from './native-render.mjs';
@@ -23,6 +23,7 @@ test('the five hooks cover the IR and both released policies', () => {
     assert.deepEqual(p.appearance.fields, NUMBER_FIELD_APPEARANCE_FIELDS.map(f => f.name), platform);
     for (const k of ['properties', 'events', 'methods', 'slots']) assert.deepEqual(p[k], ir[k].map(x => x.name), `${platform} ${k}`);
     assert.deepEqual(p.visualParts, ir.cssParts.map(x => x.name), platform);
+    assert.equal(p.appearance.parts, platform === 'ios' ? '.awcNumberFieldPartAppearance(AWCNumberFieldPartAppearance)' : 'AWCNumberFieldPartAppearanceScope(AWCNumberFieldPartAppearance)');
   }
   const registry = componentAppearance('md-number-field');
   assert.equal(registry.key, 'numberFieldAppearance'); assert.equal(registry.swiftModifier, 'awcNumberFieldAppearance'); assert.equal(registry.nativeType, 'AWCNumberFieldAppearance');
@@ -69,6 +70,8 @@ test('methods with results and their examples', () => {
   for (const platform of ['swift', 'android']) {
     const part = nativeApiExample(component, 'cssPart', 'field', platform);
     assert.equal(part.status, 'native-equivalent');
-    assert.match(part.code, platform === 'swift' ? /\.awcTextFieldAppearance\(/ : /AWCTextFieldAppearanceScope\(/);
+    assert.match(part.code, platform === 'swift' ? /\.awcNumberFieldPartAppearance\(\.init\(field: \.init\(/ : /AWCNumberFieldPartAppearanceScope\(AWCNumberFieldPartAppearance\(field = AWCTextFieldAppearance\(/);
+    for (const field of NUMBER_FIELD_PARTS.field) assert.match(part.code, new RegExp(field));
   }
+  assert.deepEqual(Object.keys(NUMBER_FIELD_PARTS), ir.cssParts.map(x => x.name));
 });

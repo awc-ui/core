@@ -115,4 +115,24 @@ describe('md-transfer-list contract', () => {
     expect(checkedFocus).toBe(checkedHover);
     expect(uncheckedFocus).not.toBe(checkedFocus);
   });
+
+  it('sizes non-searchable columns by their content whether searchable="false" is authored or set (TL6)', async () => {
+    const page = await newE2EPage({ html: `<md-transfer-list id="attr" searchable="false" items='${items}'></md-transfer-list>
+      <md-transfer-list id="prop" items='${items}'></md-transfer-list><md-transfer-list id="on" items='${items}'></md-transfer-list>` });
+    await page.$eval('#prop', (el: any) => { el.searchable = false; });
+    await page.waitForChanges();
+    const heights = await page.evaluate(() => ['attr', 'prop', 'on'].map(id =>
+      document.getElementById(id)!.shadowRoot!.querySelector('.md-transfer-list__column')!.getBoundingClientRect().height));
+    // Three rows and a header stay well under the 360px cap that a searchable column takes as its height.
+    expect(heights[2]).toBe(360);
+    expect(heights[0]).toBeLessThan(300);
+    expect(heights[0]).toBe(heights[1]);
+  });
+
+  it('states every option of a disabled list as disabled (TL7)', async () => {
+    const page = await newE2EPage({ html: `<md-transfer-list disabled items='${items}'></md-transfer-list><md-transfer-list items='${items}'></md-transfer-list>` });
+    const states = await page.evaluate(() => Array.from(document.querySelectorAll('md-transfer-list')).map(list =>
+      Array.from(list.shadowRoot!.querySelectorAll('[role="option"]')).map(option => option.getAttribute('aria-disabled'))));
+    expect(states).toEqual([['true', 'true', 'true'], ['false', 'false', 'false']]);
+  });
 });

@@ -65,7 +65,7 @@ struct AWCNativeLoadingIndicator:View {
     }
     private func indicator(_ m:AWCNativeLoadingMetrics)->some View{
         let corners=AWCNativeCornerShape(corners:m.contained || focused ? m.corners:.points(0))
-        return TimelineView(.animation(minimumInterval:1.0/60,paused:fixedPhase != nil || m.size==0 || m.shapeWidth==0 || m.shapeHeight==0)){context in
+        return TimelineView(.animation(minimumInterval:nil,paused:fixedPhase != nil || m.size==0 || m.shapeWidth==0 || m.shapeHeight==0)){context in
             let fraction=fixedPhase ?? context.date.timeIntervalSince(start)/(reduceMotion ? 2:AWCNativeLoadingMotion.duration)
             shape(m,phase:fraction).frame(width:m.size,height:m.size)
         }

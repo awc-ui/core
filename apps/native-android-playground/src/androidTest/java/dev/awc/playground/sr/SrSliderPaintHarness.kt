@@ -2,6 +2,13 @@
 package dev.awc.playground.sr
 
 import dev.awc.nativeui.slider.*
+import dev.awc.nativeui.AWCAccordionInsets
+import dev.awc.nativeui.AWCAccordionPartAppearance
+import dev.awc.nativeui.AWCCornerLength
+import dev.awc.nativeui.AWCCornerRadius
+import dev.awc.nativeui.AWCCornerShape
+import dev.awc.nativeui.AWCSliderPart
+import dev.awc.nativeui.SliderParts
 import dev.awc.nativeui.slider.SrRgba
 import dev.awc.nativeui.slider.srParseColor
 import java.io.File
@@ -64,7 +71,9 @@ fun sliderTreeDiff(tree: Map<String, Any?>, p: SliderPaint, d: (String) -> Unit,
     eqR("host", host, SliderRect(ox, oy, p.width, p.height))
     val hs: Map<String, Any?> = tree["style"].cast()
     eqN("paddingTop", px(hs["paddingTop"]), p.paddingTop); eqN("paddingLeft", px(hs["paddingLeft"]), p.paddingLeft); eqN("paddingRight", px(hs["paddingRight"]), p.paddingRight)
-    eqN("opacity", (hs["opacity"] as String).toDouble(), p.opacity)
+    // The surface part's own opacity (::part(surface)) composites with the host's.
+    val surfaceOpacity = ((tree["parts"] as? List<*>)?.firstOrNull { (it as? Map<*, *>)?.get("part") == "surface" } as? Map<*, *>)?.get("opacity")?.toString()?.toDoubleOrNull() ?: 1.0
+    eqN("opacity", (hs["opacity"] as String).toDouble() * surfaceOpacity, p.opacity)
     val parts: List<Map<String, Any?>> = tree["parts"].cast()
     fun part(k: String) = parts.filter { it["part"] == k }
     fun radii(m: Map<String, Any?>) = SliderRadii(px(m["borderTopLeftRadius"]), px(m["borderTopRightRadius"]), px(m["borderBottomRightRadius"]), px(m["borderBottomLeftRadius"]))
@@ -155,17 +164,37 @@ class SliderPaintCase(val c: Map<String, Any?>) {
         s.valueIndicator = flag("value-indicator"); s.labeled = flag("labeled"); s.insetIcon = flag("inset-icon")
         s.rtl = c["dir"] == "rtl"
         s.load(num("value", 50.0), num("value-start", 0.0), num("value-end", 100.0))
-        val hooks = sliderHooksFrom(attr("style") ?: "")
+        val parts = sliderCaseParts(html)
+        val hooks = SliderParts.hooks(sliderHooksFrom(attr("style") ?: ""), parts)
         val densityScale = Regex("""^density-scale-(\d)""").find(name)?.groupValues?.get(1)?.toDouble()?.let { -it } ?: 0.0
         val theme = WebTokens.theme(c["theme"] == "dark", densityScale)
         val fullH = flag("full-height")
         val boxH = when { name.startsWith("vertical-full-height-") -> name.substringAfterLast('-').toDouble(); else -> null }
-        val p = SliderLayout.layout(s, theme, hooks, ApproxMeasurer(), if (boxH != null) 0.0 else n(c["width"]), boxH, fullH, attr("density")?.toIntOrNull())
+        val p = SliderParts.applied(SliderLayout.layout(s, theme, hooks, ApproxMeasurer(), if (boxH != null) 0.0 else n(c["width"]), boxH, fullH, attr("density")?.toIntOrNull()), parts, s.vertical)
 
         sliderTreeDiff(tree, p, ::d)
         return diffs
     }
 }
+
+/** The case's `data-fa-parts` (the ::part rules the Chrome page applied) as typed part appearances. */
+fun caseParts(html: String, tag: String): Map<String, AWCAccordionPartAppearance> {
+    val raw = Regex("""data-fa-parts='([^']*)'""").find(html)?.groupValues?.get(1) ?: return emptyMap()
+    val all = srParseJson(raw) as? Map<*, *> ?: return emptyMap()
+    val parts = all[tag] as? Map<*, *> ?: return emptyMap()
+    fun px(v: Any?) = (v as? String)?.replace("px", "")?.trim()?.toDoubleOrNull()
+    fun hex(v: Any?) = (v as? String)?.trim()?.uppercase()
+    return parts.entries.associate { (k, v) ->
+        val d = v as Map<*, *>
+        val radius = px(d["border-radius"])?.let { r -> AWCCornerRadius(AWCCornerLength(r), AWCCornerLength(r)).let { AWCCornerShape(it, it, it, it) } }
+        val pad = px(d["padding"])?.let { AWCAccordionInsets(it, it, it, it) }
+        k as String to AWCAccordionPartAppearance(color = hex(d["color"]), backgroundColor = hex(d["background-color"]), cornerShape = radius, padding = pad,
+            width = px(d["width"]), height = px(d["height"]), opacity = (d["opacity"] as? String)?.toDoubleOrNull(), gap = px(d["gap"]),
+            fontSize = px(d["font-size"]), lineHeight = px(d["line-height"]), fontWeight = (d["font-weight"] as? String)?.toDoubleOrNull(),
+            letterSpacing = px(d["letter-spacing"]))
+    }
+}
+fun sliderCaseParts(html: String) = caseParts(html, "md-slider").mapNotNull { (k, v) -> AWCSliderPart.fromSource(k)?.let { it to v } }.toMap()
 
 object SliderPaintCheck { @JvmStatic fun main(args: Array<String>) {
     val root: Map<String, Any?> = srParseJson(File(args[0]).readText()).cast()

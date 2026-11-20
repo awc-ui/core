@@ -68,7 +68,7 @@ final class AWCNativeAdjustableFocusView: NSView {
     }
     override func keyDown(with event: NSEvent) {
         guard let c = configuration, let name = Self.keyName(event) else { super.keyDown(with: event); return }
-        if name == "Tab" { if event.modifierFlags.contains(.shift) { window?.selectPreviousKeyView(self) } else { window?.selectNextKeyView(self) }; return }
+        if name == "Tab" { AWCDocumentTabOrder.select(from: self, backward: event.modifierFlags.contains(.shift)); return }
         c.handle.showFocus = true
         if !c.key(name, false) { super.keyDown(with: event) }
     }

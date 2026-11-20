@@ -87,6 +87,16 @@ struct AWCOrgChartMetrics: Equatable {
     let toggle, levelGap, siblingGap, outline, minWidth, maxWidth, line, radius, duration: Double
     let gap, padBlock, padInline, avatar, nameSize, nameLine, titleSize, titleLine: Double
     static let elbow = 12.0
+    /// ::part() declarations that size the layout: node / node-selected padding, name / title font, viewport padding.
+    var parts = AWCOrgChartParts()
+    func border(selected: Bool) -> Double { selected ? outline + 1 : outline }
+    /// A card's padding (physical edges): ::part(node) / ::part(node-selected), else the source's (1px less when selected:
+    /// the selected ring takes it, so the border box stays put).
+    func padding(selected: Bool) -> AWCTableEdges {
+        if let p = parts.node(selected: selected).padding { return p }
+        let d = selected ? 1.0 : 0
+        return AWCTableEdges(top: padBlock - d, right: padInline - d, bottom: padBlock - d, left: padInline - d)
+    }
     init(density d: Double, appearance a: AWCOrgChartAppearance) {
         toggle = a.toggleSize ?? max(20, 24 + d); levelGap = a.levelGap ?? max(24, 28 + d); siblingGap = a.siblingGap ?? max(8, 12 + d)
         outline = a.nodeOutlineWidth ?? 1; minWidth = a.nodeMinWidth ?? 176; maxWidth = a.nodeMaxWidth ?? 260; line = a.connectorWidth ?? 1.5
@@ -111,6 +121,11 @@ enum AWCOrgChartText {
     /// Name: weight 600 resolves to the bundled 700 face (CSS font matching prefers the next heavier weight above 500).
     static func nameFont(_ size: Double) -> CTFont { _ = AWCNativeFonts.label(size: 14); return CTFontCreateWithName("Roboto-Bold" as CFString, size, nil) }
     static func titleFont(_ size: Double) -> CTFont { _ = AWCNativeFonts.label(size: 14); return CTFontCreateWithName("Roboto-Regular" as CFString, size, nil) }
+    /// A run's advance in the face of `weight` with `letter-spacing` after every character (as Chrome spaces it).
+    static func width(_ text: String, size: Double, weight: Double, tracking: Double) -> Double {
+        _ = AWCNativeFonts.label(size: 14)
+        return width(text, CTFontCreateWithName(AWCOrgChartFonts.face(weight) as CFString, size, nil)) + (text.isEmpty ? 0 : tracking * Double(text.count))
+    }
     static func width(_ text: String, _ font: CTFont) -> Double {
         guard !text.isEmpty else { return 0 }
         let line = CTLineCreateWithAttributedString(NSAttributedString(string: text, attributes: [kCTFontAttributeName as NSAttributedString.Key: font]))
@@ -127,6 +142,8 @@ struct AWCOrgChartBorderBox: Equatable {
     var roles: [String: Role] = [:]
     /// The group (parent node id) the pseudo-element belongs to: the unfold motion of that group moves it.
     var owner: String? = nil
+    /// The branch (tree item id) a ::before / ::after belongs to; nil for a group's drop and trail run.
+    var branch: String? = nil
 }
 
 /// The laid-out chart: every visible node's card, branch box, group box, toggle and connectors (host coordinates).
@@ -182,10 +199,13 @@ struct AWCOrgChartModel {
     private struct Measured { let node: AWCOrgChartNode; let card: CGSize; let kids: [Measured]; let group: CGSize; let size: CGSize; let pad: Double; let only: Bool }
 
     func cardSize(_ n: AWCOrgChartNode) -> CGSize {
-        let m = metrics
-        let column = max(AWCOrgChartText.width(n.name, AWCOrgChartText.nameFont(m.nameSize)), n.title.isEmpty ? 0 : AWCOrgChartText.width(n.title, AWCOrgChartText.titleFont(m.titleSize)))
-        let w = min(m.maxWidth, max(m.minWidth, 2 * m.outline + 2 * m.padInline + m.avatar + m.gap + column))
-        let h = 2 * m.outline + 2 * m.padBlock + max(m.avatar, m.nameLine + (n.title.isEmpty ? 0 : 2 + m.titleLine))
+        let m = metrics, np = m.parts[.name], tp = m.parts[.title]
+        let nameW = AWCOrgChartText.width(n.name, size: np.fontSize ?? m.nameSize, weight: np.fontWeight ?? 600, tracking: np.letterSpacing ?? 0)
+        let titleW = n.title.isEmpty ? 0 : AWCOrgChartText.width(n.title, size: tp.fontSize ?? m.titleSize, weight: tp.fontWeight ?? 400, tracking: tp.letterSpacing ?? 0)
+        // Border box (box-sizing: border-box, clamped to the min / max widths): border + padding (::part(node)) + content.
+        let selected = isSelected(n), b = m.border(selected: selected), p = m.padding(selected: selected)
+        let w = min(m.maxWidth, max(m.minWidth, 2 * b + p.left + p.right + m.avatar + m.gap + max(nameW, titleW)))
+        let h = 2 * b + p.top + p.bottom + max(m.avatar, m.nameLine + (n.title.isEmpty ? 0 : 2 + m.titleLine))
         return .init(width: w, height: h)
     }
 
@@ -208,7 +228,10 @@ struct AWCOrgChartModel {
         guard !trees.isEmpty else { return out }
         let tw = vertical ? trees.reduce(0) { $0 + $1.size.width } : (trees.map { $0.size.width }.max() ?? 0)
         let th = vertical ? (trees.map { $0.size.height }.max() ?? 0) : trees.reduce(0) { $0 + $1.size.height }
-        let padStart = 8.0, padEnd = vertical ? 8.0 : m.toggle / 2 + 10, padTop = 8.0, padBottom = vertical ? m.toggle / 2 + 10 : 8.0
+        // The viewport's padding (::part(viewport) physical edges; laid out inline-start first, mirrored for right-to-left).
+        let vp = m.parts[.viewport].padding
+        let padStart = vp.map { rtl ? $0.right : $0.left } ?? 8.0, padEnd = vp.map { rtl ? $0.left : $0.right } ?? (vertical ? 8.0 : m.toggle / 2 + 10)
+        let padTop = vp?.top ?? 8.0, padBottom = vp?.bottom ?? (vertical ? m.toggle / 2 + 10 : 8.0)
         let inner = W - padStart - padEnd
         let tx = padStart + max(0, (inner - tw) / 2)
         out.tree = .init(x: tx, y: padTop, width: tw, height: th)
@@ -307,7 +330,8 @@ struct AWCOrgChartModel {
                     if !`as`.isEmpty { after = box(k.branch, left: bl, top: bh / 2, width: L, height: bh / 2, sides: `as`, radii: first ? ["top-" + start: r] : [:], roles: [start: .connector, "top": riser]) }
                     if k.onPath { let rb = last ? before! : after!; risers[k.node.id] = last ? (rb.rect.maxY - w, rb.rect.maxY) : (rb.rect.minY, rb.rect.minY + w) }
                 }
-                if var before { before.owner = parent.node.id; boxes.append(before) }; if var after { after.owner = parent.node.id; boxes.append(after) }
+                if var before { before.owner = parent.node.id; before.branch = k.node.id; boxes.append(before) }
+                if var after { after.owner = parent.node.id; after.branch = k.node.id; boxes.append(after) }
             }
             let trail = kids.contains { $0.onPath }
             let role: AWCOrgChartBorderBox.Role = trail ? .selected : .connector

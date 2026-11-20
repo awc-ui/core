@@ -1,3 +1,37 @@
+# Gate 7 re-check (s7-9, 2026-11-16): md-area-chart
+
+**Verdict: PASS**
+
+Scope: md-line-chart, md-area-chart, md-bar-chart, md-pie-chart, md-sparkline share one re-run; the counts below cover all five.
+
+## Re-run counts (reviewer s7-9, 2026-11-16, snapshot work/audit/s7-9-tree, job logs in claude-runner/done/)
+| Suite | Platform | Result | Job |
+|---|---|---|---|
+| NativeChartPaintIntegration | macOS / iPhone 26.3 / iOS 18 | 1045/1045 each | s7-9-002-macos / s7-9-003-ios-iphone / s7-9-004-ios18 |
+| NativeChartMotionIntegration | macOS / iPhone / iOS 18 | 98/98 runs within tolerance each | same |
+| NativeChartViewsSmoke | macOS | 34/34 | s7-9-002-macos |
+| NativeChartScene / Interaction | iPhone / iOS 18 | exit 0 | s7-9-003, s7-9-004 |
+| Android NativeChartPaintTest, NativeChartParityTest, NativeChartMotionTest, NativeChartViewsTest, LivePreviewChartsHostTest (emulator-5566) | Android | BUILD SUCCESSFUL, 5 of 5 classes | s7-9-A003-android |
+| stdio live host + validateNativeInspection (7 tags), test-live-charts, test-snapshot-charts | macOS host | all 5 charts `server validation: ok`; 57 checks; 9 checks | s7-9-005-lab-ax |
+| 4177 read-only probes incl. `POST /api/native-live/session?platform=ios` (R5-01) | Laboratory | 50 ok, 0 fail; session 200 for every chart; update, setZoom, resetZoom, toDataURL ok; getInstance 400 INVALID_METHOD (unsupported, as declared) | s7-9-005-lab-ax |
+| Compiled examples (ChartExamples) | Swift typecheck / Kotlin compile | 103 / 103 | s7-9-006-examples-swift, s7-9-A004-examples-kotlin |
+| tools/ax (macOS, iOS, Android, compare) | all | pass; accepted entries are the reviewed conventions (canvas / hidden data table / AXChartDescriptor, patch-ax-chart); 0 open | s7-9-005-lab-ax, s7-9-A005-ax-android |
+
+## Findings re-checked
+- R5-01 (SwiftUI live session 502): FIXED, confirmed by the POST probe above (session 200, padding reported as a 4-array).
+- R5-02/R5-03 (native paint against Chrome incl. hooks, parts, slots): FIXED, window-capture suites pass on three runtimes plus Android.
+- R5-04 (`tableLabels`): FIXED, in the paint suites' descriptor checks and Android chart-data-table.
+- R5-05 (`getInstance` support metadata): FIXED, generated IR lists `unsupportedMethods: [getInstance]` for iOS and Android (read in the snapshot).
+- R5-06 (`::part` exceptions): rejected earlier; typed part appearance is implemented and tested (paint-parts). No exception remains.
+- R5-15 (suite registration): FIXED. R5-17 (iOS ax text-missing): FIXED; accepted entries are conventions (data-table text carried by AXChartDescriptor / Android steps), not hidden defects.
+- Exceptions: none outstanding.
+No blocking finding.
+
+
+---
+
+## Earlier review (r5, 2026-10-31), superseded by the section above
+
 # Gate 7 audit — `md-area-chart`
 
 Reviewer: gate-7 reviewer r5, 2026-10-31. **Verdict: FAIL** — findings R5-01, R5-02, R5-03, R5-04, R5-05, R5-06, R5-15, R5-17 (work/audit/DEFECTS.md). Exceptions: `getInstance` **accepted**, `::part` selectors **rejected**.

@@ -60,7 +60,8 @@ import Accessibility
     }
 
     @MainActor static func main() {
-        let out = URL(fileURLWithPath: CommandLine.arguments.dropFirst().first ?? "chart-views-smoke")
+        // Renders go to a temporary directory unless one is given (the suite runs from test-native-views.sh).
+        let out = CommandLine.arguments.dropFirst().first.map { URL(fileURLWithPath: $0) } ?? FileManager.default.temporaryDirectory.appendingPathComponent("chart-views-smoke")
         try? FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
         var lines: [String] = []
         let series: AWCValue = .array([

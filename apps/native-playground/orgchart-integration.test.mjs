@@ -23,21 +23,23 @@ const nodes = [{ id: 'lead', name: 'Alex Morgan', title: 'Product lead', childre
 const props = { nodes, selectionMode: 'multiple', selectedIds: ['design'], collapsible: true, orientation: 'horizontal', label: 'Team', expandLabel: 'Show reports', collapseLabel: 'Hide reports', density: -2 };
 
 test('Organization chart appearance exactly covers the 15 source hooks, the IR and both released policies', () => {
-  // Every hook the stylesheet reads (--md-org-chart-*). The CEM generator collects the --md-organization-chart- prefix, so
-  // the IR lists none of them (CEM drift recorded in docs/native-parity/md-organization-chart-source-review.md).
+  // Every hook the stylesheet reads (--md-org-chart-*); the CEM generator collects that prefix for this tag (R5-08), so the
+  // IR lists the same 15.
   const hooks = [...new Set([...sourceCSS.matchAll(/var\(\s*(--md-org-chart-[a-z0-9-]+)/g)].map(match => match[1]))].sort();
   assert.equal(hooks.length, 15);
   assert.deepEqual(hooks, ORG_CHART_APPEARANCE_FIELDS.map(f => f.cssProperty).sort());
-  assert.deepEqual(chart.cssProperties, []);
+  assert.deepEqual(chart.cssProperties.map(property => property.name).sort(), hooks);
   for (const platform of ['ios', 'android']) {
     const policy = chart.support[platform];
     assert.deepEqual([...policy.appearance.fields].sort(), ORG_CHART_APPEARANCE_FIELDS.map(f => f.name).sort(), `${platform} appearance declaration`);
     assert.match(policy.appearance.api, platform === 'ios' ? /awcOrgChartAppearance/ : /AWCOrgChartAppearanceScope/);
     for (const key of ['properties', 'events', 'methods', 'slots']) assert.deepEqual([...policy[key]].sort(), chart[key].map(member => member.name).sort(), `${platform} ${key}`);
     for (const key of ['unsupportedProperties', 'unsupportedEvents', 'unsupportedSlots']) assert.deepEqual(policy[key] ?? [], [], `${platform} ${key}`);
-    // ::part() has no native equivalent yet (exception recorded in the source review): no part is declared as supported.
-    assert.deepEqual(policy.visualParts, []);
-    assert.match(policy.notes.join(' '), /::part\(\) styling has no native equivalent/);
+    // ::part(): the 14 exported parts have typed native appearance APIs (AWCOrgChartPart + AWCPartStyle, R5-06).
+    assert.deepEqual([...policy.visualParts].sort(), chart.cssParts.map(part => part.name).sort(), `${platform} visualParts`);
+    assert.equal(policy.visualParts.length, 14, `${platform} visualParts`);
+    assert.doesNotMatch(policy.notes.join(' '), /no native equivalent/);
+    assert.match(policy.notes.join(' '), platform === 'ios' ? /awcOrgChartPartAppearance/ : /AWCOrgChartPartAppearanceScope/);
     assert.match(policy.notes.join(' '), /WAI-ARIA tree keys/);
   }
   assert.equal(Object.keys(orgChartAppearance.css(styles)).length, 15);
@@ -122,7 +124,7 @@ test('framework snippets carry every hook with the correct native types', () => 
   }
 });
 
-test('native API examples use the selection and fold events and the empty slot; parts are Web-only', () => {
+test('native API examples use the selection and fold events, the empty slot and the typed part appearances', () => {
   for (const platform of ['swift', 'android']) {
     const usage = nativeUsageExample(chart, platform);
     assert.match(usage.code, /md-organization-chart/);
@@ -131,6 +133,10 @@ test('native API examples use the selection and fold events and the empty slot; 
       assert.ok(example.code, name); assert.match(example.code, /md-organization-chart/, name);
     }
     assert.ok(nativeApiExample(chart, 'slot', 'empty', platform).code, 'empty slot');
-    for (const part of chart.cssParts.map(p => p.name)) assert.notEqual(nativeApiExample(chart, 'cssPart', part, platform).status, 'native-equivalent', part);
+    for (const part of chart.cssParts.map(p => p.name)) {
+      const example = nativeApiExample(chart, 'cssPart', part, platform);
+      assert.equal(example.status, 'native-equivalent', part);
+      assert.match(example.code, platform === 'swift' ? /\.awcOrgChartPartAppearance\(/ : /AWCOrgChartPartAppearanceScope\(/, `${platform} ${part}`);
+    }
   }
 });

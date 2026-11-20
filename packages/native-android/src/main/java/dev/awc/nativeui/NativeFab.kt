@@ -29,15 +29,17 @@ import androidx.compose.ui.unit.*
 import kotlinx.coroutines.*
 import kotlin.math.*
 
-internal data class NativeFabMetrics(val size: String, val density: Float, val hasLabel: Boolean) {
+internal data class NativeFabMetrics(val size: String, val density: Float, val hasLabel: Boolean, val spacing: Float = 0f) {
     val rung = density.takeIf { it in -4f..0f && it == floor(it) } ?: 0f
     private val index = if(hasLabel) 0 else listOf("standard","medium","large").indexOf(size).coerceAtLeast(0)
     val height = max(listOf(40f,64f,80f)[index],listOf(56f,80f,96f)[index]+rung*4)
     val icon = max(listOf(18f,21f,27f)[index],listOf(24f,28f,36f)[index]+rung)
     val radius = if(index==0) 16f else 28f
     // The spacing tokens resolve to the source's discrete density scale.
-    val inset = when(rung.toInt()) { -4 -> 8f; -3,-2 -> 12f; else -> 16f }
-    val gap = if(rung<=-2) 8f else 12f
+    // A local -2...-4 brings its own spacing payload; otherwise the inherited global rung applies (-1 is scale only).
+    private val spacingRung = if(rung<=-2) rung else spacing
+    val inset = when(spacingRung.toInt()) { -4 -> 8f; -3,-2 -> 12f; else -> 16f }
+    val gap = if(spacingRung<=-2) 8f else 12f
     val plainInset = max(12f,20f+2*rung)
     val font = max(11f,14f+.5f*rung)
 }
@@ -64,6 +66,7 @@ internal fun performNativeFabAction(p: Props, emit: EventSink, actions: AWCActio
 }
 
 private val FabStandard=CubicBezierEasing(.2f,0f,0f,1f)
+private fun fabStateOpacity(role:String,fallback:Float)=dev.awc.nativeui.generated.AWCGeneratedTokens.light["--md-sys-state-$role-state-layer-opacity"]?.toFloatOrNull() ?: fallback
 private val FabSpatial=CubicBezierEasing(.38f,1.21f,.22f,1f)
 private val FabEffects=CubicBezierEasing(.34f,.8f,.34f,1f)
 private val FabFont=FontFamily(Font(R.font.awc_roboto_medium,FontWeight.Medium))
@@ -86,16 +89,20 @@ private data class FabWave(val press: PressInteraction.Press, val start: Long?=n
     }
     val label=p.str("label")
     val hasLabel=label.isNotEmpty()
-    val extended=if(p["extended"]==null) hasLabel else p.bool("extended")
-    val metrics=NativeFabMetrics(p.str("size","standard"),p.num("density"),hasLabel)
+    // A rail's FAB slot: a labelled FAB is extended while the rail is (on the rail's 200 ms clock) and reports that it is labelled.
+    val railFab=LocalAWCRailFab.current
+    if(railFab!=null) SideEffect { if(railFab.state.fabLabelled!=hasLabel) railFab.state.fabLabelled=hasLabel }
+    val extended=if(railFab!=null && hasLabel) railFab.extended else if(p["extended"]==null) hasLabel else p.bool("extended")
+    val metrics=NativeFabMetrics(p.str("size","standard"),p.num("density").takeIf { it < 0 } ?: LocalAWCNativeDensity.current.toFloat(),hasLabel,
+        (LocalAWCDensityRungs.current.firstOrNull { it <= -2 } ?: 0.0).toFloat())
     val appearance=LocalAWCFabAppearance.current
     val iconSize=appearance.iconSize?.toFloat() ?: metrics.icon
     val enabled=p.enabled()
-    val reduced=!ValueAnimator.areAnimatorsEnabled()
-    val spatialDuration=if(reduced) 0 else 500
+    val reduced=LocalAWCButtonReducedMotion.current ?: !ValueAnimator.areAnimatorsEnabled()
+    val spatialDuration=if(reduced) 0 else if(railFab!=null) 200 else 500
     val extent by animateFloatAsState(if(extended) 1f else 0f,tween(spatialDuration,easing=FabSpatial),label="FAB extent")
     val labelOpacity by animateFloatAsState(if(extended) 1f else 0f,tween(if(reduced) 0 else 200,easing=FabEffects),label="FAB label opacity")
-    val style=TextStyle(fontFamily=FabFont,fontWeight=FontWeight.Medium,fontSize=metrics.font.sp,lineHeight=20.sp,letterSpacing=.1.sp,
+    val style=TextStyle(fontFamily=FabFont,fontWeight=FontWeight.Medium,fontSize=metrics.font.sp,lineHeight=20.sp,letterSpacing=.1.sp,textMotion=TextMotion.Animated,
         platformStyle=PlatformTextStyle(includeFontPadding=false),lineHeightStyle=LineHeightStyle(LineHeightStyle.Alignment.Center,LineHeightStyle.Trim.None))
     val inheritedTextStyle=LocalTextStyle.current
     val slotTextStyle=if(hasLabel) style.copy(lineHeight=style.fontSize) else inheritedTextStyle.copy(lineHeight=inheritedTextStyle.fontSize)
@@ -105,7 +112,10 @@ private data class FabWave(val press: PressInteraction.Press, val start: Long?=n
     val maxLabelWidth by animateFloatAsState(if(extended) naturalLabelWidth else 0f,tween(spatialDuration,easing=FabSpatial),label="FAB label width")
     val interactions=remember { MutableInteractionSource() }
     val pointerPressed by interactions.collectIsPressedAsState()
-    val hovered by interactions.collectIsHoveredAsState()
+    val hoveredByCompose by interactions.collectIsHoveredAsState()
+    // A FAB-menu anchor's hover also follows the scope's mouse tracking (AWCFabMenuScope: Compose misses the Exit when the menu
+    // layer opens under a stationary hover).
+    val hovered=hoveredByCompose && anchor?.pointerInside!=false
     var keyboardPressed by remember { mutableStateOf(false) }
     val pressed=enabled && (pointerPressed || keyboardPressed)
     val focus=nativeButtonFocusModifier(p,identity,null,false)
@@ -121,9 +131,11 @@ private data class FabWave(val press: PressInteraction.Press, val start: Long?=n
     val scope=rememberCoroutineScope()
     var keyboardJob by remember { mutableStateOf<Job?>(null) }
     DisposableEffect(enabled) { onDispose { keyboardJob?.cancel();keyboardPressed=false } }
+    // md-ripple's wave ignores reduced motion (Chrome grows and fades it with reduce set): only the system animator setting.
+    val rippleReduced=!ValueAnimator.areAnimatorsEnabled()
     val waves=remember { mutableStateListOf<FabWave>() }
     var now by remember { mutableLongStateOf(0) }
-    LaunchedEffect(interactions,enabled,p.bool("ripple",true),reduced) {
+    LaunchedEffect(interactions,enabled,p.bool("ripple",true),rippleReduced) {
         if(!enabled || !p.bool("ripple",true)) waves.clear()
         var frames:Job?=null
         interactions.interactions.collect { event ->
@@ -137,7 +149,7 @@ private data class FabWave(val press: PressInteraction.Press, val start: Long?=n
                     while(isActive && waves.isNotEmpty()) {
                         now=withFrameNanos { it }
                         waves.indices.forEach { i -> val w=waves[i];waves[i]=w.copy(start=w.start ?: now,end=if(w.released) w.end ?: now else null) }
-                        waves.removeAll { it.end?.let { end -> reduced || now>max((it.start ?: now)+450_000_000L,end)+150_000_000L } ?: false }
+                        waves.removeAll { it.end?.let { end -> rippleReduced || now>max((it.start ?: now)+450_000_000L,end)+150_000_000L } ?: false }
                     }
                 }
             }
@@ -160,7 +172,7 @@ private data class FabWave(val press: PressInteraction.Press, val start: Long?=n
     // Source inner-part custom colors override even the disabled host ink.
     val iconInk=if(vibrant!=null) role("on-$vibrant") else color(appearance.iconColor,hostInk)
     val labelInk=color(appearance.labelColor,hostInk)
-    val opacity by animateFloatAsState(if(!enabled) 0f else if(pressed || focused) .10f else if(hovered) .08f else 0f,
+    val opacity by animateFloatAsState(if(!enabled) 0f else if(pressed) fabStateOpacity("pressed",.10f) else if(focused) fabStateOpacity("focus",.10f) else if(hovered) fabStateOpacity("hover",.08f) else 0f,
         tween(if(reduced) 0 else 280,easing=FabStandard),label="FAB state opacity")
     // Source elevation levels (md-fab.css): 3, hover 4; lowered 1, hover 2; disabled 0.
     val elevation by animateFloatAsState(if(!enabled || LocalAWCFabFlatElevation.current) 0f else if(hovered && !pressed && !focused) { if(p.bool("lowered")) 2f else 4f } else { if(p.bool("lowered")) 1f else 3f },
@@ -197,9 +209,9 @@ private data class FabWave(val press: PressInteraction.Press, val start: Long?=n
                 val elapsed=max(0f,(now-(wave.start ?: now))/1_000_000f)
                 val origin=wave.press.pressPosition.takeIf { it.x.isFinite() && it.y.isFinite() } ?: center
                 val r=hypot(max(origin.x,size.width-origin.x),max(origin.y,size.height-origin.y))
-                val growth=if(reduced) 1f else FabStandard.transform((elapsed/450f).coerceIn(0f,1f))
+                val growth=if(rippleReduced) 1f else FabStandard.transform((elapsed/450f).coerceIn(0f,1f))
                 val fade=wave.end?.let { max(450f,(it-(wave.start ?: now))/1_000_000f) } ?: Float.POSITIVE_INFINITY
-                val alpha=if(reduced) { if(wave.end==null) .12f else 0f } else .12f*(1-FabStandard.transform(((elapsed-fade)/150f).coerceIn(0f,1f)))
+                val alpha=if(rippleReduced) { if(wave.end==null) .12f else 0f } else .12f*(1-FabStandard.transform(((elapsed-fade)/150f).coerceIn(0f,1f)))
                 drawCircle(hostInk.copy(alpha=hostInk.alpha*alpha),r*growth,origin)
             }
             drawContent()
@@ -255,8 +267,10 @@ private data class FabWave(val press: PressInteraction.Press, val start: Long?=n
         } else emptyList()
         val icons=if(menuIcon!=null || authored.isEmpty()) fallback else authored
         val hasIcon=icons.isNotEmpty()
-        val start=if(!hasLabel) 0f else if(hasIcon) metrics.inset else metrics.plainInset
-        val end=if(!hasLabel) 0f else if(hasIcon) metrics.inset+(20f-metrics.inset)*extent else metrics.plainInset
+        // In a rail's FAB slot a labelled FAB reserves (rail fab-size − icon) / 2 before its icon (and after it, collapsed).
+        val lead=railFab?.size?.let { s -> maxOf(0f,(s.toFloat()-iconSize)/2f) } ?: metrics.inset
+        val start=if(!hasLabel) 0f else if(hasIcon) lead else metrics.plainInset
+        val end=if(!hasLabel) 0f else if(hasIcon) lead+(20f-lead)*extent else metrics.plainInset
         val gap=if(hasLabel && hasIcon) max(0f,metrics.gap*extent) else 0f
         val visibleLabel=if(hasLabel) min(naturalLabelWidth,max(0f,maxLabelWidth)).roundToInt() else 0
         val startPx=start.dp.roundToPx();val endPx=end.dp.roundToPx();val gapPx=gap.dp.roundToPx()

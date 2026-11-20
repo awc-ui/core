@@ -24,6 +24,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.*
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -138,11 +140,29 @@ internal fun Modifier.awcCardContentMarker(tag:String,hidden:Boolean):Modifier=
     if(tag in AWCCardInteractiveTags && !hidden) awcCardInteractiveContent(activates=tag !in AWCCardNonActivatingTags) else this
 
 /** md-card class/attribute logic (md-card.tsx render). */
+/** A touch that moved beyond the touch slop is a pan in Chrome: its release must not click (card or authored content). */
+internal fun Modifier.awcTouchTapSlop():Modifier=pointerInput(Unit) {
+    awaitEachGesture {
+        val down=awaitFirstDown(requireUnconsumed=false,pass=PointerEventPass.Initial)
+        if(down.type!=PointerType.Touch) return@awaitEachGesture
+        var moved=false
+        while(true) {
+            val e=awaitPointerEvent(PointerEventPass.Initial)
+            val c=e.changes.firstOrNull { it.id==down.id } ?: break
+            if((c.position-down.position).getDistance()>viewConfiguration.touchSlop) moved=true
+            if(!c.pressed) { if(moved) c.consume();break }
+        }
+    }
+}
 internal data class CardModel(val variant:String,val interactive:Boolean,val dragEnabled:Boolean,val disabled:Boolean,val softDisabled:Boolean,
                               val ripple:Boolean,val fullWidth:Boolean,val fullHeight:Boolean,val hidden:Boolean) {
     val effectivelyDisabled get()=disabled || softDisabled
     val disabledClass get()=interactive && effectivelyDisabled
     val softClass get()=interactive && softDisabled
+    /** md-card.css cursor cascade (`:host(...)` rules by specificity, then order). */
+    fun cursor(dragged:Boolean)=if(pointerInert) null else awcCursorCascade(AWCCursorRule(interactive,2,1,AWCCursorStyle.Pointer),AWCCursorRule(dragEnabled,2,2,AWCCursorStyle.Grab),
+        AWCCursorRule(interactive && dragEnabled,3,3,AWCCursorStyle.Grab),AWCCursorRule(dragged,2,4,AWCCursorStyle.Grabbing),
+        AWCCursorRule(interactive && effectivelyDisabled,2,5,AWCCursorStyle.Default),AWCCursorRule(interactive && softDisabled,3,6,AWCCursorStyle.Default))
     val pointerInert get()=interactive && disabled && !softDisabled
     val hasStateLayer get()=interactive || dragEnabled
     val hasRipple get()=hasStateLayer && ripple
@@ -151,7 +171,7 @@ internal data class CardModel(val variant:String,val interactive:Boolean,val dra
 }
 internal data class CardStates(val hover:Boolean=false,val focusVisible:Boolean=false,val active:Boolean=false,val dragged:Boolean=false)
 /** The source cascade, rule by rule in specificity and source order. */
-internal class CardStyle(val m:CardModel,val a:AWCCardAppearance,val parts:AWCCardPartAppearance,val tokens:Map<String,String>) {
+internal class CardStyle(val m:CardModel,val a:AWCCardAppearance,val parts:AWCCardPartAppearance,val tokens:Map<String,String>,val forced:AWCForcedColorPalette?=null) {
     fun token(name:String,fallback:String)=tokens["--md-sys-color-$name"] ?: fallback
     fun elevation(level:Int)=NativeShadowLayer.parse(tokens["--md-sys-elevation-$level"] ?: "none")
     val onSurface get()=awcColor(token("on-surface","#1C1B1F"),Color.Black)
@@ -165,7 +185,7 @@ internal class CardStyle(val m:CardModel,val a:AWCCardAppearance,val parts:AWCCa
         if(m.disabledClass && (s.hover || s.active || s.focusVisible)) o=0.0
         return o
     }
-    val layerVisible get()=m.hasStateLayer && !m.softClass
+    val layerVisible get()=m.hasStateLayer && !m.softClass && forced==null
     fun shadow(s:CardStates):List<NativeShadowLayer> {
         if(m.disabledClass) return emptyList()
         val elevated=m.variant=="elevated"
@@ -176,12 +196,12 @@ internal class CardStyle(val m:CardModel,val a:AWCCardAppearance,val parts:AWCCa
         if(m.hasStateLayer && s.active) e=if(elevated) elevation(1) else emptyList()
         return e
     }
-    val containerColor:Color get()=if(m.disabledClass) onSurface.copy(alpha=.12f) else a.containerColor?.let(::statusDotColor)
+    val containerColor:Color get()=if(forced!=null) awcColor(forced.buttonFace,Color.Black) else if(m.disabledClass) onSurface.copy(alpha=.12f) else a.containerColor?.let(::statusDotColor)
         ?: awcColor(token(when(m.variant) { "filled"->"surface-container-highest";"outlined"->"surface";else->"surface-container-low" },"#F7F2FA"),Color.White)
-    val contentColor:Color get()=if(m.disabledClass) onSurface.copy(alpha=.38f) else onSurface
+    val contentColor:Color get()=if(forced!=null) awcColor(if(m.disabledClass) forced.grayText else forced.buttonText,Color.White) else if(m.disabledClass) onSurface.copy(alpha=.38f) else onSurface
     fun outlineColor(s:CardStates):Color {
         parts.outlineColor?.let { return statusDotColor(it) }
-        var c=a.outlineColor?.let(::statusDotColor) ?: awcColor(token("outline-variant","#CAC4D0"),Color.Gray)
+        var c=forced?.let { awcColor(it.buttonText,Color.White) } ?: a.outlineColor?.let(::statusDotColor) ?: awcColor(token("outline-variant","#CAC4D0"),Color.Gray)
         if(s.dragged) c=awcColor(token("outline-variant","#CAC4D0"),Color.Gray)
         if(m.disabledClass) c=onSurface.copy(alpha=.12f)
         if(m.hasStateLayer && s.focusVisible) c=onSurface
@@ -189,7 +209,10 @@ internal class CardStyle(val m:CardModel,val a:AWCCardAppearance,val parts:AWCCa
     }
     val outlineWidth get()=parts.outlineWidth ?: a.outlineWidth ?: 1.0
     val stateLayerColor:Color get()=(parts.stateLayerColor ?: a.stateLayerColor)?.let(::statusDotColor) ?: onSurface
-    val focusRingColor get()=awcColor(token("secondary","#625B71"),Color.Gray)
+    val focusRingColor get()=awcColor(forced?.highlight ?: token("secondary","#625B71"),Color.Gray)
+    /** forced-colors: `border: 1px solid ButtonText` (GrayText when disabled) on the host, inside its border box. */
+    val forcedBorder:Color? get()=forced?.let { awcColor(if(m.disabledClass) it.grayText else it.buttonText,Color.White) }
+    val borderWidth get()=if(forced!=null) 1.0 else 0.0
 }
 /** CSS box-shadow list interpolation (padding with transparent layers, premultiplied colours). */
 internal val cardShadowLerp:(List<NativeShadowLayer>,List<NativeShadowLayer>,Double)->List<NativeShadowLayer> = { a,b,t->
@@ -241,7 +264,7 @@ internal fun NativeCard(p:Props,onEvent:EventSink,interactiveContent:Boolean=fal
     val emit by rememberUpdatedState(onEvent)
     val tokens=LocalAWCThemeTokens.current;val dens=LocalDensity.current.density
     val appearance=LocalAWCCardAppearance.current;val parts=LocalAWCCardPartAppearance.current
-    val style=CardStyle(m,appearance,parts,tokens)
+    val style=CardStyle(m,appearance,parts,tokens,awcForcedColors())
     val d=resolveAWCDensity(p["density"],LocalAWCNativeDensity.current)
     val reduced=LocalAWCCardReducedMotion.current ?: !ValueAnimator.areAnimatorsEnabled()
     val regions=remember { AWCCardContentRegistry() }
@@ -250,6 +273,8 @@ internal fun NativeCard(p:Props,onEvent:EventSink,interactiveContent:Boolean=fal
     var hover by remember { mutableStateOf(false) };var pressed by remember { mutableStateOf(false) }
     var focused by remember { mutableStateOf(false) };var pointerFocus by remember { mutableStateOf(false) }
     var dragging by remember { mutableStateOf(false) };var offset by remember { mutableStateOf(Offset.Zero) }
+    // CSS `z-index: 1000` while dragging stacks against the document (r3-19): the hosts above rise with the card.
+    val stacking=rememberAWCStackingNode();SideEffect { stacking.own=if(dragging) 1000f else 0f }
     var root by remember { mutableStateOf(Offset.Zero) };var size by remember { mutableStateOf(androidx.compose.ui.geometry.Size.Zero) }
     val focusRequester=remember { FocusRequester() }
     var within by remember { mutableStateOf(false) }
@@ -306,6 +331,8 @@ internal fun NativeCard(p:Props,onEvent:EventSink,interactiveContent:Boolean=fal
             .zIndex(if(dragging) 1000f else 0f)
             .graphicsLayer { translationX=offset.x*dens;translationY=offset.y*dens }
             .onGloballyPositioned { root=it.positionInRoot();size=androidx.compose.ui.geometry.Size(it.size.width.toFloat(),it.size.height.toFloat()) }
+            .awcCursor(m.cursor(dragging),stable=true)
+            .awcTouchTapSlop()
             .inspectAWCNode(LocalAWCInspection.current,"","md-card")
             .accordionShadow(shape,{ state.shadow.presented(state.frameMillis) },false)
             .drawWithContent {
@@ -320,7 +347,9 @@ internal fun NativeCard(p:Props,onEvent:EventSink,interactiveContent:Boolean=fal
                 val now=state.frameMillis
                 if(m.hasRipple && !m.effectivelyDisabled) for(w in state.waves) { if(w.began==null || w.done(now)) continue
                     val r=(w.radius*w.scale(now)*density).toFloat();if(r>0f) drawCircle(ink.copy(alpha=ink.alpha*w.opacity(now).toFloat()),r,Offset(w.origin.x*density,w.origin.y*density)) }
-                if(m.variant=="outlined") { val wpx=(style.outlineWidth*density).toFloat();if(wpx>0f) drawPath(cardPath(shape,size.width-wpx,size.height-wpx,density,wpx/2f),outline,style=Stroke(wpx)) }
+                val bpx=(style.borderWidth*density).toFloat()
+                if(m.variant=="outlined") { val wpx=(style.outlineWidth*density).toFloat();if(wpx>0f) drawPath(cardPath(shape,size.width-wpx-2*bpx,size.height-wpx-2*bpx,density,wpx/2f+bpx),outline,style=Stroke(wpx)) }
+                style.forcedBorder?.let { if(bpx>0f) drawPath(cardPath(shape,size.width-bpx,size.height-bpx,density,bpx/2f),it,style=Stroke(bpx)) }
                 if(style.layerVisible) drawRect(style.stateLayerColor.copy(alpha=style.stateLayerColor.alpha*state.layer.presented(now).toFloat()))
             }
             .semantics(mergeDescendants=actsAsButton) { if(actsAsButton) { role=Role.Button;if(m.effectivelyDisabled) disabled() } }
@@ -343,6 +372,8 @@ internal fun NativeCard(p:Props,onEvent:EventSink,interactiveContent:Boolean=fal
                 emit("mdClick",mapOf("type" to "click","isTrusted" to false,"button" to 0,"detail" to 0,"clientX" to 0.0,"clientY" to 0.0));true } else false }
             .pointerInput(m,actsAsButton) {
                 awaitPointerEventScope {
+                    // Chrome: a touch that moved beyond the slop became a pan, so its release does not click.
+                    var touchPanned=false
                     while(true) {
                         val e=awaitPointerEvent(PointerEventPass.Final)
                         // ACTION_CANCEL (capture loss, an intercepting parent, removal) arrives as a synthetic
@@ -364,6 +395,7 @@ internal fun NativeCard(p:Props,onEvent:EventSink,interactiveContent:Boolean=fal
                             PointerEventType.Enter,PointerEventType.Move,PointerEventType.Exit -> {
                                 if(c.type==PointerType.Mouse || drag!=null) hover=inside && e.type!=PointerEventType.Exit || (drag!=null && inside)
                                 val start=drag?.first
+                                if(c.type==PointerType.Touch && start!=null && (client(p)-start).getDistance()*dens>viewConfiguration.touchSlop) touchPanned=true
                                 if(start!=null && armed) {
                                     val now=client(p);val dx=now.x-start.x;val dy=now.y-start.y
                                     if(drag?.second!=true) {
@@ -374,7 +406,7 @@ internal fun NativeCard(p:Props,onEvent:EventSink,interactiveContent:Boolean=fal
                                 }
                             }
                             PointerEventType.Press -> {
-                                owner[0]=c.id
+                                owner[0]=c.id;touchPanned=false
                                 pressed=true;hover=inside
                                 if(actsAsButton) { pointerFocus=true;runCatching { focusRequester.requestFocus() } }
                                 val start=client(p);val onContent=regions.rects.values.any { it.contains(Offset(root.x+p.x,root.y+p.y)) }
@@ -389,7 +421,7 @@ internal fun NativeCard(p:Props,onEvent:EventSink,interactiveContent:Boolean=fal
                                 state.waves.lastOrNull()?.releasePending=true;state.version++
                                 if(started && armed && start!=null) { emit("mdDragEnd",detail(client(p),start)) }
                                 dragging=false;offset=Offset.Zero;armed=false
-                                if(!started && start!=null && inside && m.interactive && !m.effectivelyDisabled)
+                                if(!started && !touchPanned && start!=null && inside && m.interactive && !m.effectivelyDisabled)
                                     emit("mdClick",mapOf("type" to "click","isTrusted" to true,"button" to 0,"detail" to 1,"clientX" to client(p).x.toDouble(),"clientY" to client(p).y.toDouble()))
                                 if(c.type==PointerType.Mouse) hover=inside else hover=false
                             }
@@ -398,7 +430,9 @@ internal fun NativeCard(p:Props,onEvent:EventSink,interactiveContent:Boolean=fal
                     }
                 }
             }) { measurables,constraints ->
-            val padH=(padding.left+padding.right);val padV=(padding.top+padding.bottom)
+            // The forced-colors border is inside the border box (box-sizing: border-box), like padding for layout.
+            val bw=style.borderWidth
+            val padH=(padding.left+padding.right+2*bw);val padV=(padding.top+padding.bottom+2*bw)
             val outer=basis[0]
             fun res(l:AWCSkeletonLength?,basis:Int):Double? = l?.resolve(if(basis==Constraints.Infinity) null else basis/dens.toDouble(),fontSize,16.0,fontSize*.5)
             val wl=if(m.fullWidth) AWCSkeletonLength(fraction=1.0) else appearance.width
@@ -412,8 +446,8 @@ internal fun NativeCard(p:Props,onEvent:EventSink,interactiveContent:Boolean=fal
             var h=res(hl,outer.maxHeight) ?: (contentH+padV)
             res(appearance.maxHeight,outer.maxHeight)?.let { h=min(h,it) };res(appearance.minHeight,outer.maxHeight)?.let { h=max(h,it) };h=max(h,padV)
             layout((w*dens).roundToInt(),(h*dens).roundToInt()) {
-                var y=padding.top*dens
-                for(pl in placeables) { pl.place((padding.left*dens).roundToInt(),y.roundToInt());y+=pl.height+gap*dens }
+                var y=(padding.top+bw)*dens
+                for(pl in placeables) { pl.place(((padding.left+bw)*dens).roundToInt(),y.roundToInt());y+=pl.height+gap*dens }
             }
         }
     }

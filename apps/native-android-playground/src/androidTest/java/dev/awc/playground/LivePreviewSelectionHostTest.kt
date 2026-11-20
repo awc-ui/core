@@ -62,7 +62,7 @@ class LivePreviewSelectionHostTest {
         frame=command(frameCommand)
         assertTrue("radio message below the target",root(frame,"md-radio").getDouble("height")>rest.getDouble("height")+10)
         val blur=events(command(method("setBlur")))+events(command(frameCommand))
-        assertTrue("setBlur emits mdBlur: $blur",blur.any { it.getString("name")=="mdBlur" })
+        assertTrue("setBlur emits mdBlur with a null detail (CustomEvent<void>, R4-22): $blur",blur.any { it.getString("name")=="mdBlur" && it.isNull("detail") })
         val selected=events(command(method("select")))+events(command(frameCommand))
         val change=selected.firstOrNull { it.getString("name")=="mdChange" }?.getJSONObject("detail")
         assertTrue("select() emits mdChange { checked, value }: $selected",change?.getBoolean("checked")==true && change.getString("value")=="pro")
@@ -71,7 +71,7 @@ class LivePreviewSelectionHostTest {
         assertTrue("selected icon colour hook",ink(frame,box,0x1B5E20)>20)
         assertTrue(command(method("getValidity")).getJSONObject("result").getBoolean("valid"))
         val focus=events(command(method("setFocus")))+events(command(frameCommand))
-        assertTrue("setFocus emits mdFocus: $focus",focus.any { it.getString("name")=="mdFocus" })
+        assertTrue("setFocus emits mdFocus with a null detail (CustomEvent<void>, R4-22): $focus",focus.any { it.getString("name")=="mdFocus" && it.isNull("detail") })
         command(method("syncValidityFromGroup"));assertRejected(token,method("setCustomValidity"))
     } }
     @Test fun chipHooksAndRetainedUpdates() { withHost { token,command->

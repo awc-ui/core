@@ -123,7 +123,7 @@ internal class AWCSelectRuntime {
     var show:()->Unit={};var close:()->Unit={};var reset:()->Unit={}
 }
 /** Test hook: the select's state (open, value, caret rotation, focus) by node id. */
-class AWCSelectInspection { val states=mutableMapOf<String,Map<String,Any?>>(); val events=mutableListOf<Triple<String,String,Any?>>() }
+class AWCSelectInspection { val states:MutableMap<String,Map<String,Any?>> = java.util.concurrent.ConcurrentHashMap(); val events:MutableList<Triple<String,String,Any?>> = java.util.concurrent.CopyOnWriteArrayList() } // g6-sync
 internal val LocalAWCSelectInspection=staticCompositionLocalOf<AWCSelectInspection?> { null }
 @Composable fun AWCSelectInspectionScope(inspection:AWCSelectInspection,content:@Composable ()->Unit)=CompositionLocalProvider(LocalAWCSelectInspection provides inspection,content=content)
 
@@ -195,11 +195,12 @@ internal val LocalAWCSelectInspection=staticCompositionLocalOf<AWCSelectInspecti
     LaunchedEffect(open,reduced) { val t=if(open) 1f else 0f;if(reduced) caretTurn.snapTo(t) else caretTurn.animateTo(t,tween(200,easing=CubicBezierEasing(.2f,0f,0f,1f))) }
 
     val trailing:@Composable ()->Unit={
-        if(p.bool("loading")) Box(Modifier.size(24.dp).inspectAWCNode(inspection,"trailing","trailing").inspectAWCNode(inspection,"loading-spinner","loading-spinner"),contentAlignment=Alignment.Center) {
+        // `.md-select__trailing` is aria-hidden: the clear button is pointer-only, the caret and the loader are decoration.
+        if(p.bool("loading")) Box(Modifier.size(24.dp).inspectAWCNode(inspection,"trailing","trailing").inspectAWCNode(inspection,"loading-spinner","loading-spinner").clearAndSetSemantics { },contentAlignment=Alignment.Center) {
             val size=appearance.spinnerSize ?: 22.0
             AWCLoadingIndicatorAppearanceScope(AWCLoadingIndicatorAppearance(size=size,shapeSize=size)) {
                 SelectSlotOr(slot,"loader") { AWCComponent("md-loading-indicator",mapOf("label" to p.str("loadingText","Loading…"))) } }
-        } else Row(Modifier.inspectAWCNode(inspection,"trailing","trailing"),horizontalArrangement=Arrangement.spacedBy((appearance.trailingGap ?: 2.0).dp),verticalAlignment=Alignment.CenterVertically) {
+        } else Row(Modifier.inspectAWCNode(inspection,"trailing","trailing").clearAndSetSemantics { },horizontalArrangement=Arrangement.spacedBy((appearance.trailingGap ?: 2.0).dp),verticalAlignment=Alignment.CenterVertically) {
             if(showClear) Box(Modifier.size(24.dp).onGloballyPositioned { clearBounds[0]=it.boundsInRoot() }.inspectAWCNode(inspection,"clear","clear")) {
                 val color=appearance.clearColor ?: appearance.caretColor ?: tint
                 AWCIconButtonAppearanceScope(AWCIconButtonAppearance(iconColor=color,stateLayerColor=color,iconSize=18.0,width=24.0,height=24.0)) {
@@ -257,7 +258,7 @@ internal val LocalAWCSelectInspection=staticCompositionLocalOf<AWCSelectInspecti
         // The menu and its rows measure under their own ids (`<id>::menu`, `<id>::opt<i>`) in the select's collector.
         CompositionLocalProvider(LocalNativeMenuCollector provides inspection?.collector) {
         AWCComponent("md-menu",buildMap { put("id",menuID);put("anchor",anchorID);put("placement",p.str("placement","bottom-start"));put("matchAnchorWidth",p.bool("matchTriggerWidth",true) || p.bool("fullWidth"))
-                put("emptyText",emptyText);put("listbox",true);put("listLabel",accessibleName.ifEmpty { "Options" });p["maxHeight"]?.let { put("maxHeight",it) };if(density!=null) put("density",density) },
+                put("emptyText",emptyText);if(registry==null) put("open",open);put("listbox",true);put("listLabel",accessibleName.ifEmpty { "Options" });p["maxHeight"]?.let { put("maxHeight",it) };if(density!=null) put("density",density) },
             onEvent={ n,_-> when(n) { "mdOpen"->{ if(!open) open=true;if(rt.lastEmit!="open") { rt.lastEmit="open";emit("mdOpen",null) } }
                 "mdClose"->{ if(open) open=false;if(rt.query.isNotEmpty()) rt.query="";if(rt.lastEmit!="close") { rt.lastEmit="close";emit("mdClose",null) } } } }) { s->
             when(s) {
@@ -297,8 +298,8 @@ private val SelectRoboto=androidx.compose.ui.text.font.FontFamily(androidx.compo
         .background(awcColor(tokens["--md-sys-color-surface-container"] ?: "#F3EDF7",Color.White))
         .drawBehind { drawRect(border,topLeft=Offset(0f,size.height-1.dp.toPx()),size=androidx.compose.ui.geometry.Size(size.width,1.dp.toPx())) }
         .padding(start=16.dp,end=44.dp,top=12.dp,bottom=13.dp)) {
-        if(rt.query.isEmpty()) androidx.compose.material3.Text(p.str("searchPlaceholder","Search…"),style=style.copy(color=awcColor(tokens["--md-sys-color-on-surface-variant"] ?: "#49454F",Color.Gray)),maxLines=1)
-        BasicTextField(rt.query,{ rt.query=it },Modifier.fillMaxWidth().height(19.dp).semantics { contentDescription=p.str("filterLabel").ifEmpty { if(p.str("label").isEmpty()) "Filter options" else "Filter ${p.str("label")}" } },
+        if(rt.query.isEmpty()) androidx.compose.material3.Text(p.str("searchPlaceholder","Search…"),Modifier.clearAndSetSemantics { },style=style.copy(color=awcColor(tokens["--md-sys-color-on-surface-variant"] ?: "#49454F",Color.Gray)),maxLines=1)
+        BasicTextField(rt.query,{ rt.query=it },Modifier.fillMaxWidth().height(19.dp).semantics { contentDescription=p.str("filterLabel").ifEmpty { if(p.str("label").isEmpty()) "Filter options" else "Filter ${p.str("label")}" };stateDescription="expanded";collapse { rt.close();true } },
             textStyle=style,singleLine=true,cursorBrush=SolidColor(style.color))
     }
 }

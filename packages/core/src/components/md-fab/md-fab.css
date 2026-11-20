@@ -417,6 +417,13 @@ slot[name="icon"] {
   .md-fab__state-layer {
     transition: none;
   }
+
+  /* The extend/collapse label morph and the menu-icon cross-fade are motion too. */
+  .md-fab__label,
+  .md-fab__icon,
+  ::slotted([slot="icon"]) {
+    transition: none;
+  }
 }
 
 /* ==========================================================

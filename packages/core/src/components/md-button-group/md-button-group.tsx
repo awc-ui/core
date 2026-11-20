@@ -158,6 +158,8 @@ export class MdButtonGroup {
   };
 
   private runMotion(target: HTMLElement) {
+    // Spatial motion: none when the user asks for reduced motion (as md-fab's morph and the natives).
+    if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
     const children = this.getChildren();
     const index = children.indexOf(target);
     if (index === -1) return;

@@ -50,7 +50,7 @@ extension AWCNativeView {
             }
             if b("clearable") && !optionSelection.isEmpty { Button(s("clearLabel", "Clear")) { set("value", multiple ? [] : ""); emit("mdChange", p("value")); if node.tag != "md-select" { emit("mdClear") } } }
             support
-        }.awcPreviewSheet(isPresented: Binding(get: { b("open") }, set: { showOverlay($0) })) {
+        }.awcPreviewSheet(isPresented: $local[awcBool: "open"], onChange: { emit($0 ? "mdOpen" : "mdClose") }) {
             VStack(spacing: 0) {
                 if previewEnabled {
                     HStack {

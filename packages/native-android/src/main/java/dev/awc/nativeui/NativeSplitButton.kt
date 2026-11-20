@@ -118,7 +118,7 @@ private val SplitFont = FontFamily(Font(R.font.awc_roboto_regular,FontWeight.Nor
     val interactions=remember { MutableInteractionSource() }
     val pressed by interactions.collectIsPressedAsState();val hovered by interactions.collectIsHoveredAsState()
     val active=hovered || focus.isFocusVisible || pressed
-    val reduced=!ValueAnimator.areAnimatorsEnabled()
+    val reduced=LocalAWCButtonReducedMotion.current ?: !ValueAnimator.areAnimatorsEnabled()
     val morph=LocalAWCSplitButtonShapeMorph.current
     val topInner by animateFloatAsState(if(trailing && checked) a.cornerRadius?.toFloat() ?: m.outerRadius
         else if(active && (!trailing || morph)) m.activeRadius else m.innerRadius,
@@ -251,7 +251,7 @@ private val SplitFont = FontFamily(Font(R.font.awc_roboto_regular,FontWeight.Nor
                 val text=awcCollapsedWhitespace(label)
                 Text(text,color=ink,style=style,softWrap=false,maxLines=1,
                     overflow=if(full) TextOverflow.Ellipsis else TextOverflow.Clip,
-                    modifier=Modifier.inspectAWCNode(inspection,"label","Label",AWCInspectionMetrics(typography=typo,display="Text",direction=direction)))
+                    modifier=Modifier.inspectAWCNode(inspection,"label","Label",AWCInspectionMetrics(typography=typo,display="Text",direction=direction)).awcExactTextWidth(text,style))
             }
         }.map { it.measure(Constraints(maxWidth=labelMax)) }
         val children=glyph+labels+authored

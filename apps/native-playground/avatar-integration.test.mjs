@@ -27,11 +27,11 @@ test('Avatar appearance exactly covers the 25 source hooks (palette included), t
   const hooks = [...new Set([...sourceCSS.matchAll(/var\(\s*(--md-avatar-[a-z0-9-]+)/g)].map(match => match[1]))].sort();
   assert.equal(hooks.length, 25);
   assert.deepEqual(hooks, AVATAR_APPEARANCE_FIELDS.map(f => f.cssProperty).sort());
-  // CEM drift (recorded in docs/native-parity/md-avatar-source-review.md): the IR lists the eleven
-  // documented hooks; the fourteen palette hooks are implemented but missing from the CEM.
+  // The stylesheet header documents every hook, the fourteen palette hooks included (gate-7 r3-06), so the IR lists all 25.
   const documented = avatar.cssProperties.map(p => p.name).sort();
-  assert.equal(documented.length, 11);
-  assert.deepEqual([...documented, ...palette].sort(), hooks);
+  assert.equal(documented.length, 25);
+  assert.deepEqual(documented, hooks);
+  assert.ok(palette.every(name => documented.includes(name)));
   for (const platform of ['ios', 'android']) {
     const policy = avatar.support[platform];
     assert.deepEqual([...policy.appearance.fields].sort(), AVATAR_APPEARANCE_FIELDS.map(f => f.name).sort(), `${platform} appearance declaration`);

@@ -39,7 +39,7 @@ External artifacts: `outputs/native-parity/md-divider` in the task workspace. `w
 
 Native lengths use points/dp rather than CSS pixels, and Compose rounds layout to device pixels. Android rejects unrepresentable layout coordinates by constraining internal paint dimensions to its finite integer layout range; ordinary editable dimensions are unaffected. SwiftUI's intrinsic vertical minimum uses a scalable16pt body em; Compose uses the inherited `LocalTextStyle` font size. Browser CSS font inheritance has no identical SwiftUI introspection API. Explicit parent dimensions are used for the comparison fixtures.
 
-CSS selector execution is replaced by a typed appearance API, and colors use resolved six-digit hex values. Browser `forced-colors` maps to increased-contrast ink on SwiftUI; equivalent Android high-contrast behavior and actual assistive-technology execution still need review. These are recorded gaps/boundaries, not accepted exceptions. No iOS SDK, simulator or connected iOS device is available; macOS SwiftUI checks cannot certify iOS.
+CSS selector execution is replaced by a typed appearance API, and colors use resolved six-digit hex values. `@media (forced-colors: active)` (line CanvasText) is the opt-in forced palette on both platforms (`.awcForcedColors()`, `AWCAccessibilityAppearanceScope(forcedColors = true)`; see forced-colors.md), compared with Chrome's forced-colors rendering in light and dark themes; increased contrast alone no longer replaces the authored colour (gate-7 r3-01, r3-02). No iOS SDK, simulator or connected iOS device is available; macOS SwiftUI checks cannot certify iOS.
 
 <!-- fi:ios-gate6:start -->
 ## iOS simulator execution (gate 6)

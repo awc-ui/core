@@ -161,14 +161,14 @@ internal fun fixture(tag: String): Map<String, AWCValue> = when(tag) {
     "md-skeleton" -> mapOf("lines" to 3, "animation" to "wave", "fullWidth" to true)
     "md-status-dot" -> mapOf("state" to "online", "label" to "Online")
     "md-toolbar" -> mapOf("variant" to "floating", "ariaLabelProp" to "Formatting")
-    "md-app-bar" -> mapOf("headline" to "Workspace", "subtitle" to "AWC Native", "leadingIcon" to "menu")
+    "md-app-bar" -> mapOf("headline" to "Your workspace", "leadingIcon" to "menu", "leadingIconLabel" to "Open navigation")
     "md-accordion" -> mapOf("exclusive" to true, "keepOneExpanded" to true, "defaultExpanded" to "0")
     "md-list" -> mapOf("selectionMode" to "single-select")
     "md-accordion-item" -> mapOf("headline" to "A shared design language", "supportingText" to "Built for every surface", "expanded" to true)
     "md-tab" -> mapOf("label" to "Overview", "active" to true)
     "md-tabs" -> mapOf("ariaLabelProp" to "Workspace sections")
     "md-navigation-tab" -> mapOf("label" to "Home", "icon" to "home", "active" to true)
-    "md-navigation-rail-tab" -> mapOf("label" to "Home", "icon" to "home")
+    "md-navigation-rail-tab" -> mapOf("label" to "Home", "icon" to "home", "active" to true)
     "md-step" -> mapOf("label" to "Account details", "description" to "First step", "active" to true)
     "md-breadcrumb-item" -> mapOf("href" to "#projects")
     "md-table-pagination" -> mapOf("count" to 128, "rowsPerPage" to 10, "rowsPerPageOptions" to listOf(10, 25, 50), "showFirstLast" to true)
@@ -186,6 +186,8 @@ internal fun fixture(tag: String): Map<String, AWCValue> = when(tag) {
 @Composable internal fun SampleSlot(tag: String, slot: String, event: (String, AWCValue) -> Unit) {
     if(slot == "expanded" || slot == "submenu" || slot == "expanded-content") { Text("Additional native content", Modifier.padding(12.dp)); return }
     if(slot == "actions") { AWCComponent("md-button", mapOf("variant" to "text"), onEvent = event) { if(it == "") Text("Learn more") }; return }
+    // md-app-bar's Laboratory recipe: one trailing action.
+    if(tag == "md-app-bar" && slot == "trailing") { AWCComponent("md-icon-button", mapOf("icon" to "search", "aria-label" to "Search"), onEvent = event); return }
     if(slot != "") return
     when(tag) {
         // Items are direct children of the group, as in the source markup (a wrapping layout would not be owned).
@@ -194,7 +196,8 @@ internal fun fixture(tag: String): Map<String, AWCValue> = when(tag) {
         "md-navigation-bar" -> listOf("Home" to "home", "Explore" to "explore", "Saved" to "bookmark").forEach { (label, icon) -> AWCComponent("md-navigation-tab", mapOf("label" to label, "icon" to icon), onEvent = event) }
         "md-navigation-rail" -> {
             val child = when(tag) { "md-navigation-rail" -> "md-navigation-rail-tab"; else -> "md-navigation-tab" }
-            listOf("Home" to "home", "Search" to "search", "Settings" to "settings").forEach { (label, icon) -> AWCComponent(child, mapOf("label" to label, "icon" to icon), onEvent = event) }
+            listOf("Home" to "home", "Saved" to "favorite", "Settings" to "settings").forEachIndexed { index, (label, icon) ->
+                AWCComponent(child, mapOf("label" to label, "icon" to icon) + (if (index == 0) mapOf("active" to true) else emptyMap()), onEvent = event) }
         }
         "md-stepper" -> listOf("Account", "Preferences", "Review").forEach { title -> AWCComponent("md-step", mapOf("label" to title, "hideActions" to true), onEvent = event) { if(it == "") Text("Complete the $title step.") } }
         "md-button-group", "md-segmented-button-set" -> listOf("Day", "Week", "Month").forEach { title -> AWCComponent(if(tag == "md-button-group") "md-button" else "md-segmented-button", mapOf("label" to title, "value" to title.lowercase(), "variant" to "outlined", "toggle" to true), onEvent = event) }

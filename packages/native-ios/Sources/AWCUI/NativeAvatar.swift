@@ -181,6 +181,8 @@ struct AWCNativeAvatar: View {
     let slotItems: [AWCNode]
     let child: (AWCNode) -> AnyView
     @State private var loader = AWCAvatarImageLoader()
+    /// `loading="lazy"`: the avatar has come within the lazy-load distance of the window (Chrome: 1250 px).
+    @State private var nearViewport = false
     @Environment(\.awcAvatarAppearance) private var inheritedAppearance
     @Environment(\.awcAvatarAppearanceTargets) private var appearanceTargets
     @Environment(\.awcAvatarPartAppearance) private var inheritedParts
@@ -189,6 +191,7 @@ struct AWCNativeAvatar: View {
     @Environment(\.awcAvatarViewport) private var viewport
     @Environment(\.awcAccordionViewport) private var panelViewport
     @Environment(\.layoutDirection) private var direction
+    @Environment(\.awcForcedColors) private var forced
 
     private func s(_ k: String, _ d: String = "") -> String { properties[k]?.string ?? d }
     private func b(_ k: String, _ d: Bool) -> Bool { properties[k]?.bool ?? d }
@@ -249,10 +252,11 @@ struct AWCNativeAvatar: View {
         let neutral = (a.containerColor.map { Color(awcHex: $0) } ?? Color(awcHex: token("surface-container-highest", "#E6E0E9")),
                        a.labelColor.map { Color(awcHex: $0) } ?? Color(awcHex: token("on-surface-variant", "#49454F")))
         let colors = palette > 0 ? paletteColors(palette) : neutral
-        let container: Color = mode == "image" ? .clear : colors.0, ink = colors.1
+        // forced-colors: `--_container-color: ButtonFace; --_label-color: ButtonText` (the host colour is not forced away).
+        let container: Color = forced.map { Color(awcHex: $0.buttonFace) } ?? (mode == "image" ? .clear : colors.0), ink = forced.map { Color(awcHex: $0.buttonText) } ?? colors.1
         let labelSize = a.labelFontSize.map { Self.resolve($0, em: 16) } ?? sizeValue * 0.4
         let iconSize = a.iconSize.map { Self.resolve($0, em: 16) } ?? sizeValue * 0.6
-        let outline = a.outlineWidth.map { max(0, Self.resolve($0, em: 16)) } ?? 0
+        let outline = forced != nil ? 1 : a.outlineWidth.map { max(0, Self.resolve($0, em: 16)) } ?? 0
         // CSS border-radius corners are physical: shape, outline and clip are drawn left-to-right
         // (SwiftUI would mirror them); the content keeps the authored direction.
         return ZStack {
@@ -273,11 +277,14 @@ struct AWCNativeAvatar: View {
                     .awcBadgeOverlay { ForEach(badges) { child($0) } }
                     .environment(\.layoutDirection, direction)
             }
-            if outline > 0 { shape.strokeBorder(a.outlineColor.map { Color(awcHex: $0) } ?? .clear, lineWidth: outline) }
         }
         .frame(width: size, height: size)
         .compositingGroup()
         .clipShape(shape)
+        // The outline is drawn after the clip, not inside it: inside, its outer edge was anti-aliased twice (stroke coverage
+        // times clip coverage on the same circle edge), which left the top pixel row of a 1 pt forced-colors outline at 91 % on a
+        // 3x screen (s7-8-01, probe [20, 0.25] native 233 vs Chrome 255). Drawn once, the edge is anti-aliased once.
+        .overlay { if outline > 0 { shape.strokeBorder(forced.map { Color(awcHex: $0.buttonText) } ?? a.outlineColor.map { Color(awcHex: $0) } ?? .clear, lineWidth: outline) } }
         .environment(\.layoutDirection, .leftToRight)
         .awcInspect(nodeID: nodeID, name: "md-avatar") { _ in
             let c = container.resolve(in: EnvironmentValues()), l = ink.resolve(in: EnvironmentValues())
@@ -287,9 +294,18 @@ struct AWCNativeAvatar: View {
                     "radii": .array(corners.radii(in: CGSize(width: size, height: size)).map { .array([.number(Double($0.width)), .number(Double($0.height))]) })]
         }
         .modifier(AWCAvatarAccessibility(label: a11y))
-        .task(id: failed ? src : src + "\u{0}" + s("crossorigin")) { await loader.load(src, cors: s("crossorigin"), emit: emit) }
+        .onGeometryChange(for: Bool.self) { proxy in
+            let f = proxy.frame(in: .global), w = Self.windowSize
+            return f.width > 0 && CGRect(origin: .zero, size: w).insetBy(dx: -1250, dy: -1250).intersects(f)
+        } action: { near in if near && !nearViewport { nearViewport = true } }
+        .task(id: (failed ? src : src + "\u{0}" + s("crossorigin")) + (deferLoad ? "\u{1}" : "")) {
+            guard !deferLoad else { return }
+            await loader.load(src, cors: s("crossorigin"), emit: emit)
+        }
     }
 
+    /// The image waits while a lazy avatar is far from the viewport.
+    private var deferLoad: Bool { s("loading", "lazy") != "eager" && !nearViewport }
     static func resolve(_ l: AWCAvatarLength, em: Double) -> Double { l.points + l.em * em + l.rem * 16 + l.fraction * em + l.ch * em * 0.5 }
     static var windowSize: CGSize {
         #if canImport(AppKit)
@@ -318,7 +334,7 @@ struct AWCNativeAvatar: View {
         let fontSize = part.initialsFontSize.map { Self.resolve($0, em: labelSize) } ?? labelSize
         let tracking = part.initialsLetterSpacing.map { Self.resolve($0, em: fontSize) } ?? a.labelLetterSpacing.map { Self.resolve($0, em: fontSize) } ?? fontSize * 0.05
         let weight = part.initialsFontWeight ?? a.labelFontWeight ?? Double(theme.tokens["--md-sys-typescale-title-medium-font-weight"] ?? "") ?? 500
-        let color = part.initialsColor.map { Color(awcHex: $0) } ?? ink
+        let color = forced == nil ? part.initialsColor.map { Color(awcHex: $0) } ?? ink : ink
         let font = Self.font(family: a.labelFontFamily, size: fontSize, weight: weight)
         // CSS letter-spacing follows every character, including the last: the run (with its
         // trailing space) is what the flex container centers.
@@ -346,7 +362,7 @@ struct AWCNativeAvatar: View {
         let box = CGFloat(iconSize), items = slotItems.filter { $0.tag != "md-badge" }
         if items.isEmpty && slotItems.isEmpty {
             let glyph = CGFloat(part.iconFontSize.map { Self.resolve($0, em: iconSize) } ?? iconSize)
-            Text("person").font(AWCNativeFonts.symbol(size: glyph)).foregroundStyle(part.iconColor.map { Color(awcHex: $0) } ?? ink)
+            Text("person").font(AWCNativeFonts.symbol(size: glyph)).foregroundStyle(forced == nil ? part.iconColor.map { Color(awcHex: $0) } ?? ink : ink)
                 .lineLimit(1).fixedSize().frame(height: glyph)
                 .frame(width: box, height: box, alignment: .topLeading).environment(\.layoutDirection, .leftToRight)
                 .awcInspect(nodeID: nodeID, part: "icon", name: "icon") { _ in ["fontSize": .number(Double(glyph)), "box": .number(iconSize)] }

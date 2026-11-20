@@ -49,8 +49,8 @@ public struct AWCTextFieldAppearance: Equatable, Sendable {
 
 /// Typed counterparts of md-text-field's `::part()` rules (container, label, input, supporting-text, counter). Part values
 /// come from the outer tree, so they win over the hooks and every internal hover, focus, error and disabled rule, as
-/// `::part()` declarations do. Colours are #RRGGBB or #RRGGBBAA. The chips part styles nothing of its own: chips are
-/// md-chip children (use their chip appearance).
+/// `::part()` declarations do. Colours are #RRGGBB or #RRGGBBAA. The chips part takes the chips box's background and gap (the
+/// chips themselves are md-chip children: use their chip appearance).
 public struct AWCTextFieldPartAppearance: Equatable, Sendable {
     /// `::part(container) { background-color }` (both variants; the outlined container is transparent by default).
     public let containerColor: String?
@@ -60,19 +60,24 @@ public struct AWCTextFieldPartAppearance: Equatable, Sendable {
     public let inputColor: String?, caretColor: String?
     /// `::part(supporting-text) { color }` (supporting and error text) and `::part(counter) { color }`.
     public let supportingTextColor: String?, counterColor: String?
+    /// `::part(chips) { background-color }` and `{ gap }` (between chips, and between their rows with `chips-wrap`; default 4).
+    public let chipsBackgroundColor: String?, chipsGap: Double?
     public init(containerColor: String? = nil, labelColor: String? = nil, inputColor: String? = nil, caretColor: String? = nil,
-                supportingTextColor: String? = nil, counterColor: String? = nil) {
+                supportingTextColor: String? = nil, counterColor: String? = nil, chipsBackgroundColor: String? = nil, chipsGap: Double? = nil) {
         self.containerColor = awcFieldColor(containerColor); self.labelColor = awcFieldColor(labelColor); self.inputColor = awcFieldColor(inputColor)
         self.caretColor = awcFieldColor(caretColor); self.supportingTextColor = awcFieldColor(supportingTextColor); self.counterColor = awcFieldColor(counterColor)
+        self.chipsBackgroundColor = awcFieldColor(chipsBackgroundColor); self.chipsGap = chipsGap.flatMap { $0.isFinite && $0 >= 0 ? $0 : nil }
     }
     public init(values v: [String: AWCValue]) {
         func t(_ k: String) -> String? { (v[k]?.string).flatMap { $0.isEmpty ? nil : $0 } }
         self.init(containerColor: t("containerColor"), labelColor: t("labelColor"), inputColor: t("inputColor"), caretColor: t("caretColor"),
-                  supportingTextColor: t("supportingTextColor"), counterColor: t("counterColor"))
+                  supportingTextColor: t("supportingTextColor"), counterColor: t("counterColor"), chipsBackgroundColor: t("chipsBackgroundColor"),
+                  chipsGap: v["chipsGap"]?.number)
     }
     public func merging(_ o: Self) -> Self {
         .init(containerColor: o.containerColor ?? containerColor, labelColor: o.labelColor ?? labelColor, inputColor: o.inputColor ?? inputColor,
-              caretColor: o.caretColor ?? caretColor, supportingTextColor: o.supportingTextColor ?? supportingTextColor, counterColor: o.counterColor ?? counterColor)
+              caretColor: o.caretColor ?? caretColor, supportingTextColor: o.supportingTextColor ?? supportingTextColor, counterColor: o.counterColor ?? counterColor,
+              chipsBackgroundColor: o.chipsBackgroundColor ?? chipsBackgroundColor, chipsGap: o.chipsGap ?? chipsGap)
     }
 }
 private struct AWCTextFieldPartAppearanceKey: EnvironmentKey { static let defaultValue = AWCTextFieldPartAppearance() }

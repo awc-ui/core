@@ -25,6 +25,7 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -235,13 +236,20 @@ internal fun NativeAvatar(p:Props,emit:EventSink,content:Slot?) {
         val accent=listOf("primary" to "#6750A4","tertiary" to "#7D5260","secondary" to "#625B71")[palette-5];val tone=token(accent.first,accent.second)
         (a.paletteContainerColors[palette]?.let(::rgb) ?: mix(tone,.22,token("surface","#FEF7FF"))) to (a.paletteLabelColors[palette]?.let(::rgb) ?: mix(tone,.72,token("on-surface","#1C1B1F")))
     } else (a.containerColor?.let(::rgb) ?: rgb(token("surface-container-highest","#E6E0E9"))) to (a.labelColor?.let(::rgb) ?: rgb(token("on-surface-variant","#49454F")))
-    val container=if(mode=="image") Color.Transparent else colors.first;val ink=colors.second
+    // forced-colors: `--_container-color: ButtonFace; --_label-color: ButtonText; --_outline: 1px ButtonText`.
+    val forced=awcForcedColors()
+    val container=forced?.let { rgb(it.buttonFace) } ?: if(mode=="image") Color.Transparent else colors.first;val ink=forced?.let { rgb(it.buttonText) } ?: colors.second
     val shape=a.containerShape ?: when(p.str("shape","circle")) { "rounded"->AWCCornerShape.uniform(points=tokens["--md-sys-shape-corner-medium"]?.removeSuffix("px")?.toDoubleOrNull() ?: 12.0)
         "square"->AWCCornerShape.uniform();else->AWCCornerShape.uniform(fraction=.5) }
     val labelSize=a.labelFontSize?.let { avatarLength(it,16.0) } ?: side*.4
     val iconSize=a.iconSize?.let { avatarLength(it,16.0) } ?: side*.6
-    val outline=a.outlineWidth?.let { max(0.0,avatarLength(it,16.0)) } ?: 0.0
-    LaunchedEffect(if(failed) src else src+"\u0000"+cors) {
+    val outline=if(forced!=null) 1.0 else a.outlineWidth?.let { max(0.0,avatarLength(it,16.0)) } ?: 0.0
+    // loading="lazy" (default): the request waits until the avatar is within Chrome's lazy-load distance (1250 px) of the window.
+    var nearViewport by remember { mutableStateOf(false) }
+    val rootView=androidx.compose.ui.platform.LocalView.current.rootView
+    val deferLoad=p.str("loading","lazy")!="eager" && !nearViewport
+    LaunchedEffect((if(failed) src else src+"\u0000"+cors)+(if(deferLoad) "\u0001" else "")) {
+        if(deferLoad) return@LaunchedEffect
         // A displayed image is requested again when its CORS mode changes (as Chrome does);
         // a failed source stays failed until `src` itself changes.
         if(src.isEmpty()) { loader.source=null;loader.image=null;loader.phase="loading";return@LaunchedEffect }
@@ -273,8 +281,10 @@ internal fun NativeAvatar(p:Props,emit:EventSink,content:Slot?) {
     val semantics=if(a11y!=null) Modifier.clearAndSetSemantics { contentDescription=a11y;role=Role.Image } else Modifier.clearAndSetSemantics { hideFromAccessibility() }
     // CSS corners are physical: AWCCornerShape does not mirror under RTL; the outline is the
     // source's inset ring (outline-offset: -width) drawn over the content, inside the clip.
-    Box(semantics.size(side.dp).onGloballyPositioned { val o=it.positionInRoot();bounds=Rect(o.x/dens,o.y/dens,(o.x+it.size.width)/dens,(o.y+it.size.height)/dens) }
-        .clip(shape).background(container,shape).then(if(outline>0) Modifier.border(outline.dp,a.outlineColor?.let(::rgb) ?: Color.Transparent,shape) else Modifier),
+    Box(semantics.size(side.dp).onGloballyPositioned { val o=it.positionInRoot();bounds=Rect(o.x/dens,o.y/dens,(o.x+it.size.width)/dens,(o.y+it.size.height)/dens)
+        if(!nearViewport) { val w=it.boundsInWindow();val m=1250*dens
+            if(w.width>0f && w.right>-m && w.bottom>-m && w.left<rootView.width+m && w.top<rootView.height+m) nearViewport=true } }
+        .clip(shape).background(container,shape).then(if(outline>0) Modifier.border(outline.dp,forced?.let { rgb(it.buttonText) } ?: a.outlineColor?.let(::rgb) ?: Color.Transparent,shape) else Modifier),
         contentAlignment=Alignment.Center) {
         when(mode) {
             "image"->if(image!=null) {
@@ -288,7 +298,7 @@ internal fun NativeAvatar(p:Props,emit:EventSink,content:Slot?) {
             "initials"->if(labelFont>0) {
                 val rtl=avatarRtlRun(initials)
                 CompositionLocalProvider(LocalLayoutDirection provides if(rtl) LayoutDirection.Rtl else LayoutDirection.Ltr) {
-                    AvatarInitialsRun(initials,TextStyle(color=part.initialsColor?.let(::rgb) ?: ink,fontSize=sp(labelFont),fontFamily=labelFamily,fontWeight=labelWeight,letterSpacing=sp(tracking),
+                    AvatarInitialsRun(initials,TextStyle(color=(if(forced==null) part.initialsColor?.let(::rgb) else null) ?: ink,fontSize=sp(labelFont),fontFamily=labelFamily,fontWeight=labelWeight,letterSpacing=sp(tracking),
                         fontFeatureSettings="tnum",platformStyle=PlatformTextStyle(includeFontPadding=false)),tracking,labelFont*dens,labelMetrics,rtl) { initialsBounds=it }
                 } }
             else->{
@@ -309,7 +319,7 @@ internal fun NativeAvatar(p:Props,emit:EventSink,content:Slot?) {
                             // line at its top-left (direction: ltr), on the symbol font's CSS baseline.
                             Box(Modifier.layoutId(AvatarIconFallback)) {
                                 AvatarBaselineBox(glyph*dens,iconMetrics,centered=false) {
-                                    BasicText("person",style=TextStyle(color=part.iconColor?.let(::rgb) ?: ink,fontSize=sp(glyph),fontFamily=AvatarSymbols,fontWeight=FontWeight.Normal,
+                                    BasicText("person",style=TextStyle(color=(if(forced==null) part.iconColor?.let(::rgb) else null) ?: ink,fontSize=sp(glyph),fontFamily=AvatarSymbols,fontWeight=FontWeight.Normal,
                                         letterSpacing=0.sp,fontFeatureSettings="liga",platformStyle=PlatformTextStyle(includeFontPadding=false)),maxLines=1,softWrap=false)
                                 }
                             }

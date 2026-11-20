@@ -36,6 +36,9 @@ import kotlin.math.abs
  */
 class NativeOTPFieldParityTest {
     @get:Rule val compose=createComposeRule()
+    // Touch mode is per display (Android 14+): a key-driven suite earlier in the run leaves keyboard mode, where a field takes
+    // initial focus when composed. Chrome's baseline is a pointer session: start and leave every test in touch mode.
+    @org.junit.Before @org.junit.After fun touchMode() { runCatching { androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().setInTouchMode(true) } }
     private var case by mutableStateOf(JSONObject("{\"name\":\"init\",\"props\":{},\"width\":440}"))
     private var epoch by mutableIntStateOf(0)
     private val collector=AWCInspectionCollector()
@@ -44,6 +47,8 @@ class NativeOTPFieldParityTest {
     private var checks=0;private val failures=mutableListOf<String>();private val report=JSONArray()
     private fun check(ok:Boolean,label:String) { checks++;if(!ok) failures+=label }
     private fun px(s:String?)=s?.trim()?.removeSuffix("px")?.toDoubleOrNull()
+    private fun json(o:JSONObject):Map<String,Any?> = o.keys().asSequence().associateWith { k-> o.get(k).let { if(it is JSONObject) json(it) else if(it==JSONObject.NULL) null else it } }
+    private fun parts(o:JSONObject?)=if(o==null) AWCOTPFieldPartAppearance() else AWCOTPFieldPartAppearance.fromValues(json(o))
     private fun hooks(h:JSONObject?):AWCOTPFieldAppearance { if(h==null) return AWCOTPFieldAppearance()
         val t="--md-otp-field-"
         fun l(k:String)=if(h.has(t+k)) px(h.getString(t+k)) else null
@@ -64,14 +69,14 @@ class NativeOTPFieldParityTest {
             CompositionLocalProvider(LocalLayoutDirection provides if(c.optString("dir")=="rtl") LayoutDirection.Rtl else LayoutDirection.Ltr) {
                 Box(Modifier.absoluteOffset(24.dp,24.dp).width(c.optDouble("width",440.0).dp)) {
                     AWCDensityScope(if(c.isNull("globalDensity") || !c.has("globalDensity")) 0.0 else c.getDouble("globalDensity")) { AWCFieldReducedMotionScope(true) {
-                        AWCOTPFieldAppearanceScope(hooks(c.optJSONObject("hooks"))) { AWCOTPFieldInspectionScope({ values=it }) { AWCInspectionScope(collector) {
+                        AWCOTPFieldAppearanceScope(hooks(c.optJSONObject("hooks"))) { AWCOTPFieldPartAppearanceScope(parts(c.optJSONObject("parts"))) { AWCOTPFieldInspectionScope({ values=it }) { AWCInspectionScope(collector) {
                             AWCOTPFieldControllerScope(controller) {
                                 val slotText=if(c.isNull("slot")) null else c.optString("slot")
                                 // The separator slot as authored on the page: the text in the host's 16px Roboto, on-surface-variant.
                                 AWCComponent("md-otp-field",props(c)) { name-> if(name=="separator" && slotText!=null)
-                                    BasicText(slotText,style=TextStyle(fontFamily=roboto,fontSize=16.sp,color=Color(if(c.optString("theme")=="dark") 0xFFCAC4D0 else 0xFF49454F))) }
+                                    BasicText(slotText,style=TextStyle(fontFamily=roboto,fontSize=16.sp,color=if(c.optJSONObject("parts")?.has("separatorColor")==true) androidx.compose.material3.LocalContentColor.current else Color(if(c.optString("theme")=="dark") 0xFFCAC4D0 else 0xFF49454F))) }
                             }
-                        } } }
+                        } } } }
                     } }
                 }
             }
@@ -83,6 +88,19 @@ class NativeOTPFieldParityTest {
         for(c in CardWeb.document("OTPFieldWebPaint.json").getJSONArray("cases").objects()) if(only==null || only.split(",").any { c.getString("name").contains(it) }) run(c)
         AccordionEvidence.log("otpfield-paint",JSONObject().put("checks",checks).put("failures",failures.size).put("failureList",JSONArray(failures.take(300))).put("report",report))
         assertTrue("${failures.size} of $checks failed:\n"+failures.take(80).joinToString("\n"),failures.isEmpty())
+    }
+    /** 9-6 (S71-05): every cell's accessibility label follows `cellLabelTemplate` ({index} 1-based, {length} the cell count). */
+    @Test fun otpFieldCellLabelTemplate() {
+        content()
+        fun labels(props:JSONObject,n:Int):List<String> { values=emptyMap();collector.clear();case=JSONObject().put("name","labels").put("props",props).put("width",440);epoch++;settle()
+            return (0 until n).map { values["cell-$it"]?.get("accessibilityLabel")?.toString() ?: "-" } }
+        check(labels(JSONObject(),6)==(1..6).map { "Character $it of 6" },"default template ${labels(JSONObject(),6)}")
+        val custom=labels(JSONObject().put("cellLabelTemplate","Digit {index} of {length}"),6)
+        check(custom==(1..6).map { "Digit $it of 6" },"custom template $custom")
+        val four=labels(JSONObject().put("cellLabelTemplate","Digit {index} of {length}").put("length",4),4)
+        check(four==(1..4).map { "Digit $it of 4" },"custom template, length 4: $four")
+        AccordionEvidence.log("otpfield-cell-label",JSONObject().put("checks",checks).put("failures",failures.size).put("failureList",JSONArray(failures.take(50))))
+        assertTrue("${failures.size} of $checks failed:\n"+failures.take(20).joinToString("\n"),failures.isEmpty())
     }
     private fun settle() { repeat(3) { compose.waitForIdle();compose.mainClock.advanceTimeBy(64) };compose.waitForIdle() }
     private fun run(c:JSONObject) {
@@ -108,6 +126,7 @@ class NativeOTPFieldParityTest {
             check(v(p,"text")==w.getString("value"),"$name cell $i text ${v(p,"text")} vs ${w.getString("value")}")
             check(close(v(p,"color"),w.getString("color")),"$name cell $i colour ${v(p,"color")} vs ${w.getString("color")}")
             near((v(p,"fontSize") as? Double) ?: -1.0,w.getDouble("fontSize"),"cell $i font",.01)
+            w.optString("background").takeIf { it.isNotEmpty() && !it.endsWith(", 0)") }?.let { bg-> check(close(v(p,"background"),bg),"$name cell $i background ${v(p,"background")} vs $bg") }
             check(v(p,"focused")==w.getBoolean("focused"),"$name cell $i focused")
             check(v(p,"secure")==(w.optString("type")=="password"),"$name cell $i secure") }
         check(nodes.count { it.name.startsWith("cell-") }==cells.size,"$name cell count")

@@ -103,6 +103,26 @@ class NativeIconButtonParityTest {
         compose.onNodeWithText("favorite",useUnmergedTree=true).assertDoesNotExist()
     }
 
+    // R1-07: the selectedIcon property. toggle + selected shows the selectedIcon glyph in the selected-icon part; not selected shows
+    // the icon glyph in the icon part; a selected non-toggle ignores selectedIcon and keeps the default slot (as on SwiftUI).
+    @Test fun selectedIconPropertyFollowsToggleAndSelection() {
+        var toggle by mutableStateOf(true); var selected by mutableStateOf(true)
+        val collector=AWCInspectionCollector()
+        compose.setContent { AWCTheme { AWCInspectionScope(collector) {
+            AWCComponent("md-icon-button",mapOf("icon" to "favorite","selectedIcon" to "close","toggle" to toggle,"selected" to selected),modifier=Modifier.testTag("root"))
+        } } }
+        fun parts()=compose.runOnIdle { collector.snapshot().nodes.associate { it.id to it.bounds } }
+        fun shows(glyph:String,hidden:String) { compose.onNodeWithText(glyph,useUnmergedTree=true).assertExists();compose.onNodeWithText(hidden,useUnmergedTree=true).assertDoesNotExist() }
+        shows("close","favorite")
+        parts().let { assertEquals(24.0,it["component.selected-icon"]!!.width,.5);assertNull(it["component.icon"]) }
+        compose.runOnIdle { selected=false }
+        shows("favorite","close")
+        parts().let { assertEquals(24.0,it["component.icon"]!!.width,.5);assertNull(it["component.selected-icon"]) }
+        compose.runOnIdle { toggle=false;selected=true }
+        shows("favorite","close")
+        parts().let { assertNotNull(it["component.icon"]);assertNull(it["component.selected-icon"]) }
+    }
+
     @Test fun editorEmptyTextSlotSuppressesFallbackUntilOmitted() {
         var slotValue by mutableStateOf<String?>("")
         compose.setContent { AWCTheme {

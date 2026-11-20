@@ -1241,9 +1241,14 @@
         "Dedicated native toolbar (SwiftUI / Compose): docked bar and floating pill (horizontal or vertical), standard / vibrant colours, the leading / default / trailing sections with their gaps and alignment, the paired FAB, density, and the opt-in scrolling / wrapping overflow, computed from the authored children as the source.",
         "Roving focus over the icon buttons and buttons (one Tab stop, arrows on the bar's axis, Home / End, wrap; soft-disabled members reachable, hidden / disabled / aria-hidden ones skipped; other controls keep their own stop), re-synced when children change; the toolbar-only icon-button tints; role toolbar with orientation and name, or a generic container.",
         "Hooks through .awcToolbarAppearance(…) / AWCToolbarAppearanceScope; setFocus() through AWCToolbarController.",
-        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: paint and geometry of every configuration, roving focus, Tab order, the dynamic re-sync, pointer state layers, RTL and density."
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: paint and geometry of every configuration, roving focus, Tab order, the dynamic re-sync, pointer state layers, RTL and density.",
+        "Typed ::part() targets (AWCToolbarPartAppearance): container (the background: the floating pill, or a fill over the docked content box) and fab-container as a box (AWCPartBox: background, border width / colour, corner radius and physical padding with the layout shift; the bar and the host grow around the paired FAB)."
       ],
       "verification": "not-device-verified",
+      "visualParts": [
+        "container",
+        "fab-container"
+      ],
       "appearance": {
         "api": ".awcToolbarAppearance(AWCToolbarAppearance)",
         "fields": [
@@ -1291,9 +1296,14 @@
         "Dedicated native toolbar (SwiftUI / Compose): docked bar and floating pill (horizontal or vertical), standard / vibrant colours, the leading / default / trailing sections with their gaps and alignment, the paired FAB, density, and the opt-in scrolling / wrapping overflow, computed from the authored children as the source.",
         "Roving focus over the icon buttons and buttons (one Tab stop, arrows on the bar's axis, Home / End, wrap; soft-disabled members reachable, hidden / disabled / aria-hidden ones skipped; other controls keep their own stop), re-synced when children change; the toolbar-only icon-button tints; role toolbar with orientation and name, or a generic container.",
         "Hooks through .awcToolbarAppearance(…) / AWCToolbarAppearanceScope; setFocus() through AWCToolbarController.",
-        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: paint and geometry of every configuration, roving focus, Tab order, the dynamic re-sync, pointer state layers, RTL and density."
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: paint and geometry of every configuration, roving focus, Tab order, the dynamic re-sync, pointer state layers, RTL and density.",
+        "Typed ::part() targets (AWCToolbarPartAppearance): container (the background: the floating pill, or a fill over the docked content box) and fab-container as a box (AWCPartBox: background, border width / colour, corner radius and physical padding with the layout shift; the bar and the host grow around the paired FAB)."
       ],
       "verification": "not-device-verified",
+      "visualParts": [
+        "container",
+        "fab-container"
+      ],
       "appearance": {
         "api": "AWCToolbarAppearanceScope(AWCToolbarAppearance)",
         "fields": [

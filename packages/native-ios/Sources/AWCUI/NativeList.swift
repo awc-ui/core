@@ -43,6 +43,9 @@ struct AWCListModel: Equatable {
     // Reorder: the displayed order (the source moves light-DOM rows), the live pointer drag and its ghost slot.
     var order: [String]? = nil
     var dragID: String? = nil
+    var dropPoint: CGPoint? = nil
+    /// Rows the last drop displaced (their frames are stale for one frame, C65-01); other rows hover from the first frame.
+    var dropShifted: Set<String> = []
     var dragDelta = 0.0
     var dragTarget = 0
     var placeholder: AWCListPlaceholder? = nil
@@ -54,6 +57,8 @@ struct AWCListModel: Equatable {
     @ObservationIgnored var dragFrom = 0
     @ObservationIgnored var dragStartY = 0.0
     @ObservationIgnored var rowGap = 0.0
+    /// Time (ms) of the drag move that last changed the drop target: the glides start there (see `glideStart`).
+    @ObservationIgnored var targetChangedAt = 0.0
     /// Rows re-inserted by a reorder: their transitions restart from the new style (no animation).
     @ObservationIgnored var snapNext: Set<String> = []
     /// Bumped when a reorder re-inserts a row (its transitions restart from rest).
@@ -67,7 +72,7 @@ struct AWCListModel: Equatable {
         guard reorderable, dragID == nil, let from = rows.firstIndex(where: { $0.id == id }), rows[from].node.properties["disabled"]?.bool != true else { return false }
         dragRects = rows.map { r in let f = frames[r.id] ?? .zero; return (r.id, Double(f.minY), Double(f.height), Double(f.midY)) }
         rowGap = dragRects.count > 1 ? dragRects[1].top - dragRects[0].top : dragRects.first?.height ?? 0
-        dragFrom = from; dragTarget = from; dragStartY = y; dragDelta = 0; dragID = id
+        dragFrom = from; dragTarget = from; dragStartY = y; dragDelta = 0; dragID = id; dropPoint = nil
         placeholder = .init(top: dragRects[from].top - Double(listFrame.minY), height: dragRects[from].height)
         return true
     }
@@ -81,7 +86,10 @@ struct AWCListModel: Equatable {
             if i < dragFrom && center < r.center { target = min(target, i) }
             if i > dragFrom && center > r.center { target = max(target, i) }
         }
-        if target != dragTarget { dragTarget = target; placeholder = .init(top: dragRects[target].top - Double(listFrame.minY), height: dragRects[dragFrom].height) }
+        if target != dragTarget {
+            dragTarget = target; targetChangedAt = CACurrentMediaTime() * 1000
+            placeholder = .init(top: dragRects[target].top - Double(listFrame.minY), height: dragRects[dragFrom].height, since: targetChangedAt)
+        }
     }
     /// applySiblingShifts: rows between the old and new slot slide one row-step.
     func shift(_ id: String) -> Double {
@@ -94,7 +102,10 @@ struct AWCListModel: Equatable {
         guard let id = dragID else { return false }
         let from = dragFrom, to = dragTarget
         dragID = nil; dragDelta = 0; placeholder = nil; dragRects = []
-        if to != from { snapNext.insert(id); reinsertions[id, default: 0] += 1; moveItem(from, to); return true }
+        if to != from {
+            let lo = min(from, to), hi = max(from, to)
+            dropShifted = Set(rows.enumerated().filter { $0.offset >= lo && $0.offset <= hi && $0.offset != from }.map(\.element.id))
+            snapNext.insert(id); reinsertions[id, default: 0] += 1; moveItem(from, to); return true }
         return false
     }
     /// Drops first-responder status from the row's focus surface (the moved DOM row loses focus).
@@ -177,11 +188,13 @@ struct AWCListModel: Equatable {
     }
     func move(_ key: String, from id: String) -> Bool {
         let ids = focusableIDs; guard !ids.isEmpty else { return false }
-        let at = ids.firstIndex(of: id) ?? 0
+        // md-list handleKeyDown: from a row that is not a stop (an expandable-only row's caret) ArrowDown goes to the first stop
+        // and ArrowUp to the last.
+        let at = ids.firstIndex(of: id) ?? -1
         let target: String
         switch key {
         case "ArrowDown": target = ids[(at + 1) % ids.count]
-        case "ArrowUp": target = ids[(at - 1 + ids.count) % ids.count]
+        case "ArrowUp": target = ids[at > 0 ? at - 1 : ids.count - 1]
         case "Home": target = ids[0]
         case "End": target = ids[ids.count - 1]
         default: return false
@@ -220,7 +233,7 @@ struct AWCListModel: Equatable {
     }
 }
 
-struct AWCListPlaceholder: Equatable { var top: Double, height: Double }
+struct AWCListPlaceholder: Equatable { var top: Double, height: Double; var since = 0.0 }
 
 /// The drop-target ghost (`::part(drop-placeholder)`): glides between slots with the sibling shift.
 struct AWCListPlaceholderView: View {
@@ -229,7 +242,7 @@ struct AWCListPlaceholderView: View {
     @State private var primed = false
     var body: some View {
         let now = CACurrentMediaTime() * 1000
-        TimelineView(.animation(paused: !track.isRunning(now))) { _ in
+        TimelineView(.animation(paused: !Self.timelineRunsWhileShown && !track.isRunning(now))) { _ in
             let t = CACurrentMediaTime() * 1000, y = track.presented(t)
             let shape = AWCNativeCornerShape(corners: a.dropPlaceholderShape ?? .points(16))
             let fill = part?.backgroundColor ?? a.dropPlaceholderColor ?? AWCListItemStyle.mix(tokens["--md-sys-color-primary-container"] ?? "#EADDFF", 0.45)
@@ -244,9 +257,29 @@ struct AWCListPlaceholderView: View {
         }
         .onChange(of: placeholder.top, initial: true) { _, top in
             if !primed { track.snap(top); primed = true; return }
-            track.set(top, now: CACurrentMediaTime() * 1000, duration: reduced ? 0 : 200, curve: awcCSSCubicBezier(tokens["--md-sys-motion-easing-standard"]) ?? [0.2, 0, 0, 1])
+            track.set(top, now: Self.glideStart(placeholder.since), duration: reduced ? 0 : 200, curve: awcCSSCubicBezier(tokens["--md-sys-motion-easing-standard"]) ?? [0.2, 0, 0, 1])
         }
         .allowsHitTesting(false)
+    }
+    /// iOS: the ghost (shown only during a drag) keeps its timeline running: resuming a paused TimelineView when a glide
+    /// started rendered one frame and then none for 25-45 ms on iOS 18.6 (gate-7 r3-22). macOS: paused between glides.
+    static var timelineRunsWhileShown: Bool {
+        #if os(iOS)
+        return true
+        #else
+        return false
+        #endif
+    }
+    /// Start time (ms) of a reorder glide. Chrome starts the CSS transition on the frame of the pointer move that changed the
+    /// target. iOS: start at that move (the touch's delivery); SwiftUI runs the onChange that retargets the glide one or more
+    /// frames later (iOS 18.6), which started it late (gate-7 r3-22). macOS: the onChange time, as before.
+    static func glideStart(_ since: Double) -> Double {
+        let now = CACurrentMediaTime() * 1000
+        #if os(iOS)
+        return since > 0 ? min(since, now) : now
+        #else
+        return now
+        #endif
     }
 }
 
@@ -259,6 +292,13 @@ struct AWCNativeListView: View {
     let renderChild: (AWCNode) -> AnyView
     @State private var runtime = AWCListRuntime()
     @Environment(\.awcListAppearance) private var inheritedAppearance
+    @Environment(\.awcInteractionStore) private var interactionStore
+    /// The source sets `aria-labelledby={labelledby}` and `aria-label={label}` on the list: the IDREFs resolved in the native
+    /// scope (the referenced texts in order) win; an unresolved or empty reference falls back to `label`.
+    private var accessibleName: String {
+        let referenced = model.labelledby.split(whereSeparator: \.isWhitespace).compactMap { interactionStore?.labelTexts.texts[String($0)]?.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }.joined(separator: " ")
+        return referenced.isEmpty ? model.label : referenced
+    }
     @Environment(\.awcListAppearanceTargets) private var appearanceTargets
     @Environment(\.awcNativeDensity) private var inheritedDensity
     @Environment(\.awcListSpacingRung) private var inheritedRung
@@ -289,7 +329,7 @@ struct AWCNativeListView: View {
                     AWCNativeListItemView(node: child, theme: theme, ctx: context(index: index, count: items.count, model: model, rung: rung), runtime: runtime,
                                           emitItem: emitItem, renderChild: renderChild)
                         // The lifted row paints above its siblings (z-index 1); the row's own zIndex sits inside its timeline.
-                        .zIndex(runtime.dragID == child.id ? 1 : 0)
+                        .modifier(AWCStackingLift(own: runtime.dragID == child.id ? 1 : 0))
                 } else { renderChild(child).accessibilityHidden(!["toolbar", "menu", "menubar", "listbox"].contains(model.roleOverride)) }
             }
         }
@@ -306,13 +346,13 @@ struct AWCNativeListView: View {
         .environment(\.awcNativeDensity, scale)
         .environment(\.awcListSpacingRung, rung)
         .awcInspect(nodeID: node.id, name: "md-list") { _ in
-            ["role": .string(model.role(expandableRows: items.contains { $0.properties["expandable"]?.bool == true })),
+            ["role": .string(model.role(expandableRows: items.contains { $0.properties["expandable"]?.bool == true })), "name": .string(accessibleName),
              "activeID": .string(runtime.activeID ?? ""), "selection": .array(runtime.selection.sorted().map { .string($0) }),
              "padding": .array([.number(padBlock), .number(padInline), .number(padBlock), .number(padInline)]), "paddingBlockInline": .array([.number(padBlock), .number(padInline)]),
              "gap": .object(["row": .number(segmented ? (a.segmentedGap ?? 2) : 0), "column": .number(0)]), "contentGap": .number(segmented ? (a.segmentedGap ?? 2) : 0)]
         }
         .accessibilityElement(children: .contain)
-        .accessibilityLabel(model.label)
+        .accessibilityLabel(accessibleName)
     }
     private func configure(_ items: [AWCNode], model: AWCListModel) {
         runtime.emitList = emitList; runtime.emitItem = emitItem; runtime.selectionMode = model.selectionMode
@@ -325,7 +365,9 @@ struct AWCNativeListView: View {
             let participates = inSelection && !m.expandable
             let interactive = !m.disabled && (m.type != "text" || inSelection || m.expandable)
             let expandableOnly = m.expandable && !participates && m.type == "text"
-            let focusable = !m.hidden && ((interactive && !expandableOnly) || model.reorderable)
+            // md-list isItemFocusable: in a selection list every enabled row is a roving stop, expandable rows included.
+            let focusable = !m.hidden && !m.disabled && (inSelection || model.reorderable || m.type != "text")
+            _ = (interactive, expandableOnly)
             return (item.id, AWCListRuntime.label(item), focusable, m.expandable, item)
         }
         runtime.ensureActive()

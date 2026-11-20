@@ -22,6 +22,8 @@ import Observation
     let controller = AWCToolbarController()
     @ObservationIgnored var events: [(name: String, target: String)] = []
 }
+/// Animation frames rendered by the fixture (gate-7 R6-18): a phase is read only after SwiftUI drew frames after its input.
+@MainActor enum ToolbarStatesFrames { static var ticks = 0; static func tick() -> Int { ticks += 1; return ticks } }
 struct ToolbarStatesFixture: View {
     let state: ToolbarStatesState
     var body: some View {
@@ -29,7 +31,9 @@ struct ToolbarStatesFixture: View {
         let ids = ["before", "after"] + state.nodes.flatMap { [$0.id] + $0.children.map(\.id) }
         ZStack(alignment: .topLeading) {
             // AppKit orders the key-view loop geometrically: #before sits above the bar and #after below it, as in the DOM.
-            AWCNativeView(node: AWCNode(id: "before", tag: "md-button", properties: ["variant": "text"], children: [.text("Before")])).offset(x: 0, y: 0).opacity(0.01)
+            // 5 %, not 1 %: the iPad focus engine does not keep focus on a view that faint and moved it back into the bar on the
+            // next key (Shift+Tab from #after then ran twice: gate-7 R6-18, iPad).
+            AWCNativeView(node: AWCNode(id: "before", tag: "md-button", properties: ["variant": "text"], children: [.text("Before")])).offset(x: 0, y: 0).opacity(0.05)
             AWCNativeScope {
                 VStack(alignment: .leading, spacing: 0) {
                     ForEach(state.nodes) { n in AWCNativeView(node: n) { e in state.events.append((e.name, e.nodeID)) }.frame(maxWidth: .infinity, alignment: .leading) }
@@ -38,7 +42,7 @@ struct ToolbarStatesFixture: View {
             }
             .environment(\.layoutDirection, state.rtl ? .rightToLeft : .leftToRight)
             .offset(x: 60, y: 60)
-            AWCNativeView(node: AWCNode(id: "after", tag: "md-button", properties: ["variant": "text"], children: [.text("After")])).offset(x: 0, y: 420).opacity(0.01)
+            AWCNativeView(node: AWCNode(id: "after", tag: "md-button", properties: ["variant": "text"], children: [.text("After")])).offset(x: 0, y: 420).opacity(0.05)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .environment(\.awcNativePointerState, state.pointer)
@@ -47,6 +51,7 @@ struct ToolbarStatesFixture: View {
         .awcNativeInspection(rootID: ids.joined(separator: "|"), coordinateSpace: "awc-native-preview") { if state.epoch == epoch { state.measurements = $0 } }
         .id(epoch)
         .background(theme.background).coordinateSpace(name: "awc-native-preview")
+        .background { TimelineView(.animation) { _ in let _ = ToolbarStatesFrames.tick(); Color.clear } }
     }
 }
 @main @MainActor enum NativeToolbarStatesIntegration {
@@ -122,7 +127,14 @@ struct ToolbarStatesFixture: View {
         return .init(x: x, y: y, w: w, h: h, values: values)
     }
     /// The bar against Chrome's phase screenshot (clipOf(bar, 24)): flat pixels only (glyph and ripple edges excluded).
+    static var phaseTicks = 0
     static func pixels(_ name: String, _ shotName: String, shots: URL) {
+        // Capture window (gate-7 R6-18): the bitmap shows the last rendered frame; after a stall of the window's frame clock it is the
+        // frame of the input itself (animated layers at their start values). Wait (≤ 1 s) for three animation frames after the input.
+        let waitStart = Date(), frameDeadline = waitStart.addingTimeInterval(1)
+        while ToolbarStatesFrames.ticks - phaseTicks < 3 && Date() < frameDeadline { pump(0.004) }
+        if Date().timeIntervalSince(waitStart) > 0.008 { print("FRAMEWAIT \(name) \(Int(Date().timeIntervalSince(waitStart) * 1000)) ms, frames \(ToolbarStatesFrames.ticks - phaseTicks)"); fflush(stdout) }
+        check(ToolbarStatesFrames.ticks - phaseTicks >= 3, "\(name) animation frames after the input (\(ToolbarStatesFrames.ticks - phaseTicks))")
         guard let bar = m("bar1", "md-toolbar"), bar.bounds.width > 0 else { return }
         guard let src = NSImage(contentsOf: shots.appendingPathComponent(shotName + ".png"))?.cgImage(forProposedRect: nil, context: nil, hints: nil) else { check(false, "\(name) shot \(shotName)"); return }
         let ox = floor(Double(bar.bounds.minX)) - 24, oy = floor(Double(bar.bounds.minY)) - 24
@@ -179,6 +191,7 @@ struct ToolbarStatesFixture: View {
             // its running animations (the bitmap capture shows a view's committed values, not the in-flight frame).
             let dur = i + 1 < phases.count ? (phases[i + 1]["t"].number ?? 0) - (ph["t"].number ?? 0) : max((ph["frames"].array.last?["t"].number ?? 200) + 17, 320)
             let target = r["target"].string
+            phaseTicks = ToolbarStatesFrames.ticks
             switch lbl {
             case "tab", "tab1", "tab2", "tab3", "tab4", "tabOut", "tabToInput": named("Tab")
             case "shiftTab", "shiftTab1", "shiftTab2", "shiftTab3", "shiftTabIn": named("Tab", .shift)

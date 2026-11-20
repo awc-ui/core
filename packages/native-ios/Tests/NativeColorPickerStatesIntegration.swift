@@ -27,15 +27,14 @@ struct ColorPickerStatesFixture: View {
         let epoch = state.epoch, theme = AWCTheme.generated(dark: false)
         // The modal scope hosts the md-dialog of cp-popover-in-dialog (without one md-dialog falls back to a platform sheet).
         AWCModalScope { ZStack(alignment: .topLeading) {
-            // AppKit orders the key-view loop by rows (overlapping vertical extents share a row, then leading to trailing):
-            // "before" sits at the top-left so it precedes the picker's first stop as in the page's DOM order.
+            // The page's DOM order, which Tab follows inside the modal scope (gate-7 R4-05): "before", the picker, "after".
             AWCNativeView(node: .init(id: "before", tag: "md-button", properties: ["variant": "text"], children: [.text("Before")]))
-            // Past the picker's last stop Chrome leaves the page (focus on body): this stop reports "body".
-            AWCNativeView(node: .init(id: "after", tag: "md-button", properties: ["variant": "text"], children: [.text("After")])).offset(x: 10, y: 880)
             AWCNativeView(node: state.node) { e in state.events.append((e.name, e.detail, CACurrentMediaTime() * 1000)); NativeColorPickerStatesIntegration.echo(e) }
                 .frame(width: state.width, alignment: .leading)
                 .environment(\.layoutDirection, state.rtl ? .rightToLeft : .leftToRight)
                 .padding(.leading, 24).padding(.top, 24)
+            // Past the picker's last stop Chrome leaves the page (focus on body): this stop reports "body".
+            AWCNativeView(node: .init(id: "after", tag: "md-button", properties: ["variant": "text"], children: [.text("After")])).offset(x: 10, y: 880)
         } }
         .awcReducedMotion(state.reduced)
         .awcTheme(theme)
@@ -51,15 +50,29 @@ struct ColorPickerStatesFixture: View {
     static var host: NSHostingView<ColorPickerStatesFixture>!, window: NSWindow!
     static var checks = 0, failures: [String] = [], report: [[String: Any]] = []
     static let env = ProcessInfo.processInfo.environment
-    static func check(_ value: Bool, _ name: String) { checks += 1; if !value { failures.append(name); print("FAIL: " + name); fflush(stdout) } }
+    static func dgSuffix() -> String {
+        #if !canImport(AppKit)
+        return AWCDG.suffix()
+        #else
+        return ""
+        #endif
+    }
+    static func check(_ value: Bool, _ name: String) { checks += 1; if !value { failures.append(name); print("FAIL: " + name + dgSuffix()); fflush(stdout) } }
     static func now() -> Double { CACurrentMediaTime() * 1000 }
     static func pump(_ duration: Double = 0.004) { let end = Date().addingTimeInterval(duration); repeat { while let e = NSApp.nextEvent(matching: .any, until: .distantPast, inMode: .default, dequeue: true) { NSApp.sendEvent(e) }; host.layoutSubtreeIfNeeded(); host.displayIfNeeded(); _ = RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.002)) } while Date() < end }
     static func mouseEvent(_ type: NSEvent.EventType, _ p: CGPoint) -> NSEvent {
         let loc = host.convert(NSPoint(x: p.x, y: host.isFlipped ? p.y : host.bounds.height - p.y), to: nil)
         return NSEvent.mouseEvent(with: type, location: loc, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber, context: nil, eventNumber: 1, clickCount: 1, pressure: type == .leftMouseUp ? 0 : 1)!
     }
+    static var queuedAt: [Double] = []
+    static var deliveryShift: [(Double, Double)] = []
+    static func shift(_ st: Double) -> Double { env["AWC_CP_SHIFT"] == "0" ? 0 : (deliveryShift.last(where: { $0.0 <= st + 1 })?.1 ?? 0) }
+    static let late = Double(env["AWC_CP_LATE"] ?? "") ?? 0
     static func mouse(_ type: NSEvent.EventType, _ p: CGPoint) {
         if type == .leftMouseDown { modalSession()?.lastInputPointer = true }
+        #if canImport(UIKit)
+        if [.leftMouseDown, .leftMouseDragged, .leftMouseUp].contains(type) { queuedAt.append(now()) }
+        #endif
         window.sendEvent(mouseEvent(type, p))
     }
     /// The modal scope's AppKit host (its local event monitor routes Escape and Tab to the top modal owner).
@@ -75,7 +88,15 @@ struct ColorPickerStatesFixture: View {
                 session.lastInputPointer = false
                 if session.isActive && (code == 53 && session.escape() || code == 48 && session.tab(backward: flags.contains(.shift))) { continue }
             }
-            window.sendEvent(NSEvent.keyEvent(with: type, location: .zero, modifierFlags: flags, timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber, context: nil, characters: chars, charactersIgnoringModifiers: chars, isARepeat: false, keyCode: code)!)
+            let event = NSEvent.keyEvent(with: type, location: .zero, modifierFlags: flags, timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber, context: nil, characters: chars, charactersIgnoringModifiers: chars, isARepeat: false, keyCode: code)!
+            #if canImport(UIKit)
+            window.sendEvent(event)
+            #else
+            // As a hardware key arrives: the application's current event while the window handles it (md-text-field reads
+            // NSApp.currentEvent to report the vertical arrows of a number field, `navigationKeys`).
+            NSApp.postEvent(event, atStart: true)
+            window.sendEvent(NSApp.nextEvent(matching: [.keyDown, .keyUp], until: .distantPast, inMode: .default, dequeue: true) ?? event)
+            #endif
         }
     }
     static let keys: [String: (UInt16, String)] = ["ArrowLeft": (123, "\u{F702}"), "ArrowRight": (124, "\u{F703}"), "ArrowDown": (125, "\u{F701}"), "ArrowUp": (126, "\u{F700}"),
@@ -295,13 +316,28 @@ struct ColorPickerStatesFixture: View {
             return (start, hover, press, anchor)
         }
         let plans = phases.indices.map(plan)
+        deliveryShift = []
+        #if canImport(UIKit)
+        var qMark = queuedAt.count, dMark = AWCShimTouch.deliveredAt.count
+        func pairDeliveries(_ lbl: String) {
+            let q = Array(queuedAt[qMark...]), d = Array(AWCShimTouch.deliveredAt[dMark...])
+            qMark = queuedAt.count; dMark = AWCShimTouch.deliveredAt.count
+            guard let q0 = q.first, let d0 = d.first else { return }
+            var pr = [(q0, d0)]; if q.count > 1, d.count > 1, let q1 = q.last, let d1 = d.last { pr.append((q1, d1)) }
+            for (qq, dd) in pr where dd - qq >= 0 && dd - qq < 150 { deliveryShift.append((qq - t0, dd - qq)) }
+            if env["AWC_CP_DEBUG"] == "1" { print("  delivery \(label)/\(lbl): " + deliveryShift.suffix(2).map { String(format: "%.0f+%.0f", $0.0, $0.1) }.joined(separator: " ")) }
+        }
+        #endif
         for (i, ph) in phases.enumerated() {
             let lbl = ph["label"].string
-            let p = plans[i], start = p.start
+            let p = plans[i], start = p.start + late
             if let target = hoverFirst[lbl], let h = p.hover { while now() - t0 < h { pump() }; hover(target()); pump() }
             if let target = hoverFirst[lbl], let pr = p.press { while now() - t0 < pr { pump() }; down(target()); pump() }
             while now() - t0 < start { pump() }
             let fired = now() - t0
+            #if !canImport(AppKit)
+            AWCDG.input(planned: t0 + (p.press ?? start))
+            #endif
             if p.press != nil, let target = hoverFirst[lbl] { up(target()) }
             else if let act = acts[lbl] { act() } else { check(false, "\(label) no native action for \(lbl)") }
             if let anchor = p.anchor { anchored.append((label + "/" + lbl, anchor.kind, anchor.start, fired)) }
@@ -309,6 +345,9 @@ struct ColorPickerStatesFixture: View {
             let next = i + 1 < phases.count ? phases[i + 1]["t"].number! : start + 400
             let nextInput = i + 1 < phases.count ? min(plans[i + 1].start, plans[i + 1].hover ?? .infinity, plans[i + 1].press ?? .infinity) - 2 : next
             while now() - t0 < min(next - 20, nextInput) { pump() }
+            #if canImport(UIKit)
+            pairDeliveries(lbl)
+            #endif
             let rt = runtime
             let last = ph["samples"].array.last ?? .null
             let nativeValue = currentValue()
@@ -332,7 +371,7 @@ struct ColorPickerStatesFixture: View {
             // Motion: every Chrome sample of this phase against the native presented values within one frame.
             for smp in ph["samples"].array {
                 guard let st = smp["t"].number else { continue }
-                let at = t0 + st
+                let at = t0 + st + shift(st)
                 if case .object(let o) = smp["popover"], let op = Double(o["opacity"]?.string ?? "") {
                     let mx = matrix(o["transform"]?.string ?? "none")
                     motion("popover", at, [op, mx[0], mx[5]], [0.03, 0.012, 0.35], "\(label)/\(lbl) popover t=\(Int(st))")
@@ -417,7 +456,11 @@ struct ColorPickerStatesFixture: View {
             let lo = candidates.map { $0[i] }.min()!, hi = candidates.map { $0[i] }.max()!
             return web[i] >= lo - tol[i] && web[i] <= hi + tol[i]
         }
-        if !ok { motionFailures += 1 }
+        if !ok { motionFailures += 1
+            #if !canImport(AppKit)
+            if AWCDG.on { print("  DGM \(key) at=\(Int(at)) native commits (t-at:v0): " + list.filter { $0.t - at > -90 && $0.t - at < 70 }.map { String(format: "%.0f:%.3f", $0.t - at, $0.v[0]) }.joined(separator: " ")) }
+            #endif
+        }
         check(ok, "\(label) \(key) web \(web.map { (($0 * 1000).rounded() / 1000) }) vs native \(candidates.map { $0.map { (($0 * 1000).rounded() / 1000) } })")
     }
     static func currentValue() -> String { runtime?.snapshot.value ?? "-" }
@@ -428,6 +471,9 @@ struct ColorPickerStatesFixture: View {
         _ = NSApplication.shared; NSApp.setActivationPolicy(.accessory)
         host = NSHostingView(rootView: ColorPickerStatesFixture(state: state)); window = NSWindow(contentRect: .init(x: -20000, y: -20000, width: 1200, height: 900), styleMask: [.borderless], backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false; window.colorSpace = .sRGB; window.contentView = host; window.orderFrontRegardless(); window.makeKey(); pump(0.3)
+        #if !canImport(AppKit)
+        AWCDG.start()
+        #endif
         let fixtures = URL(fileURLWithPath: #filePath).deletingLastPathComponent().appendingPathComponent("Fixtures")
         let only = env["AWC_CP_STATES_ONLY"]
         for (file, reduced) in [("colorpicker-web-states", false), ("colorpicker-web-states-reduced", true)] {

@@ -112,13 +112,16 @@ struct SheetMotionFixture: View {
         }
         var stepTimes: [Int: Double] = [:], samples: [Sample] = [], focusAtEnd: [Int: String] = [:]
         var drag = CGPoint.zero, dy: CGFloat = 0
-        var next = 1
+        var next = 1, eventStepTimes: [Int: Double] = [:]
         let end = (phases.last?["t"].number ?? 0) - webT0 + 560
         while now() - t0 < end {
             while next < phases.count && now() - t0 >= stepWeb[next] - webT0 {
                 focusAtEnd[next - 1] = focused()
                 let label = phases[next]["label"].string, step = String(label.split(separator: "-", maxSplits: 1).last ?? "")
                 stepTimes[next] = now()
+                #if os(iOS)
+                let deliveryMark = AWCShimTouch.deliveredAt.count
+                #endif
                 switch step {
                 case "open": if let p = center("opener") { click(p) }
                 case "escape": key(53, "\u{1b}")
@@ -143,6 +146,14 @@ struct SheetMotionFixture: View {
                         dy = CGFloat(v); let p = CGPoint(x: drag.x, y: drag.y + dy); state.pointer.update(phase: .move, location: p); mouse(.leftMouseDragged, p)
                     } else { check(false, "\(name) unknown step \(step)") }
                 }
+                #if os(iOS)
+                // iOS harness: a synthesized touch / key reaches the app when UIKit delivers it, one touch phase per frame (a
+                // click's release 2 frames after it is queued, more under load). Chrome times an event from its trusted
+                // input's first event, so the native event delay is timed from the delivery of the step's last input
+                // (gate-7 r3-23, R4-19); the per-frame motion keeps the step's queue time. AWC_MOTION_STEP_ANCHOR=queue: events
+                // from the queue time too, as before.
+                if ProcessInfo.processInfo.environment["AWC_MOTION_STEP_ANCHOR"] != "queue", AWCShimTouch.deliveredAt.count > deliveryMark, let delivered = AWCShimTouch.deliveredAt.last { eventStepTimes[next] = delivered }
+                #endif
                 next += 1
             }
             pump(); samples.append(sample())
@@ -154,7 +165,7 @@ struct SheetMotionFixture: View {
         func stepIndex(webT: Double) -> Int { var k = 0; for (i, p) in phases.enumerated() where (p["t"].number ?? 0) <= webT { k = i }; return k }
         for ((n, nt), (_, wt)) in zip(state.events, webEvents) {
             let k = stepIndex(webT: wt)
-            guard let ns = stepTimes[k] else { continue }
+            guard let ns = eventStepTimes[k] ?? stepTimes[k] else { continue }
             let nativeDelay = nt - ns, webDelay = wt - stepWeb[k]
             check(nativeDelay >= -1 && nativeDelay <= webDelay + 40, "\(name) \(n) \(nativeDelay) ms after its step (Chrome \(webDelay))")
         }

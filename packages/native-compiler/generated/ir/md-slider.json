@@ -545,6 +545,10 @@
       "description": "Value indicator vertical padding"
     },
     {
+      "name": "--md-slider-value-indicator-reserve",
+      "description": "Space reserved for a persistent value indicator (block-start horizontal, inline-end vertical)"
+    },
+    {
       "name": "--md-slider-inset-icon-color",
       "description": "Inset icon color (defaults to tick-inactive-color)"
     },
@@ -769,7 +773,7 @@
     "styleUrl": "md-slider.css",
     "shadow": true,
     "formAssociated": true,
-    "sha256": "3258f597e4e5851ab9cfbfadee41bada48d6bbd02aa26962e743386ab69cac13"
+    "sha256": "1583d440b3b45c307b8e5102912e487c14b8279a4b583d41657670626b651576"
   },
   "styles": [
     {
@@ -3355,11 +3359,20 @@
       "notes": [
         "Dedicated native slider: standard / centered / range, five sizes, stops, value indicator, inset icon (Material Symbols from icon), vertical orientation, keyboard, pointer and touch input with the source events and order, the stylesheet transitions; hooks through AWCSliderAppearance.",
         "Host property changes follow the Stencil watchers: value / valueStart / valueEnd changes clear a live drag value, min / max changes re-clamp (written back to the node).",
-        "The inset-icon slot (custom icon content) is not rendered natively: the inset icon comes from the icon property.",
+        "The inset-icon slot renders its content in the inset box instead of the icon glyph (centred, inset-size font, the inset colour inherited), under the track mask (R6-04).",
+        "Parts: typed part appearances (.awcSliderPartAppearance(_:part:) / AWCSliderPartAppearanceScope) with the source part semantics — surface opacity, track corner shape, track-active / track-inactive colour, size from the track edge and corner shape, thumb-knob colour and size, value-indicator colour / font / padding / shape, inset colour (Mac Chrome ::part cases, paint-extra2).",
         "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint, pointer / keyboard / touch replays with events, motion per frame (plain and reduced motion), lifecycle (runtime property changes through the Stencil watchers, form reset), RTL."
       ],
       "verification": "not-device-verified",
-      "visualParts": [],
+      "visualParts": [
+        "surface",
+        "track",
+        "track-active",
+        "track-inactive",
+        "thumb-knob",
+        "value-indicator",
+        "inset"
+      ],
       "appearance": {
         "api": ".awcSliderAppearance(AWCSliderAppearance)",
         "fields": [
@@ -3385,7 +3398,8 @@
           "valuePaddingBlock",
           "insetIconColor",
           "insetIconActiveColor",
-          "minTrackLength"
+          "minTrackLength",
+          "valueIndicatorReserve"
         ]
       }
     },
@@ -3440,11 +3454,20 @@
       "notes": [
         "Dedicated native slider: standard / centered / range, five sizes, stops, value indicator, inset icon (Material Symbols from icon), vertical orientation, keyboard, pointer and touch input with the source events and order, the stylesheet transitions; hooks through AWCSliderAppearance.",
         "Host property changes follow the Stencil watchers: value / valueStart / valueEnd changes clear a live drag value, min / max changes re-clamp (written back to the node).",
-        "The inset-icon slot (custom icon content) is not rendered natively: the inset icon comes from the icon property.",
+        "The inset-icon slot renders its content in the inset box instead of the icon glyph (centred, inset-size font, the inset colour inherited), under the track mask (R6-04).",
+        "Parts: typed part appearances (.awcSliderPartAppearance(_:part:) / AWCSliderPartAppearanceScope) with the source part semantics — surface opacity, track corner shape, track-active / track-inactive colour, size from the track edge and corner shape, thumb-knob colour and size, value-indicator colour / font / padding / shape, inset colour (Mac Chrome ::part cases, paint-extra2).",
         "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint, pointer / keyboard / touch replays with events, motion per frame (plain and reduced motion), lifecycle (runtime property changes through the Stencil watchers, form reset), RTL."
       ],
       "verification": "not-device-verified",
-      "visualParts": [],
+      "visualParts": [
+        "surface",
+        "track",
+        "track-active",
+        "track-inactive",
+        "thumb-knob",
+        "value-indicator",
+        "inset"
+      ],
       "appearance": {
         "api": "AWCSliderAppearanceScope(AWCSliderAppearance)",
         "fields": [
@@ -3470,7 +3493,8 @@
           "valuePaddingBlock",
           "insetIconColor",
           "insetIconActiveColor",
-          "minTrackLength"
+          "minTrackLength",
+          "valueIndicatorReserve"
         ]
       }
     }

@@ -42,8 +42,11 @@ struct AWCNativeListItemView: View {
     @State private var pressMature = false
     @State private var supportingTruncated = false
     @State private var imageNamed: CGRect = .zero
+    /// md-avatar's image failed to load (its `error`): the avatar shows its initials, else the person icon.
+    @State private var avatarFailed = false
     @State private var trailingFrames: [String: CGRect] = [:]
     @State private var caretFocus = AWCButtonFocusHandle()
+    @State private var focusWithin = AWCListItemFocusWithin()
     @State private var held = false
     @State private var keyPressed = false
     @State private var pressOrigin: CGPoint?
@@ -67,7 +70,6 @@ struct AWCNativeListItemView: View {
     /// Where a reordering drop happened: the re-inserted row's drag handle is not hovered until the pointer
     /// moves, and the row itself rests for the drop frame before Chrome re-applies `:hover` (with its transition).
     @State private var dropAt: CGPoint?
-    @State private var dropRest = false
     @State private var dragging = false
     @State private var controlPress = false
     @State private var handle = AWCListItemHandle()
@@ -91,7 +93,9 @@ struct AWCNativeListItemView: View {
                      leadingVideo: leadingVideo, morph: morph)
     }
     private var hover: Bool {
-        guard style.interactive, !hoverHeld else { return false }
+        // After a reordering drop the other rows' frames are stale for one frame (they still hold the pre-drop layout under the
+        // pointer): Chrome re-hit-tests the re-inserted DOM and hovers none of them (C65-01).
+        guard style.interactive, !hoverHeld, !staleUnderDrop else { return false }
         // `.md-list-item__row:hover` drives the layer: hovering the expanded panel does not.
         return pointer.map { $0.location.map(rowFrame.contains) ?? false } ?? hovered
     }
@@ -108,11 +112,15 @@ struct AWCNativeListItemView: View {
                      roving: roving, dragged: isDragged)
     }
     private var isDragged: Bool { runtime?.dragID == node.id && runtime != nil }
-    /// No hover while another row is dragged (the source captures the pointer on the handle) or during the
-    /// frame that re-inserts a dropped row.
+    /// No hover while another row is dragged (the source captures the pointer on the handle). 9-31: no drop rest;
+    /// staleUnderDrop guards the stale pointer of the re-inserted row (job 035: no rest crosses on time in 4 of 5 pairs, rest 4 ms in 1 of 5).
     private var hoverHeld: Bool {
         if let drag = runtime?.dragID, drag != node.id { return true }
-        return dropRest
+        return false
+    }
+    private var staleUnderDrop: Bool {
+        guard dropAt == nil, runtime?.dropShifted.contains(node.id) == true, let d = runtime?.dropPoint, let p = pointer?.location else { return false }
+        return abs(p.x - d.x) < 0.5 && abs(p.y - d.y) < 0.5
     }
     private var handleStill: Bool {
         guard let d = dropAt else { return false }
@@ -155,7 +163,7 @@ struct AWCNativeListItemView: View {
         panel.set(open ? 1 : 0, now: now, duration: d, curve: open ? decel : accel); inner.set(open ? 1 : 0, now: now, duration: d, curve: open ? decel : accel)
         caret.set(open ? 1 : 0, now: now, duration: reduced ? 0 : awcCSSDuration(theme.tokens["--md-sys-motion-duration-medium2"]) ?? 300, curve: standard)
         // Siblings glide (`--shifting`, 200ms) only while a drag runs; the drop clears transforms in one tick.
-        shiftTrack.set(next.shift, now: now, duration: reduced || !next.lifting ? 0 : 200, curve: standard)
+        shiftTrack.set(next.shift, now: next.lifting ? AWCListPlaceholderView.glideStart(runtime?.targetChangedAt ?? 0) : now, duration: reduced || !next.lifting ? 0 : 200, curve: standard)
         shadowTrack.set(next.dragged ? 1 : 0, now: now, duration: 100, curve: standard)
         let hd = reduced ? 0.0 : 150.0
         handleOpacity.set(next.handle[0], now: now, duration: hd, curve: standard); handleInk.set(next.handle[1], now: now, duration: hd, curve: standard)
@@ -172,7 +180,10 @@ struct AWCNativeListItemView: View {
                 .task(id: targetValues) { await Task.yield(); if !Task.isCancelled { apply(targetValues) } }
                 .onChange(of: node.properties["expanded"]) { _, _ in localExpanded = nil }
                 .onChange(of: node.properties, initial: true) { _, _ in attachController() }
-                .onChange(of: focusHandle.isFocused) { _, focused in if focused, style.focusable { runtime?.activate(node.id, showRoving: false) } }
+                .onChange(of: focusHandle.isFocused) { _, focused in
+                    // Roving activation; mdRequestActivation is asked by the focus bridges when focus enters the item.
+                    if focused, style.rovingFocusable { runtime?.activate(node.id, showRoving: false) }
+                }
         }
     }
 
@@ -227,19 +238,21 @@ struct AWCNativeListItemView: View {
         return AWCListRowLayout(gap: s.gap, top: p.top, bottom: p.bottom, start: p.start, end: p.end, minHeight: s.minHeight, three: three, centerLeading: centerLeading) {
             if s.hasPrimaryAction {
                 AWCListRowLayout(gap: s.gap, top: 0, bottom: 0, start: 0, end: 0, minHeight: 0, three: three, centerLeading: centerLeading) { leading(s, st, a); content(s, a).layoutValue(key: AWCListRowRole.self, value: 1) }
-                    .layoutValue(key: AWCListRowRole.self, value: 1).awcInspect(nodeID: node.id, part: "primary", name: "primary")
+                    .layoutValue(key: AWCListRowRole.self, value: 1).awcInspect(nodeID: node.id, part: "primary", name: "primary").modifier(AWCListPartPaint(value: parts[.primary]))
             } else { leading(s, st, a); content(s, a).layoutValue(key: AWCListRowRole.self, value: 1) }
             trailing(s, st, a, t).layoutValue(key: AWCListRowRole.self, value: 2)
         }
         .frame(maxWidth: .infinity)
+        .background { if let bg = parts[.row]?.backgroundColor { Color(awcHex: bg) } }
         .overlay {
             ZStack {
                 if s.interactive && !isDragged && !s.disabledClass {
                     AWCNativeButtonRipple(pressed: held, nativePressed: false, nativeActivation: activation, color: Color(awcHex: s.labelColor), origin: pressOrigin,
                                           honorsReducedMotion: false, inspectNodeID: node.id)
                 }
-                if s.layerVisible {
-                    Color(awcHex: parts[.stateLayer]?.backgroundColor ?? s.stateLayerColor).opacity(opacity)
+                // ::part(state-layer) opacity replaces the state opacity (the element exists on interactive rows).
+                if s.layerVisible || (s.interactive && parts[.stateLayer]?.opacity != nil) {
+                    Color(awcHex: parts[.stateLayer]?.backgroundColor ?? s.stateLayerColor).opacity(parts[.stateLayer]?.opacity ?? opacity)
                         .awcInspect(nodeID: node.id, part: "state-layer", name: "state-layer") { _ in ["opacity": .number(opacity), "renderTime": .number(t)] }
                 }
             }
@@ -248,8 +261,9 @@ struct AWCNativeListItemView: View {
             .allowsHitTesting(false)
         }
         .overlay { if let row = parts[.row], let c = row.borderColor, let w = row.borderWidth { Rectangle().strokeBorder(Color(awcHex: c), lineWidth: w).allowsHitTesting(false) } }
+        .opacity(parts[.row]?.opacity ?? 1)
         .contentShape(Rectangle())
-        .onGeometryChange(for: CGRect.self) { $0.frame(in: .named("awc-native-preview")).offsetBy(dx: 0, dy: -renderShift.dy) } action: { rowFrame = $0 }
+        .onGeometryChange(for: CGRect.self) { $0.frame(in: .named("awc-native-preview")).offsetBy(dx: 0, dy: -renderShift.dy) } action: { rowFrame = $0; if runtime?.dropShifted.contains(node.id) == true { runtime?.dropShifted.remove(node.id) } }
         .onContinuousHover(coordinateSpace: .global) { phase in var next = false; if case .active(let at) = phase { next = true; if let d = dropAt, abs(at.x - d.x) >= 0.5 || abs(at.y - d.y) >= 0.5 { dropAt = nil } }; if hovered != next { hovered = next } }
         .simultaneousGesture(pointerGesture)
         .onChange(of: pointer.map { $0.isPointerDown && $0.pressLocation.map(rowFrame.contains) == true } ?? false) { _, pressing in
@@ -259,7 +273,18 @@ struct AWCNativeListItemView: View {
         .allowsHitTesting(!model.disabled)
         // An option is named by its full text (as on Web): its visible texts are not repeated as separate elements.
         .accessibilityHidden(s.participates)
-        .awcFocusBridgeLayer { if (s.focusable || s.participates || menuRow(s)) && runtime != nil || (s.focusable && ctx == nil) { focusBridge(s).accessibilityHidden(false) } }
+        .awcFocusBridgeLayer { if (s.focusable || s.rovingFocusable || s.participates || menuRow(s)) && runtime != nil || (s.focusable && ctx == nil) { focusBridge(s).accessibilityHidden(false) } }
+        // md-list-item.css: interactive row pointer; text rows outside selection/expansion default (higher specificity);
+        // [soft-disabled] row default; otherwise the row inherits the host (`--disabled` default).
+        .awcCursor({ () -> AWCCursorStyle? in
+            // `:host(.md-list-item--disabled) { pointer-events: none }` (soft-disabled restores events): no own cursor.
+            if model.disabled && !model.softDisabled { return nil }
+            var best: (spec: Int, order: Int, style: AWCCursorStyle)?
+            func rule(_ on: Bool, _ spec: Int, _ order: Int, _ style: AWCCursorStyle) { if on, best.map({ ($0.spec, $0.order) < (spec, order) }) ?? true { best = (spec, order, style) } }
+            rule(s.interactive, 3, 1, .pointer); rule(model.type == "text" && !s.participates && !model.expandable, 5, 2, .default)
+            rule(model.softDisabled, 3, 5, .default)
+            return best?.style
+        }())
         .awcInspect(nodeID: node.id, part: "row", name: "row") { _ in ["padding": .array([.number(p.top), .number(p.end), .number(p.bottom), .number(p.start)]), "gap": .object(["row": .number(0), "column": .number(s.gap)]), "contentGap": .number(s.gap), "minHeight": .number(s.minHeight)] }
     }
 
@@ -277,13 +302,13 @@ struct AWCNativeListItemView: View {
             .frame(minWidth: 24).foregroundStyle(ink).awcInspect(nodeID: node.id, part: "leading", name: "leading")
             .frame(maxHeight: s.lines == 3 && !slotted.contains { $0.tag == "md-avatar" } ? nil : nil, alignment: .top)
         } else if model.hasAvatar {
-            avatar(s, a).frame(minWidth: 24).awcInspect(nodeID: node.id, part: "leading", name: "leading")
+            avatar(s, a).frame(minWidth: 24).awcInspect(nodeID: node.id, part: "leading", name: "leading").modifier(AWCListPartPaint(value: parts[.leading]))
         } else if !model.leadingImage.isEmpty {
-            image(s, a).frame(minWidth: 24).awcInspect(nodeID: node.id, part: "leading", name: "leading")
+            image(s, a).frame(minWidth: 24).awcInspect(nodeID: node.id, part: "leading", name: "leading").modifier(AWCListPartPaint(value: parts[.leading]))
         } else if !model.leadingIcon.isEmpty {
             AWCListGlyph(name: model.leadingIcon, size: s.leadingIconSize, color: ink, fill: expanded ? 1 : 0)
-                .awcInspect(nodeID: node.id, part: "leading-icon", name: "leading-icon")
-                .frame(minWidth: 24).awcInspect(nodeID: node.id, part: "leading", name: "leading")
+                .awcInspect(nodeID: node.id, part: "leading-icon", name: "leading-icon").modifier(AWCListPartPaint(value: parts[.leadingIcon]))
+                .frame(minWidth: 24).awcInspect(nodeID: node.id, part: "leading", name: "leading").modifier(AWCListPartPaint(value: parts[.leading]))
         }
     }
 
@@ -303,14 +328,24 @@ struct AWCNativeListItemView: View {
             let words = model.leadingAvatarName.split(separator: " ").filter { !$0.isEmpty }
             return words.count > 1 ? String(words.first!.prefix(1) + words.last!.prefix(1)).uppercased() : String(words.first?.prefix(1) ?? "").uppercased()
         }()
+        // md-avatar's modes: the image, else (none or a failed one) the initials, else the person icon. ::part(avatar) is
+        // md-avatar's host: its background and corner shape (which clips, overflow hidden) win over the avatar tokens.
+        let showsImage = !model.leadingAvatar.isEmpty && !avatarFailed && !AWCListImage.undecodable(model.leadingAvatar)
+        let pa = parts[.avatar], clip = pa?.cornerShape.map { AWCNativeCornerShape(corners: $0) } ?? shape
         return ZStack {
-            if !model.leadingAvatar.isEmpty { AWCListImage(source: model.leadingAvatar).frame(width: size, height: size).clipShape(shape) }
-            else {
-                shape.fill(Color(awcHex: a.leadingAvatarColor ?? s.color("primary-container", "#EADDFF")))
-                AWCListText(text: initials, size: 16, lineHeight: 16, weight: 500, tracking: 0.15, color: label).fixedSize()
+            clip.fill(Color(awcHex: pa?.backgroundColor ?? (showsImage ? "#00000000" : a.leadingAvatarColor ?? s.color("primary-container", "#EADDFF"))))
+            if showsImage {
+                AWCListImage(source: model.leadingAvatar, onFailure: { avatarFailed = true }).frame(width: size, height: size).opacity(parts[.avatarImage]?.opacity ?? 1)
+            } else if !initials.isEmpty {
+                AWCListText(text: initials, size: 16, lineHeight: 16, weight: 500, tracking: 0.15, color: parts[.avatarInitials]?.color.map { Color(awcHex: $0) } ?? label).fixedSize()
+                    .opacity(parts[.avatarInitials]?.opacity ?? 1)
+            } else {
+                AWCListGlyph(name: "person", size: size * 0.6, color: parts[.avatarIcon]?.color.map { Color(awcHex: $0) } ?? label).opacity(parts[.avatarIcon]?.opacity ?? 1)
             }
         }
-        .frame(width: size, height: size).awcInspect(nodeID: node.id, part: "avatar", name: "avatar")
+        .frame(width: size, height: size).clipShape(clip).opacity(pa?.opacity ?? 1)
+        .onChange(of: model.leadingAvatar) { _, _ in avatarFailed = false }
+        .awcInspect(nodeID: node.id, part: "avatar", name: "avatar")
     }
 
     /// `.md-list-item__row` keeps its own state radius (max(container-shape corner, state shape)); the host's
@@ -336,17 +371,24 @@ struct AWCNativeListItemView: View {
         }.environment(\.layoutDirection, .leftToRight).compositingGroup()
     }
     private func image(_ s: AWCListItemStyle, _ a: AWCListItemAppearance) -> some View {
-        let w = a.leadingImageWidth ?? 56, h = a.leadingImageHeight ?? 56, shape = AWCNativeCornerShape(corners: .points(s.imageShape))
-        let icon = a.leadingImageSelectionIconSize ?? 24
+        // ::part(image-wrap) clips (overflow hidden) in its corner shape; the scrim holds the circle, which holds the check.
+        let pw = parts[.imageWrap], w = a.leadingImageWidth ?? 56, h = a.leadingImageHeight ?? 56
+        let shape = AWCNativeCornerShape(corners: pw?.cornerShape ?? .points(s.imageShape))
+        let icon = a.leadingImageSelectionIconSize ?? 24, ind = parts[.imageSelectionIndicator], circle = parts[.imageSelectionCircle], check = parts[.imageSelectionCheck]
         return ZStack {
-            AWCListImage(source: model.leadingImage).frame(width: w, height: h).clipped()
+            AWCListImage(source: model.leadingImage).frame(width: w, height: h).clipped().opacity(parts[.image]?.opacity ?? 1)
             if s.selectedClass {
-                Color(awcHex: a.leadingImageSelectionScrimColor ?? AWCListItemStyle.mix(s.color("scrim", "#000000"), 0.32))
-                Circle().fill(Color(awcHex: a.leadingImageSelectionCircleColor ?? AWCListItemStyle.mix(s.color("on-surface", "#1D1B20"), 0.6))).frame(width: icon, height: icon)
-                AWCListGlyph(name: "check", size: icon * 0.667, color: Color(awcHex: a.leadingImageSelectionIconColor ?? s.color("surface", "#FEF7FF")), fill: 1)
+                ZStack {
+                    Color(awcHex: ind?.backgroundColor ?? a.leadingImageSelectionScrimColor ?? AWCListItemStyle.mix(s.color("scrim", "#000000"), 0.32))
+                    AWCNativeCornerShape(corners: circle?.cornerShape ?? .points(icon / 2))
+                        .fill(Color(awcHex: circle?.backgroundColor ?? a.leadingImageSelectionCircleColor ?? AWCListItemStyle.mix(s.color("on-surface", "#1D1B20"), 0.6))).frame(width: icon, height: icon)
+                        .overlay { AWCListGlyph(name: "check", size: icon * 0.667, color: Color(awcHex: check?.color ?? a.leadingImageSelectionIconColor ?? s.color("surface", "#FEF7FF")), fill: 1).opacity(check?.opacity ?? 1) }
+                        .opacity(circle?.opacity ?? 1)
+                }
+                .opacity(ind?.opacity ?? 1)
             }
         }
-        .frame(width: w, height: h).clipShape(shape)
+        .frame(width: w, height: h).background { if let bg = pw?.backgroundColor { shape.fill(Color(awcHex: bg)) } }.clipShape(shape).opacity(pw?.opacity ?? 1)
         .onGeometryChange(for: CGRect.self) { $0.frame(in: .named("awc-native-preview")).offsetBy(dx: 0, dy: -renderShift.dy) } action: { imageNamed = $0 }
         .awcInspect(nodeID: node.id, part: "image", name: "image")
     }
@@ -363,24 +405,24 @@ struct AWCNativeListItemView: View {
         return VStack(alignment: .leading, spacing: 0) {
             if showOverline {
                 AWCListText(text: slotText("overline") ?? model.overline, size: 11, lineHeight: 16, weight: 500, tracking: 0.5, color: Color(awcHex: parts[.overline]?.color ?? s.overlineColor), uppercase: slotText("overline") == nil)
-                    .frame(maxWidth: .infinity, alignment: .leading).awcInspect(nodeID: node.id, part: "overline", name: "overline")
+                    .frame(maxWidth: .infinity, alignment: .leading).awcInspect(nodeID: node.id, part: "overline", name: "overline").modifier(AWCListPartPaint(value: parts[.overline]))
             }
             AWCListText(text: headline, size: s.headlineSize, lineHeight: s.headlineLine, weight: 400, tracking: hp?.letterSpacing ?? 0.5,
                         color: Color(awcHex: hp?.color ?? s.labelColor), family: a.labelTextFont, onTruncation: { if headlineTruncated != $0 { headlineTruncated = $0 } })
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .awcListTruncationTooltip(id: node.id + ".headline-tooltip", text: headline, enabled: headlineTruncated, theme: theme)
-                .awcInspect(nodeID: node.id, part: "headline", name: "headline")
+                .awcInspect(nodeID: node.id, part: "headline", name: "headline").modifier(AWCListPartPaint(value: parts[.headline]))
             if showSupporting {
                 AWCListText(text: slotText("supporting-text") ?? model.supportingText, size: s.supportingSize, lineHeight: s.supportingLine, weight: 400, tracking: 0.25,
                             color: Color(awcHex: parts[.supportingText]?.color ?? s.supportingColor), family: a.supportingTextFont, lines: s.lines == 3 ? 2 : 1,
                             onTruncation: { if supportingTruncated != $0 { supportingTruncated = $0 } })
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .awcListTruncationTooltip(id: node.id + ".supporting-tooltip", text: slotText("supporting-text") ?? model.supportingText, enabled: supportingTruncated, theme: theme)
-                    .awcInspect(nodeID: node.id, part: "supporting-text", name: "supporting-text")
+                    .awcInspect(nodeID: node.id, part: "supporting-text", name: "supporting-text").modifier(AWCListPartPaint(value: parts[.supportingText]))
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading).layoutPriority(-1)
-        .awcInspect(nodeID: node.id, part: "content", name: "content")
+        .awcInspect(nodeID: node.id, part: "content", name: "content").modifier(AWCListPartPaint(value: parts[.content]))
     }
 
     @ViewBuilder private func trailing(_ s: AWCListItemStyle, _ st: AWCListItemStates, _ a: AWCListItemAppearance, _ t: Double) -> some View {
@@ -397,10 +439,10 @@ struct AWCNativeListItemView: View {
                     if !text.isEmpty {
                         AWCListText(text: text, size: 11, lineHeight: 16, weight: 500, tracking: 0, color: Color(awcHex: parts[.trailingSupportingText]?.color ?? s.trailingTextColor),
                                     family: a.trailingSupportingTextFont).fixedSize()
-                            .awcInspect(nodeID: node.id, part: "trailing-supporting-text", name: "trailing-supporting-text")
+                            .awcInspect(nodeID: node.id, part: "trailing-supporting-text", name: "trailing-supporting-text").modifier(AWCListPartPaint(value: parts[.trailingSupportingText]))
                     }
                     if !model.trailingIcon.isEmpty {
-                        AWCListGlyph(name: model.trailingIcon, size: s.trailingIconSize, color: ink).awcInspect(nodeID: node.id, part: "trailing-icon", name: "trailing-icon")
+                        AWCListGlyph(name: model.trailingIcon, size: s.trailingIconSize, color: ink).awcInspect(nodeID: node.id, part: "trailing-icon", name: "trailing-icon").modifier(AWCListPartPaint(value: parts[.trailingIcon]))
                             .layoutValue(key: AWCListAutoMargin.self, value: true)
                     }
                 }
@@ -408,15 +450,17 @@ struct AWCNativeListItemView: View {
                 if s.reorderable {
                     let hi = handleInk.presented(t), base = Color(awcHex: parts[.dragHandle]?.color ?? s.trailingIconColor(st))
                     AWCListGlyph(name: "drag_indicator", size: 24, color: parts[.dragHandle]?.color != nil ? base : awcInterpolatedColor(base, Color(awcHex: s.onSurface), hi), glyphSize: 22)
-                        .scaleEffect(handleScale.presented(t)).opacity(handleOpacity.presented(t))
+                        .modifier(AWCListPartPaint(value: parts[.dragHandle], fades: false))
+                        .scaleEffect(handleScale.presented(t)).opacity(parts[.dragHandle]?.opacity ?? handleOpacity.presented(t))
                         .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { handleFrame = $0 }
                         .onGeometryChange(for: CGRect.self) { $0.frame(in: .named("awc-native-preview")).offsetBy(dx: 0, dy: -renderShift.dy) } action: { handleFrameNamed = $0 }
                         .onHover { handleHoverLocal = $0 }
+                        .awcCursor(dragging ? .grabbing : .grab, active: .grabbing)
                         .awcInspect(nodeID: node.id, part: "drag-handle", name: "drag-handle")
                 }
             }
             .foregroundStyle(ink)
-            .background(Color(awcHex: parts[.trailing]?.backgroundColor ?? "#00000000"))
+            .modifier(AWCListPartPaint(value: parts[.trailing]))
             .awcInspect(nodeID: node.id, part: "trailing", name: "trailing")
         }
     }
@@ -429,14 +473,19 @@ struct AWCNativeListItemView: View {
         let pressing = pointer.map { $0.isPointerDown && $0.pressLocation.map(caretNamed.contains) == true } ?? false
         // md-icon-button's own state layer (ink): pressed 0.10 > focus-visible 0.12 > hover 0.08 (source order).
         let caretLayer = s.disabledClass ? 0 : pressing ? 0.1 : ringed ? 0.12 : over ? 0.08 : 0
+        // md-icon-button's exported parts: ::part(expand-button-state-layer) (its opacity replaces the state opacity),
+        // ::part(expand-button-icon); ::part(expand-button) is the md-icon-button host.
+        let pb = parts[.expandButton], psl = parts[.expandButtonStateLayer], pic = parts[.expandButtonIcon], layerOpacity = psl?.opacity ?? caretLayer
         return ZStack {
             Circle().fill(open ? Color(awcHex: s.color("primary", "#6750A4")) : .clear)
             // md-icon-button :focus-visible: the focus state layer (12%) and a 3px secondary outline offset by 2px.
-            if caretLayer > 0 { Circle().fill(Color(awcHex: ink).opacity(caretLayer)) }
-            AWCListGlyph(name: "expand_more", size: chevron, color: Color(awcHex: ink)).rotationEffect(.degrees(180 * caret.presented(t)))
+            if layerOpacity > 0 { Circle().fill(Color(awcHex: psl?.backgroundColor ?? ink).opacity(layerOpacity)) }
+            AWCListGlyph(name: "expand_more", size: chevron, color: Color(awcHex: pic?.color ?? ink)).opacity(pic?.opacity ?? 1).rotationEffect(.degrees(180 * caret.presented(t)))
         }
         .overlay { if ringed { Circle().inset(by: -3.5).stroke(Color(awcHex: s.color("secondary", "#625B71")), lineWidth: 3) } }
         .frame(width: size, height: size)
+        .background { if let bg = pb?.backgroundColor { AWCNativeCornerShape(corners: pb?.cornerShape ?? .points(0)).fill(Color(awcHex: bg)) } }
+        .opacity(pb?.opacity ?? 1)
         .contentShape(Circle())
         .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { caretFrame = $0 }
         .onGeometryChange(for: CGRect.self) { $0.frame(in: .named("awc-native-preview")).offsetBy(dx: 0, dy: -renderShift.dy) } action: { caretNamed = $0 }
@@ -451,8 +500,21 @@ struct AWCNativeListItemView: View {
     private func caretBridge(_ s: AWCListItemStyle) -> some View {
         let props: [String: AWCValue] = ["disabled": .bool(model.disabled), "softDisabled": .bool(model.softDisabled)]
         var configuration = AWCNativeFocusConfiguration(id: node.id + ".expand-button", label: expanded ? "Collapse" : "Expand", policy: AWCButtonAccessibilityPolicy(properties: props), group: nil, cell: nil,
-                                                        handle: caretFocus, focusChanged: { _ in }, activate: { if !s.disabledClass { toggleExpanded() } })
+                                                        handle: caretFocus, focusChanged: { focusWithin.set(caret: $0) { requestActivation(s, caret: true) } }, activate: { if !s.disabledClass { toggleExpanded() } })
         configuration.disclosureExpanded = expanded
+        // The caret sits in the row's shadow tree: md-list-item's host key handler and the list's roving take its keys
+        // (ArrowRight/Left expand/collapse; Enter/Space activate md-icon-button and then click the host, as Chrome does).
+        configuration.routeKey = { key, _, modified in
+            if modified { return false }
+            if s.interactive && !s.disabledClass {
+                if key == "ArrowRight" && !expanded { toggleExpanded(); return true }
+                if key == "ArrowLeft" && expanded { toggleExpanded(); return true }
+                if key == "Enter" || key == "Space" { toggleExpanded(); keyboardActivate(); return true }
+            }
+            if ["ArrowRight", "ArrowLeft"].contains(key) { return true }
+            if let runtime { if runtime.move(key, from: node.id) { return true }; return runtime.typeaheadKey(key, from: node.id) }
+            return false
+        }
         return AWCNativeButtonFocusBridge(configuration: configuration)
     }
     @ViewBuilder private func panelView(_ s: AWCListItemStyle, _ a: AWCListItemAppearance, _ t: Double) -> some View {
@@ -464,11 +526,16 @@ struct AWCNativeListItemView: View {
                 if child.tag == "md-list-item" {
                     let i = rows.firstIndex { $0.id == child.id } ?? 0
                     AWCNativeListItemView(node: child, theme: theme, ctx: panelContext(i, rows.count), runtime: runtime, emitItem: emitItem, renderChild: renderChild,
-                                          onPanelClick: { c in runtime?.childClicked(c, siblings: rows, parentID: node.id) })
+                                          onPanelClick: { c in
+                        runtime?.childClicked(c, siblings: rows, parentID: node.id)
+                        emitItem(node.id, "mdItemSelect", ["index": .number(Double(rows.firstIndex { $0.id == c.id } ?? 0)), "value": .string(AWCListRuntime.label(c)),
+                                                           "selected": .bool(runtime?.selection.contains(c.id) ?? false), "item": .string(c.id)])
+                    })
                 } else { renderChild(child) }
             }
         }
         .padding(.vertical, block).padding(.leading, start).padding(.trailing, end)
+        .modifier(AWCListPartPaint(value: parts[.expandedPanelInner], clips: true))
         .offset(y: offset)
         .fixedSize(horizontal: false, vertical: true)
         .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { panelHeight = $0 }
@@ -476,9 +543,12 @@ struct AWCNativeListItemView: View {
         // item's min-content), so a collapsed panel with `expanded-panel-padding-block` keeps that height;
         // the panel's background fades with its opacity (same element in the source).
         .frame(height: max(CGFloat(2 * block), panelHeight * CGFloat(fraction)), alignment: .top).clipped()
-        .background(Color(awcHex: a.expandedPanelBackground ?? "#00000000"))
-        .opacity(fraction > 0 ? panel.presented(t) : 0)
+        .background(Color(awcHex: parts[.expandedPanel]?.backgroundColor ?? a.expandedPanelBackground ?? "#00000000"))
+        .opacity((fraction > 0 ? panel.presented(t) : 0) * (parts[.expandedPanel]?.opacity ?? 1))
         .allowsHitTesting(expanded)
+        // Collapsed content is retained for the transition: it leaves the keyboard order with the accessibility tree (the
+        // source hides it with `visibility`, gate-7 r3-26). The inert bit reaches the rows' focus bridges.
+        .awcNativeInert(!expanded)
         // The panel is a `list` (rows), a `group` (selection) or a `region`, labelled by the headline unless a region.
         .accessibilityElement(children: .contain)
         .accessibilityLabel(rows.isEmpty && !(ctx?.selectionMode ?? "none").contains("select") ? "" : AWCListRuntime.label(node))
@@ -495,7 +565,7 @@ struct AWCNativeListItemView: View {
 
     private func attachController() {
         handle.focus = { visible in
-            guard style.focusable else { return false }
+            guard style.rovingFocusable else { return false }
             runtime?.activate(node.id, showRoving: false)
             return visible ? (focusHandle.requestFocus?() ?? false) : (focusHandle.requestPointerFocus?() ?? false)
         }
@@ -536,8 +606,9 @@ struct AWCNativeListItemView: View {
             dragging = false; press = nil; held = false
             // A drop that moved the row re-inserts it in the source, so focus falls back to the document.
             if runtime?.endDrag() == true {
-                dropAt = pointer?.location ?? p; dropRest = true; AWCListRuntime.blurFocus(node.id)
-                Task { @MainActor in try? await Task.sleep(nanoseconds: 16_000_000); dropRest = false }
+                dropAt = pointer?.location ?? p; runtime?.dropPoint = dropAt; AWCListRuntime.blurFocus(node.id)
+                // The other rows' frames are stale for about one frame only: release the hold after that (C65-01), so the row under a still pointer hovers again.
+                Task { @MainActor in try? await Task.sleep(nanoseconds: 40_000_000); runtime?.dropPoint = nil }
             }
             return
         }
@@ -552,14 +623,27 @@ struct AWCNativeListItemView: View {
         guard s.interactive, !s.disabledClass else { return }
         if let onPanelClick, ctx?.inPanel == true { emitItem(node.id, "mdClick", ["item": .string(node.id)]); onPanelClick(node); return }
         if model.expandable { toggleExpanded(); emitItem(node.id, "mdClick", ["item": .string(node.id)]); return }
+        // mdItemClick's detail is built before the list handles it: `selected` is the value before the click.
+        let index = runtime?.rows.firstIndex { $0.id == node.id } ?? 0, wasSelected = runtime?.selection.contains(node.id) ?? model.selected
         emitItem(node.id, "mdClick", ["item": .string(node.id)])
         runtime?.itemClicked(node.id)
+        emitItem(node.id, "mdItemClick", ["index": .number(Double(index)), "selected": .bool(wasSelected)])
     }
     private func toggleExpanded() {
         let next = !expanded
         localExpanded = next; runtime?.expanded[node.id] = next
         let index = ctx?.index ?? 0
         emitItem(node.id, "mdExpand", ["expanded": .bool(next), "index": .number(Double(index)), "value": .string(AWCListRuntime.label(node)), "item": .string(node.id)])
+    }
+    /// Source handleFocus: focus entering a row hosted directly by a list (not an expanded-content child) asks the list for
+    /// roving activation.
+    /// Source handleFocus: focus entering the item from outside asks its list for roving activation. md-list answers by making a
+    /// roving row its active row (`mdActivate` first: the list's listener runs before the event leaves the list); the row's own
+    /// focus has activated it already, the caret's has not.
+    private func requestActivation(_ s: AWCListItemStyle, caret: Bool = false) {
+        guard let runtime, s.interactive, ctx?.inPanel != true else { return }
+        if caret, s.rovingFocusable { runtime.activate(node.id, showRoving: false) }
+        emitItem(node.id, "mdRequestActivation", .null)
     }
     private func menuRow(_ s: AWCListItemStyle) -> Bool { ["menu", "menubar"].contains(ctx?.containerRole ?? "") && !s.participates && s.interactive && (model.type == "button" || model.type == "link") }
     private func keyboardActivate() {
@@ -570,7 +654,7 @@ struct AWCNativeListItemView: View {
         Task { try? await Task.sleep(nanoseconds: 150_000_000); keyPressed = false }
     }
     private func focusBridge(_ s: AWCListItemStyle) -> some View {
-        var props: [String: AWCValue] = ["disabled": .bool(model.disabled), "softDisabled": .bool(model.softDisabled), "groupTabindex": .number(s.focusable && tabbable ? 0 : -1)]
+        var props: [String: AWCValue] = ["disabled": .bool(model.disabled), "softDisabled": .bool(model.softDisabled), "groupTabindex": .number(s.rovingFocusable && tabbable ? 0 : -1)]
         // Accessibility roles (md-list-item.tsx): a selection row is an `option` with `aria-selected` (a radio button
         // in a single-select listbox, a checkbox in a multi-select one), a button/link row inside a menu is a
         // `menuitem`, otherwise the primary action is a button or link. The row's index is its set position.
@@ -579,7 +663,7 @@ struct AWCNativeListItemView: View {
         else if model.type == "link" { props["href"] = node.properties["href"] ?? .null }
         let position = AWCGridCellContext(row: ctx?.childIndex ?? ctx?.index ?? -1, column: -1)
         var configuration = AWCNativeFocusConfiguration(id: node.id, label: s.participates ? [node.properties["overline"]?.string, AWCListRuntime.label(node), node.properties["supportingText"]?.string, node.properties["trailingSupportingText"]?.string].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " ") : AWCListRuntime.label(node), policy: AWCButtonAccessibilityPolicy(properties: props), group: nil, cell: position,
-                                                        handle: focusHandle, focusChanged: { _ in }, activate: { keyboardActivate() })
+                                                        handle: focusHandle, focusChanged: { focusWithin.set(row: $0) { requestActivation(s) } }, activate: { keyboardActivate() })
         configuration.routeKey = { key, _, modified in
             if modified { return false }
             if model.expandable && !s.disabledClass {
@@ -597,6 +681,41 @@ struct AWCNativeListItemView: View {
         configuration.disclosureExpanded = model.expandable ? expanded : nil
         let bridge = AWCNativeButtonFocusBridge(configuration: configuration)
         return bridge.onAppear { runtime?.focusRequests[node.id] = { visible in visible ? (focusHandle.requestFocus?() ?? false) : (focusHandle.requestPointerFocus?() ?? false) } }
+    }
+}
+
+/// Focus inside one list item (its row and its caret), set synchronously by their focus bridges. The source host's `focus`
+/// event fires only when focus enters the item from outside: a move between the row and its caret is not an entry, so a
+/// blur stays pending until the next run-loop turn.
+/// md-list-item `::part()` paint declarations (md-list.md "Parts"): `backgroundColor` fills the part's box in its corner shape,
+/// `cornerShape` also clips the parts the source clips, `opacity` fades the part with its content (replacing the part's own
+/// opacity where it has one). Text and glyph parts take `color` where they draw.
+struct AWCListPartPaint: ViewModifier {
+    let value: AWCListPartAppearance?
+    var clips = false
+    /// false where the part's own opacity track applies the declared opacity (the drag handle).
+    var fades = true
+    @ViewBuilder func body(content: Content) -> some View {
+        if let v = value, v.backgroundColor != nil || (fades && v.opacity != nil) || (clips && v.cornerShape != nil) {
+            let shape = AWCNativeCornerShape(corners: v.cornerShape ?? .points(0)), alpha = fades ? v.opacity ?? 1 : 1
+            let filled = content.background { if let bg = v.backgroundColor { shape.fill(Color(awcHex: bg)) } }
+            if clips, v.cornerShape != nil { filled.clipShape(shape).opacity(alpha) } else { filled.opacity(alpha) }
+        } else { content }
+    }
+}
+
+final class AWCListItemFocusWithin {
+    private var row = false, caret = false, pending = false
+    func set(row value: Bool? = nil, caret part: Bool? = nil, entered: () -> Void) {
+        if value ?? part ?? false {
+            let inside = row || caret || pending
+            if value != nil { row = true } else { caret = true }
+            if !inside { entered() }
+        } else {
+            if value != nil { row = false } else { caret = false }
+            pending = true
+            DispatchQueue.main.async { [weak self] in self?.pending = false }
+        }
     }
 }
 

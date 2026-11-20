@@ -4,6 +4,9 @@ import {fileURLToPath} from 'node:url';
 // Every frame must pass the Laboratory server's own inspection schema (gate-7 R6-01/R6-02): the server rejects the whole
 // frame (502 INVALID_LIVE_FRAME) and closes the session otherwise.
 import {validateNativeInspection} from '../../native-playground/native-inspection.mjs';
+const {decodePNG}=await import(process.env.AWC_PNG_MODULE ?? fileURLToPath(new URL('../../../tools/ax/png.mjs',import.meta.url)));
+// Dark (text) pixels of a frame: the panel's copy paints only while the panel is active.
+const inkPixels=frame=>{const img=decodePNG(Buffer.from(frame.png,'base64'));let n=0;for(let i=0;i<img.data.length;i+=4)if(img.data[i]+img.data[i+1]+img.data[i+2]<300)n++;return n;};
 let schemaFrames=0;
 process.on('exit',code=>{if(code===0)console.log(`${schemaFrames} frames passed the Laboratory inspection schema.`);});
 
@@ -29,8 +32,8 @@ function host(){
   });
   child.on('exit',(code,signal)=>{for(const item of pending.values()){clearTimeout(item.timeout);item.reject(new Error(`Host exited ${code}/${signal}: ${stderr}`));}pending.clear();});
   return {
-    call:message=>new Promise((resolve,reject)=>{
-      const id=++serial,timeout=setTimeout(()=>{pending.delete(id);child.kill('SIGKILL');reject(new Error(`Host timeout: ${stderr}`));},7000);
+    call:(message,ms=7000)=>new Promise((resolve,reject)=>{
+      const id=++serial,timeout=setTimeout(()=>{pending.delete(id);child.kill('SIGKILL');reject(new Error(`Host timeout: ${stderr}`));},ms);
       pending.set(id,{resolve,reject,timeout});child.stdin.write(`${JSON.stringify({...message,id})}\n`);
     }),
     close:()=>child.stdin.end(),
@@ -85,10 +88,31 @@ try{
   u=await live.call({command:'update',properties:{sizing:'active'}});check(!u.error,`panels update: ${u.error}`);
   await wait(300);f=await frame();check(nodes(f,'md-tab-panels')[0]?.metrics.sizing==='active'&&nodes(f,'md-tab-panel').length===1,'sizing active keeps only the active panel.');
   u=await live.call({command:'update',properties:{sizing:'auto'}});check(Boolean(u.error),'an unknown sizing is rejected.');
+  // Gate-7 R6-21: the page takes `active` from the request — the Studio default (absent / false) is an inactive, unpainted panel,
+  // as on Android and the Web.
   f=await configure('md-tab-panel',{properties:{}});check(!f.error,`configure panel: ${f.error}`);
-  await wait(600);f=await frame();check(nodes(f,'md-tab-panel')[0]?.metrics.active===true,'the standalone panel is active.');
+  await wait(600);f=await frame();check(nodes(f,'md-tab-panel')[0]?.metrics.active===false&&inkPixels(f)===0,`the Studio default panel is inactive and paints nothing (${inkPixels(f)} text pixels).`);
+  f=await configure('md-tab-panel',{properties:{active:true}});check(!f.error,`configure active panel: ${f.error}`);
+  await wait(600);f=await frame();check(nodes(f,'md-tab-panel')[0]?.metrics.active===true&&inkPixels(f)>50,`an active panel paints its copy (${inkPixels(f)} text pixels).`);
+  // Gate-7 R6-23: inherited text in a panel paints the theme's on-surface colour (#1C1B1F), as on Android.
+  {const img=decodePNG(Buffer.from(f.png,'base64'));let dark=[255,255,255];for(let i=0;i<img.data.length;i+=4)if(img.data[i]+img.data[i+1]+img.data[i+2]<dark[0]+dark[1]+dark[2])dark=[img.data[i],img.data[i+1],img.data[i+2]];
+   check([0x1C,0x1B,0x1F].every((v,i)=>Math.abs(v-dark[i])<=12),`the panel's copy paints on-surface (${dark}).`);}
   u=await live.call({command:'update',properties:{active:false}});check(!u.error,`panel update: ${u.error}`);
-  await wait(300);f=await frame();check(nodes(f,'md-tab-panel')[0]?.metrics.active===false,'the panel deactivates.');
+  await wait(300);f=await frame();check(nodes(f,'md-tab-panel')[0]?.metrics.active===false&&inkPixels(f)===0,'the panel deactivates and its copy disappears.');
   u=await live.call({command:'update',properties:{label:'x'}});check(Boolean(u.error),'panels have no label property.');
+  // aria-controls → AXLinkedUIElements (gate-7 R6-09): in the composed reference each tab controls its panel; the active tab's
+  // linked element is the shown panel, named by the tab, read through the Accessibility API as VoiceOver reads it.
+  f=await configure('md-tabs',{properties:{},scenario:'tabs-panels'});check(!f.error,`configure tabs-panels: ${f.error}`);
+  await wait(800);
+  const axTabs=async()=>{const s=await live.call({command:'accessibility'},30000);const out=[];
+    const walk=n=>{if(!n||typeof n!=='object')return;if(n.subrole==='AXTabButton')out.push({name:n.description??n.title??'',active:n.value===1||n.value==='1'||n.value===true,linked:n.linked??[]});(n.children??[]).forEach(walk);};
+    (s.windows??[]).forEach(walk);return {trusted:s.axTrusted,tabs:out};};
+  // (The host reads its own process: no Accessibility trust is needed, as for tools/ax.)
+  let ax=await axTabs();
+  check(ax.tabs.length===3,`three tabs in the accessibility tree (${JSON.stringify(ax.tabs)}).`);
+  // (Inactive panels are hidden from accessibility, as Chrome leaves a hidden aria-controls target out of the relation.)
+  check(ax.tabs.find(t=>t.active)?.name==='Overview'&&JSON.stringify(ax.tabs.find(t=>t.active)?.linked)==='["Overview"]',`the active tab Overview links to its panel (${JSON.stringify(ax.tabs)}).`);
+  m=await method('selectTab',[2]);check(!m.error,`tabs-panels selectTab: ${m.error}`);await wait(600);
+  ax=await axTabs();check(ax.tabs.find(t=>t.active)?.name==='Settings'&&JSON.stringify(ax.tabs.find(t=>t.active)?.linked)==='["Settings"]',`after selectTab(2) the active tab links to the Settings panel (${JSON.stringify(ax.tabs)}).`);
   console.log(`md-tabs live host: ${checks} checks passed`);
 }finally{live?.close();}

@@ -114,6 +114,9 @@ export class MdBreadcrumbItem {
 
   @State() private hasSlottedIcon = false;
   @State() private hasSlottedLabel = false;
+  /** The link's ripple is created after the first render: ripples hydrating during it made Chrome drop a static crumb's
+   *  slotted label from the accessibility tree (intermittently, for good). It is interaction feedback with nothing to draw at rest. */
+  @State() private rippleMounted = false;
 
   private get isCollapsed(): boolean {
     return this.collapsed;
@@ -129,6 +132,7 @@ export class MdBreadcrumbItem {
   }
 
   componentDidLoad() {
+    this.rippleMounted = true;
     const mainSlot = this.el.shadowRoot?.querySelector(
       'slot:not([name])',
     ) as HTMLSlotElement | null;
@@ -255,7 +259,7 @@ export class MdBreadcrumbItem {
         rel={this.rel || (this.target ? SAFE_LINK_REL : undefined)}
         onClick={this.handleAnchorClick}
       >
-        <md-ripple disabled={this.disabled}></md-ripple>
+        {this.rippleMounted && <md-ripple disabled={this.disabled}></md-ripple>}
         <span
           class="md-breadcrumb-item__state-layer"
           part="state-layer"

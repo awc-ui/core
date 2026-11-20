@@ -1,6 +1,6 @@
 # md-radio — accessibility parity
 
-Generated 2026-10-29T11:11:42.528Z by tools/ax. Web = Chrome AX tree of the same effective node.
+Generated 2026-11-05T01:32:19.514Z by tools/ax. Web = Chrome AX tree of the same effective node.
 
 ## unchecked
 

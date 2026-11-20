@@ -400,7 +400,8 @@ export class MdTransferList {
               }}
               role="option"
               aria-selected={String(isChecked)}
-              aria-disabled={item.disabled ? 'true' : 'false'}
+              // A disabled list disables every option: an explicit "false" would cut the host's aria-disabled inheritance (TL7).
+              aria-disabled={item.disabled || this.disabled ? 'true' : 'false'}
               key={item.value}
               onClick={() => this.toggleItem(side, item.value)}
               onKeyDown={(e: KeyboardEvent) => {
@@ -501,6 +502,8 @@ export class MdTransferList {
         class={{
           'md-transfer-list': true,
           'md-transfer-list--disabled': this.disabled,
+          // Keyed on the prop, not the reflected attribute (see the column rule in the CSS).
+          'md-transfer-list--searchable': this.searchable,
         }}
         role="group"
         aria-disabled={this.disabled ? 'true' : 'false'}

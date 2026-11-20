@@ -2497,9 +2497,12 @@
         "titleAlignment",
         "searchPlaceholder",
         "searchValue",
+        "searchAriaLabel",
         "searchDisabled",
         "headline",
         "subtitle",
+        "scrolled",
+        "density",
         "leadingIcon",
         "leadingIconLabel"
       ],
@@ -2517,58 +2520,183 @@
         "leading",
         "trailing"
       ],
-      "unsupportedProperties": [
-        "searchAriaLabel",
-        "scrolled",
-        "density"
-      ],
+      "unsupportedProperties": [],
       "unsupportedEvents": [],
       "unsupportedMethods": [],
       "unsupportedSlots": [],
-      "notes": [],
-      "verification": "not-device-verified"
+      "notes": [
+        "Dedicated native app bar (SwiftUI / Compose): small, medium and large bars (the expanded headline block below the row, start or centred), the search bar (pill, in-pill actions, slotted search content), the leading icon button (mdLeadingClick), the trailing actions (at most three shown, one warning per new excess), scrolled colours with their transitions, density and the spacing rung.",
+        "The search input as the source: focus activates (mdSearchActivate), typing emits mdSearchInput (Space announces activation first), Enter activates, Home / End move the caret, keyboard focus selects the text and shows the ring; the pill's hover / press state layer, ripple and focus ring.",
+        "The 38 hooks (the stylesheet's list; the CEM lists 32) through .awcAppBarAppearance(…) / AWCAppBarAppearanceScope as CSS text; every exported part through the typed part appearances (.awcAppBarPartAppearance(_:part:) / AWCAppBarPartAppearanceScope).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: paint and geometry of every configuration (small, centred, medium, large and search bars, subtitles, slots, the trailing cap, density, RTL, dark, the hooks and every typed part), the interaction states and motion (scrolled colours, the search pill's hover / press layer, ripple and focus ring, the input's focus, selection, typing and the events) and the Laboratory hooks and updates."
+      ],
+      "verification": "not-device-verified",
+      "visualParts": [
+        "leading-icon",
+        "title",
+        "subtitle",
+        "expanded-headline",
+        "search-host",
+        "search",
+        "search-state-layer",
+        "search-field",
+        "search-content",
+        "search-input",
+        "search-trailing",
+        "row",
+        "leading",
+        "trailing",
+        "expanded",
+        "icon",
+        "state-layer"
+      ],
+      "appearance": {
+        "api": ".awcAppBarAppearance(AWCAppBarAppearance)",
+        "fields": [
+          "containerColor",
+          "containerColorScrolled",
+          "containerShape",
+          "headlineColor",
+          "subtitleColor",
+          "leadingIconColor",
+          "trailingIconColor",
+          "containerElevation",
+          "rowHeight",
+          "paddingInlineStart",
+          "paddingInlineEnd",
+          "rowPaddingInline",
+          "rowPaddingBlockStart",
+          "trailingGap",
+          "trailingIconTouchSize",
+          "iconGap",
+          "iconSize",
+          "avatarSize",
+          "expandedPaddingInline",
+          "expandedPaddingBlockEnd",
+          "mediumHeight",
+          "mediumHeightWithSubtitle",
+          "largeHeight",
+          "largeHeightWithSubtitle",
+          "iconButtonSize",
+          "searchContainerColor",
+          "searchContainerColorScrolled",
+          "searchContainerShape",
+          "searchContainerHeight",
+          "searchPaddingInlineStart",
+          "searchPaddingInlineEnd",
+          "searchRowGap",
+          "searchTrailingGap",
+          "searchFieldTrailingGap",
+          "trailingTouchSize",
+          "searchPlaceholderColor",
+          "searchInputColor",
+          "searchTrailingIconColor"
+        ]
+      }
     },
     "android": {
       "status": "adapter-implemented",
       "properties": [
-        "density",
-        "headline",
-        "leadingIcon",
-        "leadingIconLabel",
-        "subtitle"
-      ],
-      "events": [
-        "mdLeadingClick"
-      ],
-      "methods": [],
-      "slots": [
-        "leading",
-        "trailing"
-      ],
-      "unsupportedProperties": [
         "variant",
         "titleAlignment",
         "searchPlaceholder",
         "searchValue",
         "searchAriaLabel",
         "searchDisabled",
-        "scrolled"
+        "headline",
+        "subtitle",
+        "scrolled",
+        "density",
+        "leadingIcon",
+        "leadingIconLabel"
       ],
-      "unsupportedEvents": [
+      "events": [
+        "mdLeadingClick",
         "mdSearchActivate",
         "mdSearchInput"
       ],
-      "unsupportedMethods": [],
-      "unsupportedSlots": [
+      "methods": [],
+      "slots": [
         "headline",
         "subtitle",
         "search",
-        "search-trailing"
+        "search-trailing",
+        "leading",
+        "trailing"
       ],
+      "unsupportedProperties": [],
+      "unsupportedEvents": [],
+      "unsupportedMethods": [],
+      "unsupportedSlots": [],
       "notes": [
-        "Native Material/Compose appearance; CSS selectors, DOM APIs, browser form APIs, cancelable DOM events and source imperative methods are not compiled. Unsupported source properties are reported by the compiler."
+        "Dedicated native app bar (SwiftUI / Compose): small, medium and large bars (the expanded headline block below the row, start or centred), the search bar (pill, in-pill actions, slotted search content), the leading icon button (mdLeadingClick), the trailing actions (at most three shown, one warning per new excess), scrolled colours with their transitions, density and the spacing rung.",
+        "The search input as the source: focus activates (mdSearchActivate), typing emits mdSearchInput (Space announces activation first), Enter activates, Home / End move the caret, keyboard focus selects the text and shows the ring; the pill's hover / press state layer, ripple and focus ring.",
+        "The 38 hooks (the stylesheet's list; the CEM lists 32) through .awcAppBarAppearance(…) / AWCAppBarAppearanceScope as CSS text; every exported part through the typed part appearances (.awcAppBarPartAppearance(_:part:) / AWCAppBarPartAppearanceScope).",
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: paint and geometry of every configuration (small, centred, medium, large and search bars, subtitles, slots, the trailing cap, density, RTL, dark, the hooks and every typed part), the interaction states and motion (scrolled colours, the search pill's hover / press layer, ripple and focus ring, the input's focus, selection, typing and the events) and the Laboratory hooks and updates."
       ],
-      "verification": "not-device-verified"
+      "verification": "not-device-verified",
+      "visualParts": [
+        "leading-icon",
+        "title",
+        "subtitle",
+        "expanded-headline",
+        "search-host",
+        "search",
+        "search-state-layer",
+        "search-field",
+        "search-content",
+        "search-input",
+        "search-trailing",
+        "row",
+        "leading",
+        "trailing",
+        "expanded",
+        "icon",
+        "state-layer"
+      ],
+      "appearance": {
+        "api": "AWCAppBarAppearanceScope(AWCAppBarAppearance)",
+        "fields": [
+          "containerColor",
+          "containerColorScrolled",
+          "containerShape",
+          "headlineColor",
+          "subtitleColor",
+          "leadingIconColor",
+          "trailingIconColor",
+          "containerElevation",
+          "rowHeight",
+          "paddingInlineStart",
+          "paddingInlineEnd",
+          "rowPaddingInline",
+          "rowPaddingBlockStart",
+          "trailingGap",
+          "trailingIconTouchSize",
+          "iconGap",
+          "iconSize",
+          "avatarSize",
+          "expandedPaddingInline",
+          "expandedPaddingBlockEnd",
+          "mediumHeight",
+          "mediumHeightWithSubtitle",
+          "largeHeight",
+          "largeHeightWithSubtitle",
+          "iconButtonSize",
+          "searchContainerColor",
+          "searchContainerColorScrolled",
+          "searchContainerShape",
+          "searchContainerHeight",
+          "searchPaddingInlineStart",
+          "searchPaddingInlineEnd",
+          "searchRowGap",
+          "searchTrailingGap",
+          "searchFieldTrailingGap",
+          "trailingTouchSize",
+          "searchPlaceholderColor",
+          "searchInputColor",
+          "searchTrailingIconColor"
+        ]
+      }
     }
   }
 }

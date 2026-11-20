@@ -1143,10 +1143,16 @@
         "Dedicated native stepper: horizontal row (shared content slot or per-step panels), vertical rail with per-step panels and Back / Continue, mobile bar (dots or \"Step N of M\"), numbered / dot indicators, density, RTL; linear / non-linear reachability, auto-complete, the cancelable mdBeforeChange, mdStepChange, mdComplete, the polite / assertive announcements; the stylesheet transitions and keyframe animations; hooks through AWCStepperAppearance; next() / prev() / goTo() / reset() through AWCStepperController.",
         "Host property changes follow the Stencil watchers: a host write to active runs @Watch('active') (clamp, auto-complete, mdStepChange after the update); the component's own writes (active, completed, error) persist until the host changes that property.",
         "The built-in Back / Continue / Finish are native md-buttons; their own events stay internal, as the source stops them.",
+        "Parts: typed part appearances (.awcStepperPartAppearance(_:part:) / AWCStepperPartAppearanceScope) — list / nav / mobile-nav background, content background and padding (a top padding keeps the slotted child's margin inside, as Chrome), nav / mobile-nav padding (Mac Chrome ::part cases, web-paint-extra2).",
         "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint (142 cases + per-step hooks and step density), the state / motion replays per frame (20 runs, plain and reduced motion) with the md* events, the announcements and the keyframe animations each step starts."
       ],
       "verification": "not-device-verified",
-      "visualParts": [],
+      "visualParts": [
+        "list",
+        "content",
+        "nav",
+        "mobile-nav"
+      ],
       "appearance": {
         "api": ".awcStepperAppearance(AWCStepperAppearance)",
         "fields": [
@@ -1225,10 +1231,16 @@
         "Dedicated native stepper: horizontal row (shared content slot or per-step panels), vertical rail with per-step panels and Back / Continue, mobile bar (dots or \"Step N of M\"), numbered / dot indicators, density, RTL; linear / non-linear reachability, auto-complete, the cancelable mdBeforeChange, mdStepChange, mdComplete, the polite / assertive announcements; the stylesheet transitions and keyframe animations; hooks through AWCStepperAppearance; next() / prev() / goTo() / reset() through AWCStepperController.",
         "Host property changes follow the Stencil watchers: a host write to active runs @Watch('active') (clamp, auto-complete, mdStepChange after the update); the component's own writes (active, completed, error) persist until the host changes that property.",
         "The built-in Back / Continue / Finish are native md-buttons; their own events stay internal, as the source stops them.",
+        "Parts: typed part appearances (.awcStepperPartAppearance(_:part:) / AWCStepperPartAppearanceScope) — list / nav / mobile-nav background, content background and padding (a top padding keeps the slotted child's margin inside, as Chrome), nav / mobile-nav padding (Mac Chrome ::part cases, web-paint-extra2).",
         "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint (142 cases + per-step hooks and step density), the state / motion replays per frame (20 runs, plain and reduced motion) with the md* events, the announcements and the keyframe animations each step starts."
       ],
       "verification": "not-device-verified",
-      "visualParts": [],
+      "visualParts": [
+        "list",
+        "content",
+        "nav",
+        "mobile-nav"
+      ],
       "appearance": {
         "api": "AWCStepperAppearanceScope(AWCStepperAppearance)",
         "fields": [

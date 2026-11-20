@@ -170,6 +170,9 @@ struct TFGrid {
         }
         rect(m("prefix"), c["prefix"], "prefix", widthTol: 1.2); rect(m("suffix"), c["suffix"], "suffix", widthTol: 1.2)
         rect(m("chips"), c["chips"].array.isEmpty && c["chips"]["rect"]["width"].number == 0 ? .null : c["chips"], "chips", widthTol: 2)
+        if state.parts.chipsBackgroundColor != nil {   // ::part(chips) { background-color }
+            check(colorClose(m("chips")?.metrics["background"]?.string, c["chips"]["backgroundColor"].string), "\(name) chips background \(m("chips")?.metrics["background"]?.string ?? "-") vs \(c["chips"]["backgroundColor"].string)")
+        }
         let parts = ["Clear": "clear", "Show password": "password-toggle", "Hide password": "password-toggle", "Start voice input": "speech", "Stop listening": "speech"]
         for b in c["buttons"].array {
             let part = parts[b["label"].string] ?? b["label"].string
@@ -188,6 +191,26 @@ struct TFGrid {
             if d > worst { worst = d; worstAt = "(\(pxx),\(py)) web \(web.at(pxx, py).map { Int($0) }) native \(nat.at(pxx, py).map { Int($0.rounded()) })" } } }
         check(Double(n) / Double(max(1, (cw - 2) * (ch - 2))) > 0.5, "\(name) flat coverage")
         check(Double(bad) / Double(max(n, 1)) <= 0.005 && sum / Double(max(n, 1)) <= 1.0, "\(name) flat pixels match (mean \(sum / Double(max(n, 1))), >6: \(bad)/\(n), worst \(worst) at \(worstAt))")
+        // Legend notch region (9-17, C66-01): the whole-image thresholds above let a notch drawn on the wrong side pass (35 px). On the border
+        // rows of an outlined field, the pixels inside Chrome's notch rectangle and inside its mirror image must equal Chrome's.
+        if c["fieldset"] != .null, c["legend"] != .null, c["fieldset"]["rect"]["width"].number ?? 0 > 0, c["legend"]["rect"]["width"].number ?? 0 > 4 {
+            let fr = c["fieldset"]["rect"], lr = c["legend"]["rect"], bw = max(1, Int((px(c["fieldset"]["borderTopWidth"].string) ?? 1).rounded()))
+            let nx0 = Int(lr["x"].number!.rounded()) + 1, nx1 = Int((lr["x"].number! + lr["width"].number!).rounded()) - 1
+            let mx0 = Int((fr["x"].number! * 2 + fr["width"].number!).rounded()) - nx1, mx1 = Int((fr["x"].number! * 2 + fr["width"].number!).rounded()) - nx0
+            let fy = Int(fr["y"].number!.rounded())
+            let bc = web.at(Int((fr["x"].number! + fr["width"].number! / 2).rounded()), fy)   // the border colour as Chrome painted it (alpha and focus included)
+            // A pixel counts as outline ink when it is within 16 of the border colour; the label glyphs inside the notch may touch a few
+            // border-like pixels on either capture (measured 4 to 30 percent of the region in LTR and RTL), so at most half of the region may disagree with Chrome (an inverted notch gives 77 to 100 percent).
+            func ink(_ p: [Double]) -> Bool { diff(p, bc) <= 16 }
+            func region(_ a: Int, _ b: Int) -> (Int, Int) {
+                var total = 0, wrong = 0
+                for y in fy..<(fy + bw) where y >= cyp && y < cyp + ch { for x in max(a, cxp)..<max(max(a, cxp), min(b, cxp + cw)) { total += 1; if ink(web.at(x, y)) != ink(nat.at(x, y)) { wrong += 1 } } }
+                return (wrong, total)
+            }
+            let inNotch = region(nx0, nx1), inMirror = (mx1 <= nx0 || mx0 >= nx1) ? region(mx0, mx1) : (0, 0)
+            check(inNotch.1 > 0 && inNotch.0 * 2 <= inNotch.1, "\(name) notch region x \(nx0)-\(nx1): \(inNotch.0)/\(inNotch.1) px differ from Chrome")
+            check(inMirror.0 * 2 <= max(inMirror.1, 1), "\(name) mirrored notch region x \(mx0)-\(mx1): \(inMirror.0)/\(inMirror.1) px differ from Chrome")
+        }
         // Text placement (fi, 2026-10-30): the first and last ink rows of the input box (pixels far from the box's own background)
         // on Chrome's capture and on the native one; a glyph offset leaves every flat pixel unchanged. Focused cases draw a caret.
         // UIKit keeps a secure text field's characters out of every capture (secure layer content), so masked text has no ink there.
@@ -201,7 +224,12 @@ struct TFGrid {
             func ink(_ g: TFGrid) -> (Int, Int)? {
                 let xs = max(ix0 + 1, g.x + 1)..<max(max(ix0 + 1, g.x + 1), min(ix0 + iw - 1, g.x + g.w - 1)), ys = max(iy0, g.y)..<max(max(iy0, g.y), min(iy0 + ih, g.y + g.h))
                 guard !xs.isEmpty, !ys.isEmpty else { return nil }
-                let bg = g.at(xs.lowerBound, ys.lowerBound)
+                // The box's background is its most frequent colour (a corner pixel can sit on a glyph's edge when the text starts
+                // at the box's first column).
+                var counts: [[Int]: Int] = [:]
+                for y in ys { for x in xs { let c = g.at(x, y).prefix(3).map { Int($0 / 4) }; counts[c, default: 0] += 1 } }
+                let mode = counts.max { $0.value < $1.value }!.key
+                let bg = mode.map { Double($0 * 4 + 2) } + [255]
                 // Ink = half the box's strongest contrast (at least 24): low-contrast text (disabled, 38 %) is found on both
                 // renderers whatever their antialiasing gamma.
                 var peak = 0.0
@@ -214,6 +242,19 @@ struct TFGrid {
             let wi = ink(web), ni = ink(nat)
             let ok = (wi == nil) == (ni == nil) && (wi == nil || (abs(wi!.0 - ni!.0) <= 1 && abs(wi!.1 - ni!.1) <= 1))
             check(ok, "\(name) text rows \(ni.map { "\($0.0)–\($0.1)" } ?? "none") vs \(wi.map { "\($0.0)–\($0.1)" } ?? "none")")
+            if !ok, let a = wi, let b = ni {
+                // Diagnostic: per row of either range, the ink columns (first–last, count) on each capture and what the native ink is.
+                func cols(_ g: TFGrid, _ y: Int) -> String {
+                    let xs = (max(ix0 + 1, g.x + 1)..<max(max(ix0 + 1, g.x + 1), min(ix0 + iw - 1, g.x + g.w - 1)))
+                    var counts: [[Int]: Int] = [:]
+                    for yy in max(iy0, g.y)..<min(iy0 + ih, g.y + g.h) { for x in xs { counts[g.at(x, yy).prefix(3).map { Int($0 / 4) }, default: 0] += 1 } }
+                    let bg = counts.max { $0.value < $1.value }!.key.map { Double($0 * 4 + 2) } + [255]; var peak = 0.0
+                    for yy in max(iy0, g.y)..<min(iy0 + ih, g.y + g.h) { for x in xs { peak = max(peak, diff(g.at(x, yy), bg)) } }
+                    let ink = xs.filter { diff(g.at($0, y), bg) > max(24, peak * 0.5) }
+                    return ink.isEmpty ? "-" : "\(ink.first!)–\(ink.last!)#\(ink.count) \(g.at(ink.first!, y).map { Int($0) })"
+                }
+                for y in min(a.0, b.0)...max(a.1, b.1) { print("  \(name) row \(y): web \(cols(web, y)) native \(cols(nat, y))") }
+            }
         }
         if let dir = ProcessInfo.processInfo.environment["AWC_TF_CAPTURE_DIRECTORY"] {
             try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)

@@ -980,10 +980,13 @@
       "notes": [
         "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Selection (checkbox cell), clickable rows, expansion with the expanded slot, highlight, disabled, and the three events.",
         "toggle() through AWCTableController.toggleRow(rowID). Hooks through AWCTableRowAppearance.",
-        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion).",
+        "Typed part appearances for the family's ::part() targets (AWCTablePart with the shared AWCPartStyle; .awcTablePartAppearance / AWCTablePartAppearanceScope) for every element of the tag or one node ID; part rules win over the hooks and state rules."
       ],
       "verification": "not-device-verified",
-      "visualParts": [],
+      "visualParts": [
+        "expanded"
+      ],
       "appearance": {
         "api": ".awcTableRowAppearance(AWCTableRowAppearance)",
         "fields": [
@@ -1023,10 +1026,13 @@
       "notes": [
         "Dedicated native md-table family (one table model: grid tracks, column template, row groups, sticky / frozen header, pinning, selection, expansion, FLIP motion). Selection (checkbox cell), clickable rows, expansion with the expanded slot, highlight, disabled, and the three events.",
         "toggle() through AWCTableController.toggleRow(rowID). Hooks through AWCTableRowAppearance.",
-        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion)."
+        "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Mac Chrome 153: 118 paint cases (geometry, colours, density, RTL, dark, forced colours, hooks), 19 interaction runs frame by frame (hover, selection, expansion, sorting with the consumer, pagination, keyboard and Tab order, frozen-body and container scrolling, loading / empty, pinning / visibility, toolbar auto-bind, reduced motion).",
+        "Typed part appearances for the family's ::part() targets (AWCTablePart with the shared AWCPartStyle; .awcTablePartAppearance / AWCTablePartAppearanceScope) for every element of the tag or one node ID; part rules win over the hooks and state rules."
       ],
       "verification": "not-device-verified",
-      "visualParts": [],
+      "visualParts": [
+        "expanded"
+      ],
       "appearance": {
         "api": "AWCTableRowAppearanceScope(AWCTableRowAppearance)",
         "fields": [

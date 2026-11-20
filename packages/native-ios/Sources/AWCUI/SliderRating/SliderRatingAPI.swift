@@ -6,19 +6,19 @@ import SwiftUI
 
 // MARK: - Slider
 
-/// Typed `--md-slider-*` hooks (23): colours as CSS colour text, lengths in points, font weight 1…1000.
+/// Typed `--md-slider-*` hooks (24): colours as CSS colour text, lengths in points, font weight 1…1000.
 public struct AWCSliderAppearance: Equatable, Sendable {
     public let css: [String: String]
     static let suffixes = ["track-length", "active-color", "inactive-color", "track-shape", "track-height", "tick-active-color", "tick-filled-color",
                            "tick-inactive-color", "thumb-color", "thumb-width", "thumb-height", "value-bg", "value-color", "value-shape", "value-font-family",
                            "value-font-size", "value-font-weight", "value-line-height", "value-padding-inline", "value-padding-block", "inset-icon-color",
-                           "inset-icon-active-color", "min-track-length"]
+                           "inset-icon-active-color", "min-track-length", "value-indicator-reserve"]
     public init(trackLength: Double? = nil, activeColor: String? = nil, inactiveColor: String? = nil, trackShape: Double? = nil, trackHeight: Double? = nil,
                 tickActiveColor: String? = nil, tickFilledColor: String? = nil, tickInactiveColor: String? = nil, thumbColor: String? = nil,
                 thumbWidth: Double? = nil, thumbHeight: Double? = nil, valueBackground: String? = nil, valueColor: String? = nil, valueShape: Double? = nil,
                 valueFontFamily: String? = nil, valueFontSize: Double? = nil, valueFontWeight: Double? = nil, valueLineHeight: Double? = nil,
                 valuePaddingInline: Double? = nil, valuePaddingBlock: Double? = nil, insetIconColor: String? = nil, insetIconActiveColor: String? = nil,
-                minTrackLength: Double? = nil) {
+                minTrackLength: Double? = nil, valueIndicatorReserve: Double? = nil) {
         var h = AWCSRHookText()
         h.px("track-length", trackLength); h.text("active-color", activeColor); h.text("inactive-color", inactiveColor); h.px("track-shape", trackShape)
         h.px("track-height", trackHeight); h.text("tick-active-color", tickActiveColor); h.text("tick-filled-color", tickFilledColor)
@@ -27,6 +27,7 @@ public struct AWCSliderAppearance: Equatable, Sendable {
         h.px("value-font-size", valueFontSize); h.plain("value-font-weight", valueFontWeight); h.px("value-line-height", valueLineHeight)
         h.px("value-padding-inline", valuePaddingInline); h.px("value-padding-block", valuePaddingBlock); h.text("inset-icon-color", insetIconColor)
         h.text("inset-icon-active-color", insetIconActiveColor); h.px("min-track-length", minTrackLength)
+        h.px("value-indicator-reserve", valueIndicatorReserve)
         css = h.css
     }
     public init(cssValues: [String: String]) { css = cssValues.filter { Self.suffixes.contains($0.key) } }
@@ -39,7 +40,7 @@ public struct AWCSliderAppearance: Equatable, Sendable {
                   valueBackground: s("valueBackground"), valueColor: s("valueColor"), valueShape: n("valueShape"), valueFontFamily: s("valueFontFamily"),
                   valueFontSize: n("valueFontSize"), valueFontWeight: n("valueFontWeight"), valueLineHeight: n("valueLineHeight"),
                   valuePaddingInline: n("valuePaddingInline"), valuePaddingBlock: n("valuePaddingBlock"), insetIconColor: s("insetIconColor"),
-                  insetIconActiveColor: s("insetIconActiveColor"), minTrackLength: n("minTrackLength"))
+                  insetIconActiveColor: s("insetIconActiveColor"), minTrackLength: n("minTrackLength"), valueIndicatorReserve: n("valueIndicatorReserve"))
     }
     public func merging(_ o: Self) -> Self { .init(cssValues: css.merging(o.css) { _, new in new }) }
     var hooks: [String: String] { Dictionary(uniqueKeysWithValues: css.map { ("--md-slider-\($0.key)", $0.value) }) }
@@ -79,6 +80,8 @@ public struct AWCRatingAppearance: Equatable, Sendable {
 /// md-rating's method: `focusRating()` moves keyboard focus to the rating (the source focuses its radiogroup host).
 @MainActor @Observable public final class AWCRatingController {
     @ObservationIgnored var focus: (() -> Void)?
+    /// The source's `getLabel` property: the value's text for the value label and the accessible value (nil: "N Stars").
+    public var getLabel: ((Double) -> String)?
     nonisolated public init() {}
     public var isConnected: Bool { focus != nil }
     public func focusRating() { focus?() }

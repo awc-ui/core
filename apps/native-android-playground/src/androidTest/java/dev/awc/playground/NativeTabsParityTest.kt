@@ -84,7 +84,7 @@ class NativeTabsParityTest {
     private fun tabParts(c: JSONObject): AWCTabPartAppearance {
         val r = partRules(c.optString("parts")); fun p(part: String, prop: String) = r["md-tab::$part"]?.get(prop)
         return AWCTabPartAppearance(p("state-layer", "background-color"), p("state-layer", "opacity")?.toDoubleOrNull(), p("icon", "color"), p("label", "color"),
-            p("indicator", "background-color"), p("divider", "background-color"))
+            p("indicator", "background-color"), p("divider", "background-color"), PartBoxParity.box(r["md-tab::content"]))
     }
     private fun hooks(o: JSONObject?): AWCTabsAppearance {
         val h = o?.optJSONObject("properties")?.optJSONObject("_hooks") ?: return AWCTabsAppearance()
@@ -187,6 +187,13 @@ class NativeTabsParityTest {
                 val wp = wt.optJSONObject(part) ?: continue; val wr = wp.getJSONObject("rect"); if (wr.getDouble("width") <= 0) continue
                 val pr = rect(m, key) ?: run { check(false, "$name $id $part measured"); null } ?: continue
                 near(tx + pr[0], wr.getDouble("x"), "$id $part x"); near(ty + pr[1], wr.getDouble("y"), "$id $part y"); near(pr[2], wr.getDouble("width"), "$id $part width", 1.0)
+                // ::part(content) box (gate-7 R6-17): the border box's height and the typed box against Chrome's computed box.
+                if (part == "content" && PartBoxParity.box(partRules(c.optString("parts"))["md-tab::content"]) != null) {
+                    near(pr[3], wr.getDouble("height"), "$id content height", 1.0)
+                    @Suppress("UNCHECKED_CAST") val pb = m["contentBox"] as? Map<String, Any?>
+                    for ((ok, l) in PartBoxParity.checks("$name $id content", pb, wp.getString("bg"), wp.getString("bw"), wp.getString("bc"), wp.getString("radius"),
+                        wp.getJSONArray("pad").let { a -> (0 until a.length()).map { a.getString(it) } })) check(ok, l)
+                }
                 if (part == "icon") check(colorClose(m["iconColor"], wp.getString("color")), "$name $id icon colour ${rgba(m["iconColor"])} vs ${wp.getString("color")}")
                 if (part == "divider") check(colorClose(m["divider"], wp.getString("bg")), "$name $id divider colour ${rgba(m["divider"])} vs ${wp.getString("bg")}")
             }

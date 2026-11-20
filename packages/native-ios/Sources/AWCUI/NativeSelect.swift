@@ -62,7 +62,7 @@ struct AWCNativeSelect: View {
         .frame(minWidth: a.minWidth.map { CGFloat($0) }, maxWidth: a.width.map { CGFloat($0) } ?? .infinity, alignment: .leading)
         .frame(width: a.width.map { CGFloat(max($0, a.minWidth ?? 0)) })
         .awcInspect(nodeID: node.id, name: "md-select") { _ in
-            ["value": .string(value), "open": .bool(open), "display": .string(display), "focused": .bool(rt.focused), "valid": .bool(validity.valid), "validationMessage": .string(validationMessage)]
+            ["value": .string(value), "open": .bool(open), "displayText": .string(display), "focused": .bool(rt.focused), "valid": .bool(validity.valid), "validationMessage": .string(validationMessage)]
         }
         .onAppear { connect() }
         .onDisappear { registry?.stopObservingClicks(node.id) }
@@ -97,6 +97,7 @@ struct AWCNativeSelect: View {
         hooks.key = { key, composing in fieldKey(key, composing) }
         hooks.focus = { f in rt.focused = f }
         hooks.trailing = AnyView(trailing)
+        hooks.readOnlyKeys = true
         // :host sets --md-text-field-padding-inline-end: inset-lg; a hook targeted at this select still wins.
         let padding = fieldTargets[node.id]?.paddingInlineEnd == nil ? AWCTextFieldAppearance(paddingInlineEnd: insetLG) : AWCTextFieldAppearance()
         return AWCNativeTextField(node: inner, theme: theme, value: display, setValue: { _ in }, emit: { _, _ in },
@@ -106,7 +107,7 @@ struct AWCNativeSelect: View {
             .awcMenuAnchor(anchorID, label: nil, focus: { field.setFocus() })
             .modifier(AWCSelectScopeFrame(registry: registry) { fieldFrame = $0 })
             .overlay { AWCSelectClickCatcher(exclude: showClear && fieldFrame.width > 0 ? [clearFrame.offsetBy(dx: -fieldFrame.minX, dy: -fieldFrame.minY)] : [],
-                                             press: { _ = field.setFocus() }, click: { toggleOpen() }) }
+                                             press: { pressFocus() }, click: { toggleOpen() }, release: { releaseFocus() }) }
             .awcInspect(nodeID: node.id, part: "field", name: "field")
     }
     private var showClear: Bool { b("clearable") && hasValue && !disabled }
@@ -118,7 +119,7 @@ struct AWCNativeSelect: View {
             } else {
                 HStack(spacing: a.trailingGap ?? 2) {
                     if showClear { clearButton }
-                    AWCSelectCaret(nodeID: node.id, open: open, reduced: reduced, size: a.caretSize ?? 24, color: a.caretColor ?? tint, glyph: s("dropdownIcon", "arrow_drop_down"),
+                    AWCSelectCaret(nodeID: node.id, since: rt.openWriteAt, open: open, reduced: reduced, size: a.caretSize ?? 24, color: a.caretColor ?? tint, glyph: s("dropdownIcon", "arrow_drop_down"),
                                    slot: node.children(inSlot: "dropdown-icon"), child: { child($0, { _ in }) })
                         .awcInspect(nodeID: node.id, part: "caret", name: "caret")
                 }
@@ -176,6 +177,10 @@ struct AWCNativeSelect: View {
                                      "listbox": true, "listLabel": .string(accessibleName.nonEmpty ?? "Options")]
         if let mh = local["maxHeight"], mh != .null { p["maxHeight"] = mh }
         if let d = local["density"]?.number { p["density"] = .number(d) }
+        // The controller drives open / close (with the exit); the node mirrors its state so another model change while open
+        // (emptyText, headerRows, …) is not read as a host close (AWCNativeMenu.sync: `open` absent = false). Outside a scope the
+        // menu renders in flow and follows the host's `open`.
+        p["open"] = .bool(registry.map { $0.controllers[menuID]?.isOpen ?? false } ?? open)
         let menuNode = AWCNode(id: menuID, tag: "md-menu", properties: p, children: rows)
         let byID = Dictionary(listOptions.enumerated().map { ("\(node.id)::opt\($0.offset)", $0.element.value) }, uniquingKeysWith: { a, _ in a })
         return AWCNativeView(node: menuNode) { e in
@@ -228,14 +233,38 @@ struct AWCNativeSelect: View {
         guard let registry, frame.width > 0 else { return }
         registry.observeClicks(node.id, frame: frame, exclude: showClear ? [clearFrame] : []) { toggleOpen() }
     }
-    private func toggleOpen() { guard !disabled else { return }; set("open", .bool(!open)) }
-    /// `@Watch('open')`: the host's open state drives the menu (its own exit runs on close).
+    /// iOS: the press shows the focus at once (Chrome pointerdown) and moves the UIKit responder after the release (6-6 021:
+    /// becomeFirstResponder 13-89 ms on the press held back the release 33 ms later and the open with it).
+    private func pressFocus() {
+        #if os(iOS)
+        field.markFocused()
+        #else
+        _ = field.setFocus()
+        #endif
+    }
+    /// iOS: the UIKit responder follows after the md-menu open motion (6-6 031/032, KNOWN-CAUSES row 28: a cold
+    /// becomeFirstResponder inside the 150 ms open left the surface without frames). Reduce Motion: next main turn.
+    /// Skipped when the first responder changed meanwhile (another field, or the close already focused the field).
+    private func releaseFocus() {
+        #if os(iOS)
+        let before = AWCFirstResponderProbe.current()
+        let move = { [field] in if AWCFirstResponderProbe.current() === before { _ = field.setFocus() } }
+        if reduced { DispatchQueue.main.async(execute: move) } else { DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: move) }
+        #endif
+    }
+    private func toggleOpen() { guard !disabled else { return }; let next = !open; set("open", .bool(next)); syncMenu(next) }
+    /// `@Watch('open')`: the host's open state drives the menu (its own exit runs on close). Input handlers call it at once, as the
+    /// Web watcher runs with the property write; `.onChange(of: open)` covers every other change and is a no-op after that.
     private func syncMenu(_ o: Bool, attempt: Int = 0) {
+        if attempt == 0 && rt.openSynced != o { rt.openSynced = o; rt.openWriteAt = CACurrentMediaTime() * 1000 }
         guard let registry else { return }
         guard let c = registry.controllers[menuID] else {
             if attempt < 20 { DispatchQueue.main.async { syncMenu(o, attempt: attempt + 1) } }
             return
         }
+        #if os(iOS)
+        if o { c.logicalRowFocus = true }
+        #endif
         if o { if !c.isOpen || c.closing { c.show(autoFocus: true, keyboard: rt.openedByKey) } }
         else if c.isOpen && !c.closing { c.close() }
         rt.openedByKey = false
@@ -251,10 +280,10 @@ struct AWCNativeSelect: View {
         if rt.lastEmit != "close" { rt.lastEmit = "close"; emit("mdClose", .null) }
     }
     private func selectValue(_ v: String) {
-        if rt.valueNow == v { set("open", false); return }
+        if rt.valueNow == v { set("open", false); syncMenu(false); return }
         rt.valueNow = v
         set("value", .string(v)); emit("mdChange", .string(v))
-        set("open", false); _ = field.setFocus()
+        set("open", false); syncMenu(false); _ = field.setFocus()
     }
     private func clearValue() {
         guard !disabled, !value.isEmpty else { return }
@@ -263,8 +292,15 @@ struct AWCNativeSelect: View {
     /// md-select `handleKeyDown` for keys in the trigger (keys inside the menu belong to the menu).
     private func fieldKey(_ key: String, _ composing: Bool) -> Bool {
         guard !disabled, !composing else { return false }
-        if !open && ["ArrowDown", "Enter", " "].contains(key) { rt.openedByKey = true; set("open", true); return true }
-        if open && key == "Escape" { set("open", false); _ = field.setFocus(); return true }
+        if !open && ["ArrowDown", "Enter", " "].contains(key) { rt.openedByKey = true; set("open", true); syncMenu(true); return true }
+        #if os(iOS)
+        // iOS: the field keeps the first responder while the menu is open; the focused option row is logical (MenuController.logicalRowFocus).
+        if open, let c = registry?.controllers[menuID], c.logicalRowFocus, c.comboboxID == nil, c.isOpen, !c.closing, let id = c.focusedID {
+            if key == "Enter" || key == " " { c.rows[id]?.keyActivate(key == " " ? "Space" : "Enter"); return true }
+            return c.key(key, from: id, shift: false, modified: false)
+        }
+        #endif
+        if open && key == "Escape" { set("open", false); syncMenu(false); _ = field.setFocus(); return true }
         return false
     }
 }
@@ -272,6 +308,8 @@ struct AWCNativeSelect: View {
 /// The dropdown caret: rotates 180° while open (200 ms standard easing; none under Reduce Motion).
 struct AWCSelectCaret: View {
     let nodeID: String
+    /// Time (CACurrentMediaTime ms) of the `open` write that this change follows; 0 = unknown (start at the change).
+    var since: Double = 0
     let open: Bool, reduced: Bool, size: Double, color: String, glyph: String
     let slot: [AWCNode]
     let child: (AWCNode) -> AnyView
@@ -293,7 +331,8 @@ struct AWCSelectCaret: View {
         .onChange(of: open, initial: true) { _, o in
             let target: Double = o ? 1 : 0
             guard primed, !reduced else { track.snap(target); primed = true; return }
-            track.set(target, now: CACurrentMediaTime() * 1000, duration: 200, curve: [0.2, 0, 0, 1])
+            let now = CACurrentMediaTime() * 1000, start = since > 0 && since <= now && now - since < 200 ? since : now
+            track.set(target, now: start, duration: 200, curve: [0.2, 0, 0, 1])
         }
     }
 }
@@ -308,7 +347,7 @@ struct AWCSelectSearchField: View {
     var body: some View {
         let t = theme.tokens
         ZStack(alignment: .leading) {
-            if text.isEmpty { Text(placeholder).font(AWCNativeFonts.label(size: 16, regular: true)).foregroundStyle(Color(awcHex: t["--md-sys-color-on-surface-variant"] ?? "#49454F")).lineLimit(1).allowsHitTesting(false) }
+            if text.isEmpty { Text(placeholder).font(AWCNativeFonts.label(size: 16, regular: true)).foregroundStyle(Color(awcHex: t["--md-sys-color-on-surface-variant"] ?? "#49454F")).lineLimit(1).allowsHitTesting(false).accessibilityHidden(true) }
             TextField("", text: $text).textFieldStyle(.plain).font(AWCNativeFonts.label(size: 16, regular: true))
                 .foregroundStyle(Color(awcHex: t["--md-sys-color-on-surface"] ?? "#1D1B20")).accessibilityLabel(label)
         }
@@ -367,6 +406,7 @@ extension String { var nonEmpty: String? { isEmpty ? nil : self } }
 #if canImport(AppKit)
 struct AWCSelectClickCatcher: NSViewRepresentable {
     let exclude: [CGRect], press: () -> Void, click: () -> Void
+    var release: () -> Void = {}
     final class Catcher: NSView {
         var exclude: [CGRect] = [], press: () -> Void = {}, click: () -> Void = {}
         override var isFlipped: Bool { true }
@@ -392,22 +432,26 @@ struct AWCSelectClickCatcher: NSViewRepresentable {
 /// the composite takes the touches over the field itself: the press focuses the field, a release inside toggles the menu.
 struct AWCSelectClickCatcher: UIViewRepresentable {
     let exclude: [CGRect], press: () -> Void, click: () -> Void
+    var release: () -> Void = {}
     final class Catcher: UIView {
-        var exclude: [CGRect] = [], press: () -> Void = {}, click: () -> Void = {}
+        var exclude: [CGRect] = [], press: () -> Void = {}, click: () -> Void = {}, release: () -> Void = {}
         override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
             bounds.contains(point) && !exclude.contains(where: { $0.contains(point) })
         }
         override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) { press() }
         override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
             if let t = touches.first, bounds.contains(t.location(in: self)) { click() }
+            release()
         }
+        override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) { release() }
     }
     func makeUIView(context: Context) -> Catcher { let v = Catcher(); v.backgroundColor = .clear; v.isMultipleTouchEnabled = false; return v }
-    func updateUIView(_ v: Catcher, context: Context) { v.exclude = exclude; v.press = press; v.click = click }
+    func updateUIView(_ v: Catcher, context: Context) { v.exclude = exclude; v.press = press; v.click = click; v.release = release }
 }
 #else
 struct AWCSelectClickCatcher: View {
     let exclude: [CGRect], press: () -> Void, click: () -> Void
+    var release: () -> Void = {}
     var body: some View { Color.clear.allowsHitTesting(false) }
 }
 #endif

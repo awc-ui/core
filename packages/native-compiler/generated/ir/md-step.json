@@ -401,13 +401,19 @@
       "code": "DOM_OBSERVER",
       "severity": "warning",
       "message": "DOM mutation observation has no direct native counterpart.",
-      "line": 124
+      "line": 125
+    },
+    {
+      "code": "SHADOW_DOM",
+      "severity": "warning",
+      "message": "shadowRoot depends on browser semantics and requires a native adapter.",
+      "line": 285
     },
     {
       "code": "CANCELABLE_EVENT",
       "severity": "warning",
       "message": "DOM cancellation, bubbling and composed paths are not implied by a native callback.",
-      "line": 50
+      "line": 51
     }
   ],
   "source": {
@@ -415,7 +421,7 @@
     "styleUrl": "md-step.css",
     "shadow": true,
     "formAssociated": false,
-    "sha256": "5a1f829cd1b09aafa09bb676355702776ce3bc9952e1f61fe081854f04e7a950"
+    "sha256": "6fc8cce5e2509075e91dcd320be4d317b02078192fd3e9a27531092055c00a92"
   },
   "styles": [
     {
@@ -2480,10 +2486,22 @@
       "notes": [
         "Rendered by its stepper: the header control (a button named like the source, disabled when unreachable, expanded / collapsed with a panel), its panel and actions are the stepper's own layout, so the authored order is the keyboard order. A step's own style hooks apply to that step.",
         "Standalone (no stepper) it renders like the source with its data-* defaults (first, horizontal, shared panel) and its own active.",
+        "Parts: typed part appearances (.awcStepPartAppearance(_:part:) / AWCStepPartAppearanceScope) — bubble / dot colour and corner radius (winning over the state colours), label / optional / description colour and text metrics (font size / weight / line height, letter spacing), connector colour, state-layer colour, content background and padding (outside the grid track), actions gap (Mac Chrome ::part cases, web-paint-extra2).",
         "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint (142 cases + per-step hooks and step density), the state / motion replays per frame (20 runs, plain and reduced motion) with the md* events, the announcements and the keyframe animations each step starts."
       ],
       "verification": "not-device-verified",
-      "visualParts": [],
+      "visualParts": [
+        "bubble",
+        "dot",
+        "state-layer",
+        "label",
+        "optional",
+        "description",
+        "connector",
+        "connector-trailing",
+        "content",
+        "actions"
+      ],
       "appearance": {
         "api": ".awcStepperAppearance(AWCStepperAppearance)",
         "fields": [
@@ -2547,10 +2565,22 @@
       "notes": [
         "Rendered by its stepper: the header control (a button named like the source, disabled when unreachable, expanded / collapsed with a panel), its panel and actions are the stepper's own layout, so the authored order is the keyboard order. A step's own style hooks apply to that step.",
         "Standalone (no stepper) it renders like the source with its data-* defaults (first, horizontal, shared panel) and its own active.",
+        "Parts: typed part appearances (.awcStepPartAppearance(_:part:) / AWCStepPartAppearanceScope) — bubble / dot colour and corner radius (winning over the state colours), label / optional / description colour and text metrics (font size / weight / line height, letter spacing), connector colour, state-layer colour, content background and padding (outside the grid track), actions gap (Mac Chrome ::part cases, web-paint-extra2).",
         "macOS SwiftUI, the iOS simulator and the Android emulator are verified against Chrome 153: paint (142 cases + per-step hooks and step density), the state / motion replays per frame (20 runs, plain and reduced motion) with the md* events, the announcements and the keyframe animations each step starts."
       ],
       "verification": "not-device-verified",
-      "visualParts": [],
+      "visualParts": [
+        "bubble",
+        "dot",
+        "state-layer",
+        "label",
+        "optional",
+        "description",
+        "connector",
+        "connector-trailing",
+        "content",
+        "actions"
+      ],
       "appearance": {
         "api": "AWCStepperAppearanceScope(AWCStepperAppearance)",
         "fields": [

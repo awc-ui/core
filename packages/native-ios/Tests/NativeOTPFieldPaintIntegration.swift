@@ -16,6 +16,7 @@ import Observation
     var width = 440.0
     var globalDensity: Double? = nil
     var appearance = AWCOTPFieldAppearance()
+    var parts = AWCOTPFieldPartAppearance()
     var measurements: [AWCNativeInspectionNode] = []
 }
 @MainActor let otpFieldPaintController = AWCOTPFieldController()
@@ -27,7 +28,7 @@ struct OTPFieldPaintFixture: View {
             AWCNativeView(node: state.node).frame(width: state.width, alignment: .leading).environment(\.layoutDirection, state.rtl ? .rightToLeft : .leftToRight)
         }
             .environment(\.awcNativeDensity, state.globalDensity ?? 0)
-            .awcOTPFieldAppearance(state.appearance, for: "otp")
+            .awcOTPFieldAppearance(state.appearance, for: "otp").awcOTPFieldPartAppearance(state.parts, for: "otp")
             .awcOTPFieldController(otpFieldPaintController).awcFieldReducedMotion(true)
             .awcTheme(theme)
             .awcNativeInspection(rootID: "otp", coordinateSpace: "awc-native-preview") { if state.epoch == epoch { state.measurements = $0 } }
@@ -103,6 +104,7 @@ struct OTPGrid {
         let name = c["name"].string
         state.dark = c["theme"].string == "dark"; state.rtl = c["dir"].string == "rtl"; state.width = c["width"].number ?? 440
         state.globalDensity = c["globalDensity"].number; state.appearance = hooks(c["hooks"])
+        state.parts = c["parts"] == .null ? .init() : AWCOTPFieldPartAppearance(values: c["parts"].object)
         var p: [String: AWCValue] = [:]; if case .object(let o) = c["props"] { p = o }
         let slot: [AWCNode] = c["slot"] == .null ? [] : [AWCNode(tag: "#text", properties: ["text": c["slot"]], slot: "separator")]
         state.node = AWCNode(id: "otp", tag: "md-otp-field", properties: p, children: slot); state.measurements = []; state.epoch += 1; pump(0.3)
@@ -121,11 +123,16 @@ struct OTPGrid {
         for (i, w) in c["cells"].array.enumerated() {
             let cell = m("cell-\(i)")
             rect(cell, w["rect"], "cell \(i)")
-            check(colorClose(cell?.metrics["border"]?.string, w["border"].string), "\(name) cell \(i) border \(cell?.metrics["border"]?.string ?? "-") vs \(w["border"].string)")
+            check(colorClose(cell?.metrics["borderColor"]?.string, w["border"].string), "\(name) cell \(i) border \(cell?.metrics["borderColor"]?.string ?? "-") vs \(w["border"].string)")
             near(cell?.metrics["borderWidth"]?.number ?? -1, w["borderWidth"].number!, "cell \(i) border width", 0.01)
             check(cell?.metrics["text"]?.string == w["value"].string, "\(name) cell \(i) text \(cell?.metrics["text"]?.string ?? "-") vs \(w["value"].string)")
             check(colorClose(cell?.metrics["color"]?.string, w["color"].string), "\(name) cell \(i) colour \(cell?.metrics["color"]?.string ?? "-") vs \(w["color"].string)")
             near(cell?.metrics["fontSize"]?.number ?? -1, w["fontSize"].number!, "cell \(i) font", 0.01)
+            let bg = w["background"].string
+            if !bg.isEmpty, !bg.hasSuffix(", 0)") {   // ::part(cell) background (transparent by default)
+                check(colorClose(cell?.metrics["background"]?.string, bg), "\(name) cell \(i) background \(cell?.metrics["background"]?.string ?? "-") vs \(bg)")
+                check(colorClose(cell?.metrics["caret"]?.string, w["caret"].string), "\(name) cell \(i) caret \(cell?.metrics["caret"]?.string ?? "-") vs \(w["caret"].string)")
+            }
             check(cell?.metrics["focused"]?.bool == w["focused"].bool, "\(name) cell \(i) focused")
             check(cell?.metrics["secure"]?.bool == (w["type"].string == "password"), "\(name) cell \(i) secure")
         }

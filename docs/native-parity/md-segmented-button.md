@@ -1,6 +1,6 @@
 # Segmented Button and Set migration audit
 
-Status: implementation, available native-runtime checkpoints and focused Laboratory controls/layout checks passed. Android's twelve narrow-width comparisons also pass. The observed Android Laboratory event-forwarding discrepancy is corrected and its device/Laboratory retests pass. Full integrated acceptance, independent final review and iOS runtime execution remain open. This record does not mark the 56-component migration complete.
+Status: implementation, available native-runtime checkpoints and focused Laboratory controls/layout checks passed. The twelve narrow-width comparisons pass on Android and SwiftUI (`NativeSegmentedViewIntegration` `narrowOracle`, 370/370 checks). The observed Android Laboratory event-forwarding discrepancy is corrected and its device/Laboratory retests pass. Full integrated acceptance and independent final review remain open; iOS simulator execution is recorded in the gate-6 section. This record does not mark the 56-component migration complete.
 
 `md-segmented-button` is the visible Laboratory entry; `md-segmented-button-set` is its required supporting component. This audit combines the [source review](md-segmented-button-source-review.md), [shared composition contract](segmented-preview-contract.md), [Swift runtime record](../../packages/native-ios/audits/md-segmented-button.md), [Android runtime record](../../packages/native-android/audits/md-segmented-button.md) and compiled public examples. Test suites and fixture subcases are reported separately, without turning them into a coverage percentage.
 
@@ -42,7 +42,8 @@ The initial authored-text decision is retained across updates. Label properties 
 | Affected Android regressions | Two Menu/Badge slot regression methods passed | Separately retained XML and verification record |
 | Public examples | 20 Swift and 20 Kotlin examples compiled | Workspace `outputs/native-parity/md-segmented-button/examples/verification.json`, exact sources and compiler logs |
 | Laboratory focused checkpoint | Swift/Android standalone and set-mode controls, all seven styles, actual selection/panel synchronization observed; Android child-event forwarding corrected and retested | `laboratory-proof.json` and platform screenshots |
-| iOS/final audit | Pending | Do not infer acceptance from native host-only evidence |
+| iOS simulator | `NativeSegmentedViewIntegration` 370/370 on iPhone 17 Pro · iOS 26.3, iPad Pro 11-inch · iOS 26.3 and iPhone 16 Pro · iOS 18.6 | [iOS simulator execution (gate 6)](#ios-simulator-execution-gate-6) |
+| Final audit | Gate 7 reviewer r1 | [audit](audit/md-segmented-button.md); open items in `work/audit/DEFECTS.md` (R1-03e, R1-13) |
 
 The recorded Swift shared Focus68 and Menu19 checks passed separately. Counts above are scoped to their recorded runs and do not assert that unrelated later source changes were tested by an earlier report.
 
@@ -79,7 +80,7 @@ Native text shaping and physical-pixel rounding differ from browser painting. Sw
 
 Compose custom content supplies source text semantics through `AWCSlotText`/`AWCSearchableLabelScope`. Native event phases, roles and typed appearances replace DOM objects and CSS selectors. Android's scoped `rawDetail` preserves the exact set array; its older map-shaped `detail` is a compatibility view, with `segmentedSelectionValues` as the typed accessor.
 
-Final acceptance still needs completion of copied-example/default-scope Laboratory checks, the remaining narrow-width comparison evidence, review of recorded native boundaries and iOS runtime execution. macOS SwiftUI checks do not certify iOS or actual screen-reader operation.
+Final acceptance still needs completion of copied-example/default-scope Laboratory checks and review of recorded native boundaries (iOS simulator execution: gate-6 section). macOS SwiftUI checks do not certify iOS or actual screen-reader operation.
 
 <!-- fi:ios-gate6:start -->
 ## iOS simulator execution (gate 6)

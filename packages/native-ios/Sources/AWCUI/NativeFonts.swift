@@ -62,3 +62,76 @@ enum AWCNativeFonts {
         return CTFontCopyFamilyName(CTFontCreateWithName("MaterialSymbolsOutlined-Regular" as CFString, 16, nil)) as String
     }
 }
+
+// MARK: - Fallback faces
+// The bundled Roboto files are the Latin subset (as the Web reference's @fontsource files). Chrome on macOS draws the
+// characters Roboto lacks with the platform cascade of the primary font: Geeza Pro for Arabic, Lucida Grande for Hebrew
+// (the bold face for CSS weights >= 500; probe n4-063), and adds no letter-spacing to cursive (Arabic) runs. SwiftUI /
+// CoreText would otherwise fall back to the system UI cascade (SF Arabic / SF Hebrew), whose advances differ from Chrome's.
+// Each script lists faces in order; the first installed one is used (iOS has no Lucida Grande: Arial Hebrew).
+extension AWCNativeFonts {
+    /// One entry of the fallback list: the script's code points and the faces Chrome uses for them.
+    struct FallbackFace {
+        let script: String
+        let pattern: String
+        let regular: [String]
+        let bold: [String]
+        /// CSS letter-spacing is not applied to cursive scripts.
+        let cursive: Bool
+        /// The first installed face for the weight (CoreText substitutes a missing PostScript name).
+        func face(weight: Double) -> String {
+            let names = weight >= 500 ? bold : regular
+            return names.first { CTFontCopyPostScriptName(CTFontCreateWithName($0 as CFString, 12, nil)) as String == $0 } ?? names[0]
+        }
+    }
+    /// Ordered fallback list (first match wins). Add scripts here, not in components.
+    static let fallbackFaces: [FallbackFace] = [
+        FallbackFace(script: "Arabic", pattern: "[\u{0600}-\u{06FF}\u{0750}-\u{077F}\u{08A0}-\u{08FF}\u{FB50}-\u{FDFF}\u{FE70}-\u{FEFF}]+",
+                     regular: ["GeezaPro"], bold: ["GeezaPro-Bold"], cursive: true),
+        FallbackFace(script: "Hebrew", pattern: "[\u{0590}-\u{05FF}\u{FB1D}-\u{FB4F}]+",
+                     regular: ["LucidaGrande", "ArialHebrew"], bold: ["LucidaGrande-Bold", "ArialHebrew-Bold"], cursive: false),
+    ]
+    /// A UTF-16 range of `text` that draws with a fallback face.
+    struct FallbackRun { let range: NSRange; let face: FallbackFace }
+    /// The fallback runs of `text` in order (empty for Latin-only text).
+    static func fallbackRuns(_ text: String) -> [FallbackRun] {
+        // Fast path: every listed script lies above U+058F.
+        guard text.unicodeScalars.contains(where: { $0.value >= 0x0590 }) else { return [] }
+        let all = NSRange(location: 0, length: (text as NSString).length)
+        return fallbackFaces.flatMap { face in
+            (try? NSRegularExpression(pattern: face.pattern))?.matches(in: text, range: all).map { FallbackRun(range: $0.range, face: face) } ?? []
+        }.sorted { $0.range.location < $1.range.location }
+    }
+    /// A label's text: Roboto runs inherit the environment font and tracking; fallback runs carry their face (cursive
+    /// runs without tracking). Latin-only text is `Text(verbatim:)` unchanged.
+    static func labelText(_ text: String, size: CGFloat, weight: Double) -> Text {
+        let runs = fallbackRuns(text)
+        guard !runs.isEmpty else { return Text(verbatim: text) }
+        let ns = text as NSString
+        var result = Text(verbatim: ""), at = 0
+        for run in runs {
+            if run.range.location > at { result = result + Text(verbatim: ns.substring(with: NSRange(location: at, length: run.range.location - at))) }
+            let piece = Text(verbatim: ns.substring(with: run.range)).font(.custom(run.face.face(weight: weight), fixedSize: size))
+            result = result + (run.face.cursive ? piece.tracking(0) : piece)
+            at = NSMaxRange(run.range)
+        }
+        if at < ns.length { result = result + Text(verbatim: ns.substring(from: at)) }
+        return result
+    }
+    /// The advance of a single-line label with the fallback faces (CSS letter-spacing after every non-cursive character).
+    /// Latin-only text measures exactly as `tabTextWidth`.
+    static func labelTextWidth(_ text: String, size: CGFloat, weight: Double = 500, tracking: Double = 0.1) -> Double {
+        let runs = fallbackRuns(text)
+        guard !runs.isEmpty else { return tabTextWidth(text, size: size, weight: weight, tracking: tracking) }
+        _ = label(size: size, weight: 500)
+        let key = NSAttributedString.Key(kCTFontAttributeName as String), ns = text as NSString
+        let base = CTFontCreateWithName((weight >= 600 ? "Roboto-Bold" : weight >= 500 ? "Roboto-Medium" : "Roboto-Regular") as CFString, size, nil)
+        let value = NSMutableAttributedString(string: text, attributes: [key: base])
+        var cursive = 0
+        for run in runs {
+            value.addAttribute(key, value: CTFontCreateWithName(run.face.face(weight: weight) as CFString, size, nil), range: run.range)
+            if run.face.cursive { cursive += ns.substring(with: run.range).count }
+        }
+        return Double(CTLineGetTypographicBounds(CTLineCreateWithAttributedString(value), nil, nil, nil)) + tracking * Double(text.count - cursive)
+    }
+}

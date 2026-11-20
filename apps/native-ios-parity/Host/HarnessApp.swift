@@ -22,10 +22,18 @@ import SwiftUI
 }
 
 @MainActor enum AWCParityHarness {
+    /// The accessibility runtime the app launched with (libAccessibility's AXS flags): accessibility/application/automation.
+    static func axRuntime() -> String {
+        guard let lib = dlopen("/usr/lib/libAccessibility.dylib", RTLD_NOW) else { return "?" }
+        typealias Flag = @convention(c) () -> Bool
+        let names: [String] = ["_AXSAccessibilityEnabled", "_AXSApplicationAccessibilityEnabled", "_AXSAutomationEnabled"]
+        return names.map { name in
+            dlsym(lib, name).map { unsafeBitCast($0, to: Flag.self)() ? "1" : "0" } ?? "?" }.joined(separator: "/")
+    }
     static func start() {
         let screen = UIScreen.main
         var info = utsname(); uname(&info)
-        print("AWC-IOS-START fixture=\(AWCParityFixture.name) ios=\(UIDevice.current.systemVersion) device=\(ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] ?? "?") scale=\(screen.scale) screen=\(Int(screen.bounds.width))x\(Int(screen.bounds.height)) capture=\(AWCShim.captureMode)")
+        print("AWC-IOS-START fixture=\(AWCParityFixture.name) ios=\(UIDevice.current.systemVersion) device=\(ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] ?? "?") scale=\(screen.scale) screen=\(Int(screen.bounds.width))x\(Int(screen.bounds.height)) capture=\(AWCShim.captureMode) ax=\(axRuntime())")
         // Warm the HID paths once (the first hardware key event pays ~90 ms of keyboard set-up in UIKit,
         // which would otherwise skew the first timed key step of a fixture).
         if let w = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first?.windows.first, AWCTouchSynth.keyAvailable {

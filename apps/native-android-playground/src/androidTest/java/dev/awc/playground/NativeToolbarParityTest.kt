@@ -77,6 +77,9 @@ class NativeToolbarParityTest {
     }
     private fun props(o: JSONObject): Map<String, AWCValue> = buildMap { val p = o.optJSONObject("properties") ?: JSONObject()
         for (k in p.keys()) if (k != "_hooks") put(k, p.get(k)); put("id", o.getString("id")) }
+    /** ::part() rules of the case: container (background / background-color; gate-7 R6-03) and the fab-container box (R6-17). */
+    private fun toolbarParts(c: JSONObject) = AWCToolbarPartAppearance(Regex("md-toolbar::part\\(container\\)\\{[^}]*background(-color)?:\\s*(#[0-9A-Fa-f]{6,8})")
+        .find(c.optString("parts"))?.groupValues?.get(2), PartBoxParity.box(PartBoxParity.rule(c.optString("parts"), "md-toolbar", "fab-container")))
     private fun hooks(o: JSONObject?): AWCToolbarAppearance {
         val h = o?.optJSONObject("properties")?.optJSONObject("_hooks") ?: return AWCToolbarAppearance()
         return AWCToolbarAppearance.fromCSS(h.keys().asSequence().associateWith { h.getString(it) })
@@ -107,7 +110,7 @@ class NativeToolbarParityTest {
         AWCTheme(dark) { Box(Modifier.fillMaxSize().background(hex(t["--md-sys-color-surface"]))) { key(epoch) {
             val dir = if (c.optString("dir") == "rtl") LayoutDirection.Rtl else LayoutDirection.Ltr
             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr, LocalAWCToolbarProbe provides probe) {
-                AWCLabelTextsScope(labelTexts(nodes)) { AWCToolbarAppearanceScope(hooks(nodes.firstOrNull { it.getString("tag") != "#text" })) { AWCToolbarControllerScope(controller) { AWCDensityScope(if (inherited.isNaN()) 0.0 else inherited) {
+                AWCLabelTextsScope(labelTexts(nodes)) { AWCToolbarAppearanceScope(hooks(nodes.firstOrNull { it.getString("tag") != "#text" })) { AWCToolbarPartAppearanceScope(toolbarParts(c)) { AWCToolbarControllerScope(controller) { AWCDensityScope(if (inherited.isNaN()) 0.0 else inherited) {
                     Box(Modifier.size(1.dp).focusRequester(before).onFocusChanged { focusOf["before"] = it.hasFocus }.focusable())
                     // blur(): focus leaves for an untracked sink (Chrome's body).
                     Box(Modifier.size(1.dp).focusRequester(sink).focusProperties { canFocus = sinkOn }.focusable())
@@ -119,7 +122,7 @@ class NativeToolbarParityTest {
                                 if (n.getString("tag") == "#text") AWCSlotText(n.getJSONObject("properties").getString("text")) else Node(n) } } } }
                         Box(Modifier.padding(top = 300.dp).size(1.dp).onFocusChanged { focusOf["after"] = it.hasFocus }.focusable())
                     }
-                } } } }
+                } } } } }
             }
         } } }
     } } }
@@ -181,7 +184,13 @@ class NativeToolbarParityTest {
             if (!hugs) near(cp[2], cr.getDouble("width"), "container width", 1.0); near(cp[3], cr.getDouble("height"), "container height")
             check(colorClose(bar["pill"], ct.getString("bg")), "$name container background ${rgba(bar["pill"])} vs ${ct.getString("bg")}") } ?: check(false, "$name container measured")
         c.optJSONObject("fab")?.let { f -> val fr = f.getJSONObject("rect"); pos(bar["fab"])?.let { fp ->
-            near(fp[0] - ox, fr.getDouble("x"), "fab x"); near(fp[1] - oy, fr.getDouble("y"), "fab y"); near(fp[2], fr.getDouble("width"), "fab width", 1.0); near(fp[3], fr.getDouble("height"), "fab height", 1.0) } ?: check(false, "$name fab measured") }
+            near(fp[0] - ox, fr.getDouble("x"), "fab x"); near(fp[1] - oy, fr.getDouble("y"), "fab y"); near(fp[2], fr.getDouble("width"), "fab width", 1.0); near(fp[3], fr.getDouble("height"), "fab height", 1.0) } ?: check(false, "$name fab measured")
+            // ::part(fab-container) box (gate-7 R6-17): the typed box against Chrome's computed box.
+            if (PartBoxParity.rule(c.optString("parts"), "md-toolbar", "fab-container") != null) {
+                @Suppress("UNCHECKED_CAST") val pb = bar["fabBox"] as? Map<String, Any?>
+                for ((ok, l) in PartBoxParity.checks("$name fab-container", pb, f.getString("bg"), f.getString("bw"), f.getString("bc"), f.getString("radius"),
+                    f.getJSONArray("pad").let { a -> (0 until a.length()).map { a.getString(it) } })) check(ok, l)
+            } }
         var shifted = false
         for (ch in c.getJSONArray("children").objects()) {
             val id = ch.getString("id"); if (id in dropped) { shifted = true; continue }

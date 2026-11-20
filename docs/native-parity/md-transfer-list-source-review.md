@@ -213,6 +213,72 @@ containment and that native `click` / `input` still bubble.
 * **Reduced motion** does not reach the nested `md-ripple` (450ms) or the
   icon-button morph (owned by those components).
 
+## Decisions (autonomous, 2026-10-30, reversible)
+
+* **TL6 (Gate 1, fixed test-first): the searchable column height follows the prop.** An authored `searchable="false"` keeps
+  its attribute (Stencil removes only a reflected boolean attribute it wrote itself, i.e. `""`), so `:host([searchable])`
+  still gave a non-searchable list the searchable list's fixed 360px columns, while the same list set by property got
+  content-sized columns. The rule now keys on a host class (`md-transfer-list--searchable`) set from the prop. Contract test
+  `sizes non-searchable columns by their content whether searchable="false" is authored or set (TL6)`: fails on the previous
+  source (`source-tests/tl6-before.log`), passes after with the md-transfer-list and md-dialog suites
+  (`source-tests/tl6-after.log`, 8 suites / 127 tests). The Mac Chrome 153 oracles were recaptured with this build (private
+  review build `stencil.config.tl.ts`; the previous capture is kept in `web-oracle/v1/`): only the four not-searchable paint
+  cases changed geometry.
+* **Oracle input timeline and the shot instant.** The paint and states harnesses (`web-reference/cp-oracle.js`) record the
+  trusted pointer and key events with their time stamps; the paint harness pauses every animation at the frame it shoots
+  (`shotFrame`), because the capture's own latency reached ~250 ms (ripple waves had faded past the recorded frame in two
+  cases). The native tests replay the harness steps at Chrome's times (md-ripple waves at Chrome's phase; a release with no
+  move after it in the 500px stacked cases is the harness's move to (1190, 600), outside that viewport).
+* **`full-width` / `full-height`** are host attributes (CSS sugar, not properties); natively they are read as the
+  `fullWidth` / `fullHeight` properties, as on md-card. `full-height` makes the column cap 100% of the grid row.
+* **`--md-transfer-list-item-padding`** is a padding shorthand: the native appearance takes its four physical sides
+  (`AWCTransferListInsets`, top/right/bottom/left; one or two values expand as in CSS).
+* **The row checkbox is inert** as in the source: out of the focus order and of hit testing (presses go to the row).
+* **Focus visibility**: a press focuses the row without the ring (Chrome's `:focus-visible` after a mouse focus); a key on the
+  focused row shows it.
+
+## Decisions (autonomous, 2026-11-12, reversible)
+
+* **`::part()` styling is a typed native API** (replaces the earlier open item). The ten source parts (column, header,
+  header-title, count, search, list, item, empty, empty-icon, controls) take an `AWCTransferListPartStyle` each
+  (`AWCTransferListPartAppearance`; Swift `.awcTransferListPartAppearance`, Compose `AWCTransferListPartAppearanceScope`), with
+  the properties each part's own box paints: background colour on all but empty-icon; colour on count, empty and empty-icon;
+  border colour on column (its border) and header (the divider under it); corner radius on column, count and item; size and
+  opacity on empty-icon. Part values win over the hooks and every state rule, as declarations of the outer tree do
+  (`::part(item) { background-color }` replaces the hover / checked / focus layers). Verified against Chrome's `::part()`
+  rendering (`web-oracle/parts.json`, 15 cases: the columns also by side). Alternative: list the parts as unsupported visual parts. Revert: remove the
+  two types, the environment / scope and the `visualParts` of the released policies.
+* **Focus follows Chrome.** A press focuses a mover (AppKit bridge; UIKit touch / pointer down; Compose outside touch mode);
+  a mover that becomes disabled while focused stays the focused element until focus moves on (`_retainFocus` on the shared
+  focus bridge; `AWCNativeView` keeps such controls and the list outside SwiftUI's subtree `.disabled`; Compose soft-disables
+  the mover while it holds focus); movers keep focus by slot; a disabled list's scroll region takes focus on a press; Tab
+  follows the source order through a key-view group (`AWCKeyViewGroup`) where the platform orders key views by geometry.
+  Alternative: platform defaults (focus leaves a disabled control; geometric Tab order). Revert: drop `_retainFocus`, the
+  group and the press handlers.
+* **Arrow keys on an Android row behave as on the Web for keyboards** (replaces the proposed exception TLX-A2, withdrawn). The
+  component handles no arrow key; Chrome leaves focus on the row. Compose consumes the four arrows on a row when they come from
+  a keyboard (focus stays, the list scrolls) and leaves D-pad and other non-alphabetic devices their directional focus
+  navigation, so no user is trapped on a row. No exception is proposed. Alternative: the platform's directional navigation for
+  every device (the exception TLX-A2). Revert: drop the keyboard-type check in the row's key handler.
+* **Android has no unfocused state outside touch mode.** The parity fixtures model the page body as a focus target (the
+  window's first focusable from the top, and the target of a press outside every focusable part or on a disabled mover), as
+  Chrome's body takes focus; the renderer itself never clears focus. The runs execute outside touch mode (a mouse press or a
+  key leaves it on Android) and restore it afterwards.
+* **Forced colours are not compared.** The source has no `forced-colors` rule of its own; the five `paint-forced-colors.json`
+  captures show Chrome's user-agent forced palette (system colours, `forced-color-adjust`) on the nested controls, a browser
+  facility without a component contract. The platforms' own contrast settings act through the theme. The captures are kept
+  as reference. Alternative: a forced-palette mode on the list and its nested md-checkbox / md-text-field / md-icon-button
+  (Android's `AWCAccessibilityAppearanceScope(forcedColors)` exists per component). Revert: add that mode and compare the
+  five cases.
+* **How motion samples are compared.** Chrome's samples are read in rAF before Stencil re-renders and its input events carry
+  CDP timestamps, so a frame-exact comparison would test the sampler: each observable group must match a native frame within
+  one frame either side (what is read from the DOM may trail by two; a row's background within the native values over those
+  frames; rows already gone natively are not compared; focus may be one the replay passes through; key bursts go in
+  together). Settled samples and events stay exact. Alternative: frame-exact comparison of whole frames (fails on the
+  sampler's own artefacts). Revert: `motionBad()` in both states harnesses.
+* **Platform fonts for the Arabic count on Android** (the md-avatar method): compared with the device-font run where CSS
+  places it; Chrome's width reported. Alternative: bundle an Arabic face identical to Chrome/macOS's fallback.
+
 ## CEM / source drift
 
 * The CEM is missing the `column`, `column-source` and `column-target` parts

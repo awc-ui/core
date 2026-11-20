@@ -110,6 +110,8 @@ internal class NativeListItemStyle(
     val hasPrimaryAction get()=!participates && !reorderable && ctx?.containerRole !in setOf("menu","menubar") && (model.type=="button" || model.type=="link")
     val expandableOnly get()=model.expandable && !participates && model.type=="text"
     val focusable get()=(interactive && !expandableOnly) || reorderable
+    /** A stop of its list's roving focus (md-list isItemFocusable): in a selection list an expandable-only row is one too. */
+    val rovingFocusable get()=if(inList && ctx?.inPanel!=true) !model.disabled && (inSelection || reorderable || model.type!="text") else focusable
     val onSurface get()=color("on-surface","#1C1B1F")
     val disabledInk get()=mix(onSurface,.38)
     val selectedLabel get()=a.selectedLabelTextColor ?: color("on-secondary-container","#4A4458")

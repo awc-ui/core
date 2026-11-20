@@ -4,6 +4,7 @@ import {fileURLToPath} from 'node:url';
 // Every frame must pass the Laboratory server's own inspection schema (gate-7 R6-01/R6-02): the server rejects the whole
 // frame (502 INVALID_LIVE_FRAME) and closes the session otherwise.
 import {validateNativeInspection} from '../../native-playground/native-inspection.mjs';
+const {decodePNG}=await import(process.env.AWC_PNG_MODULE ?? fileURLToPath(new URL('../../../tools/ax/png.mjs',import.meta.url)));
 let schemaFrames=0;
 process.on('exit',code=>{if(code===0)console.log(`${schemaFrames} frames passed the Laboratory inspection schema.`);});
 
@@ -37,6 +38,16 @@ function host(){
   };
 }
 const nodes=(frame,name)=>(frame.inspection?.nodes??[]).filter(item=>item.name===name&&item.metrics);
+// Gate-7 R6-21: the painted label ink — in each label box, the pixel farthest from the box's dominant (background) colour, at
+// the frame's backing scale (glyph cores are fully covered) — against the expected colour composited over that background.
+const labelInks=frame=>{const img=decodePNG(Buffer.from(frame.png,'base64')),k=img.width/640;return nodes(frame,'label').map(n=>{
+  const b=n.bounds,x0=Math.max(0,Math.floor(b.x*k)),y0=Math.max(0,Math.floor((b.y+b.height*.15)*k)),x1=Math.min(img.width,Math.ceil((b.x+b.width)*k)),y1=Math.min(img.height,Math.ceil((b.y+b.height*.6)*k)),count=new Map();
+  const px=(x,y)=>{const i=(y*img.width+x)*4;return [img.data[i],img.data[i+1],img.data[i+2]];};
+  for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){const key=px(x,y).join();count.set(key,(count.get(key)??0)+1);}
+  const bg=[...count].sort((a,c)=>c[1]-a[1])[0][0].split(',').map(Number);let ink=bg,far=-1;
+  for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){const p=px(x,y),d=Math.max(...p.map((v,i)=>Math.abs(v-bg[i])));if(d>far){far=d;ink=p;}}
+  return {id:n.id,bg,ink};});};
+const inkIs=(entry,hex,alpha=1,tol=12)=>{const w=rgb(hex).map((v,i)=>entry.bg[i]*(1-alpha)+v*255*alpha);return entry.ink.every((v,i)=>Math.abs(v-w[i])<=tol);};
 let live;
 const configure=async (tag,fields={})=>{live?.close();live=host();return live.call({command:'configure',tag,width:640,dark:false,...fields});};
 const method=(name,args=[])=>live.call({command:'method',method:name,arguments:args});
@@ -72,6 +83,17 @@ try{
   u=await live.call({command:'update',properties:{current:true}});check(!u.error,`item update: ${u.error}`);
   await wait(300);f=await frame();s=nodes(f,'surface')[0];check(s?.metrics.kind==='static'&&s.metrics.current===true,'current makes it the static current page.');
   u=await live.call({command:'update',properties:{collapsed:true}});check(Boolean(u.error),'collapsed is managed by the trail.');
+  // Gate-7 R6-21: the standalone crumb paints what it reports — link ink, the link-colour hook, disabled (at configure and as an
+  // update) — and the trail paints the link-colour hook on its links.
+  const paintCase=async(label,{tag='md-breadcrumb-item',...fields},update)=>{let g=await configure(tag,{properties:{},...fields});check(!g.error,`configure ${label}: ${g.error}`);
+    await wait(800);if(update){const v=await live.call({command:'update',properties:update});check(!v.error,`update ${label}: ${v.error}`);await wait(500);}
+    g=await frame();const inks=labelInks(g);check(inks.length>0,`${label}: a label`);return inks;};
+  let inks=await paintCase('plain link',{},null);check(inks.every(e=>inkIs(e,'#49454F')),`a standalone link label paints #49454F (${JSON.stringify(inks)}).`);
+  inks=await paintCase('link colour',{breadcrumbItemAppearance:{linkColor:'#C62828'}},null);check(inks.every(e=>inkIs(e,'#C62828')),`the link-colour hook paints the standalone label (${JSON.stringify(inks)}).`);
+  inks=await paintCase('disabled at configure',{properties:{disabled:true}},null);check(inks.every(e=>inkIs(e,'#1C1B1F',.61)),`a disabled standalone label paints on-surface at 61 % (${JSON.stringify(inks)}).`);
+  inks=await paintCase('disabled update',{},{disabled:true});check(inks.every(e=>inkIs(e,'#1C1B1F',.61)),`disabled as an update repaints the label (${JSON.stringify(inks)}).`);
+  inks=await paintCase('trail link colour',{tag:'md-breadcrumbs',breadcrumbsAppearance:{linkColor:'#C62828'}},null);
+  check(inks.length===3&&inks.slice(0,2).every(e=>inkIs(e,'#C62828'))&&inkIs(inks[2],'#1D192B'),`the trail paints the hook on its links and the current page in on-secondary-container (${JSON.stringify(inks)}).`);
   // Gate-7 R6-10: `rel` (opener/referrer policy of a browsing context) has no native effect — a click on the same link gives the
   // same mdSelect detail and the same navigation for every rel value (exception record in md-breadcrumbs.md).
   const clickRel=async rel=>{

@@ -1,0 +1,491 @@
+{
+ "tag": "md-stepper",
+ "case": "vertical",
+ "request": {
+  "tag": "md-stepper",
+  "properties": {
+   "orientation": "vertical"
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Step 1 of 3: Account, current",
+         "enabled": true,
+         "expanded": true,
+         "focused": false,
+         "frame": [
+          32,
+          32,
+          174,
+          48
+         ],
+         "identifier": "290656EE-6FEA-4674-89F9-F28DB3258E40",
+         "index": 0,
+         "invalid": "false",
+         "required": false,
+         "role": "AXButton",
+         "roleDescription": "Disclosure button",
+         "selected": false,
+         "value": "Expanded"
+        },
+        {
+         "enabled": true,
+         "frame": [
+          100,
+          59,
+          106,
+          14
+         ],
+         "role": "AXStaticText",
+         "roleDescription": "text",
+         "value": "Set up your account"
+        },
+        {
+         "children": [
+          {
+           "enabled": true,
+           "frame": [
+            100,
+            84,
+            325,
+            16
+           ],
+           "identifier": "3A383E30-BC51-4E72-9188-E67A846A605A",
+           "role": "AXStaticText",
+           "roleDescription": "text",
+           "value": "Complete this section, then continue to the next step."
+          },
+          {
+           "children": [
+            {
+             "actions": [
+              "AXPress"
+             ],
+             "description": "Back",
+             "enabled": false,
+             "expanded": false,
+             "focused": false,
+             "frame": [
+              100,
+              116,
+              63.5,
+              40
+             ],
+             "identifier": "290656EE-6FEA-4674-89F9-F28DB3258E40-back",
+             "index": 0,
+             "invalid": "false",
+             "required": false,
+             "role": "AXButton",
+             "roleDescription": "button",
+             "selected": false
+            }
+           ],
+           "enabled": false,
+           "frame": [
+            76,
+            92,
+            111.5,
+            88
+           ],
+           "identifier": "290656EE-6FEA-4674-89F9-F28DB3258E40-back",
+           "role": "AXGroup",
+           "roleDescription": "group"
+          },
+          {
+           "children": [
+            {
+             "actions": [
+              "AXPress"
+             ],
+             "description": "Continue",
+             "enabled": true,
+             "expanded": false,
+             "focused": false,
+             "frame": [
+              171.5,
+              116,
+              89,
+              40
+             ],
+             "identifier": "290656EE-6FEA-4674-89F9-F28DB3258E40-next",
+             "index": 0,
+             "invalid": "false",
+             "required": false,
+             "role": "AXButton",
+             "roleDescription": "button",
+             "selected": false
+            }
+           ],
+           "enabled": true,
+           "focused": false,
+           "frame": [
+            147.5,
+            92,
+            137,
+            88
+           ],
+           "identifier": "290656EE-6FEA-4674-89F9-F28DB3258E40-next",
+           "role": "AXGroup",
+           "roleDescription": "group"
+          }
+         ],
+         "description": "Account",
+         "enabled": true,
+         "frame": [
+          76,
+          84,
+          349,
+          96
+         ],
+         "role": "AXGroup",
+         "roleDescription": "group"
+        },
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Step 2 of 3: Workspace",
+         "enabled": false,
+         "expanded": false,
+         "focused": false,
+         "frame": [
+          32,
+          188,
+          189,
+          48
+         ],
+         "identifier": "67664DD6-724E-47C8-85AB-BA76278720AC",
+         "index": 0,
+         "invalid": "false",
+         "required": false,
+         "role": "AXButton",
+         "roleDescription": "Disclosure button",
+         "selected": false,
+         "value": "Collapsed"
+        },
+        {
+         "enabled": true,
+         "frame": [
+          100,
+          215,
+          121,
+          14
+         ],
+         "role": "AXStaticText",
+         "roleDescription": "text",
+         "value": "Set up your workspace"
+        },
+        {
+         "actions": [
+          "AXPress"
+         ],
+         "description": "Step 3 of 3: Review",
+         "enabled": false,
+         "expanded": false,
+         "focused": false,
+         "frame": [
+          32,
+          252,
+          165,
+          48
+         ],
+         "identifier": "915C2247-AA63-4848-8010-8E019DC0D2CA",
+         "index": 0,
+         "invalid": "false",
+         "required": false,
+         "role": "AXButton",
+         "roleDescription": "Disclosure button",
+         "selected": false,
+         "value": "Collapsed"
+        },
+        {
+         "enabled": true,
+         "frame": [
+          100,
+          279,
+          97.5,
+          14
+         ],
+         "role": "AXStaticText",
+         "roleDescription": "text",
+         "value": "Set up your review"
+        }
+       ],
+       "description": "Progress",
+       "enabled": true,
+       "focused": false,
+       "frame": [
+        8,
+        32,
+        600,
+        820
+       ],
+       "identifier": "example-md-stepper",
+       "role": "AXGroup",
+       "roleDescription": "group"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      332
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    332
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [
+   {
+    "children": [
+     {
+      "children": [],
+      "id": "3A383E30-BC51-4E72-9188-E67A846A605A",
+      "properties": {
+       "text": "Complete this section, then continue to the next step."
+      },
+      "tag": "#text"
+     }
+    ],
+    "id": "290656EE-6FEA-4674-89F9-F28DB3258E40",
+    "properties": {
+     "description": "Set up your account",
+     "label": "Account"
+    },
+    "tag": "md-step"
+   },
+   {
+    "children": [
+     {
+      "children": [],
+      "id": "54FF494D-F8EF-40A2-97B3-1CA21D481938",
+      "properties": {
+       "text": "Complete this section, then continue to the next step."
+      },
+      "tag": "#text"
+     }
+    ],
+    "id": "67664DD6-724E-47C8-85AB-BA76278720AC",
+    "properties": {
+     "description": "Set up your workspace",
+     "label": "Workspace"
+    },
+    "tag": "md-step"
+   },
+   {
+    "children": [
+     {
+      "children": [],
+      "id": "C93949A1-1644-46DB-AB8A-EF93E17E5D42",
+      "properties": {
+       "text": "Complete this section, then continue to the next step."
+      },
+      "tag": "#text"
+     }
+    ],
+    "id": "915C2247-AA63-4848-8010-8E019DC0D2CA",
+    "properties": {
+     "description": "Set up your review",
+     "label": "Review"
+    },
+    "tag": "md-step"
+   }
+  ],
+  "id": "example-md-stepper",
+  "properties": {
+   "active": 0,
+   "autoComplete": true,
+   "backLabel": "Back",
+   "completedWord": "completed",
+   "currentWord": "current",
+   "density": 0,
+   "errorWord": "error",
+   "finishLabel": "Finish",
+   "indicator": "numbered",
+   "label": "Progress",
+   "lazy": false,
+   "loading": false,
+   "mode": "linear",
+   "nav": true,
+   "nextDisabled": false,
+   "nextLabel": "Continue",
+   "ofWord": "of",
+   "optionalWord": "Optional",
+   "orientation": "vertical",
+   "readonly": false,
+   "stepWord": "Step",
+   "variant": "default"
+  },
+  "tag": "md-stepper"
+ },
+ "focus": [
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Step 1 of 3: Account, current",
+    "frame": [
+     32,
+     32,
+     174,
+     48
+    ],
+    "identifier": "290656EE-6FEA-4674-89F9-F28DB3258E40",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Continue",
+    "frame": [
+     171.5,
+     116,
+     89,
+     40
+    ],
+    "identifier": "290656EE-6FEA-4674-89F9-F28DB3258E40-next",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Step 1 of 3: Account, current",
+    "frame": [
+     32,
+     32,
+     174,
+     48
+    ],
+    "identifier": "290656EE-6FEA-4674-89F9-F28DB3258E40",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Continue",
+    "frame": [
+     171.5,
+     116,
+     89,
+     40
+    ],
+    "identifier": "290656EE-6FEA-4674-89F9-F28DB3258E40-next",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Step 1 of 3: Account, current",
+    "frame": [
+     32,
+     32,
+     174,
+     48
+    ],
+    "identifier": "290656EE-6FEA-4674-89F9-F28DB3258E40",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  },
+  {
+   "keyboardFocus": {
+    "class": "AWCNativeButtonFocusView",
+    "description": "Continue",
+    "frame": [
+     171.5,
+     116,
+     89,
+     40
+    ],
+    "identifier": "290656EE-6FEA-4674-89F9-F28DB3258E40-next",
+    "role": "AXButton"
+   },
+   "axFocused": null
+  }
+ ],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 268,
+     "width": 576,
+     "x": 32,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "active": 0,
+     "activeColor": "#6750A4",
+     "completed": [
+      false,
+      false,
+      false
+     ],
+     "errorLive": "",
+     "height": 268,
+     "indicatorSize": 32,
+     "live": "",
+     "panelMode": "shared",
+     "steps": 3,
+     "width": 576
+    },
+    "name": "md-stepper"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

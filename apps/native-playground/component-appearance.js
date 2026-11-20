@@ -4,6 +4,7 @@ import { DIALOG_APPEARANCE_FIELDS, BOTTOM_SHEET_APPEARANCE_FIELDS, SIDE_SHEET_AP
 import { AVATAR_APPEARANCE_FIELDS, normalizeAvatarAppearance, avatarAppearanceCSS, parseAvatarAppearanceInput, formatAvatarAppearanceInput, avatarAppearanceNativeValue } from './avatar-appearance.js';
 import { SWITCH_APPEARANCE_FIELDS, CHECKBOX_APPEARANCE_FIELDS, RADIO_APPEARANCE_FIELDS, CHIP_APPEARANCE_FIELDS, switchAppearance, checkboxAppearance, radioAppearance, chipAppearance } from './selection-appearance.js';
 import { RIPPLE_APPEARANCE_FIELDS, rippleAppearance } from './ripple-appearance.js';
+import { TRANSFER_LIST_APPEARANCE_FIELDS, transferListAppearance } from './transferlist-appearance.js';
 import { ORG_CHART_APPEARANCE_FIELDS, orgChartAppearance } from './orgchart-appearance.js';
 import { STEPPER_APPEARANCE_FIELDS, STEPPER_APPEARANCE_GROUPS, stepperAppearance, STEP_APPEARANCE_FIELDS, STEP_APPEARANCE_GROUPS, stepAppearance } from './stepper-appearance.js';
 import { SLIDER_APPEARANCE_FIELDS, SLIDER_APPEARANCE_GROUPS, sliderAppearance, RATING_APPEARANCE_FIELDS, RATING_APPEARANCE_GROUPS, ratingAppearance } from './sr-appearance.js';
@@ -11,13 +12,19 @@ import { TABLE_APPEARANCE_REGISTRY } from './table-appearance.js';
 import { MENU_APPEARANCE_FIELDS, menuAppearance } from './menu-appearance.js';
 import { CHART_APPEARANCES, CHART_APPEARANCE_GROUPS } from './chart-appearance.js';
 import { TOOLBAR_APPEARANCE_FIELDS, TOOLBAR_APPEARANCE_GROUPS, toolbarAppearance } from './toolbar-appearance.js';
+import { APP_BAR_APPEARANCE_FIELDS, APP_BAR_APPEARANCE_GROUPS, appBarAppearance } from './appbar-appearance.js';
+import { NAVIGATION_RAIL_APPEARANCE_FIELDS, NAVIGATION_RAIL_APPEARANCE_GROUPS, NAVIGATION_RAIL_TAB_APPEARANCE_FIELDS, NAVIGATION_RAIL_TAB_APPEARANCE_GROUPS, navigationRailAppearance, navigationRailTabAppearance } from './rail-appearance.js';
 import { NAVIGATION_BAR_APPEARANCE_FIELDS, NAVIGATION_TAB_APPEARANCE_FIELDS, navigationBarAppearance, navigationTabAppearance } from './navbar-appearance.js';
 import { TABS_APPEARANCE_FIELDS, TAB_APPEARANCE_FIELDS, tabsAppearance, tabAppearance } from './tabs-appearance.js';
 import { BREADCRUMBS_APPEARANCE_FIELDS, BREADCRUMB_ITEM_APPEARANCE_FIELDS, breadcrumbsAppearance, breadcrumbItemAppearance } from './breadcrumbs-appearance.js';
 import { TEXT_FIELD_APPEARANCE_FIELDS, textFieldAppearance } from './text-field-appearance.js';
+import { SELECT_APPEARANCE_FIELDS, selectAppearance, MULTI_SELECT_APPEARANCE_FIELDS, multiSelectAppearance } from './select-appearance.js';
 import { COLOR_PICKER_APPEARANCE_FIELDS, colorPickerAppearance, TIME_PICKER_APPEARANCE_FIELDS, timePickerAppearance } from './picker-appearance.js';
+import { DATE_PICKER_APPEARANCE_FIELDS, datePickerAppearance } from './date-picker-appearance.js';
 import { NUMBER_FIELD_APPEARANCE_FIELDS, numberFieldAppearance } from './number-field-appearance.js';
+import { AUTOCOMPLETE_APPEARANCE_FIELDS, autocompleteAppearance } from './autocomplete-appearance.js';
 import { OTP_FIELD_APPEARANCE_FIELDS, otpFieldAppearance } from './otp-field-appearance.js';
+import { SEARCH_APPEARANCE_FIELDS, searchAppearance } from './search-appearance.js';
 import { CARD_APPEARANCE_FIELDS, normalizeCardAppearance, cardAppearanceCSS, parseCardAppearanceInput, formatCardAppearanceInput, cardAppearanceNativeValue } from './card-appearance.js';
 import { TOOLTIP_APPEARANCE_FIELDS, normalizeTooltipAppearance, tooltipAppearanceCSS, parseTooltipAppearanceInput, formatTooltipAppearanceInput, tooltipAppearanceNativeValue } from './tooltip-appearance.js';
 import { SNACKBAR_APPEARANCE_FIELDS, normalizeSnackbarAppearance, snackbarAppearanceCSS, parseSnackbarAppearanceInput, formatSnackbarAppearanceInput, snackbarAppearanceNativeValue } from './snackbar-appearance.js';
@@ -140,6 +147,16 @@ export const COMPONENT_APPEARANCES = Object.freeze({
       ['Interaction', ['selectedColor', 'focusRingColor', 'stateLayerColor', 'toggleSize']], ['Layout and motion', ['levelGap', 'siblingGap', 'duration']]],
     note: 'As in the source, a node’s own accent replaces the selected color for that node (ring, tint, ripple) and rings its avatar. The default gaps and toggler size follow density; these styles replace them. Lengths are px (points on SwiftUI, dp on Android); the duration also times the unfold motion and is removed with reduced motion.',
   }),
+  'md-transfer-list': Object.freeze({
+    key: 'transferListAppearance', fields: TRANSFER_LIST_APPEARANCE_FIELDS,
+    normalize: transferListAppearance.normalize, css: transferListAppearance.css,
+    parseInput: transferListAppearance.parseInput, formatInput: transferListAppearance.formatInput,
+    nativeValue: transferListAppearance.nativeValue, nativeImports: [],
+    swiftModifier: 'awcTransferListAppearance', nativeType: 'AWCTransferListAppearance',
+    groups: [['Size', ['width', 'minWidth', 'maxWidth', 'height', 'minHeight', 'maxHeight']], ['Columns', ['columnMinWidth', 'columnMaxBlock', 'containerShape', 'containerColor', 'headerColor', 'headerTextColor', 'dividerColor']],
+      ['Rows', ['itemInset', 'itemPadding', 'itemGap']], ['Controls and empty state', ['controlsGap', 'controlSize', 'controlIconSize', 'emptyIconSize']]],
+    note: 'As in the source, the column height cap follows the height hook unless the column cap is set; the item padding is the CSS padding shorthand (its physical sides). The default spacing, mover size and icon sizes follow density; these styles replace them. Lengths are px (points on SwiftUI, dp on Android).',
+  }),
   'md-switch': Object.freeze({
     key: 'switchAppearance', fields: SWITCH_APPEARANCE_FIELDS,
     normalize: switchAppearance.normalize, css: switchAppearance.css,
@@ -257,6 +274,15 @@ export const COMPONENT_APPEARANCES = Object.freeze({
     groups: [["Cells", ["cellWidth", "cellHeight", "cellShape", "cellGap"]], ["Colour and type", ["outlineColor", "focusColor", "fontSize"]]],
     note: "Unset hooks keep the density-tapered defaults (48×56 cells, 8 gap, 24 glyphs; 32×40, 4 and 20 at −4). The error, hover and disabled rules still override the outline and focus colours, as in the source; the outline colour also colours the group separator dots.",
   }),
+  'md-autocomplete': Object.freeze({
+    key: 'autocompleteAppearance', fields: AUTOCOMPLETE_APPEARANCE_FIELDS,
+    normalize: autocompleteAppearance.normalize, css: autocompleteAppearance.css,
+    parseInput: autocompleteAppearance.parseInput, formatInput: autocompleteAppearance.formatInput,
+    nativeValue: autocompleteAppearance.nativeValue, nativeImports: [],
+    swiftModifier: 'awcAutocompleteAppearance', nativeType: 'AWCAutocompleteAppearance',
+    groups: [["Size", ["width", "minWidth"]], ["Chips", ["chipGap", "chipRadius"]], ["Caret and clear", ["caretColor", "caretSize", "clearColor"]], ["Options", ["optionIconColor", "optionIconSize"]], ["Loading", ["loadingColor", "spinnerSize"]]],
+    note: "Unset hooks keep the source defaults (min width 220, chip gap 4 tapering with density, chip corners 8, caret 24 in the on-surface-variant colour, option icons 20, spinner 22). The width never goes below the minimum width. The inner field is an md-text-field and the suggestions an md-menu: their own hooks style the composed field and listbox.",
+  }),
   'md-number-field': Object.freeze({
     key: 'numberFieldAppearance', fields: NUMBER_FIELD_APPEARANCE_FIELDS,
     normalize: numberFieldAppearance.normalize, css: numberFieldAppearance.css,
@@ -275,6 +301,19 @@ export const COMPONENT_APPEARANCES = Object.freeze({
     groups: [["Geometry", ["width", "plateHeight", "radius", "thumbSize", "presetSize"]], ["Colors", ["surfaceColor", "onSurface", "outlineColor", "outlineStrong", "thumbBorder"]], ["Popover", ["popoverElevation"]]],
     note: "The eleven source hooks: lengths in px (points on SwiftUI, dp on Android), colours #RRGGBB or #RRGGBBAA, the popover's elevation as a CSS box-shadow list (or none). Density still scales the paddings and gaps; an unset hook keeps the colour-role default.",
   }),
+  'md-date-picker': Object.freeze({
+    key: 'datePickerAppearance', fields: DATE_PICKER_APPEARANCE_FIELDS, hookPrefix: datePickerAppearance.hookPrefix,
+    normalize: datePickerAppearance.normalize, css: datePickerAppearance.css,
+    parseInput: datePickerAppearance.parseInput, formatInput: datePickerAppearance.formatInput,
+    nativeValue: datePickerAppearance.nativeValue, nativeImports: [],
+    swiftModifier: 'awcDatePickerAppearance', nativeType: 'AWCDatePickerAppearance',
+    groups: [["Field", DATE_PICKER_APPEARANCE_FIELDS.filter(f => /^--md-date-picker-(field-|label-|icon-|trigger-)/.test(f.cssProperty)).map(f => f.name)],
+      ["Panel", DATE_PICKER_APPEARANCE_FIELDS.filter(f => /^--md-date-picker-(container-|header-|headline-|supporting-|scrim-|panel-(width|max)|docked-panel-|menu-|action-)/.test(f.cssProperty)).map(f => f.name)],
+      ["Days", DATE_PICKER_APPEARANCE_FIELDS.filter(f => /^--md-date-picker-(day-|today-|weekday-)/.test(f.cssProperty)).map(f => f.name)],
+      ["Year grid", DATE_PICKER_APPEARANCE_FIELDS.filter(f => /^--md-date-picker-year-/.test(f.cssProperty)).map(f => f.name)],
+      ["Motion", DATE_PICKER_APPEARANCE_FIELDS.filter(f => /-(duration|easing)$/.test(f.cssProperty)).map(f => f.name)]],
+    note: "The 40 hooks the source stylesheet reads, kept as CSS text in the native hook map (AWCDatePickerAppearance([\"day-selected-bg\": \"#6750A4\"])): lengths in px, #RRGGBB / #RRGGBBAA colours, durations in ms or s and selection-bloom-easing as cubic-bezier(). The duration hooks set the keyframes' length; an exited list, year view or panel leaves after the source's fixed 200 ms, as in the browser.",
+  }),
   'md-time-picker': Object.freeze({
     key: 'timePickerAppearance', fields: TIME_PICKER_APPEARANCE_FIELDS, hookPrefix: timePickerAppearance.hookPrefix,
     normalize: timePickerAppearance.normalize, css: timePickerAppearance.css,
@@ -289,6 +328,24 @@ export const COMPONENT_APPEARANCES = Object.freeze({
       ["Footer and actions", TIME_PICKER_APPEARANCE_FIELDS.filter(f => /^--md-time-picker-(toggle-|action|footer-)/.test(f.cssProperty)).map(f => f.name)],
       ["Motion", ["modeSwapDuration", "motionEasing"]]],
     note: "The 81 hooks the source stylesheet reads, kept as CSS text in the native hook map (AWCTimePickerAppearance([\"dial-size\": \"280px\"])): lengths in px, #RRGGBB / #RRGGBBAA colours, weights, opacities, durations, the dialog's box-shadow, motion-easing as cubic-bezier() and hand-length as a percentage of the dial radius. time-display-shape is the source's alias of input-shape. Hooks that the source declares but Chrome does not paint (trigger-icon-size; the action and toggle hooks reach the inner buttons only through their own tokens) behave the same natively.",
+  }),
+  'md-select': Object.freeze({
+    key: 'selectAppearance', fields: SELECT_APPEARANCE_FIELDS,
+    normalize: selectAppearance.normalize, css: selectAppearance.css,
+    parseInput: selectAppearance.parseInput, formatInput: selectAppearance.formatInput,
+    nativeValue: selectAppearance.nativeValue, nativeImports: [],
+    swiftModifier: 'awcSelectAppearance', nativeType: 'AWCSelectAppearance',
+    groups: [["Size", ["width", "minWidth"]], ["Caret and clear", ["caretColor", "caretSize", "clearColor", "trailingGap"]], ["Options and loading", ["optionIconColor", "spinnerSize"]]],
+    note: "The eight source hooks: lengths in px (points on SwiftUI, dp on Android), colours #RRGGBB or #RRGGBBAA. Unset hooks keep the density and colour-role defaults; the inner field takes md-text-field's appearance (its hooks and parts), the menu md-menu's.",
+  }),
+  'md-multi-select': Object.freeze({
+    key: 'multiSelectAppearance', fields: MULTI_SELECT_APPEARANCE_FIELDS, hookPrefix: multiSelectAppearance.hookPrefix,
+    normalize: multiSelectAppearance.normalize, css: multiSelectAppearance.css,
+    parseInput: multiSelectAppearance.parseInput, formatInput: multiSelectAppearance.formatInput,
+    nativeValue: multiSelectAppearance.nativeValue, nativeImports: [],
+    swiftModifier: 'awcMultiSelectAppearance', nativeType: 'AWCMultiSelectAppearance',
+    groups: [["Size and layout", MULTI_SELECT_APPEARANCE_FIELDS.filter(f => /^--md-multi-select-(width|min-width|trigger-width|frame-gap|inline-chips-block-start)$/.test(f.cssProperty)).map(f => f.name)], ["Chips", MULTI_SELECT_APPEARANCE_FIELDS.filter(f => /^--md-multi-select-chip-/.test(f.cssProperty)).map(f => f.name)], ["Caret and clear", MULTI_SELECT_APPEARANCE_FIELDS.filter(f => /^--md-multi-select-(caret|clear)-/.test(f.cssProperty)).map(f => f.name)], ["Search", MULTI_SELECT_APPEARANCE_FIELDS.filter(f => /^--md-multi-select-search-/.test(f.cssProperty)).map(f => f.name)], ["Options and select all", MULTI_SELECT_APPEARANCE_FIELDS.filter(f => /^--md-multi-select-(option-icon|select-all)-/.test(f.cssProperty)).map(f => f.name)], ["Empty and loading", MULTI_SELECT_APPEARANCE_FIELDS.filter(f => /^--md-multi-select-(empty|loading|loader|spinner)-/.test(f.cssProperty)).map(f => f.name)]],
+    note: "The 38 hooks the source stylesheet reads, kept as CSS text in the native hook map (AWCMultiSelectAppearance([\"chip-height\": \"28px\"])): lengths in px, #RRGGBB / #RRGGBBAA colours, the search and empty paddings as CSS padding shorthands, the empty-state font as a CSS font shorthand (style, weight, px size / line height, family). Unset hooks keep the density and colour-role defaults.",
   }),
   'md-text-field': Object.freeze({
     key: 'textFieldAppearance', fields: TEXT_FIELD_APPEARANCE_FIELDS,
@@ -384,6 +441,33 @@ export const COMPONENT_APPEARANCES = Object.freeze({
     groups: STEP_APPEARANCE_GROUPS,
     note: 'A standalone step takes the hooks directly; inside a stepper, set them on the stepper (all steps) or in one step\'s style.',
   }),
+  'md-navigation-rail': Object.freeze({
+    key: 'navigationRailAppearance', fields: NAVIGATION_RAIL_APPEARANCE_FIELDS,
+    normalize: navigationRailAppearance.normalize, css: navigationRailAppearance.css,
+    parseInput: navigationRailAppearance.parseInput, formatInput: navigationRailAppearance.formatInput,
+    nativeValue: navigationRailAppearance.nativeValue, nativeImports: [],
+    swiftModifier: 'awcNavigationRailAppearance', nativeType: 'AWCNavigationRailAppearance',
+    groups: NAVIGATION_RAIL_APPEARANCE_GROUPS,
+    note: 'The rail container (colour, elevation, corners, collapsed / expanded widths), its spacing, the slot sizes and the horizontal bar. Destination hooks: md-navigation-rail-tab (descendant destinations inherit them). Colors accept #RRGGBB or #RRGGBBAA.',
+  }),
+  'md-navigation-rail-tab': Object.freeze({
+    key: 'navigationRailTabAppearance', fields: NAVIGATION_RAIL_TAB_APPEARANCE_FIELDS,
+    normalize: navigationRailTabAppearance.normalize, css: navigationRailTabAppearance.css,
+    parseInput: navigationRailTabAppearance.parseInput, formatInput: navigationRailTabAppearance.formatInput,
+    nativeValue: navigationRailTabAppearance.nativeValue, nativeImports: [],
+    swiftModifier: 'awcNavigationRailTabAppearance', nativeType: 'AWCNavigationRailTabAppearance',
+    groups: NAVIGATION_RAIL_TAB_APPEARANCE_GROUPS,
+    note: 'The indicator pill, icon and label colours and sizes, the state layers, focus ring and caret, and the badge colours of every descendant destination. labelTypography is accepted and, as on the Web, has no effect.',
+  }),
+  'md-app-bar': Object.freeze({
+    key: 'appBarAppearance', fields: APP_BAR_APPEARANCE_FIELDS,
+    normalize: appBarAppearance.normalize, css: appBarAppearance.css,
+    parseInput: appBarAppearance.parseInput, formatInput: appBarAppearance.formatInput,
+    nativeValue: appBarAppearance.nativeValue, nativeImports: [],
+    swiftModifier: 'awcAppBarAppearance', nativeType: 'AWCAppBarAppearance',
+    groups: APP_BAR_APPEARANCE_GROUPS,
+    note: 'The bar container (colours, scrolled colours, corners, elevation), the headline / subtitle / icon colours, the row and expanded block geometry, the flexible heights and the search pill. Every hook is CSS text natively: lengths in px, colours #RRGGBB or #RRGGBBAA, shapes one radius or a border-radius shorthand, elevation a box-shadow list.',
+  }),
   'md-toolbar': Object.freeze({
     key: 'toolbarAppearance', fields: TOOLBAR_APPEARANCE_FIELDS,
     normalize: toolbarAppearance.normalize, css: toolbarAppearance.css,
@@ -392,6 +476,15 @@ export const COMPONENT_APPEARANCES = Object.freeze({
     swiftModifier: 'awcToolbarAppearance', nativeType: 'AWCToolbarAppearance',
     groups: TOOLBAR_APPEARANCE_GROUPS,
     note: 'The bar (docked) or pill (floating) colour and corners, the item ink the bar passes to its icon buttons, the floating height, padding and gaps, and the opt-in overflow (scroll or wrap). Colors accept #RRGGBB or #RRGGBBAA.',
+  }),
+  'md-search': Object.freeze({
+    key: 'searchAppearance', fields: SEARCH_APPEARANCE_FIELDS,
+    normalize: searchAppearance.normalize, css: searchAppearance.css,
+    parseInput: searchAppearance.parseInput, formatInput: searchAppearance.formatInput,
+    nativeValue: searchAppearance.nativeValue, nativeImports: [],
+    swiftModifier: 'awcSearchAppearance', nativeType: 'AWCSearchAppearance',
+    groups: [["Container", ["containerColor", "containerElevation", "containerShape", "containerHeight", "containerMinInlineSize", "containerMaxInlineSize", "containerPaddingInline", "containerPaddingInlineFocused", "containedBackgroundColor"]], ["Icons", ["iconColor", "leadingIconColor", "trailingIconColor", "loadingColor", "iconSize", "iconButtonSize", "leadingPaddingInline", "leadingIconLabelGap", "trailingIconLabelGap", "trailingPaddingInline", "avatarSize"]], ["Input text", ["inputColor", "placeholderColor", "inputFontFamily", "inputFontSize", "inputLineHeight", "inputFontWeight", "inputLetterSpacing"]], ["State and focus", ["stateLayerColor", "hoverStateLayerOpacity", "pressedStateLayerOpacity", "focusIndicatorColor", "focusIndicatorOffset", "focusIndicatorThickness"]], ["Panel and results", ["panelMinBlockSize", "panelMaxBlockSize", "panelOffset", "panelPaddingBlockStart", "dockedPanelShape", "containedDockedPanelOffset", "dividerColor", "dividerThickness", "emptyColor", "emptyPaddingBlock", "emptyPaddingInline"]], ["Full-screen", ["maxBlockSize", "barFullscreenColor", "fullscreenResultsColor", "fullscreenBarPanelGap", "dividedFullscreenBarHeight", "fullscreenBarOffsetBlockStart", "fullscreenBarOffsetInline"]], ["Motion", ["expandInset", "expandFocusedInset", "expandDuration", "expandEasing", "panelMotionDuration", "fullscreenExpandDuration", "fullscreenExpandEasing", "fullscreenCollapseDuration", "fullscreenCollapseEasing"]]],
+    note: "Unset hooks keep the variant, layout, density and colour-role defaults. The container elevation replaces the elevation property's token shadow; the icon colour hooks colour the search's own glyphs (slotted content keeps its own); the easings are cubic-bezier control points; reduced motion sets every duration to 0. Typed parts win over the hooks and the internal state rules.",
   }),
   'md-tooltip': Object.freeze({
     key: 'tooltipAppearance', fields: TOOLTIP_APPEARANCE_FIELDS,

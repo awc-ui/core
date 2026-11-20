@@ -1051,11 +1051,14 @@
       "unsupportedSlots": [],
       "notes": [
         "Dedicated native renderer: all fifteen properties, five events, the default slot and fourteen appearance hooks. Direct-child ownership, exclusive and keep-one coordination, heading/region presentation, pointer and keyboard reorder, lifted clipping, reorder motion, interaction states, drop-placeholder paint and the floating panel are checked against Chrome oracles.",
-        "Floating mode: the nearest awcAccordionViewport() or the window stands in for the CSS viewport. SwiftUI zIndex orders a panel only among siblings of its container, whereas CSS position: fixed stacks against the whole document.",
-        "drop-placeholder is rendered natively and styled through the five drop-placeholder appearance fields; native views accept no ::part declarations for it. The dash phase on sides after a rounded corner differs from Chrome by up to about one period (open).",
-        "macOS SwiftUI/AppKit renderer and live-host verification is recorded; iOS SDK, simulator/device and VoiceOver execution remain unavailable and unverified."
+        "Floating mode: the nearest awcAccordionViewport() or the window stands in for the CSS viewport. CSS position: fixed stacks against the whole document: the panel's z-index lifts the AWC hosts above it, so it paints over later containers of the same AWC tree; an application container between AWC views joins with awcStackingLift(), and an ancestor that clips still clips the panel.",
+        "drop-placeholder is rendered natively, styled through the five drop-placeholder appearance fields and typed part declarations (awcAccordionPartAppearance(_:part:for:): fill, dashed outline colour and width, corner shape, opacity). Its dashed border follows Blink's rounded-border dash distribution (closed centerline from the end of the top-left corner, best-fit gap); every side's dash centres are asserted against Chrome.",
+        "macOS SwiftUI/AppKit, iOS simulator (iPhone and iPad on iOS 26.3, iPhone on iOS 18.6; docs/native-parity/ios-harness.md) and Android emulator renderers are verified against the Chrome oracles; their accessibility trees are compared with Chrome's on all three platforms by tools/ax (docs/native-parity/accessibility.md). Spoken VoiceOver/TalkBack output is not automated."
       ],
       "verification": "not-device-verified",
+      "visualParts": [
+        "drop-placeholder"
+      ],
       "appearance": {
         "api": ".awcAccordionAppearance(AWCAccordionAppearance)",
         "fields": [
@@ -1112,11 +1115,14 @@
       "unsupportedSlots": [],
       "notes": [
         "Dedicated native renderer: all fifteen properties, five events, the default slot and fourteen appearance hooks. Direct-child ownership, exclusive and keep-one coordination, heading/region presentation, pointer and keyboard reorder, lifted clipping, reorder motion, interaction states, drop-placeholder paint and the floating panel are checked against Chrome oracles.",
-        "Floating mode: the nearest AWCAccordionViewport or the window root (insets are not subtracted) stands in for the CSS viewport. Compose zIndex orders a panel only among siblings of its container, whereas CSS position: fixed stacks against the whole document.",
-        "drop-placeholder is rendered natively and styled through the five drop-placeholder appearance fields; native views accept no ::part declarations for it. Dash centres drift along the border path by up to 1.20 px (open).",
-        "Android Compose rendering, events, retained-host and device suites are recorded; TalkBack delivery and OS accessibility traversal remain unverified."
+        "Floating mode: the nearest AWCAccordionViewport or the window root (insets are not subtracted) stands in for the CSS viewport. CSS position: fixed stacks against the whole document: the panel's z-index lifts the AWC hosts above it, so it draws over later containers; an application container between AWC components joins with AWCStackingLift { }, and an ancestor that clips still clips the panel.",
+        "drop-placeholder is rendered natively, styled through the five drop-placeholder appearance fields and typed part declarations (AWCAccordionPartAppearanceScope: fill, dashed outline colour and width, corner shape, opacity). Dash centres drift along the border path by up to 1.20 px.",
+        "macOS SwiftUI/AppKit, iOS simulator (iPhone and iPad on iOS 26.3, iPhone on iOS 18.6; docs/native-parity/ios-harness.md) and Android emulator renderers are verified against the Chrome oracles; their accessibility trees are compared with Chrome's on all three platforms by tools/ax (docs/native-parity/accessibility.md). Spoken VoiceOver/TalkBack output is not automated."
       ],
       "verification": "not-device-verified",
+      "visualParts": [
+        "drop-placeholder"
+      ],
       "appearance": {
         "api": "AWCAccordionAppearanceScope(AWCAccordionAppearance)",
         "fields": [

@@ -7,6 +7,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.background
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerType
@@ -39,6 +42,22 @@ import kotlin.math.max
     }
 }
 internal val LocalAWCNumberFieldAppearance=staticCompositionLocalOf { AWCNumberFieldAppearance() }
+/** Typed counterpart of md-number-field's `::part(field)` (the inner md-text-field host). Part values come from the outer tree: the
+ *  md-text-field hooks declared on the part win over the number field's own (the inline steppers' end padding) and over hooks
+ *  inherited from outside; its background and opacity paint the whole inner field box (container and support row). */
+@Immutable data class AWCNumberFieldPartAppearance(val field:AWCTextFieldAppearance?=null,val fieldBackgroundColor:String?=null,val fieldOpacity:Double?=null) {
+    internal fun normalized()=AWCNumberFieldPartAppearance(field?.normalized(),switchColorHex(fieldBackgroundColor),fieldOpacity?.takeIf { it.isFinite() }?.coerceIn(0.0,1.0))
+    fun merge(o:AWCNumberFieldPartAppearance)=AWCNumberFieldPartAppearance(field?.merge(o.field ?: AWCTextFieldAppearance()) ?: o.field,
+        o.fieldBackgroundColor ?: fieldBackgroundColor,o.fieldOpacity ?: fieldOpacity)
+    companion object {
+        @Suppress("UNCHECKED_CAST")
+        fun fromValues(v:Map<String,AWCValue>):AWCNumberFieldPartAppearance=AWCNumberFieldPartAppearance((v["field"] as? Map<String,AWCValue>)?.let { AWCTextFieldAppearance.fromValues(it) },
+            (v["fieldBackgroundColor"] as? String)?.ifEmpty { null },(v["fieldOpacity"] as? Number)?.toDouble()).normalized()
+    }
+}
+internal val LocalAWCNumberFieldPartAppearance=staticCompositionLocalOf { AWCNumberFieldPartAppearance() }
+@Composable fun AWCNumberFieldPartAppearanceScope(parts:AWCNumberFieldPartAppearance,content:@Composable ()->Unit)=
+    CompositionLocalProvider(LocalAWCNumberFieldPartAppearance provides LocalAWCNumberFieldPartAppearance.current.merge(parts.normalized()),content=content)
 @Composable fun AWCNumberFieldAppearanceScope(appearance:AWCNumberFieldAppearance,content:@Composable ()->Unit)=
     CompositionLocalProvider(LocalAWCNumberFieldAppearance provides LocalAWCNumberFieldAppearance.current.merge(appearance.normalized()),content=content)
 
@@ -280,9 +299,11 @@ internal fun NativeNumberField(p:Props,onEvent:EventSink,controlEvent:EventSink,
         else { doStep(if(delta>0) -1.0 else 1.0,if(shift) m.largeStep else if(alt) m.smallStep else m.stepAmount,alt,"wheel");true } }
     val inspector=LocalAWCNumberFieldInspector.current
     val focusedNow=rt.focused   // read in composition: a focus change recomposes the host
+    val nfParts=LocalAWCNumberFieldPartAppearance.current
     SideEffect { inspector?.invoke(mapOf("md-number-field" to mapOf("value" to rt.value,"formattedValue" to rt.inputValue,"focused" to focusedNow,
         "validationMessage" to validationMessage,"valid" to validity.valid,"inputMode" to inputMode),
-        "increment" to mapOf("disabled" to (disabled || m.readOnly || atBound(1.0))),"decrement" to mapOf("disabled" to (disabled || m.readOnly || atBound(-1.0))))) }
+        "increment" to mapOf("disabled" to (disabled || m.readOnly || atBound(1.0))),"decrement" to mapOf("disabled" to (disabled || m.readOnly || atBound(-1.0))),
+        "field" to mapOf("background" to (nfParts.fieldBackgroundColor ?: ""),"opacity" to (nfParts.fieldOpacity ?: 1.0)))) }
     val minW=appearance.minWidth ?: 200.0
     val hostMod=Modifier.let { if(appearance.width!=null) it.width(max(appearance.width,minW).dp) else it.fillMaxWidth().widthIn(min=minW.dp) }
         .inspectAWCNode(inspection,"md-number-field","md-number-field")
@@ -296,8 +317,12 @@ internal fun NativeNumberField(p:Props,onEvent:EventSink,controlEvent:EventSink,
         } } }
     val inner:@Composable ()->Unit={
         // :host(.md-number-field--inline) sets --md-text-field-padding-inline-end: 8px.
-        val tfAppearance=if(m.inline && LocalAWCTextFieldAppearance.current.paddingInlineEnd==null) AWCTextFieldAppearance(paddingInlineEnd=insetSm) else AWCTextFieldAppearance()
-        AWCTextFieldAppearanceScope(tfAppearance) { Box(Modifier.inspectAWCNode(inspection,"field","field")) { NativeTextField(fieldProps,{ _,_-> },{ _,_-> },null,null,null,hooks) } }
+        val parts=LocalAWCNumberFieldPartAppearance.current;val partField=parts.field ?: AWCTextFieldAppearance()
+        val tfAppearance=if(m.inline && LocalAWCTextFieldAppearance.current.paddingInlineEnd==null && partField.paddingInlineEnd==null) AWCTextFieldAppearance(paddingInlineEnd=insetSm) else AWCTextFieldAppearance()
+        // ::part(field): its hooks are the innermost (they win); its background and opacity cover the whole inner field.
+        AWCTextFieldAppearanceScope(tfAppearance) { AWCTextFieldAppearanceScope(partField) {
+            Box(Modifier.alpha((parts.fieldOpacity ?: 1.0).toFloat()).then(parts.fieldBackgroundColor?.let { Modifier.background(awcColor(it,Color.Transparent)) } ?: Modifier)
+                .inspectAWCNode(inspection,"field","field")) { NativeTextField(fieldProps,{ _,_-> },{ _,_-> },null,null,null,hooks) } } }
     }
     if(m.split) Row(hostMod,horizontalArrangement=Arrangement.spacedBy(gapSm.dp),verticalAlignment=Alignment.Top) {
         Box(Modifier.padding(top=((fieldBox-splitStepper)/2).dp)) { NumberStepper(-1.0,m,disabled,splitStepper,stepperIcon,stepperColor,{ atBound(it) },::beginHold,stepperEnd,inspection) }

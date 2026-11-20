@@ -1,7 +1,8 @@
 # md-slider native checkpoint
 
 Status: **gates 2–3 and accessibility verified on macOS SwiftUI, the iOS simulator and the Android emulator** against Mac
-Chrome 153 oracles (2026-10-30). Independent final audit pending. Source contract:
+Chrome 153 oracles (2026-10-30); gate-7 fixes (typed parts, the inset-icon slot, rendered views, hook cases) verified 2026-11-11.
+Independent final audit pending. Source contract:
 [md-slider-source-review.md](md-slider-source-review.md); plan: [md-slider-native-plan.md](md-slider-native-plan.md).
 Ported by n5 (paint / interaction models) and taken over by fa on 2026-10-29 (accessibility bridges, host-authored
 properties, Laboratory, AX); shares its support code with [md-rating](md-rating.md).
@@ -11,11 +12,13 @@ properties, Laboratory, AX); shares its support code with [md-rating](md-rating.
 | Concern | SwiftUI | Compose |
 | --- | --- | --- |
 | Slider node (`AWCNativeView` / `AWCComponent`) | dedicated renderer (`Slider/NativeSliderView.swift`, `SliderLayout.swift`, `SliderInteraction.swift`) | dedicated renderer (`NativeSliderView.kt`, `slider/SliderLayout.kt`, `SliderInteraction.kt`) |
-| 23 hooks (`--md-slider-*`) | `AWCSliderAppearance` + `.awcSliderAppearance(_:)` | `AWCSliderAppearance` + `AWCSliderAppearanceScope` |
+| 24 hooks (`--md-slider-*`: the 23 documented ones and the stylesheet's `--md-slider-value-indicator-reserve`) | `AWCSliderAppearance` + `.awcSliderAppearance(_:)` | `AWCSliderAppearance` + `AWCSliderAppearanceScope` |
+| Parts (`surface`, `track`, `track-active`, `track-inactive`, `thumb-knob`, `value-indicator`, `inset`) | `AWCSliderPart` + `.awcSliderPartAppearance(_:part:)` (`SliderRating/SliderRatingParts.swift`) | `AWCSliderPart` + `AWCSliderPartAppearanceScope(part, appearance)` (`SliderRatingParts.kt`) |
+| `inset-icon` slot | an `AWCNode` child with `slot="inset-icon"` (`AWCNativeSliderView(insetContent:)`) | the `inset-icon` slot content of `AWCComponent("md-slider")` (`NativeSliderView(…, content)`) |
 | Accessibility | `SliderRating/SliderRatingAccessibility.swift`: AXSlider (macOS, AWC key-view loop) / adjustable (iOS), one element per thumb | SeekBar semantics per thumb (`ProgressBarRangeInfo`, `SetProgress`) |
 
 Behaviour mirrors the source: standard / centered / range, sizes xs…xl, stops and ticks, value indicator, inset icon (the
-`icon` property), vertical orientation, RTL, disabled (dimmed as one group like CSS opacity), keyboard steps (arrows, Page,
+`icon` property or the slotted `inset-icon` content), vertical orientation, RTL, disabled (dimmed as one group like CSS opacity), keyboard steps (arrows, Page,
 Home / End), pointer drag on the rail and the thumbs, touch semantics as Chrome records them, `mdInput` / `mdChange` /
 `mdDragStart` / `mdDragEnd` in Chrome's per-path order, form participation, and the property watchers (host-authored values
 win until the host changes them).
@@ -34,11 +37,19 @@ frame split) (fa-054/055, `gate1-mac-vs-cloud.json`). Android assets are gzip co
 | iOS gate-6 runtimes (r6) | iPhone 17 Pro iOS 26.3 (fa-057), iPad Pro 11-inch (M5) iOS 26.3 and iPhone 16 Pro iOS 18.6 (r6-011, `work/audit/r6/out/ios-ipad/`, `ios-ios18/`): all pass |
 | Android emulator-5556 `SrParityTest` | paint 188/188, states 22/22, reduced 22/22, lifecycle 18/18 (fa-A026; final sources fa-A030) |
 | Android `SrViewsTest` (slider + rating renders, semantics, wiring, lifecycle) | 115/115 (fa-A028, fa-A030) |
-| Android `LivePreviewSRHostTest` | 2/2 (fa-A028) |
+| Android `LivePreviewSRHostTest` | 2/2 (fa-A028; fa-A044) |
+| Gate 7: `paint-extra2.json` (18 cases: `::part()` rules, the inset-icon slot, the hooks of R6-11) — macOS `NativeSliderRatingIntegration` "paint (extra2)" / Android `SrParityTest.sliderPaintParts` | 18/18 · 18/18 (fa-089, fa-A044) |
+| Gate 7: all suites on the final sources — macOS / Android / iOS simulator | paint 188, extra2 18, states 22 + 22, lifecycle 18: all pass (fa-089: 444/444 runs; fa-A044; iOS 444/444 on AWC-fa iPhone 17 Pro, iOS 26.3 (fa-092)) |
+| Gate 7 (R6-07): iOS gate-6 runtimes on the final sources — `NativeSliderRatingIntegration` | iPhone 17 Pro · iOS 26.3 **444/444** (fa-092) · iPad Pro 11-inch (M5) · iOS 26.3 **444/444** (fa-094) · iPhone 16 Pro · iOS 18.6 **444/444** (fa-094) |
+| Gate 7 (R6-05): rendered views against the Chrome shots — macOS `NativeFaViewsIntegration` | paint 188/188 · extra2 18/18 (fa-089) |
+| Gate 7 (R6-05): rendered views — Android `FaViewsParityTest` (through `AWCComponent`) | paint 188/188 · extra2 18/18 (fa-A044) |
+| Gate 7 (R6-05): rendered views — iOS harness | paint 188/188 · extra2 18/18 on iPad Pro 11-inch (M5) · iOS 26.3 (fa-087) and iPad Pro 11-inch (M4) · iOS 18.6 (fa-095): `NativeFaViewsIntegration` through `apps/native-ios-parity` |
 
 ## Laboratory (gate 3)
 
-- **Styles panel:** the 23 hooks (`sr-appearance.js`), local values over defaults.
+- **Styles panel:** the 24 hooks (`sr-appearance.js`), local values over defaults.
+- **Parts and slot:** the seven visual parts (`visualParts`) with a copyable typed example each; the `inset-icon` slot is
+  supported (`unsupportedSlots` empty) and its example renders the slotted node.
 - **Properties:** retained updates for every slider property; rejected updates reported.
 - **Examples:** SwiftUI examples typecheck (fa-063, 46 examples for slider, rating, stepper, step); Compose examples
   compile in the androidTest source set (fa-A029, fa-A030).
@@ -47,7 +58,8 @@ frame split) (fa-054/055, `gate1-mac-vs-cloud.json`). Android assets are gzip co
 | --- | --- |
 | Studio `sr-integration.test.mjs` / all studio suites | 4/4 · 0 new failures (fa-063) |
 | SwiftUI live host `test-live-sr.mjs` / snapshot `test-snapshot-sr.mjs` | 27/27 · 6/6 (fa-063) |
-| Android `LivePreviewSRHostTest` | 2/2 (fa-A028) |
+| Android `LivePreviewSRHostTest` | 2/2 (fa-A028; fa-A044) |
+| Gate 7: studio `sr-integration` / `native-api-examples` / `documentation`; SwiftUI examples typecheck, Compose examples compile | 4/4 · 23/23 · 14/14, all studio suites 865/868 (the 3 failures are canonical's chart / org-chart ones); 74 SwiftUI examples typecheck (fa-089) · 74 Compose examples compile (fa-A044) |
 
 ## Accessibility (tools/ax)
 
@@ -56,30 +68,42 @@ Cases `default`, `range`, `valuetext`, `vertical`, `disabled`: **0 open findings
 label measures the Web ratio 2.06:1). Every thumb is a slider named like the source with its range and value text; Tab
 order matches Web; disabled thumbs are exposed disabled and refuse adjustment.
 
-## Exception proposed: part selectors
+## Parts (typed native part appearance, R6-03)
 
-| Field | Record |
-| --- | --- |
-| Scope | author `::part()` rules on the component's shadow parts; the parts' own styling and their CSS custom properties are implemented |
-| Exact source behaviour | Shadow-DOM nodes carry `part` attributes: `track`, `track-active`, `track-inactive`, `state-layer`, `thumb-knob`, `value-indicator`, `inset`, `surface` (`packages/core/src/components/md-slider/md-slider.tsx`); page CSS can restyle any of them with `md-slider::part(<name>)` rules. |
-| Affected platforms and API | macOS SwiftUI, iOS SwiftUI, Android Compose — `AWCSliderAppearance` (`.awcSliderAppearance(_:)` / `AWCSliderAppearanceScope`), 23 typed hooks, theme tokens. |
-| Technical reason | `::part()` is CSS selector syntax over a shadow tree; SwiftUI and Compose have no stylesheet, shadow DOM or selector matching (AUDIT.md: CSS selector syntax is a browser-only facility). |
-| User impact | Arbitrary per-part CSS cannot be applied natively; apps restyle through the typed hooks (every `--md-*` property the stylesheet reads). |
-| Tested native equivalent | The stylesheet's styling of every part is reproduced (paint 188 / states 22 + 22 / lifecycle 18 against Chrome); each custom property it reads is a typed hook with subtree defaults and local values (Laboratory styles panel, live hosts). |
-| Alternative | A typed part surface (as md-avatar / md-list / md-card) is implementable if the reviewer rejects this record. |
-| Evidence | `outputs/native-parity/md-slider/checkpoint.json`, `web-oracle/`, this document's Evidence section |
-| Reviewer | gate-7 reviewer r6 (R6-03) |
-| Acceptance | **NOT ACCEPTED — proposed; needs the reviewer's explicit acceptance (AUDIT.md exception policy)** |
+The seven visual parts of the source are typed part targets: `.awcSliderPartAppearance(_:part:)` (SwiftUI) /
+`AWCSliderPartAppearanceScope(part, appearance)` (Compose) with the shared `AWCAccordionPartAppearance` fields; values
+cascade to every slider in the subtree, nearer values win. Each field follows the source part's box with its CSS semantics
+(measured in Mac Chrome with the same rule as `md-slider::part(…)`, `paint-extra2.json`):
 
-## Gate 7 (reviewer r6, 2026-10-31)
+| Part | Fields | Source semantics |
+| --- | --- | --- |
+| `surface` | opacity | multiplies the host opacity (disabled 0.38 × the part's) |
+| `track` | cornerShape | the track's clip radius (clamped to half its size) |
+| `track-active` / `track-inactive` | backgroundColor, height, cornerShape | blocks anchored to the track's top edge (a 20 px segment in a 24 px track keeps its y); the second inactive segment of centered / range sliders is `::after` and has no part |
+| `thumb-knob` | backgroundColor, width, height | resized around the handle's centre |
+| `value-indicator` | backgroundColor, color, fontSize, fontWeight, lineHeight, padding, cornerShape | the bubble's box and text |
+| `inset` | color | the inset icon's colour (its size is explicit in the source) |
 
-- R6-03 parts: exception proposed below.
-- R6-04 `inset-icon` slot: implementation (the slotted node drawn in the inset box under the track mask) with a Chrome oracle case in progress; until it lands the Laboratory's copyable inset-icon example is wrong (it reports "supported").
-- R6-05 rendered views measured against the oracles: in progress.
+`state-layer` is hidden by the source stylesheet (decision 6) and has no target. Evidence: paint-extra2 18/18 on macOS and
+Android, the rendered views (R6-05) and one copyable typed example per part in the Laboratory (compiled on both platforms).
+
+## Gate 7 (reviewer r6, 2026-10-31; fixes 2026-11-11)
+
+- R6-03 parts: typed part appearance for the seven visual parts (section above) — FIXED, awaiting re-check.
+- R6-04 `inset-icon` slot: implemented on both platforms — the slotted node is drawn in the inset box (centred, the inset size
+  as its font size, the inset colour inherited, under the track mask), Chrome cases `slot-inset-symbol-lg`, `slot-inset-box-xl`
+  (+ RTL), `slot-inset-low-value`; the policies list the slot as supported and the Laboratory example renders it — FIXED.
+- R6-05 rendered views measured against the oracles: every paint case is rendered by the view itself at Chrome's host box and compared with the Chrome shot: the rendered host box (the view's own inspection node / layout bounds, ±0.75 px), every flat CSS pixel of the clip (3 × 3 flat in both images, limit 6: mean ≤ 1.0 and ≤ 0.5 % over 6) and every ink pixel (off the page background; Chrome ink covered by native ink within 1 px and vice versa, ≥ 0.97) — boxes, colours, the slot, the native md-buttons and the placement of every text run and glyph.
+  macOS 188/188 + 18/18, Android 188/188 + 18/18; iOS: paint 188/188 · extra2 18/18 on iPad Pro 11-inch (M5) · iOS 26.3 (fa-087) and iPad Pro 11-inch (M4) · iOS 18.6 (fa-095): `NativeFaViewsIntegration` through `apps/native-ios-parity`. Found and fixed by it: the SwiftUI canvas clipped a handle overhanging the
+  host at the track's ends (`edge-min`); Compose read numeric properties through `Float` (value 0.35 showed
+  "0.34999999403953552").
 - R6-06 `NativeSliderRatingIntegration` registered in `test-native-views.sh` (fixtures and token sheet by default; a missing oracle file fails).
-- R6-07 iOS runtimes: rows above.
-- R6-11 hooks without a test (`--md-slider-value-font-family`, `-value-line-height`, `-min-track-length`; `--md-slider-value-indicator-reserve` not typed): oracle cases in progress.
-- R6-15 decision 5 (reflected `"false"` booleans): source fix to be proposed test-first.
+- R6-07 iOS runtimes: the three gate-6 runtimes on the final sources (rows above).
+- R6-11 hooks: `--md-slider-value-font-family` (`hook-value-font-family-monospace`), `--md-slider-value-line-height`
+  (`hook-value-line-height`), `--md-slider-min-track-length` (`hook-min-track-length`) are paint-extra2 cases on macOS, the iOS simulator and Android;
+  `--md-slider-value-indicator-reserve` (case `hook-value-indicator-reserve`) is typed (`valueIndicatorReserve`) and a
+  Laboratory field — FIXED.
+- R6-15 decision 5 (reflected `"false"` booleans): source fix to be proposed test-first (open, Web source).
 
 ## Decisions (autonomous, 2026-10-27, reversible)
 
@@ -122,9 +146,9 @@ change the native model.
     value moves one step towards it (TalkBack's scroll increment, range / 20, is below a step). Disabled slider / rating stay
     SeekBars (SetProgress defined and refused), as Web keeps role=slider. Alternative: one step per action. Revert:
     `RatingInteraction.setFromAssistive`, the `setProgress` blocks in the Compose views.
-13. **inset-icon slot (custom slotted icon content) not rendered natively.** The inset icon comes from the `icon` property
-    (a Material Symbol); the policies list the slot as unsupported. Alternative: render the slotted node in the inset box
-    under the track mask. Implementing it: an `AWCNode` child with `slot="inset-icon"` drawn in `paint.inset.rect`.
+13. **inset-icon slot (R6-04, implemented).** The slotted node (an `AWCNode` child with `slot="inset-icon"`) replaces the
+    `icon` glyph in the inset box: centred, the inset size as its font size, the inset colour inherited, under the track
+    mask — as `::slotted([slot='inset-icon'])` in Chrome (cases `slot-inset-*`). Nothing to revert.
 14. **tools/ax.** `valuetext` on the Web side is CDP's property, which never carries aria-valuetext (fa-057 probe, Chrome
     153: a role="slider" with aria-valuetext reports "", a native range input its value string); native exposes `valueText`
     as the value description. The disabled slider's value label measures the Web ratio (2.06:1; WCAG 1.4.3 exempts inactive
@@ -132,7 +156,8 @@ change the native model.
 
 ## Installation
 
-Installed in the canonical tree through the main queue by fa-065 (2026-10-30): renderers and dispatch, the Swift
+Gate-7 fixes installed by fa-098 (2026-11-11; anchored edits for shared files, fa's own files after a drift check, byte identity
+with a dry copy, verification on canonical). First installed in the canonical tree through the main queue by fa-065 (2026-10-30): renderers and dispatch, the Swift
 fixtures (`packages/native-ios/Tests/Fixtures/{slider,rating,stepper}-web-oracle/`, byte-identical copies of the
 oracles) and the Android assets (`androidTest/assets/{sr,stepper}/`, gzip, verified identical after gunzip), the
 Laboratory integration (lab-patch-sr.py, lab-patch-stepper.py), tools/ax cases and expectations, this document and the
@@ -143,4 +168,4 @@ SwiftUI examples, Android compile, Laboratory APK on emulator-5554, the 4177 ser
 
 ## Remaining
 
-The gate-7 items above marked in progress; then the reviewer's re-check.
+The reviewer's re-check of the gate-7 fixes; R6-15 (Web source).

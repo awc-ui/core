@@ -83,11 +83,12 @@ test('methods with results and their examples', () => {
 });
 
 test('typed part examples', () => {
-  for (const part of ['container', 'label', 'input', 'supporting-text', 'counter']) for (const platform of ['swift', 'android']) {
+  for (const part of ['container', 'label', 'input', 'supporting-text', 'counter', 'chips']) for (const platform of ['swift', 'android']) {
     const example = nativeApiExample(component, 'cssPart', part, platform);
     assert.equal(example.status, 'native-equivalent', `${platform} ${part}`);
     assert.match(example.code, platform === 'swift' ? /\.awcTextFieldPartAppearance\(\.init\(/ : /AWCTextFieldPartAppearanceScope\(AWCTextFieldPartAppearance\(/);
     for (const field of TEXT_FIELD_PARTS[part]) assert.match(example.code, new RegExp(field));
   }
   assert.match(nativeApiExample(component, 'cssPart', 'chips', 'swift').description, /chip appearance/);
+  assert.match(nativeApiExample(component, 'cssPart', 'chips', 'android').code, /chipsGap = 12\.0/);
 });

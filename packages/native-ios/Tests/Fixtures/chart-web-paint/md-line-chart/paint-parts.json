@@ -1,0 +1,9105 @@
+{
+ "chart": "md-line-chart",
+ "subset": "parts",
+ "cases": [
+  {
+   "name": "line-parts-header-footer-canvas",
+   "theme": "light",
+   "dir": "ltr",
+   "width": 640,
+   "html": "<style>md-line-chart::part(header){color:#B71C1C;background-color:#FFEBEE;padding:6px 12px}md-line-chart::part(footer){color:#1B5E20;background-color:#E8F5E9;padding:4px 8px;font-size:12px}md-line-chart::part(canvas){background-color:#F3E5F5;border-radius:12px;opacity:0.9}</style><md-line-chart label=\"Quarterly results\" no-animation  style=\"block-size:360px\"><div slot=\"header\">Custom header</div><div slot=\"footer\">Source: ledger</div></md-line-chart>",
+   "props": {
+    "series": [
+     {
+      "label": "Revenue",
+      "data": [
+       12,
+       19,
+       15,
+       24,
+       22,
+       30
+      ]
+     },
+     {
+      "label": "Costs",
+      "data": [
+       8,
+       11,
+       13,
+       14,
+       18,
+       17
+      ]
+     }
+    ],
+    "xAxis": {
+     "data": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun"
+     ]
+    }
+   },
+   "clip": {
+    "x": 16,
+    "y": 16,
+    "width": 656,
+    "height": 376
+   },
+   "snap": {
+    "tag": "md-line-chart",
+    "rect": {
+     "x": 24,
+     "y": 24,
+     "width": 640,
+     "height": 360
+    },
+    "attrs": {
+     "role": "figure",
+     "aria-label": "Quarterly results, Line chart, with 2 series, from Jan to Jun.",
+     "style": "block-size:360px",
+     "legend": "top-end",
+     "density": "0",
+     "class": "md-line-chart hydrated md-line-chart--mounted"
+    },
+    "style": {
+     "display": "block",
+     "visibility": "visible",
+     "opacity": "1",
+     "color": "rgb(0, 0, 0)",
+     "backgroundColor": "rgb(247, 242, 250)",
+     "transform": "none",
+     "borderTopLeftRadius": "16px",
+     "borderTopRightRadius": "16px",
+     "borderBottomRightRadius": "16px",
+     "borderBottomLeftRadius": "16px",
+     "borderTopWidth": "0px",
+     "borderTopColor": "rgb(0, 0, 0)",
+     "boxShadow": "none",
+     "outlineStyle": "none",
+     "outlineWidth": "3px",
+     "outlineColor": "rgb(0, 0, 0)",
+     "outlineOffset": "0px",
+     "fontFamily": "Roboto",
+     "fontSize": "16px",
+     "fontWeight": "400",
+     "lineHeight": "normal",
+     "letterSpacing": "normal",
+     "textAlign": "start",
+     "paddingTop": "16px",
+     "paddingRight": "16px",
+     "paddingBottom": "16px",
+     "paddingLeft": "16px",
+     "columnGap": "normal",
+     "rowGap": "normal",
+     "gap": "normal",
+     "zIndex": "auto",
+     "transitionProperty": "all",
+     "transitionDuration": "0s",
+     "transitionTimingFunction": "ease",
+     "cursor": "auto",
+     "pointerEvents": "auto",
+     "whiteSpace": "normal",
+     "overflow": "visible",
+     "position": "relative",
+     "width": "640px",
+     "height": "360px",
+     "minHeight": "160px",
+     "blockSize": "360px",
+     "flexDirection": "row",
+     "justifyContent": "normal",
+     "alignItems": "normal",
+     "direction": "ltr",
+     "forcedColorAdjust": "auto"
+    },
+    "parts": [
+     {
+      "tag": "header",
+      "part": "header",
+      "cls": "md-line-chart__header",
+      "attrs": {
+       "part": "header",
+       "class": "md-line-chart__header"
+      },
+      "rect": {
+       "x": 0,
+       "y": 0,
+       "width": 0,
+       "height": 0
+      },
+      "display": "contents",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(183, 28, 28)",
+      "backgroundColor": "rgb(255, 235, 238)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(183, 28, 28)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(183, 28, 28)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "6px",
+      "paddingRight": "12px",
+      "paddingBottom": "6px",
+      "paddingLeft": "12px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "static",
+      "width": "auto",
+      "height": "auto",
+      "minHeight": "0px",
+      "blockSize": "auto",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "div",
+      "part": "canvas",
+      "cls": "md-line-chart__canvas",
+      "attrs": {
+       "role": "application",
+       "tabindex": "0",
+       "aria-label": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+       "part": "canvas",
+       "class": "md-line-chart__canvas"
+      },
+      "rect": {
+       "x": 40,
+       "y": 40,
+       "width": 608,
+       "height": 328
+      },
+      "display": "block",
+      "visibility": "visible",
+      "opacity": "0.9",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgb(243, 229, 245)",
+      "transform": "none",
+      "borderTopLeftRadius": "12px",
+      "borderTopRightRadius": "12px",
+      "borderBottomRightRadius": "12px",
+      "borderBottomLeftRadius": "12px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "absolute",
+      "width": "608px",
+      "height": "328px",
+      "minHeight": "0px",
+      "blockSize": "328px",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "canvas",
+      "part": "plot-canvas",
+      "cls": null,
+      "attrs": {
+       "part": "plot-canvas",
+       "style": "position: absolute; inset: 0px; width: 100%; height: 100%; display: block;"
+      },
+      "rect": {
+       "x": 40,
+       "y": 40,
+       "width": 608,
+       "height": 328
+      },
+      "display": "block",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "clip",
+      "position": "absolute",
+      "width": "608px",
+      "height": "328px",
+      "minHeight": "0px",
+      "blockSize": "328px",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "div",
+      "part": "legend",
+      "cls": null,
+      "attrs": {
+       "part": "legend",
+       "style": "position: absolute; top: 2px; right: 12px; display: flex; flex-wrap: wrap; gap: 4px 12px; justify-content: flex-end; max-width: 88%; pointer-events: auto;"
+      },
+      "rect": {
+       "x": 486.91,
+       "y": 42,
+       "width": 149.09,
+       "height": 20
+      },
+      "display": "flex",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "12px",
+      "rowGap": "4px",
+      "gap": "4px 12px",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "absolute",
+      "width": "149.094px",
+      "height": "20px",
+      "minHeight": "0px",
+      "blockSize": "20px",
+      "flexDirection": "row",
+      "justifyContent": "flex-end",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "footer",
+      "part": "footer",
+      "cls": "md-line-chart__footer",
+      "attrs": {
+       "part": "footer",
+       "class": "md-line-chart__footer"
+      },
+      "rect": {
+       "x": 0,
+       "y": 0,
+       "width": 0,
+       "height": 0
+      },
+      "display": "contents",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(27, 94, 32)",
+      "backgroundColor": "rgb(232, 245, 233)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(27, 94, 32)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(27, 94, 32)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "4px",
+      "paddingRight": "8px",
+      "paddingBottom": "4px",
+      "paddingLeft": "8px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "static",
+      "width": "auto",
+      "height": "auto",
+      "minHeight": "0px",
+      "blockSize": "auto",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     }
+    ],
+    "overlay": [
+     {
+      "text": "Quarterly results",
+      "rect": {
+       "x": 62.75,
+       "y": 71,
+       "width": 105.34,
+       "height": 16
+      },
+      "color": "rgb(28, 27, 31)",
+      "font": "600 14px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, 0, 0)"
+     },
+     {
+      "text": "0",
+      "rect": {
+       "x": 48.56,
+       "y": 336.5,
+       "width": 6.19,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -6.1875, -6.5)"
+     },
+     {
+      "text": "5",
+      "rect": {
+       "x": 48.56,
+       "y": 295.5,
+       "width": 6.19,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -6.1875, -6.5)"
+     },
+     {
+      "text": "10",
+      "rect": {
+       "x": 42.38,
+       "y": 254.5,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "15",
+      "rect": {
+       "x": 42.38,
+       "y": 213.5,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "20",
+      "rect": {
+       "x": 42.38,
+       "y": 172.5,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "25",
+      "rect": {
+       "x": 42.38,
+       "y": 131.5,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "30",
+      "rect": {
+       "x": 42.38,
+       "y": 90.5,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "Jan",
+      "rect": {
+       "x": 100.91,
+       "y": 349,
+       "width": 18.14,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -9.07031, 0)"
+     },
+     {
+      "text": "Feb",
+      "rect": {
+       "x": 195.48,
+       "y": 349,
+       "width": 17.98,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -8.99219, 0)"
+     },
+     {
+      "text": "Mar",
+      "rect": {
+       "x": 289.27,
+       "y": 349,
+       "width": 19.33,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -9.66406, 0)"
+     },
+     {
+      "text": "Apr",
+      "rect": {
+       "x": 384.88,
+       "y": 349,
+       "width": 17.09,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -8.54688, 0)"
+     },
+     {
+      "text": "May",
+      "rect": {
+       "x": 477.53,
+       "y": 349,
+       "width": 20.72,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -10.3594, 0)"
+     },
+     {
+      "text": "Jun",
+      "rect": {
+       "x": 573.27,
+       "y": 349,
+       "width": 18.22,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -9.10938, 0)"
+     }
+    ],
+    "legend": [
+     {
+      "tag": "button",
+      "attrs": {
+       "aria-pressed": "true",
+       "style": "display: inline-flex; align-items: center; gap: 6px; background: none; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; padding: 2px 4px; cursor: pointer; white-space: nowrap; flex: 0 0 auto; min-width: 0px; max-width: 100%; font: 400 14px Roboto, sans-serif; color: var(--md-sys-color-on-surface-variant, #49454F);"
+      },
+      "text": "Revenue",
+      "rect": {
+       "x": 486.91,
+       "y": 42,
+       "width": 76.95,
+       "height": 20
+      },
+      "opacity": "1"
+     },
+     {
+      "tag": "button",
+      "attrs": {
+       "aria-pressed": "true",
+       "style": "display: inline-flex; align-items: center; gap: 6px; background: none; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; padding: 2px 4px; cursor: pointer; white-space: nowrap; flex: 0 0 auto; min-width: 0px; max-width: 100%; font: 400 14px Roboto, sans-serif; color: var(--md-sys-color-on-surface-variant, #49454F);"
+      },
+      "text": "Costs",
+      "rect": {
+       "x": 575.86,
+       "y": 42,
+       "width": 60.14,
+       "height": 20
+      },
+      "opacity": "1"
+     }
+    ],
+    "live": {
+     "attrs": {
+      "role": "status",
+      "aria-live": "polite",
+      "aria-atomic": "true",
+      "class": "md-line-chart__live"
+     },
+     "text": ""
+    },
+    "table": {
+     "caption": "Quarterly results",
+     "rows": [
+      [
+       "X",
+       "Revenue",
+       "Costs"
+      ],
+      [
+       "Jan",
+       "12",
+       "8"
+      ],
+      [
+       "Feb",
+       "19",
+       "11"
+      ],
+      [
+       "Mar",
+       "15",
+       "13"
+      ],
+      [
+       "Apr",
+       "24",
+       "14"
+      ],
+      [
+       "May",
+       "22",
+       "18"
+      ],
+      [
+       "Jun",
+       "30",
+       "17"
+      ]
+     ],
+     "rowCount": 7,
+     "attrs": {}
+    },
+    "plot": {
+     "attrs": {
+      "role": "application",
+      "tabindex": "0",
+      "aria-label": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+      "part": "canvas",
+      "class": "md-line-chart__canvas"
+     },
+     "rect": {
+      "x": 40,
+      "y": 40,
+      "width": 608,
+      "height": 328
+     },
+     "focused": false
+    },
+    "activeInShadow": null
+   },
+   "scene": {
+    "width": 608,
+    "height": 328,
+    "plot": {
+     "x": 22.76,
+     "y": 57,
+     "width": 566.86,
+     "height": 246
+    },
+    "bands": [],
+    "gridlines": [
+     {
+      "x1": 22.76,
+      "y1": 303,
+      "x2": 589.62,
+      "y2": 303,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 262,
+      "x2": 589.62,
+      "y2": 262,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 221,
+      "x2": 589.62,
+      "y2": 221,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 180,
+      "x2": 589.62,
+      "y2": 180,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 139,
+      "x2": 589.62,
+      "y2": 139,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 98,
+      "x2": 589.62,
+      "y2": 98,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 57,
+      "x2": 589.62,
+      "y2": 57,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     }
+    ],
+    "axisLines": [
+     {
+      "x1": 22.76,
+      "y1": 57,
+      "x2": 22.76,
+      "y2": 303,
+      "color": "#CAC4D0",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 303,
+      "x2": 589.62,
+      "y2": 303,
+      "color": "#CAC4D0",
+      "width": 1
+     }
+    ],
+    "areas": [],
+    "bars": [],
+    "slices": [],
+    "lines": [
+     {
+      "points": [
+       {
+        "x": 70,
+        "y": 204.6
+       },
+       {
+        "x": 72.59,
+        "y": 202.92
+       },
+       {
+        "x": 75.62,
+        "y": 200.78
+       },
+       {
+        "x": 79.05,
+        "y": 198.24
+       },
+       {
+        "x": 82.85,
+        "y": 195.35
+       },
+       {
+        "x": 86.97,
+        "y": 192.17
+       },
+       {
+        "x": 91.4,
+        "y": 188.76
+       },
+       {
+        "x": 96.08,
+        "y": 185.16
+       },
+       {
+        "x": 100.99,
+        "y": 181.44
+       },
+       {
+        "x": 106.08,
+        "y": 177.65
+       },
+       {
+        "x": 111.33,
+        "y": 173.85
+       },
+       {
+        "x": 116.7,
+        "y": 170.09
+       },
+       {
+        "x": 122.15,
+        "y": 166.42
+       },
+       {
+        "x": 127.65,
+        "y": 162.91
+       },
+       {
+        "x": 133.16,
+        "y": 159.6
+       },
+       {
+        "x": 138.64,
+        "y": 156.55
+       },
+       {
+        "x": 144.07,
+        "y": 153.83
+       },
+       {
+        "x": 149.4,
+        "y": 151.47
+       },
+       {
+        "x": 154.6,
+        "y": 149.55
+       },
+       {
+        "x": 159.64,
+        "y": 148.1
+       },
+       {
+        "x": 164.48,
+        "y": 147.2
+       },
+       {
+        "x": 169.2,
+        "y": 146.93
+       },
+       {
+        "x": 173.92,
+        "y": 147.31
+       },
+       {
+        "x": 178.65,
+        "y": 148.25
+       },
+       {
+        "x": 183.37,
+        "y": 149.69
+       },
+       {
+        "x": 188.09,
+        "y": 151.56
+       },
+       {
+        "x": 192.82,
+        "y": 153.77
+       },
+       {
+        "x": 197.54,
+        "y": 156.25
+       },
+       {
+        "x": 202.27,
+        "y": 158.94
+       },
+       {
+        "x": 206.99,
+        "y": 161.76
+       },
+       {
+        "x": 211.71,
+        "y": 164.63
+       },
+       {
+        "x": 216.44,
+        "y": 167.47
+       },
+       {
+        "x": 221.16,
+        "y": 170.23
+       },
+       {
+        "x": 225.88,
+        "y": 172.81
+       },
+       {
+        "x": 230.61,
+        "y": 175.15
+       },
+       {
+        "x": 235.33,
+        "y": 177.18
+       },
+       {
+        "x": 240.06,
+        "y": 178.82
+       },
+       {
+        "x": 244.78,
+        "y": 179.99
+       },
+       {
+        "x": 249.5,
+        "y": 180.63
+       },
+       {
+        "x": 254.23,
+        "y": 180.66
+       },
+       {
+        "x": 258.95,
+        "y": 180
+       },
+       {
+        "x": 263.68,
+        "y": 178.61
+       },
+       {
+        "x": 268.4,
+        "y": 176.53
+       },
+       {
+        "x": 273.12,
+        "y": 173.84
+       },
+       {
+        "x": 277.85,
+        "y": 170.62
+       },
+       {
+        "x": 282.57,
+        "y": 166.93
+       },
+       {
+        "x": 287.29,
+        "y": 162.85
+       },
+       {
+        "x": 292.02,
+        "y": 158.46
+       },
+       {
+        "x": 296.74,
+        "y": 153.83
+       },
+       {
+        "x": 301.47,
+        "y": 149.02
+       },
+       {
+        "x": 306.19,
+        "y": 144.13
+       },
+       {
+        "x": 310.91,
+        "y": 139.21
+       },
+       {
+        "x": 315.64,
+        "y": 134.34
+       },
+       {
+        "x": 320.36,
+        "y": 129.6
+       },
+       {
+        "x": 325.09,
+        "y": 125.07
+       },
+       {
+        "x": 329.81,
+        "y": 120.81
+       },
+       {
+        "x": 334.53,
+        "y": 116.89
+       },
+       {
+        "x": 339.26,
+        "y": 113.4
+       },
+       {
+        "x": 343.98,
+        "y": 110.41
+       },
+       {
+        "x": 348.7,
+        "y": 107.98
+       },
+       {
+        "x": 353.43,
+        "y": 106.2
+       },
+       {
+        "x": 358.15,
+        "y": 105.08
+       },
+       {
+        "x": 362.88,
+        "y": 104.56
+       },
+       {
+        "x": 367.6,
+        "y": 104.56
+       },
+       {
+        "x": 372.32,
+        "y": 105.02
+       },
+       {
+        "x": 377.05,
+        "y": 105.88
+       },
+       {
+        "x": 381.77,
+        "y": 107.07
+       },
+       {
+        "x": 386.5,
+        "y": 108.54
+       },
+       {
+        "x": 391.22,
+        "y": 110.2
+       },
+       {
+        "x": 395.94,
+        "y": 112.01
+       },
+       {
+        "x": 400.67,
+        "y": 113.89
+       },
+       {
+        "x": 405.39,
+        "y": 115.78
+       },
+       {
+        "x": 410.11,
+        "y": 117.61
+       },
+       {
+        "x": 414.84,
+        "y": 119.33
+       },
+       {
+        "x": 419.56,
+        "y": 120.87
+       },
+       {
+        "x": 424.29,
+        "y": 122.15
+       },
+       {
+        "x": 429.01,
+        "y": 123.12
+       },
+       {
+        "x": 433.73,
+        "y": 123.72
+       },
+       {
+        "x": 438.46,
+        "y": 123.88
+       },
+       {
+        "x": 443.18,
+        "y": 123.52
+       },
+       {
+        "x": 447.91,
+        "y": 122.6
+       },
+       {
+        "x": 452.74,
+        "y": 121.09
+       },
+       {
+        "x": 457.78,
+        "y": 119.07
+       },
+       {
+        "x": 462.98,
+        "y": 116.58
+       },
+       {
+        "x": 468.31,
+        "y": 113.68
+       },
+       {
+        "x": 473.74,
+        "y": 110.43
+       },
+       {
+        "x": 479.22,
+        "y": 106.88
+       },
+       {
+        "x": 484.73,
+        "y": 103.09
+       },
+       {
+        "x": 490.23,
+        "y": 99.12
+       },
+       {
+        "x": 495.68,
+        "y": 95.01
+       },
+       {
+        "x": 501.05,
+        "y": 90.83
+       },
+       {
+        "x": 506.3,
+        "y": 86.62
+       },
+       {
+        "x": 511.39,
+        "y": 82.45
+       },
+       {
+        "x": 516.3,
+        "y": 78.37
+       },
+       {
+        "x": 520.98,
+        "y": 74.44
+       },
+       {
+        "x": 525.41,
+        "y": 70.71
+       },
+       {
+        "x": 529.53,
+        "y": 67.23
+       },
+       {
+        "x": 533.33,
+        "y": 64.07
+       },
+       {
+        "x": 536.76,
+        "y": 61.27
+       },
+       {
+        "x": 539.79,
+        "y": 58.9
+       },
+       {
+        "x": 542.38,
+        "y": 57
+       }
+      ],
+      "color": "#6750A4",
+      "width": 2.5,
+      "seriesIndex": 0
+     },
+     {
+      "points": [
+       {
+        "x": 70,
+        "y": 237.4
+       },
+       {
+        "x": 72.59,
+        "y": 236.72
+       },
+       {
+        "x": 75.62,
+        "y": 235.9
+       },
+       {
+        "x": 79.05,
+        "y": 234.96
+       },
+       {
+        "x": 82.85,
+        "y": 233.92
+       },
+       {
+        "x": 86.97,
+        "y": 232.79
+       },
+       {
+        "x": 91.4,
+        "y": 231.57
+       },
+       {
+        "x": 96.08,
+        "y": 230.28
+       },
+       {
+        "x": 100.99,
+        "y": 228.94
+       },
+       {
+        "x": 106.08,
+        "y": 227.55
+       },
+       {
+        "x": 111.33,
+        "y": 226.13
+       },
+       {
+        "x": 116.7,
+        "y": 224.68
+       },
+       {
+        "x": 122.15,
+        "y": 223.23
+       },
+       {
+        "x": 127.65,
+        "y": 221.78
+       },
+       {
+        "x": 133.16,
+        "y": 220.35
+       },
+       {
+        "x": 138.64,
+        "y": 218.95
+       },
+       {
+        "x": 144.07,
+        "y": 217.59
+       },
+       {
+        "x": 149.4,
+        "y": 216.28
+       },
+       {
+        "x": 154.6,
+        "y": 215.04
+       },
+       {
+        "x": 159.64,
+        "y": 213.87
+       },
+       {
+        "x": 164.48,
+        "y": 212.8
+       },
+       {
+        "x": 169.2,
+        "y": 211.79
+       },
+       {
+        "x": 173.92,
+        "y": 210.79
+       },
+       {
+        "x": 178.65,
+        "y": 209.82
+       },
+       {
+        "x": 183.37,
+        "y": 208.86
+       },
+       {
+        "x": 188.09,
+        "y": 207.93
+       },
+       {
+        "x": 192.82,
+        "y": 207.02
+       },
+       {
+        "x": 197.54,
+        "y": 206.13
+       },
+       {
+        "x": 202.27,
+        "y": 205.26
+       },
+       {
+        "x": 206.99,
+        "y": 204.41
+       },
+       {
+        "x": 211.71,
+        "y": 203.58
+       },
+       {
+        "x": 216.44,
+        "y": 202.77
+       },
+       {
+        "x": 221.16,
+        "y": 201.98
+       },
+       {
+        "x": 225.88,
+        "y": 201.21
+       },
+       {
+        "x": 230.61,
+        "y": 200.46
+       },
+       {
+        "x": 235.33,
+        "y": 199.73
+       },
+       {
+        "x": 240.06,
+        "y": 199.02
+       },
+       {
+        "x": 244.78,
+        "y": 198.34
+       },
+       {
+        "x": 249.5,
+        "y": 197.67
+       },
+       {
+        "x": 254.23,
+        "y": 197.03
+       },
+       {
+        "x": 258.95,
+        "y": 196.4
+       },
+       {
+        "x": 263.68,
+        "y": 195.83
+       },
+       {
+        "x": 268.4,
+        "y": 195.36
+       },
+       {
+        "x": 273.12,
+        "y": 194.96
+       },
+       {
+        "x": 277.85,
+        "y": 194.63
+       },
+       {
+        "x": 282.57,
+        "y": 194.35
+       },
+       {
+        "x": 287.29,
+        "y": 194.11
+       },
+       {
+        "x": 292.02,
+        "y": 193.9
+       },
+       {
+        "x": 296.74,
+        "y": 193.71
+       },
+       {
+        "x": 301.47,
+        "y": 193.52
+       },
+       {
+        "x": 306.19,
+        "y": 193.32
+       },
+       {
+        "x": 310.91,
+        "y": 193.11
+       },
+       {
+        "x": 315.64,
+        "y": 192.86
+       },
+       {
+        "x": 320.36,
+        "y": 192.56
+       },
+       {
+        "x": 325.09,
+        "y": 192.21
+       },
+       {
+        "x": 329.81,
+        "y": 191.79
+       },
+       {
+        "x": 334.53,
+        "y": 191.28
+       },
+       {
+        "x": 339.26,
+        "y": 190.68
+       },
+       {
+        "x": 343.98,
+        "y": 189.98
+       },
+       {
+        "x": 348.7,
+        "y": 189.16
+       },
+       {
+        "x": 353.43,
+        "y": 188.2
+       },
+       {
+        "x": 358.15,
+        "y": 187.07
+       },
+       {
+        "x": 362.88,
+        "y": 185.73
+       },
+       {
+        "x": 367.6,
+        "y": 184.22
+       },
+       {
+        "x": 372.32,
+        "y": 182.56
+       },
+       {
+        "x": 377.05,
+        "y": 180.77
+       },
+       {
+        "x": 381.77,
+        "y": 178.88
+       },
+       {
+        "x": 386.5,
+        "y": 176.91
+       },
+       {
+        "x": 391.22,
+        "y": 174.88
+       },
+       {
+        "x": 395.94,
+        "y": 172.83
+       },
+       {
+        "x": 400.67,
+        "y": 170.77
+       },
+       {
+        "x": 405.39,
+        "y": 168.74
+       },
+       {
+        "x": 410.11,
+        "y": 166.75
+       },
+       {
+        "x": 414.84,
+        "y": 164.83
+       },
+       {
+        "x": 419.56,
+        "y": 163
+       },
+       {
+        "x": 424.29,
+        "y": 161.29
+       },
+       {
+        "x": 429.01,
+        "y": 159.73
+       },
+       {
+        "x": 433.73,
+        "y": 158.33
+       },
+       {
+        "x": 438.46,
+        "y": 157.13
+       },
+       {
+        "x": 443.18,
+        "y": 156.14
+       },
+       {
+        "x": 447.91,
+        "y": 155.4
+       },
+       {
+        "x": 452.74,
+        "y": 154.89
+       },
+       {
+        "x": 457.78,
+        "y": 154.6
+       },
+       {
+        "x": 462.98,
+        "y": 154.49
+       },
+       {
+        "x": 468.31,
+        "y": 154.55
+       },
+       {
+        "x": 473.74,
+        "y": 154.76
+       },
+       {
+        "x": 479.22,
+        "y": 155.1
+       },
+       {
+        "x": 484.73,
+        "y": 155.57
+       },
+       {
+        "x": 490.23,
+        "y": 156.12
+       },
+       {
+        "x": 495.68,
+        "y": 156.76
+       },
+       {
+        "x": 501.05,
+        "y": 157.45
+       },
+       {
+        "x": 506.3,
+        "y": 158.18
+       },
+       {
+        "x": 511.39,
+        "y": 158.94
+       },
+       {
+        "x": 516.3,
+        "y": 159.7
+       },
+       {
+        "x": 520.98,
+        "y": 160.45
+       },
+       {
+        "x": 525.41,
+        "y": 161.17
+       },
+       {
+        "x": 529.53,
+        "y": 161.83
+       },
+       {
+        "x": 533.33,
+        "y": 162.42
+       },
+       {
+        "x": 536.76,
+        "y": 162.93
+       },
+       {
+        "x": 539.79,
+        "y": 163.33
+       },
+       {
+        "x": 542.38,
+        "y": 163.6
+       }
+      ],
+      "color": "#7D5260",
+      "width": 2.5,
+      "seriesIndex": 1
+     }
+    ],
+    "markers": [],
+    "glyphs": [],
+    "endLabels": [],
+    "texts": [
+     {
+      "x": 22.76,
+      "y": 31,
+      "text": "Quarterly results",
+      "color": "#1C1B1F",
+      "fontSize": 14,
+      "fontWeight": 600,
+      "align": "start",
+      "baseline": "top",
+      "key": "title"
+     },
+     {
+      "x": 14.76,
+      "y": 303,
+      "text": "0",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-0"
+     },
+     {
+      "x": 14.76,
+      "y": 262,
+      "text": "5",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-1"
+     },
+     {
+      "x": 14.76,
+      "y": 221,
+      "text": "10",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-2"
+     },
+     {
+      "x": 14.76,
+      "y": 180,
+      "text": "15",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-3"
+     },
+     {
+      "x": 14.76,
+      "y": 139,
+      "text": "20",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-4"
+     },
+     {
+      "x": 14.76,
+      "y": 98,
+      "text": "25",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-5"
+     },
+     {
+      "x": 14.76,
+      "y": 57,
+      "text": "30",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-6"
+     },
+     {
+      "x": 70,
+      "y": 309,
+      "text": "Jan",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "xt-0"
+     },
+     {
+      "x": 164.48,
+      "y": 309,
+      "text": "Feb",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "xt-1"
+     },
+     {
+      "x": 258.95,
+      "y": 309,
+      "text": "Mar",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "xt-2"
+     },
+     {
+      "x": 353.43,
+      "y": 309,
+      "text": "Apr",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "xt-3"
+     },
+     {
+      "x": 447.91,
+      "y": 309,
+      "text": "May",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "xt-4"
+     },
+     {
+      "x": 542.38,
+      "y": 309,
+      "text": "Jun",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "xt-5"
+     }
+    ],
+    "legend": [
+     {
+      "label": "Revenue",
+      "color": "#6750A4",
+      "seriesIndex": 0,
+      "hidden": false,
+      "x": 0,
+      "y": 0
+     },
+     {
+      "label": "Costs",
+      "color": "#7D5260",
+      "seriesIndex": 1,
+      "hidden": false,
+      "x": 0,
+      "y": 0
+     }
+    ],
+    "legendPosition": "top-end",
+    "xPositions": [
+     70,
+     164.48,
+     258.95,
+     353.43,
+     447.91,
+     542.38
+    ],
+    "xValues": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun"
+    ],
+    "xLabels": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun"
+    ],
+    "hoverPoints": [
+     {
+      "seriesIndex": 0,
+      "color": "#6750A4",
+      "label": "Revenue",
+      "byIndex": {
+       "0": {
+        "x": 70,
+        "y": 204.6,
+        "value": 12,
+        "symbol": "circle"
+       },
+       "1": {
+        "x": 164.48,
+        "y": 147.2,
+        "value": 19,
+        "symbol": "circle"
+       },
+       "2": {
+        "x": 258.95,
+        "y": 180,
+        "value": 15,
+        "symbol": "circle"
+       },
+       "3": {
+        "x": 353.43,
+        "y": 106.2,
+        "value": 24,
+        "symbol": "circle"
+       },
+       "4": {
+        "x": 447.91,
+        "y": 122.6,
+        "value": 22,
+        "symbol": "circle"
+       },
+       "5": {
+        "x": 542.38,
+        "y": 57,
+        "value": 30,
+        "symbol": "circle"
+       }
+      },
+      "values": [
+       12,
+       19,
+       15,
+       24,
+       22,
+       30
+      ],
+      "unanchored": false
+     },
+     {
+      "seriesIndex": 1,
+      "color": "#7D5260",
+      "label": "Costs",
+      "byIndex": {
+       "0": {
+        "x": 70,
+        "y": 237.4,
+        "value": 8,
+        "symbol": "circle"
+       },
+       "1": {
+        "x": 164.48,
+        "y": 212.8,
+        "value": 11,
+        "symbol": "circle"
+       },
+       "2": {
+        "x": 258.95,
+        "y": 196.4,
+        "value": 13,
+        "symbol": "circle"
+       },
+       "3": {
+        "x": 353.43,
+        "y": 188.2,
+        "value": 14,
+        "symbol": "circle"
+       },
+       "4": {
+        "x": 447.91,
+        "y": 155.4,
+        "value": 18,
+        "symbol": "circle"
+       },
+       "5": {
+        "x": 542.38,
+        "y": 163.6,
+        "value": 17,
+        "symbol": "circle"
+       }
+      },
+      "values": [
+       8,
+       11,
+       13,
+       14,
+       18,
+       17
+      ],
+      "unanchored": false
+     }
+    ]
+   },
+   "ax": [
+    {
+     "role": "button",
+     "name": "Run"
+    },
+    {
+     "role": "application",
+     "name": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave."
+    },
+    {
+     "role": "button",
+     "name": "Revenue",
+     "pressed": true
+    },
+    {
+     "role": "button",
+     "name": "Costs",
+     "pressed": true
+    },
+    {
+     "role": "status",
+     "name": ""
+    }
+   ],
+   "focus": [
+    "body"
+   ]
+  },
+  {
+   "name": "line-parts-empty",
+   "theme": "light",
+   "dir": "ltr",
+   "width": 640,
+   "html": "<style>md-line-chart::part(empty){background-color:#E1F5FE;color:#01579B;padding:24px;border-radius:8px;font-size:18px}</style><md-line-chart label=\"Quarterly results\" no-animation  style=\"block-size:360px\"></md-line-chart>",
+   "props": {
+    "series": []
+   },
+   "clip": {
+    "x": 16,
+    "y": 16,
+    "width": 656,
+    "height": 376
+   },
+   "snap": {
+    "tag": "md-line-chart",
+    "rect": {
+     "x": 24,
+     "y": 24,
+     "width": 640,
+     "height": 360
+    },
+    "attrs": {
+     "role": "figure",
+     "aria-label": "Quarterly results, Line chart.",
+     "style": "block-size:360px",
+     "legend": "top-end",
+     "density": "0",
+     "class": "md-line-chart md-line-chart--empty hydrated md-line-chart--mounted"
+    },
+    "style": {
+     "display": "block",
+     "visibility": "visible",
+     "opacity": "1",
+     "color": "rgb(0, 0, 0)",
+     "backgroundColor": "rgb(247, 242, 250)",
+     "transform": "none",
+     "borderTopLeftRadius": "16px",
+     "borderTopRightRadius": "16px",
+     "borderBottomRightRadius": "16px",
+     "borderBottomLeftRadius": "16px",
+     "borderTopWidth": "0px",
+     "borderTopColor": "rgb(0, 0, 0)",
+     "boxShadow": "none",
+     "outlineStyle": "none",
+     "outlineWidth": "3px",
+     "outlineColor": "rgb(0, 0, 0)",
+     "outlineOffset": "0px",
+     "fontFamily": "Roboto",
+     "fontSize": "16px",
+     "fontWeight": "400",
+     "lineHeight": "normal",
+     "letterSpacing": "normal",
+     "textAlign": "start",
+     "paddingTop": "16px",
+     "paddingRight": "16px",
+     "paddingBottom": "16px",
+     "paddingLeft": "16px",
+     "columnGap": "normal",
+     "rowGap": "normal",
+     "gap": "normal",
+     "zIndex": "auto",
+     "transitionProperty": "all",
+     "transitionDuration": "0s",
+     "transitionTimingFunction": "ease",
+     "cursor": "auto",
+     "pointerEvents": "auto",
+     "whiteSpace": "normal",
+     "overflow": "visible",
+     "position": "relative",
+     "width": "640px",
+     "height": "360px",
+     "minHeight": "160px",
+     "blockSize": "360px",
+     "flexDirection": "row",
+     "justifyContent": "normal",
+     "alignItems": "normal",
+     "direction": "ltr",
+     "forcedColorAdjust": "auto"
+    },
+    "parts": [
+     {
+      "tag": "header",
+      "part": "header",
+      "cls": "md-line-chart__header",
+      "attrs": {
+       "part": "header",
+       "class": "md-line-chart__header"
+      },
+      "rect": {
+       "x": 0,
+       "y": 0,
+       "width": 0,
+       "height": 0
+      },
+      "display": "contents",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "static",
+      "width": "auto",
+      "height": "auto",
+      "minHeight": "0px",
+      "blockSize": "auto",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "div",
+      "part": "canvas",
+      "cls": "md-line-chart__canvas",
+      "attrs": {
+       "part": "canvas",
+       "class": "md-line-chart__canvas"
+      },
+      "rect": {
+       "x": 40,
+       "y": 40,
+       "width": 608,
+       "height": 328
+      },
+      "display": "block",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "absolute",
+      "width": "608px",
+      "height": "328px",
+      "minHeight": "0px",
+      "blockSize": "328px",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "canvas",
+      "part": "plot-canvas",
+      "cls": null,
+      "attrs": {
+       "part": "plot-canvas",
+       "style": "position: absolute; inset: 0px; width: 100%; height: 100%; display: block;"
+      },
+      "rect": {
+       "x": 40,
+       "y": 40,
+       "width": 608,
+       "height": 328
+      },
+      "display": "block",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "clip",
+      "position": "absolute",
+      "width": "608px",
+      "height": "328px",
+      "minHeight": "0px",
+      "blockSize": "328px",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "div",
+      "part": "empty",
+      "cls": "md-line-chart__empty",
+      "attrs": {
+       "part": "empty",
+       "class": "md-line-chart__empty"
+      },
+      "rect": {
+       "x": 24,
+       "y": 24,
+       "width": 640,
+       "height": 360
+      },
+      "display": "flex",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(1, 87, 155)",
+      "backgroundColor": "rgb(225, 245, 254)",
+      "transform": "none",
+      "borderTopLeftRadius": "8px",
+      "borderTopRightRadius": "8px",
+      "borderBottomRightRadius": "8px",
+      "borderBottomLeftRadius": "8px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(1, 87, 155)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(1, 87, 155)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto, sans-serif",
+      "fontSize": "18px",
+      "fontWeight": "400",
+      "lineHeight": "20px",
+      "letterSpacing": "normal",
+      "textAlign": "center",
+      "paddingTop": "24px",
+      "paddingRight": "24px",
+      "paddingBottom": "24px",
+      "paddingLeft": "24px",
+      "columnGap": "12px",
+      "rowGap": "12px",
+      "gap": "12px",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "none",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "absolute",
+      "width": "640px",
+      "height": "360px",
+      "minHeight": "0px",
+      "blockSize": "360px",
+      "flexDirection": "column",
+      "justifyContent": "center",
+      "alignItems": "center",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "footer",
+      "part": "footer",
+      "cls": "md-line-chart__footer",
+      "attrs": {
+       "part": "footer",
+       "class": "md-line-chart__footer"
+      },
+      "rect": {
+       "x": 0,
+       "y": 0,
+       "width": 0,
+       "height": 0
+      },
+      "display": "contents",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "static",
+      "width": "auto",
+      "height": "auto",
+      "minHeight": "0px",
+      "blockSize": "auto",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     }
+    ],
+    "overlay": [
+     {
+      "text": "Quarterly results",
+      "rect": {
+       "x": 69.13,
+       "y": 46,
+       "width": 105.34,
+       "height": 16
+      },
+      "color": "rgb(28, 27, 31)",
+      "font": "600 14px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, 0, 0)"
+     },
+     {
+      "text": "0",
+      "rect": {
+       "x": 54.94,
+       "y": 336.5,
+       "width": 6.19,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -6.1875, -6.5)"
+     },
+     {
+      "text": "0.2",
+      "rect": {
+       "x": 45.86,
+       "y": 282.3,
+       "width": 15.27,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -15.2656, -6.5)"
+     },
+     {
+      "text": "0.4",
+      "rect": {
+       "x": 45.86,
+       "y": 228.09,
+       "width": 15.27,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -15.2656, -6.5)"
+     },
+     {
+      "text": "0.6",
+      "rect": {
+       "x": 45.86,
+       "y": 173.89,
+       "width": 15.27,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -15.2656, -6.5)"
+     },
+     {
+      "text": "0.8",
+      "rect": {
+       "x": 45.86,
+       "y": 119.69,
+       "width": 15.27,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -15.2656, -6.5)"
+     },
+     {
+      "text": "1",
+      "rect": {
+       "x": 54.94,
+       "y": 65.5,
+       "width": 6.19,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -6.1875, -6.5)"
+     }
+    ],
+    "legend": [],
+    "live": {
+     "attrs": {
+      "role": "status",
+      "aria-live": "polite",
+      "aria-atomic": "true",
+      "class": "md-line-chart__live"
+     },
+     "text": ""
+    },
+    "table": {
+     "caption": "Quarterly results",
+     "rows": [
+      [
+       "#"
+      ]
+     ],
+     "rowCount": 1,
+     "attrs": {}
+    },
+    "plot": {
+     "attrs": {
+      "part": "canvas",
+      "class": "md-line-chart__canvas"
+     },
+     "rect": {
+      "x": 40,
+      "y": 40,
+      "width": 608,
+      "height": 328
+     },
+     "focused": false
+    },
+    "activeInShadow": null
+   },
+   "scene": {
+    "width": 608,
+    "height": 328,
+    "plot": {
+     "x": 29.14,
+     "y": 32,
+     "width": 563.67,
+     "height": 271
+    },
+    "bands": [],
+    "gridlines": [
+     {
+      "x1": 29.14,
+      "y1": 303,
+      "x2": 592.81,
+      "y2": 303,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 29.14,
+      "y1": 248.8,
+      "x2": 592.81,
+      "y2": 248.8,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 29.14,
+      "y1": 194.6,
+      "x2": 592.81,
+      "y2": 194.6,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 29.14,
+      "y1": 140.4,
+      "x2": 592.81,
+      "y2": 140.4,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 29.14,
+      "y1": 86.2,
+      "x2": 592.81,
+      "y2": 86.2,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 29.14,
+      "y1": 32,
+      "x2": 592.81,
+      "y2": 32,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     }
+    ],
+    "axisLines": [
+     {
+      "x1": 29.14,
+      "y1": 32,
+      "x2": 29.14,
+      "y2": 303,
+      "color": "#CAC4D0",
+      "width": 1
+     },
+     {
+      "x1": 29.14,
+      "y1": 303,
+      "x2": 592.81,
+      "y2": 303,
+      "color": "#CAC4D0",
+      "width": 1
+     }
+    ],
+    "areas": [],
+    "bars": [],
+    "slices": [],
+    "lines": [],
+    "markers": [],
+    "glyphs": [],
+    "endLabels": [],
+    "texts": [
+     {
+      "x": 29.14,
+      "y": 6,
+      "text": "Quarterly results",
+      "color": "#1C1B1F",
+      "fontSize": 14,
+      "fontWeight": 600,
+      "align": "start",
+      "baseline": "top",
+      "key": "title"
+     },
+     {
+      "x": 21.14,
+      "y": 303,
+      "text": "0",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-0"
+     },
+     {
+      "x": 21.14,
+      "y": 248.8,
+      "text": "0.2",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-1"
+     },
+     {
+      "x": 21.14,
+      "y": 194.6,
+      "text": "0.4",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-2"
+     },
+     {
+      "x": 21.14,
+      "y": 140.4,
+      "text": "0.6",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-3"
+     },
+     {
+      "x": 21.14,
+      "y": 86.2,
+      "text": "0.8",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-4"
+     },
+     {
+      "x": 21.14,
+      "y": 32,
+      "text": "1",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-5"
+     }
+    ],
+    "legend": [],
+    "legendPosition": "top-end",
+    "xPositions": [],
+    "xValues": [],
+    "xLabels": [],
+    "hoverPoints": []
+   },
+   "ax": [
+    {
+     "role": "button",
+     "name": "Run"
+    },
+    {
+     "role": "status",
+     "name": ""
+    }
+   ],
+   "focus": [
+    "body"
+   ]
+  },
+  {
+   "name": "line-parts-loading",
+   "theme": "light",
+   "dir": "ltr",
+   "width": 640,
+   "html": "<style>md-line-chart::part(loading){background-color:#FFF3E080;color:#E65100}</style><md-line-chart label=\"Quarterly results\" no-animation loading style=\"block-size:360px\"></md-line-chart>",
+   "props": {
+    "series": [
+     {
+      "label": "Revenue",
+      "data": [
+       12,
+       19,
+       15,
+       24,
+       22,
+       30
+      ]
+     },
+     {
+      "label": "Costs",
+      "data": [
+       8,
+       11,
+       13,
+       14,
+       18,
+       17
+      ]
+     }
+    ],
+    "xAxis": {
+     "data": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun"
+     ]
+    }
+   },
+   "clip": {
+    "x": 16,
+    "y": 16,
+    "width": 656,
+    "height": 376
+   },
+   "snap": {
+    "tag": "md-line-chart",
+    "rect": {
+     "x": 24,
+     "y": 24,
+     "width": 640,
+     "height": 360
+    },
+    "attrs": {
+     "role": "figure",
+     "aria-label": "Quarterly results, Line chart, with 2 series, from Jan to Jun.",
+     "aria-busy": "true",
+     "style": "block-size:360px",
+     "legend": "top-end",
+     "loading": "",
+     "density": "0",
+     "class": "md-line-chart md-line-chart--loading hydrated md-line-chart--mounted"
+    },
+    "style": {
+     "display": "block",
+     "visibility": "visible",
+     "opacity": "1",
+     "color": "rgb(0, 0, 0)",
+     "backgroundColor": "rgb(247, 242, 250)",
+     "transform": "none",
+     "borderTopLeftRadius": "16px",
+     "borderTopRightRadius": "16px",
+     "borderBottomRightRadius": "16px",
+     "borderBottomLeftRadius": "16px",
+     "borderTopWidth": "0px",
+     "borderTopColor": "rgb(0, 0, 0)",
+     "boxShadow": "none",
+     "outlineStyle": "none",
+     "outlineWidth": "3px",
+     "outlineColor": "rgb(0, 0, 0)",
+     "outlineOffset": "0px",
+     "fontFamily": "Roboto",
+     "fontSize": "16px",
+     "fontWeight": "400",
+     "lineHeight": "normal",
+     "letterSpacing": "normal",
+     "textAlign": "start",
+     "paddingTop": "16px",
+     "paddingRight": "16px",
+     "paddingBottom": "16px",
+     "paddingLeft": "16px",
+     "columnGap": "normal",
+     "rowGap": "normal",
+     "gap": "normal",
+     "zIndex": "auto",
+     "transitionProperty": "all",
+     "transitionDuration": "0s",
+     "transitionTimingFunction": "ease",
+     "cursor": "auto",
+     "pointerEvents": "auto",
+     "whiteSpace": "normal",
+     "overflow": "visible",
+     "position": "relative",
+     "width": "640px",
+     "height": "360px",
+     "minHeight": "160px",
+     "blockSize": "360px",
+     "flexDirection": "row",
+     "justifyContent": "normal",
+     "alignItems": "normal",
+     "direction": "ltr",
+     "forcedColorAdjust": "auto"
+    },
+    "parts": [
+     {
+      "tag": "header",
+      "part": "header",
+      "cls": "md-line-chart__header",
+      "attrs": {
+       "part": "header",
+       "class": "md-line-chart__header"
+      },
+      "rect": {
+       "x": 0,
+       "y": 0,
+       "width": 0,
+       "height": 0
+      },
+      "display": "contents",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "static",
+      "width": "auto",
+      "height": "auto",
+      "minHeight": "0px",
+      "blockSize": "auto",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "div",
+      "part": "canvas",
+      "cls": "md-line-chart__canvas",
+      "attrs": {
+       "role": "application",
+       "tabindex": "0",
+       "aria-label": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+       "part": "canvas",
+       "class": "md-line-chart__canvas"
+      },
+      "rect": {
+       "x": 40,
+       "y": 40,
+       "width": 608,
+       "height": 328
+      },
+      "display": "block",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "absolute",
+      "width": "608px",
+      "height": "328px",
+      "minHeight": "0px",
+      "blockSize": "328px",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "canvas",
+      "part": "plot-canvas",
+      "cls": null,
+      "attrs": {
+       "part": "plot-canvas",
+       "style": "position: absolute; inset: 0px; width: 100%; height: 100%; display: block;"
+      },
+      "rect": {
+       "x": 40,
+       "y": 40,
+       "width": 608,
+       "height": 328
+      },
+      "display": "block",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "clip",
+      "position": "absolute",
+      "width": "608px",
+      "height": "328px",
+      "minHeight": "0px",
+      "blockSize": "328px",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "div",
+      "part": "legend",
+      "cls": null,
+      "attrs": {
+       "part": "legend",
+       "style": "position: absolute; top: 2px; right: 12px; display: flex; flex-wrap: wrap; gap: 4px 12px; justify-content: flex-end; max-width: 88%; pointer-events: auto;"
+      },
+      "rect": {
+       "x": 486.91,
+       "y": 42,
+       "width": 149.09,
+       "height": 20
+      },
+      "display": "flex",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "12px",
+      "rowGap": "4px",
+      "gap": "4px 12px",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "absolute",
+      "width": "149.094px",
+      "height": "20px",
+      "minHeight": "0px",
+      "blockSize": "20px",
+      "flexDirection": "row",
+      "justifyContent": "flex-end",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "div",
+      "part": "loading",
+      "cls": "md-line-chart__loading",
+      "attrs": {
+       "role": "status",
+       "part": "loading",
+       "class": "md-line-chart__loading"
+      },
+      "rect": {
+       "x": 24,
+       "y": 24,
+       "width": 640,
+       "height": 360
+      },
+      "display": "flex",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(230, 81, 0)",
+      "backgroundColor": "rgba(255, 243, 224, 0.5)",
+      "transform": "none",
+      "borderTopLeftRadius": "16px",
+      "borderTopRightRadius": "16px",
+      "borderBottomRightRadius": "16px",
+      "borderBottomLeftRadius": "16px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(230, 81, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(230, 81, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "center",
+      "paddingTop": "24px",
+      "paddingRight": "24px",
+      "paddingBottom": "24px",
+      "paddingLeft": "24px",
+      "columnGap": "12px",
+      "rowGap": "12px",
+      "gap": "12px",
+      "zIndex": "1",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "absolute",
+      "width": "640px",
+      "height": "360px",
+      "minHeight": "0px",
+      "blockSize": "360px",
+      "flexDirection": "column",
+      "justifyContent": "center",
+      "alignItems": "center",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "footer",
+      "part": "footer",
+      "cls": "md-line-chart__footer",
+      "attrs": {
+       "part": "footer",
+       "class": "md-line-chart__footer"
+      },
+      "rect": {
+       "x": 0,
+       "y": 0,
+       "width": 0,
+       "height": 0
+      },
+      "display": "contents",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "static",
+      "width": "auto",
+      "height": "auto",
+      "minHeight": "0px",
+      "blockSize": "auto",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     }
+    ],
+    "overlay": [
+     {
+      "text": "Quarterly results",
+      "rect": {
+       "x": 62.75,
+       "y": 71,
+       "width": 105.34,
+       "height": 16
+      },
+      "color": "rgb(28, 27, 31)",
+      "font": "600 14px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, 0, 0)"
+     },
+     {
+      "text": "0",
+      "rect": {
+       "x": 48.56,
+       "y": 336.5,
+       "width": 6.19,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -6.1875, -6.5)"
+     },
+     {
+      "text": "5",
+      "rect": {
+       "x": 48.56,
+       "y": 295.5,
+       "width": 6.19,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -6.1875, -6.5)"
+     },
+     {
+      "text": "10",
+      "rect": {
+       "x": 42.38,
+       "y": 254.5,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "15",
+      "rect": {
+       "x": 42.38,
+       "y": 213.5,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "20",
+      "rect": {
+       "x": 42.38,
+       "y": 172.5,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "25",
+      "rect": {
+       "x": 42.38,
+       "y": 131.5,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "30",
+      "rect": {
+       "x": 42.38,
+       "y": 90.5,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "Jan",
+      "rect": {
+       "x": 100.91,
+       "y": 349,
+       "width": 18.14,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -9.07031, 0)"
+     },
+     {
+      "text": "Feb",
+      "rect": {
+       "x": 195.48,
+       "y": 349,
+       "width": 17.98,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -8.99219, 0)"
+     },
+     {
+      "text": "Mar",
+      "rect": {
+       "x": 289.27,
+       "y": 349,
+       "width": 19.33,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -9.66406, 0)"
+     },
+     {
+      "text": "Apr",
+      "rect": {
+       "x": 384.88,
+       "y": 349,
+       "width": 17.09,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -8.54688, 0)"
+     },
+     {
+      "text": "May",
+      "rect": {
+       "x": 477.53,
+       "y": 349,
+       "width": 20.72,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -10.3594, 0)"
+     },
+     {
+      "text": "Jun",
+      "rect": {
+       "x": 573.27,
+       "y": 349,
+       "width": 18.22,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -9.10938, 0)"
+     }
+    ],
+    "legend": [
+     {
+      "tag": "button",
+      "attrs": {
+       "aria-pressed": "true",
+       "style": "display: inline-flex; align-items: center; gap: 6px; background: none; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; padding: 2px 4px; cursor: pointer; white-space: nowrap; flex: 0 0 auto; min-width: 0px; max-width: 100%; font: 400 14px Roboto, sans-serif; color: var(--md-sys-color-on-surface-variant, #49454F);"
+      },
+      "text": "Revenue",
+      "rect": {
+       "x": 486.91,
+       "y": 42,
+       "width": 76.95,
+       "height": 20
+      },
+      "opacity": "1"
+     },
+     {
+      "tag": "button",
+      "attrs": {
+       "aria-pressed": "true",
+       "style": "display: inline-flex; align-items: center; gap: 6px; background: none; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; padding: 2px 4px; cursor: pointer; white-space: nowrap; flex: 0 0 auto; min-width: 0px; max-width: 100%; font: 400 14px Roboto, sans-serif; color: var(--md-sys-color-on-surface-variant, #49454F);"
+      },
+      "text": "Costs",
+      "rect": {
+       "x": 575.86,
+       "y": 42,
+       "width": 60.14,
+       "height": 20
+      },
+      "opacity": "1"
+     }
+    ],
+    "live": {
+     "attrs": {
+      "role": "status",
+      "aria-live": "polite",
+      "aria-atomic": "true",
+      "class": "md-line-chart__live"
+     },
+     "text": ""
+    },
+    "table": {
+     "caption": "Quarterly results",
+     "rows": [
+      [
+       "X",
+       "Revenue",
+       "Costs"
+      ],
+      [
+       "Jan",
+       "12",
+       "8"
+      ],
+      [
+       "Feb",
+       "19",
+       "11"
+      ],
+      [
+       "Mar",
+       "15",
+       "13"
+      ],
+      [
+       "Apr",
+       "24",
+       "14"
+      ],
+      [
+       "May",
+       "22",
+       "18"
+      ],
+      [
+       "Jun",
+       "30",
+       "17"
+      ]
+     ],
+     "rowCount": 7,
+     "attrs": {}
+    },
+    "plot": {
+     "attrs": {
+      "role": "application",
+      "tabindex": "0",
+      "aria-label": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+      "part": "canvas",
+      "class": "md-line-chart__canvas"
+     },
+     "rect": {
+      "x": 40,
+      "y": 40,
+      "width": 608,
+      "height": 328
+     },
+     "focused": false
+    },
+    "activeInShadow": null
+   },
+   "scene": {
+    "width": 608,
+    "height": 328,
+    "plot": {
+     "x": 22.76,
+     "y": 57,
+     "width": 566.86,
+     "height": 246
+    },
+    "bands": [],
+    "gridlines": [
+     {
+      "x1": 22.76,
+      "y1": 303,
+      "x2": 589.62,
+      "y2": 303,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 262,
+      "x2": 589.62,
+      "y2": 262,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 221,
+      "x2": 589.62,
+      "y2": 221,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 180,
+      "x2": 589.62,
+      "y2": 180,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 139,
+      "x2": 589.62,
+      "y2": 139,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 98,
+      "x2": 589.62,
+      "y2": 98,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 57,
+      "x2": 589.62,
+      "y2": 57,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     }
+    ],
+    "axisLines": [
+     {
+      "x1": 22.76,
+      "y1": 57,
+      "x2": 22.76,
+      "y2": 303,
+      "color": "#CAC4D0",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 303,
+      "x2": 589.62,
+      "y2": 303,
+      "color": "#CAC4D0",
+      "width": 1
+     }
+    ],
+    "areas": [],
+    "bars": [],
+    "slices": [],
+    "lines": [
+     {
+      "points": [
+       {
+        "x": 70,
+        "y": 204.6
+       },
+       {
+        "x": 72.59,
+        "y": 202.92
+       },
+       {
+        "x": 75.62,
+        "y": 200.78
+       },
+       {
+        "x": 79.05,
+        "y": 198.24
+       },
+       {
+        "x": 82.85,
+        "y": 195.35
+       },
+       {
+        "x": 86.97,
+        "y": 192.17
+       },
+       {
+        "x": 91.4,
+        "y": 188.76
+       },
+       {
+        "x": 96.08,
+        "y": 185.16
+       },
+       {
+        "x": 100.99,
+        "y": 181.44
+       },
+       {
+        "x": 106.08,
+        "y": 177.65
+       },
+       {
+        "x": 111.33,
+        "y": 173.85
+       },
+       {
+        "x": 116.7,
+        "y": 170.09
+       },
+       {
+        "x": 122.15,
+        "y": 166.42
+       },
+       {
+        "x": 127.65,
+        "y": 162.91
+       },
+       {
+        "x": 133.16,
+        "y": 159.6
+       },
+       {
+        "x": 138.64,
+        "y": 156.55
+       },
+       {
+        "x": 144.07,
+        "y": 153.83
+       },
+       {
+        "x": 149.4,
+        "y": 151.47
+       },
+       {
+        "x": 154.6,
+        "y": 149.55
+       },
+       {
+        "x": 159.64,
+        "y": 148.1
+       },
+       {
+        "x": 164.48,
+        "y": 147.2
+       },
+       {
+        "x": 169.2,
+        "y": 146.93
+       },
+       {
+        "x": 173.92,
+        "y": 147.31
+       },
+       {
+        "x": 178.65,
+        "y": 148.25
+       },
+       {
+        "x": 183.37,
+        "y": 149.69
+       },
+       {
+        "x": 188.09,
+        "y": 151.56
+       },
+       {
+        "x": 192.82,
+        "y": 153.77
+       },
+       {
+        "x": 197.54,
+        "y": 156.25
+       },
+       {
+        "x": 202.27,
+        "y": 158.94
+       },
+       {
+        "x": 206.99,
+        "y": 161.76
+       },
+       {
+        "x": 211.71,
+        "y": 164.63
+       },
+       {
+        "x": 216.44,
+        "y": 167.47
+       },
+       {
+        "x": 221.16,
+        "y": 170.23
+       },
+       {
+        "x": 225.88,
+        "y": 172.81
+       },
+       {
+        "x": 230.61,
+        "y": 175.15
+       },
+       {
+        "x": 235.33,
+        "y": 177.18
+       },
+       {
+        "x": 240.06,
+        "y": 178.82
+       },
+       {
+        "x": 244.78,
+        "y": 179.99
+       },
+       {
+        "x": 249.5,
+        "y": 180.63
+       },
+       {
+        "x": 254.23,
+        "y": 180.66
+       },
+       {
+        "x": 258.95,
+        "y": 180
+       },
+       {
+        "x": 263.68,
+        "y": 178.61
+       },
+       {
+        "x": 268.4,
+        "y": 176.53
+       },
+       {
+        "x": 273.12,
+        "y": 173.84
+       },
+       {
+        "x": 277.85,
+        "y": 170.62
+       },
+       {
+        "x": 282.57,
+        "y": 166.93
+       },
+       {
+        "x": 287.29,
+        "y": 162.85
+       },
+       {
+        "x": 292.02,
+        "y": 158.46
+       },
+       {
+        "x": 296.74,
+        "y": 153.83
+       },
+       {
+        "x": 301.47,
+        "y": 149.02
+       },
+       {
+        "x": 306.19,
+        "y": 144.13
+       },
+       {
+        "x": 310.91,
+        "y": 139.21
+       },
+       {
+        "x": 315.64,
+        "y": 134.34
+       },
+       {
+        "x": 320.36,
+        "y": 129.6
+       },
+       {
+        "x": 325.09,
+        "y": 125.07
+       },
+       {
+        "x": 329.81,
+        "y": 120.81
+       },
+       {
+        "x": 334.53,
+        "y": 116.89
+       },
+       {
+        "x": 339.26,
+        "y": 113.4
+       },
+       {
+        "x": 343.98,
+        "y": 110.41
+       },
+       {
+        "x": 348.7,
+        "y": 107.98
+       },
+       {
+        "x": 353.43,
+        "y": 106.2
+       },
+       {
+        "x": 358.15,
+        "y": 105.08
+       },
+       {
+        "x": 362.88,
+        "y": 104.56
+       },
+       {
+        "x": 367.6,
+        "y": 104.56
+       },
+       {
+        "x": 372.32,
+        "y": 105.02
+       },
+       {
+        "x": 377.05,
+        "y": 105.88
+       },
+       {
+        "x": 381.77,
+        "y": 107.07
+       },
+       {
+        "x": 386.5,
+        "y": 108.54
+       },
+       {
+        "x": 391.22,
+        "y": 110.2
+       },
+       {
+        "x": 395.94,
+        "y": 112.01
+       },
+       {
+        "x": 400.67,
+        "y": 113.89
+       },
+       {
+        "x": 405.39,
+        "y": 115.78
+       },
+       {
+        "x": 410.11,
+        "y": 117.61
+       },
+       {
+        "x": 414.84,
+        "y": 119.33
+       },
+       {
+        "x": 419.56,
+        "y": 120.87
+       },
+       {
+        "x": 424.29,
+        "y": 122.15
+       },
+       {
+        "x": 429.01,
+        "y": 123.12
+       },
+       {
+        "x": 433.73,
+        "y": 123.72
+       },
+       {
+        "x": 438.46,
+        "y": 123.88
+       },
+       {
+        "x": 443.18,
+        "y": 123.52
+       },
+       {
+        "x": 447.91,
+        "y": 122.6
+       },
+       {
+        "x": 452.74,
+        "y": 121.09
+       },
+       {
+        "x": 457.78,
+        "y": 119.07
+       },
+       {
+        "x": 462.98,
+        "y": 116.58
+       },
+       {
+        "x": 468.31,
+        "y": 113.68
+       },
+       {
+        "x": 473.74,
+        "y": 110.43
+       },
+       {
+        "x": 479.22,
+        "y": 106.88
+       },
+       {
+        "x": 484.73,
+        "y": 103.09
+       },
+       {
+        "x": 490.23,
+        "y": 99.12
+       },
+       {
+        "x": 495.68,
+        "y": 95.01
+       },
+       {
+        "x": 501.05,
+        "y": 90.83
+       },
+       {
+        "x": 506.3,
+        "y": 86.62
+       },
+       {
+        "x": 511.39,
+        "y": 82.45
+       },
+       {
+        "x": 516.3,
+        "y": 78.37
+       },
+       {
+        "x": 520.98,
+        "y": 74.44
+       },
+       {
+        "x": 525.41,
+        "y": 70.71
+       },
+       {
+        "x": 529.53,
+        "y": 67.23
+       },
+       {
+        "x": 533.33,
+        "y": 64.07
+       },
+       {
+        "x": 536.76,
+        "y": 61.27
+       },
+       {
+        "x": 539.79,
+        "y": 58.9
+       },
+       {
+        "x": 542.38,
+        "y": 57
+       }
+      ],
+      "color": "#6750A4",
+      "width": 2.5,
+      "seriesIndex": 0
+     },
+     {
+      "points": [
+       {
+        "x": 70,
+        "y": 237.4
+       },
+       {
+        "x": 72.59,
+        "y": 236.72
+       },
+       {
+        "x": 75.62,
+        "y": 235.9
+       },
+       {
+        "x": 79.05,
+        "y": 234.96
+       },
+       {
+        "x": 82.85,
+        "y": 233.92
+       },
+       {
+        "x": 86.97,
+        "y": 232.79
+       },
+       {
+        "x": 91.4,
+        "y": 231.57
+       },
+       {
+        "x": 96.08,
+        "y": 230.28
+       },
+       {
+        "x": 100.99,
+        "y": 228.94
+       },
+       {
+        "x": 106.08,
+        "y": 227.55
+       },
+       {
+        "x": 111.33,
+        "y": 226.13
+       },
+       {
+        "x": 116.7,
+        "y": 224.68
+       },
+       {
+        "x": 122.15,
+        "y": 223.23
+       },
+       {
+        "x": 127.65,
+        "y": 221.78
+       },
+       {
+        "x": 133.16,
+        "y": 220.35
+       },
+       {
+        "x": 138.64,
+        "y": 218.95
+       },
+       {
+        "x": 144.07,
+        "y": 217.59
+       },
+       {
+        "x": 149.4,
+        "y": 216.28
+       },
+       {
+        "x": 154.6,
+        "y": 215.04
+       },
+       {
+        "x": 159.64,
+        "y": 213.87
+       },
+       {
+        "x": 164.48,
+        "y": 212.8
+       },
+       {
+        "x": 169.2,
+        "y": 211.79
+       },
+       {
+        "x": 173.92,
+        "y": 210.79
+       },
+       {
+        "x": 178.65,
+        "y": 209.82
+       },
+       {
+        "x": 183.37,
+        "y": 208.86
+       },
+       {
+        "x": 188.09,
+        "y": 207.93
+       },
+       {
+        "x": 192.82,
+        "y": 207.02
+       },
+       {
+        "x": 197.54,
+        "y": 206.13
+       },
+       {
+        "x": 202.27,
+        "y": 205.26
+       },
+       {
+        "x": 206.99,
+        "y": 204.41
+       },
+       {
+        "x": 211.71,
+        "y": 203.58
+       },
+       {
+        "x": 216.44,
+        "y": 202.77
+       },
+       {
+        "x": 221.16,
+        "y": 201.98
+       },
+       {
+        "x": 225.88,
+        "y": 201.21
+       },
+       {
+        "x": 230.61,
+        "y": 200.46
+       },
+       {
+        "x": 235.33,
+        "y": 199.73
+       },
+       {
+        "x": 240.06,
+        "y": 199.02
+       },
+       {
+        "x": 244.78,
+        "y": 198.34
+       },
+       {
+        "x": 249.5,
+        "y": 197.67
+       },
+       {
+        "x": 254.23,
+        "y": 197.03
+       },
+       {
+        "x": 258.95,
+        "y": 196.4
+       },
+       {
+        "x": 263.68,
+        "y": 195.83
+       },
+       {
+        "x": 268.4,
+        "y": 195.36
+       },
+       {
+        "x": 273.12,
+        "y": 194.96
+       },
+       {
+        "x": 277.85,
+        "y": 194.63
+       },
+       {
+        "x": 282.57,
+        "y": 194.35
+       },
+       {
+        "x": 287.29,
+        "y": 194.11
+       },
+       {
+        "x": 292.02,
+        "y": 193.9
+       },
+       {
+        "x": 296.74,
+        "y": 193.71
+       },
+       {
+        "x": 301.47,
+        "y": 193.52
+       },
+       {
+        "x": 306.19,
+        "y": 193.32
+       },
+       {
+        "x": 310.91,
+        "y": 193.11
+       },
+       {
+        "x": 315.64,
+        "y": 192.86
+       },
+       {
+        "x": 320.36,
+        "y": 192.56
+       },
+       {
+        "x": 325.09,
+        "y": 192.21
+       },
+       {
+        "x": 329.81,
+        "y": 191.79
+       },
+       {
+        "x": 334.53,
+        "y": 191.28
+       },
+       {
+        "x": 339.26,
+        "y": 190.68
+       },
+       {
+        "x": 343.98,
+        "y": 189.98
+       },
+       {
+        "x": 348.7,
+        "y": 189.16
+       },
+       {
+        "x": 353.43,
+        "y": 188.2
+       },
+       {
+        "x": 358.15,
+        "y": 187.07
+       },
+       {
+        "x": 362.88,
+        "y": 185.73
+       },
+       {
+        "x": 367.6,
+        "y": 184.22
+       },
+       {
+        "x": 372.32,
+        "y": 182.56
+       },
+       {
+        "x": 377.05,
+        "y": 180.77
+       },
+       {
+        "x": 381.77,
+        "y": 178.88
+       },
+       {
+        "x": 386.5,
+        "y": 176.91
+       },
+       {
+        "x": 391.22,
+        "y": 174.88
+       },
+       {
+        "x": 395.94,
+        "y": 172.83
+       },
+       {
+        "x": 400.67,
+        "y": 170.77
+       },
+       {
+        "x": 405.39,
+        "y": 168.74
+       },
+       {
+        "x": 410.11,
+        "y": 166.75
+       },
+       {
+        "x": 414.84,
+        "y": 164.83
+       },
+       {
+        "x": 419.56,
+        "y": 163
+       },
+       {
+        "x": 424.29,
+        "y": 161.29
+       },
+       {
+        "x": 429.01,
+        "y": 159.73
+       },
+       {
+        "x": 433.73,
+        "y": 158.33
+       },
+       {
+        "x": 438.46,
+        "y": 157.13
+       },
+       {
+        "x": 443.18,
+        "y": 156.14
+       },
+       {
+        "x": 447.91,
+        "y": 155.4
+       },
+       {
+        "x": 452.74,
+        "y": 154.89
+       },
+       {
+        "x": 457.78,
+        "y": 154.6
+       },
+       {
+        "x": 462.98,
+        "y": 154.49
+       },
+       {
+        "x": 468.31,
+        "y": 154.55
+       },
+       {
+        "x": 473.74,
+        "y": 154.76
+       },
+       {
+        "x": 479.22,
+        "y": 155.1
+       },
+       {
+        "x": 484.73,
+        "y": 155.57
+       },
+       {
+        "x": 490.23,
+        "y": 156.12
+       },
+       {
+        "x": 495.68,
+        "y": 156.76
+       },
+       {
+        "x": 501.05,
+        "y": 157.45
+       },
+       {
+        "x": 506.3,
+        "y": 158.18
+       },
+       {
+        "x": 511.39,
+        "y": 158.94
+       },
+       {
+        "x": 516.3,
+        "y": 159.7
+       },
+       {
+        "x": 520.98,
+        "y": 160.45
+       },
+       {
+        "x": 525.41,
+        "y": 161.17
+       },
+       {
+        "x": 529.53,
+        "y": 161.83
+       },
+       {
+        "x": 533.33,
+        "y": 162.42
+       },
+       {
+        "x": 536.76,
+        "y": 162.93
+       },
+       {
+        "x": 539.79,
+        "y": 163.33
+       },
+       {
+        "x": 542.38,
+        "y": 163.6
+       }
+      ],
+      "color": "#7D5260",
+      "width": 2.5,
+      "seriesIndex": 1
+     }
+    ],
+    "markers": [],
+    "glyphs": [],
+    "endLabels": [],
+    "texts": [
+     {
+      "x": 22.76,
+      "y": 31,
+      "text": "Quarterly results",
+      "color": "#1C1B1F",
+      "fontSize": 14,
+      "fontWeight": 600,
+      "align": "start",
+      "baseline": "top",
+      "key": "title"
+     },
+     {
+      "x": 14.76,
+      "y": 303,
+      "text": "0",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-0"
+     },
+     {
+      "x": 14.76,
+      "y": 262,
+      "text": "5",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-1"
+     },
+     {
+      "x": 14.76,
+      "y": 221,
+      "text": "10",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-2"
+     },
+     {
+      "x": 14.76,
+      "y": 180,
+      "text": "15",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-3"
+     },
+     {
+      "x": 14.76,
+      "y": 139,
+      "text": "20",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-4"
+     },
+     {
+      "x": 14.76,
+      "y": 98,
+      "text": "25",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-5"
+     },
+     {
+      "x": 14.76,
+      "y": 57,
+      "text": "30",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-6"
+     },
+     {
+      "x": 70,
+      "y": 309,
+      "text": "Jan",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "xt-0"
+     },
+     {
+      "x": 164.48,
+      "y": 309,
+      "text": "Feb",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "xt-1"
+     },
+     {
+      "x": 258.95,
+      "y": 309,
+      "text": "Mar",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "xt-2"
+     },
+     {
+      "x": 353.43,
+      "y": 309,
+      "text": "Apr",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "xt-3"
+     },
+     {
+      "x": 447.91,
+      "y": 309,
+      "text": "May",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "xt-4"
+     },
+     {
+      "x": 542.38,
+      "y": 309,
+      "text": "Jun",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "xt-5"
+     }
+    ],
+    "legend": [
+     {
+      "label": "Revenue",
+      "color": "#6750A4",
+      "seriesIndex": 0,
+      "hidden": false,
+      "x": 0,
+      "y": 0
+     },
+     {
+      "label": "Costs",
+      "color": "#7D5260",
+      "seriesIndex": 1,
+      "hidden": false,
+      "x": 0,
+      "y": 0
+     }
+    ],
+    "legendPosition": "top-end",
+    "xPositions": [
+     70,
+     164.48,
+     258.95,
+     353.43,
+     447.91,
+     542.38
+    ],
+    "xValues": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun"
+    ],
+    "xLabels": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun"
+    ],
+    "hoverPoints": [
+     {
+      "seriesIndex": 0,
+      "color": "#6750A4",
+      "label": "Revenue",
+      "byIndex": {
+       "0": {
+        "x": 70,
+        "y": 204.6,
+        "value": 12,
+        "symbol": "circle"
+       },
+       "1": {
+        "x": 164.48,
+        "y": 147.2,
+        "value": 19,
+        "symbol": "circle"
+       },
+       "2": {
+        "x": 258.95,
+        "y": 180,
+        "value": 15,
+        "symbol": "circle"
+       },
+       "3": {
+        "x": 353.43,
+        "y": 106.2,
+        "value": 24,
+        "symbol": "circle"
+       },
+       "4": {
+        "x": 447.91,
+        "y": 122.6,
+        "value": 22,
+        "symbol": "circle"
+       },
+       "5": {
+        "x": 542.38,
+        "y": 57,
+        "value": 30,
+        "symbol": "circle"
+       }
+      },
+      "values": [
+       12,
+       19,
+       15,
+       24,
+       22,
+       30
+      ],
+      "unanchored": false
+     },
+     {
+      "seriesIndex": 1,
+      "color": "#7D5260",
+      "label": "Costs",
+      "byIndex": {
+       "0": {
+        "x": 70,
+        "y": 237.4,
+        "value": 8,
+        "symbol": "circle"
+       },
+       "1": {
+        "x": 164.48,
+        "y": 212.8,
+        "value": 11,
+        "symbol": "circle"
+       },
+       "2": {
+        "x": 258.95,
+        "y": 196.4,
+        "value": 13,
+        "symbol": "circle"
+       },
+       "3": {
+        "x": 353.43,
+        "y": 188.2,
+        "value": 14,
+        "symbol": "circle"
+       },
+       "4": {
+        "x": 447.91,
+        "y": 155.4,
+        "value": 18,
+        "symbol": "circle"
+       },
+       "5": {
+        "x": 542.38,
+        "y": 163.6,
+        "value": 17,
+        "symbol": "circle"
+       }
+      },
+      "values": [
+       8,
+       11,
+       13,
+       14,
+       18,
+       17
+      ],
+      "unanchored": false
+     }
+    ]
+   },
+   "ax": [
+    {
+     "role": "button",
+     "name": "Run"
+    },
+    {
+     "role": "figure",
+     "name": "Quarterly results, Line chart, with 2 series, from Jan to Jun."
+    },
+    {
+     "role": "application",
+     "name": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave."
+    },
+    {
+     "role": "button",
+     "name": "Revenue",
+     "pressed": true
+    },
+    {
+     "role": "button",
+     "name": "Costs",
+     "pressed": true
+    },
+    {
+     "role": "status",
+     "name": ""
+    },
+    {
+     "role": "progressbar",
+     "name": "Loading chart…",
+     "valuemin": 0,
+     "valuemax": 100
+    },
+    {
+     "role": "status",
+     "name": ""
+    }
+   ],
+   "focus": [
+    "body"
+   ]
+  },
+  {
+   "name": "line-parts-zoom",
+   "theme": "light",
+   "dir": "ltr",
+   "width": 640,
+   "html": "<style>md-line-chart::part(zoom){background-color:#ECEFF1;padding-block:4px}md-line-chart::part(zoom-band){background-color:#FFE0B2}md-line-chart::part(zoom-track){background-color:#C8E6C9}md-line-chart::part(zoom-window){background-color:#81C784}md-line-chart::part(zoom-handle){background-color:#1B5E20}</style><md-line-chart label=\"Quarterly results\" no-animation zoom=\"slider\" style=\"block-size:360px\"></md-line-chart>",
+   "props": {
+    "series": [
+     {
+      "label": "Revenue",
+      "data": [
+       12,
+       19,
+       15,
+       24,
+       22,
+       30
+      ]
+     },
+     {
+      "label": "Costs",
+      "data": [
+       8,
+       11,
+       13,
+       14,
+       18,
+       17
+      ]
+     }
+    ],
+    "xAxis": {
+     "data": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun"
+     ]
+    }
+   },
+   "clip": {
+    "x": 16,
+    "y": 16,
+    "width": 656,
+    "height": 376
+   },
+   "snap": {
+    "tag": "md-line-chart",
+    "rect": {
+     "x": 24,
+     "y": 24,
+     "width": 640,
+     "height": 360
+    },
+    "attrs": {
+     "role": "figure",
+     "aria-label": "Quarterly results, Line chart, with 2 series, from Jan to Jun.",
+     "style": "block-size:360px",
+     "legend": "top-end",
+     "density": "0",
+     "class": "md-line-chart md-line-chart--zoom-slider hydrated md-line-chart--mounted"
+    },
+    "style": {
+     "display": "block",
+     "visibility": "visible",
+     "opacity": "1",
+     "color": "rgb(0, 0, 0)",
+     "backgroundColor": "rgb(247, 242, 250)",
+     "transform": "none",
+     "borderTopLeftRadius": "16px",
+     "borderTopRightRadius": "16px",
+     "borderBottomRightRadius": "16px",
+     "borderBottomLeftRadius": "16px",
+     "borderTopWidth": "0px",
+     "borderTopColor": "rgb(0, 0, 0)",
+     "boxShadow": "none",
+     "outlineStyle": "none",
+     "outlineWidth": "3px",
+     "outlineColor": "rgb(0, 0, 0)",
+     "outlineOffset": "0px",
+     "fontFamily": "Roboto",
+     "fontSize": "16px",
+     "fontWeight": "400",
+     "lineHeight": "normal",
+     "letterSpacing": "normal",
+     "textAlign": "start",
+     "paddingTop": "16px",
+     "paddingRight": "16px",
+     "paddingBottom": "16px",
+     "paddingLeft": "16px",
+     "columnGap": "normal",
+     "rowGap": "normal",
+     "gap": "normal",
+     "zIndex": "auto",
+     "transitionProperty": "all",
+     "transitionDuration": "0s",
+     "transitionTimingFunction": "ease",
+     "cursor": "auto",
+     "pointerEvents": "auto",
+     "whiteSpace": "normal",
+     "overflow": "visible",
+     "position": "relative",
+     "width": "640px",
+     "height": "360px",
+     "minHeight": "160px",
+     "blockSize": "360px",
+     "flexDirection": "row",
+     "justifyContent": "normal",
+     "alignItems": "normal",
+     "direction": "ltr",
+     "forcedColorAdjust": "auto"
+    },
+    "parts": [
+     {
+      "tag": "header",
+      "part": "header",
+      "cls": "md-line-chart__header",
+      "attrs": {
+       "part": "header",
+       "class": "md-line-chart__header"
+      },
+      "rect": {
+       "x": 0,
+       "y": 0,
+       "width": 0,
+       "height": 0
+      },
+      "display": "contents",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "static",
+      "width": "auto",
+      "height": "auto",
+      "minHeight": "0px",
+      "blockSize": "auto",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "div",
+      "part": "canvas",
+      "cls": "md-line-chart__canvas",
+      "attrs": {
+       "role": "application",
+       "tabindex": "0",
+       "aria-label": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+       "part": "canvas",
+       "class": "md-line-chart__canvas"
+      },
+      "rect": {
+       "x": 40,
+       "y": 40,
+       "width": 608,
+       "height": 300
+      },
+      "display": "block",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "absolute",
+      "width": "608px",
+      "height": "300px",
+      "minHeight": "0px",
+      "blockSize": "300px",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "canvas",
+      "part": "plot-canvas",
+      "cls": null,
+      "attrs": {
+       "part": "plot-canvas",
+       "style": "position: absolute; inset: 0px; width: 100%; height: 100%; display: block;"
+      },
+      "rect": {
+       "x": 40,
+       "y": 40,
+       "width": 608,
+       "height": 300
+      },
+      "display": "block",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "clip",
+      "position": "absolute",
+      "width": "608px",
+      "height": "300px",
+      "minHeight": "0px",
+      "blockSize": "300px",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "div",
+      "part": "legend",
+      "cls": null,
+      "attrs": {
+       "part": "legend",
+       "style": "position: absolute; top: 2px; right: 12px; display: flex; flex-wrap: wrap; gap: 4px 12px; justify-content: flex-end; max-width: 88%; pointer-events: auto;"
+      },
+      "rect": {
+       "x": 486.91,
+       "y": 42,
+       "width": 149.09,
+       "height": 20
+      },
+      "display": "flex",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "12px",
+      "rowGap": "4px",
+      "gap": "4px 12px",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "absolute",
+      "width": "149.094px",
+      "height": "20px",
+      "minHeight": "0px",
+      "blockSize": "20px",
+      "flexDirection": "row",
+      "justifyContent": "flex-end",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "div",
+      "part": "zoom",
+      "cls": "md-line-chart__zoom",
+      "attrs": {
+       "part": "zoom",
+       "class": "md-line-chart__zoom"
+      },
+      "rect": {
+       "x": 40,
+       "y": 332,
+       "width": 608,
+       "height": 36
+      },
+      "display": "flex",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgb(236, 239, 241)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "4px",
+      "paddingRight": "0px",
+      "paddingBottom": "4px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "absolute",
+      "width": "608px",
+      "height": "28px",
+      "minHeight": "0px",
+      "blockSize": "28px",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "center",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "md-slider",
+      "part": "zoom-slider",
+      "cls": "md-line-chart__zoom-slider md-slider md-slider--size-xs md-slider--horizontal md-slider--range hydrated",
+      "attrs": {
+       "part": "zoom-slider",
+       "style": "--_value-pct: 100%; --_center-pct: 50%; --_active-start-pct: 50%; --_active-width-pct: 50%; --_centered-start-gap: var(--_center-gap); --_centered-end-gap: var(--_track-thumb-gap); --_start-pct: 0%; --_end-pct: 100%;",
+       "density": "0",
+       "class": "md-line-chart__zoom-slider md-slider md-slider--size-xs md-slider--horizontal md-slider--range hydrated"
+      },
+      "rect": {
+       "x": 40,
+       "y": 336,
+       "width": 608,
+       "height": 28
+      },
+      "display": "flex",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "pointer",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "relative",
+      "width": "608px",
+      "height": "28px",
+      "minHeight": "28px",
+      "blockSize": "28px",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "center",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "div",
+      "part": "zoom-pan",
+      "cls": "md-line-chart__zoom-pan",
+      "attrs": {
+       "part": "zoom-pan",
+       "style": "inset-inline-start: calc(0% + var(--_zoom-pan-inset)); inline-size: max(0px, calc(100% - 2 * var(--_zoom-pan-inset)));",
+       "class": "md-line-chart__zoom-pan"
+      },
+      "rect": {
+       "x": 50,
+       "y": 332,
+       "width": 588,
+       "height": 36
+      },
+      "display": "block",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "1",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "grab",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "absolute",
+      "width": "588px",
+      "height": "36px",
+      "minHeight": "0px",
+      "blockSize": "36px",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "footer",
+      "part": "footer",
+      "cls": "md-line-chart__footer",
+      "attrs": {
+       "part": "footer",
+       "class": "md-line-chart__footer"
+      },
+      "rect": {
+       "x": 0,
+       "y": 0,
+       "width": 0,
+       "height": 0
+      },
+      "display": "contents",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "static",
+      "width": "auto",
+      "height": "auto",
+      "minHeight": "0px",
+      "blockSize": "auto",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     }
+    ],
+    "overlay": [
+     {
+      "text": "Quarterly results",
+      "rect": {
+       "x": 62.75,
+       "y": 71,
+       "width": 105.34,
+       "height": 16
+      },
+      "color": "rgb(28, 27, 31)",
+      "font": "600 14px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, 0, 0)"
+     },
+     {
+      "text": "0",
+      "rect": {
+       "x": 48.56,
+       "y": 308.5,
+       "width": 6.19,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -6.1875, -6.5)"
+     },
+     {
+      "text": "5",
+      "rect": {
+       "x": 48.56,
+       "y": 272.16,
+       "width": 6.19,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -6.1875, -6.5)"
+     },
+     {
+      "text": "10",
+      "rect": {
+       "x": 42.38,
+       "y": 235.83,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "15",
+      "rect": {
+       "x": 42.38,
+       "y": 199.5,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "20",
+      "rect": {
+       "x": 42.38,
+       "y": 163.16,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "25",
+      "rect": {
+       "x": 42.38,
+       "y": 126.83,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "30",
+      "rect": {
+       "x": 42.38,
+       "y": 90.5,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "Jan",
+      "rect": {
+       "x": 100.91,
+       "y": 321,
+       "width": 18.14,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -9.07031, 0)"
+     },
+     {
+      "text": "Feb",
+      "rect": {
+       "x": 195.48,
+       "y": 321,
+       "width": 17.98,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -8.99219, 0)"
+     },
+     {
+      "text": "Mar",
+      "rect": {
+       "x": 289.27,
+       "y": 321,
+       "width": 19.33,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -9.66406, 0)"
+     },
+     {
+      "text": "Apr",
+      "rect": {
+       "x": 384.88,
+       "y": 321,
+       "width": 17.09,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -8.54688, 0)"
+     },
+     {
+      "text": "May",
+      "rect": {
+       "x": 477.53,
+       "y": 321,
+       "width": 20.72,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -10.3594, 0)"
+     },
+     {
+      "text": "Jun",
+      "rect": {
+       "x": 573.27,
+       "y": 321,
+       "width": 18.22,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -9.10938, 0)"
+     }
+    ],
+    "legend": [
+     {
+      "tag": "button",
+      "attrs": {
+       "aria-pressed": "true",
+       "style": "display: inline-flex; align-items: center; gap: 6px; background: none; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; padding: 2px 4px; cursor: pointer; white-space: nowrap; flex: 0 0 auto; min-width: 0px; max-width: 100%; font: 400 14px Roboto, sans-serif; color: var(--md-sys-color-on-surface-variant, #49454F);"
+      },
+      "text": "Revenue",
+      "rect": {
+       "x": 486.91,
+       "y": 42,
+       "width": 76.95,
+       "height": 20
+      },
+      "opacity": "1"
+     },
+     {
+      "tag": "button",
+      "attrs": {
+       "aria-pressed": "true",
+       "style": "display: inline-flex; align-items: center; gap: 6px; background: none; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; padding: 2px 4px; cursor: pointer; white-space: nowrap; flex: 0 0 auto; min-width: 0px; max-width: 100%; font: 400 14px Roboto, sans-serif; color: var(--md-sys-color-on-surface-variant, #49454F);"
+      },
+      "text": "Costs",
+      "rect": {
+       "x": 575.86,
+       "y": 42,
+       "width": 60.14,
+       "height": 20
+      },
+      "opacity": "1"
+     }
+    ],
+    "live": {
+     "attrs": {
+      "role": "status",
+      "aria-live": "polite",
+      "aria-atomic": "true",
+      "class": "md-line-chart__live"
+     },
+     "text": ""
+    },
+    "table": {
+     "caption": "Quarterly results",
+     "rows": [
+      [
+       "X",
+       "Revenue",
+       "Costs"
+      ],
+      [
+       "Jan",
+       "12",
+       "8"
+      ],
+      [
+       "Feb",
+       "19",
+       "11"
+      ],
+      [
+       "Mar",
+       "15",
+       "13"
+      ],
+      [
+       "Apr",
+       "24",
+       "14"
+      ],
+      [
+       "May",
+       "22",
+       "18"
+      ],
+      [
+       "Jun",
+       "30",
+       "17"
+      ]
+     ],
+     "rowCount": 7,
+     "attrs": {}
+    },
+    "plot": {
+     "attrs": {
+      "role": "application",
+      "tabindex": "0",
+      "aria-label": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+      "part": "canvas",
+      "class": "md-line-chart__canvas"
+     },
+     "rect": {
+      "x": 40,
+      "y": 40,
+      "width": 608,
+      "height": 300
+     },
+     "focused": false
+    },
+    "activeInShadow": null
+   },
+   "scene": {
+    "width": 608,
+    "height": 300,
+    "plot": {
+     "x": 22.76,
+     "y": 57,
+     "width": 566.86,
+     "height": 218
+    },
+    "bands": [],
+    "gridlines": [
+     {
+      "x1": 22.76,
+      "y1": 275,
+      "x2": 589.62,
+      "y2": 275,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 238.67,
+      "x2": 589.62,
+      "y2": 238.67,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 202.33,
+      "x2": 589.62,
+      "y2": 202.33,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 166,
+      "x2": 589.62,
+      "y2": 166,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 129.67,
+      "x2": 589.62,
+      "y2": 129.67,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 93.33,
+      "x2": 589.62,
+      "y2": 93.33,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 57,
+      "x2": 589.62,
+      "y2": 57,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     }
+    ],
+    "axisLines": [
+     {
+      "x1": 22.76,
+      "y1": 57,
+      "x2": 22.76,
+      "y2": 275,
+      "color": "#CAC4D0",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 275,
+      "x2": 589.62,
+      "y2": 275,
+      "color": "#CAC4D0",
+      "width": 1
+     }
+    ],
+    "areas": [],
+    "bars": [],
+    "slices": [],
+    "lines": [
+     {
+      "points": [
+       {
+        "x": 70,
+        "y": 187.8
+       },
+       {
+        "x": 72.59,
+        "y": 186.31
+       },
+       {
+        "x": 75.62,
+        "y": 184.41
+       },
+       {
+        "x": 79.05,
+        "y": 182.16
+       },
+       {
+        "x": 82.85,
+        "y": 179.6
+       },
+       {
+        "x": 86.97,
+        "y": 176.79
+       },
+       {
+        "x": 91.4,
+        "y": 173.76
+       },
+       {
+        "x": 96.08,
+        "y": 170.58
+       },
+       {
+        "x": 100.99,
+        "y": 167.28
+       },
+       {
+        "x": 106.08,
+        "y": 163.92
+       },
+       {
+        "x": 111.33,
+        "y": 160.55
+       },
+       {
+        "x": 116.7,
+        "y": 157.22
+       },
+       {
+        "x": 122.15,
+        "y": 153.97
+       },
+       {
+        "x": 127.65,
+        "y": 150.85
+       },
+       {
+        "x": 133.16,
+        "y": 147.92
+       },
+       {
+        "x": 138.64,
+        "y": 145.22
+       },
+       {
+        "x": 144.07,
+        "y": 142.8
+       },
+       {
+        "x": 149.4,
+        "y": 140.72
+       },
+       {
+        "x": 154.6,
+        "y": 139.01
+       },
+       {
+        "x": 159.64,
+        "y": 137.73
+       },
+       {
+        "x": 164.48,
+        "y": 136.93
+       },
+       {
+        "x": 169.2,
+        "y": 136.7
+       },
+       {
+        "x": 173.92,
+        "y": 137.03
+       },
+       {
+        "x": 178.65,
+        "y": 137.87
+       },
+       {
+        "x": 183.37,
+        "y": 139.14
+       },
+       {
+        "x": 188.09,
+        "y": 140.79
+       },
+       {
+        "x": 192.82,
+        "y": 142.75
+       },
+       {
+        "x": 197.54,
+        "y": 144.96
+       },
+       {
+        "x": 202.27,
+        "y": 147.34
+       },
+       {
+        "x": 206.99,
+        "y": 149.83
+       },
+       {
+        "x": 211.71,
+        "y": 152.38
+       },
+       {
+        "x": 216.44,
+        "y": 154.9
+       },
+       {
+        "x": 221.16,
+        "y": 157.34
+       },
+       {
+        "x": 225.88,
+        "y": 159.63
+       },
+       {
+        "x": 230.61,
+        "y": 161.71
+       },
+       {
+        "x": 235.33,
+        "y": 163.5
+       },
+       {
+        "x": 240.06,
+        "y": 164.95
+       },
+       {
+        "x": 244.78,
+        "y": 165.99
+       },
+       {
+        "x": 249.5,
+        "y": 166.56
+       },
+       {
+        "x": 254.23,
+        "y": 166.58
+       },
+       {
+        "x": 258.95,
+        "y": 166
+       },
+       {
+        "x": 263.68,
+        "y": 164.77
+       },
+       {
+        "x": 268.4,
+        "y": 162.93
+       },
+       {
+        "x": 273.12,
+        "y": 160.54
+       },
+       {
+        "x": 277.85,
+        "y": 157.69
+       },
+       {
+        "x": 282.57,
+        "y": 154.42
+       },
+       {
+        "x": 287.29,
+        "y": 150.81
+       },
+       {
+        "x": 292.02,
+        "y": 146.91
+       },
+       {
+        "x": 296.74,
+        "y": 142.8
+       },
+       {
+        "x": 301.47,
+        "y": 138.55
+       },
+       {
+        "x": 306.19,
+        "y": 134.21
+       },
+       {
+        "x": 310.91,
+        "y": 129.85
+       },
+       {
+        "x": 315.64,
+        "y": 125.54
+       },
+       {
+        "x": 320.36,
+        "y": 121.34
+       },
+       {
+        "x": 325.09,
+        "y": 117.32
+       },
+       {
+        "x": 329.81,
+        "y": 113.54
+       },
+       {
+        "x": 334.53,
+        "y": 110.08
+       },
+       {
+        "x": 339.26,
+        "y": 106.98
+       },
+       {
+        "x": 343.98,
+        "y": 104.33
+       },
+       {
+        "x": 348.7,
+        "y": 102.18
+       },
+       {
+        "x": 353.43,
+        "y": 100.6
+       },
+       {
+        "x": 358.15,
+        "y": 99.61
+       },
+       {
+        "x": 362.88,
+        "y": 99.14
+       },
+       {
+        "x": 367.6,
+        "y": 99.14
+       },
+       {
+        "x": 372.32,
+        "y": 99.55
+       },
+       {
+        "x": 377.05,
+        "y": 100.32
+       },
+       {
+        "x": 381.77,
+        "y": 101.37
+       },
+       {
+        "x": 386.5,
+        "y": 102.67
+       },
+       {
+        "x": 391.22,
+        "y": 104.15
+       },
+       {
+        "x": 395.94,
+        "y": 105.75
+       },
+       {
+        "x": 400.67,
+        "y": 107.41
+       },
+       {
+        "x": 405.39,
+        "y": 109.09
+       },
+       {
+        "x": 410.11,
+        "y": 110.72
+       },
+       {
+        "x": 414.84,
+        "y": 112.24
+       },
+       {
+        "x": 419.56,
+        "y": 113.6
+       },
+       {
+        "x": 424.29,
+        "y": 114.74
+       },
+       {
+        "x": 429.01,
+        "y": 115.6
+       },
+       {
+        "x": 433.73,
+        "y": 116.13
+       },
+       {
+        "x": 438.46,
+        "y": 116.26
+       },
+       {
+        "x": 443.18,
+        "y": 115.95
+       },
+       {
+        "x": 447.91,
+        "y": 115.13
+       },
+       {
+        "x": 452.74,
+        "y": 113.8
+       },
+       {
+        "x": 457.78,
+        "y": 112
+       },
+       {
+        "x": 462.98,
+        "y": 109.8
+       },
+       {
+        "x": 468.31,
+        "y": 107.23
+       },
+       {
+        "x": 473.74,
+        "y": 104.35
+       },
+       {
+        "x": 479.22,
+        "y": 101.2
+       },
+       {
+        "x": 484.73,
+        "y": 97.85
+       },
+       {
+        "x": 490.23,
+        "y": 94.32
+       },
+       {
+        "x": 495.68,
+        "y": 90.68
+       },
+       {
+        "x": 501.05,
+        "y": 86.98
+       },
+       {
+        "x": 506.3,
+        "y": 83.25
+       },
+       {
+        "x": 511.39,
+        "y": 79.56
+       },
+       {
+        "x": 516.3,
+        "y": 75.94
+       },
+       {
+        "x": 520.98,
+        "y": 72.46
+       },
+       {
+        "x": 525.41,
+        "y": 69.15
+       },
+       {
+        "x": 529.53,
+        "y": 66.07
+       },
+       {
+        "x": 533.33,
+        "y": 63.26
+       },
+       {
+        "x": 536.76,
+        "y": 60.79
+       },
+       {
+        "x": 539.79,
+        "y": 58.68
+       },
+       {
+        "x": 542.38,
+        "y": 57
+       }
+      ],
+      "color": "#6750A4",
+      "width": 2.5,
+      "seriesIndex": 0
+     },
+     {
+      "points": [
+       {
+        "x": 70,
+        "y": 216.87
+       },
+       {
+        "x": 72.59,
+        "y": 216.26
+       },
+       {
+        "x": 75.62,
+        "y": 215.54
+       },
+       {
+        "x": 79.05,
+        "y": 214.71
+       },
+       {
+        "x": 82.85,
+        "y": 213.79
+       },
+       {
+        "x": 86.97,
+        "y": 212.78
+       },
+       {
+        "x": 91.4,
+        "y": 211.7
+       },
+       {
+        "x": 96.08,
+        "y": 210.56
+       },
+       {
+        "x": 100.99,
+        "y": 209.37
+       },
+       {
+        "x": 106.08,
+        "y": 208.14
+       },
+       {
+        "x": 111.33,
+        "y": 206.88
+       },
+       {
+        "x": 116.7,
+        "y": 205.6
+       },
+       {
+        "x": 122.15,
+        "y": 204.31
+       },
+       {
+        "x": 127.65,
+        "y": 203.03
+       },
+       {
+        "x": 133.16,
+        "y": 201.76
+       },
+       {
+        "x": 138.64,
+        "y": 200.52
+       },
+       {
+        "x": 144.07,
+        "y": 199.31
+       },
+       {
+        "x": 149.4,
+        "y": 198.15
+       },
+       {
+        "x": 154.6,
+        "y": 197.05
+       },
+       {
+        "x": 159.64,
+        "y": 196.02
+       },
+       {
+        "x": 164.48,
+        "y": 195.07
+       },
+       {
+        "x": 169.2,
+        "y": 194.17
+       },
+       {
+        "x": 173.92,
+        "y": 193.29
+       },
+       {
+        "x": 178.65,
+        "y": 192.42
+       },
+       {
+        "x": 183.37,
+        "y": 191.58
+       },
+       {
+        "x": 188.09,
+        "y": 190.75
+       },
+       {
+        "x": 192.82,
+        "y": 189.94
+       },
+       {
+        "x": 197.54,
+        "y": 189.15
+       },
+       {
+        "x": 202.27,
+        "y": 188.38
+       },
+       {
+        "x": 206.99,
+        "y": 187.63
+       },
+       {
+        "x": 211.71,
+        "y": 186.89
+       },
+       {
+        "x": 216.44,
+        "y": 186.17
+       },
+       {
+        "x": 221.16,
+        "y": 185.47
+       },
+       {
+        "x": 225.88,
+        "y": 184.79
+       },
+       {
+        "x": 230.61,
+        "y": 184.13
+       },
+       {
+        "x": 235.33,
+        "y": 183.49
+       },
+       {
+        "x": 240.06,
+        "y": 182.86
+       },
+       {
+        "x": 244.78,
+        "y": 182.25
+       },
+       {
+        "x": 249.5,
+        "y": 181.66
+       },
+       {
+        "x": 254.23,
+        "y": 181.09
+       },
+       {
+        "x": 258.95,
+        "y": 180.53
+       },
+       {
+        "x": 263.68,
+        "y": 180.03
+       },
+       {
+        "x": 268.4,
+        "y": 179.61
+       },
+       {
+        "x": 273.12,
+        "y": 179.26
+       },
+       {
+        "x": 277.85,
+        "y": 178.96
+       },
+       {
+        "x": 282.57,
+        "y": 178.72
+       },
+       {
+        "x": 287.29,
+        "y": 178.51
+       },
+       {
+        "x": 292.02,
+        "y": 178.32
+       },
+       {
+        "x": 296.74,
+        "y": 178.15
+       },
+       {
+        "x": 301.47,
+        "y": 177.98
+       },
+       {
+        "x": 306.19,
+        "y": 177.81
+       },
+       {
+        "x": 310.91,
+        "y": 177.62
+       },
+       {
+        "x": 315.64,
+        "y": 177.39
+       },
+       {
+        "x": 320.36,
+        "y": 177.13
+       },
+       {
+        "x": 325.09,
+        "y": 176.82
+       },
+       {
+        "x": 329.81,
+        "y": 176.45
+       },
+       {
+        "x": 334.53,
+        "y": 176
+       },
+       {
+        "x": 339.26,
+        "y": 175.47
+       },
+       {
+        "x": 343.98,
+        "y": 174.84
+       },
+       {
+        "x": 348.7,
+        "y": 174.11
+       },
+       {
+        "x": 353.43,
+        "y": 173.27
+       },
+       {
+        "x": 358.15,
+        "y": 172.26
+       },
+       {
+        "x": 362.88,
+        "y": 171.08
+       },
+       {
+        "x": 367.6,
+        "y": 169.74
+       },
+       {
+        "x": 372.32,
+        "y": 168.27
+       },
+       {
+        "x": 377.05,
+        "y": 166.68
+       },
+       {
+        "x": 381.77,
+        "y": 165
+       },
+       {
+        "x": 386.5,
+        "y": 163.26
+       },
+       {
+        "x": 391.22,
+        "y": 161.47
+       },
+       {
+        "x": 395.94,
+        "y": 159.65
+       },
+       {
+        "x": 400.67,
+        "y": 157.83
+       },
+       {
+        "x": 405.39,
+        "y": 156.02
+       },
+       {
+        "x": 410.11,
+        "y": 154.26
+       },
+       {
+        "x": 414.84,
+        "y": 152.55
+       },
+       {
+        "x": 419.56,
+        "y": 150.94
+       },
+       {
+        "x": 424.29,
+        "y": 149.42
+       },
+       {
+        "x": 429.01,
+        "y": 148.04
+       },
+       {
+        "x": 433.73,
+        "y": 146.8
+       },
+       {
+        "x": 438.46,
+        "y": 145.73
+       },
+       {
+        "x": 443.18,
+        "y": 144.86
+       },
+       {
+        "x": 447.91,
+        "y": 144.2
+       },
+       {
+        "x": 452.74,
+        "y": 143.75
+       },
+       {
+        "x": 457.78,
+        "y": 143.49
+       },
+       {
+        "x": 462.98,
+        "y": 143.39
+       },
+       {
+        "x": 468.31,
+        "y": 143.44
+       },
+       {
+        "x": 473.74,
+        "y": 143.63
+       },
+       {
+        "x": 479.22,
+        "y": 143.94
+       },
+       {
+        "x": 484.73,
+        "y": 144.35
+       },
+       {
+        "x": 490.23,
+        "y": 144.84
+       },
+       {
+        "x": 495.68,
+        "y": 145.4
+       },
+       {
+        "x": 501.05,
+        "y": 146.02
+       },
+       {
+        "x": 506.3,
+        "y": 146.67
+       },
+       {
+        "x": 511.39,
+        "y": 147.34
+       },
+       {
+        "x": 516.3,
+        "y": 148.01
+       },
+       {
+        "x": 520.98,
+        "y": 148.68
+       },
+       {
+        "x": 525.41,
+        "y": 149.31
+       },
+       {
+        "x": 529.53,
+        "y": 149.9
+       },
+       {
+        "x": 533.33,
+        "y": 150.42
+       },
+       {
+        "x": 536.76,
+        "y": 150.87
+       },
+       {
+        "x": 539.79,
+        "y": 151.22
+       },
+       {
+        "x": 542.38,
+        "y": 151.47
+       }
+      ],
+      "color": "#7D5260",
+      "width": 2.5,
+      "seriesIndex": 1
+     }
+    ],
+    "markers": [],
+    "glyphs": [],
+    "endLabels": [],
+    "texts": [
+     {
+      "x": 22.76,
+      "y": 31,
+      "text": "Quarterly results",
+      "color": "#1C1B1F",
+      "fontSize": 14,
+      "fontWeight": 600,
+      "align": "start",
+      "baseline": "top",
+      "key": "title"
+     },
+     {
+      "x": 14.76,
+      "y": 275,
+      "text": "0",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-0"
+     },
+     {
+      "x": 14.76,
+      "y": 238.67,
+      "text": "5",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-1"
+     },
+     {
+      "x": 14.76,
+      "y": 202.33,
+      "text": "10",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-2"
+     },
+     {
+      "x": 14.76,
+      "y": 166,
+      "text": "15",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-3"
+     },
+     {
+      "x": 14.76,
+      "y": 129.67,
+      "text": "20",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-4"
+     },
+     {
+      "x": 14.76,
+      "y": 93.33,
+      "text": "25",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-5"
+     },
+     {
+      "x": 14.76,
+      "y": 57,
+      "text": "30",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-6"
+     },
+     {
+      "x": 70,
+      "y": 281,
+      "text": "Jan",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "xt-0"
+     },
+     {
+      "x": 164.48,
+      "y": 281,
+      "text": "Feb",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "xt-1"
+     },
+     {
+      "x": 258.95,
+      "y": 281,
+      "text": "Mar",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "xt-2"
+     },
+     {
+      "x": 353.43,
+      "y": 281,
+      "text": "Apr",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "xt-3"
+     },
+     {
+      "x": 447.91,
+      "y": 281,
+      "text": "May",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "xt-4"
+     },
+     {
+      "x": 542.38,
+      "y": 281,
+      "text": "Jun",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "xt-5"
+     }
+    ],
+    "legend": [
+     {
+      "label": "Revenue",
+      "color": "#6750A4",
+      "seriesIndex": 0,
+      "hidden": false,
+      "x": 0,
+      "y": 0
+     },
+     {
+      "label": "Costs",
+      "color": "#7D5260",
+      "seriesIndex": 1,
+      "hidden": false,
+      "x": 0,
+      "y": 0
+     }
+    ],
+    "legendPosition": "top-end",
+    "xPositions": [
+     70,
+     164.48,
+     258.95,
+     353.43,
+     447.91,
+     542.38
+    ],
+    "xValues": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun"
+    ],
+    "xLabels": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun"
+    ],
+    "hoverPoints": [
+     {
+      "seriesIndex": 0,
+      "color": "#6750A4",
+      "label": "Revenue",
+      "byIndex": {
+       "0": {
+        "x": 70,
+        "y": 187.8,
+        "value": 12,
+        "symbol": "circle"
+       },
+       "1": {
+        "x": 164.48,
+        "y": 136.93,
+        "value": 19,
+        "symbol": "circle"
+       },
+       "2": {
+        "x": 258.95,
+        "y": 166,
+        "value": 15,
+        "symbol": "circle"
+       },
+       "3": {
+        "x": 353.43,
+        "y": 100.6,
+        "value": 24,
+        "symbol": "circle"
+       },
+       "4": {
+        "x": 447.91,
+        "y": 115.13,
+        "value": 22,
+        "symbol": "circle"
+       },
+       "5": {
+        "x": 542.38,
+        "y": 57,
+        "value": 30,
+        "symbol": "circle"
+       }
+      },
+      "values": [
+       12,
+       19,
+       15,
+       24,
+       22,
+       30
+      ],
+      "unanchored": false
+     },
+     {
+      "seriesIndex": 1,
+      "color": "#7D5260",
+      "label": "Costs",
+      "byIndex": {
+       "0": {
+        "x": 70,
+        "y": 216.87,
+        "value": 8,
+        "symbol": "circle"
+       },
+       "1": {
+        "x": 164.48,
+        "y": 195.07,
+        "value": 11,
+        "symbol": "circle"
+       },
+       "2": {
+        "x": 258.95,
+        "y": 180.53,
+        "value": 13,
+        "symbol": "circle"
+       },
+       "3": {
+        "x": 353.43,
+        "y": 173.27,
+        "value": 14,
+        "symbol": "circle"
+       },
+       "4": {
+        "x": 447.91,
+        "y": 144.2,
+        "value": 18,
+        "symbol": "circle"
+       },
+       "5": {
+        "x": 542.38,
+        "y": 151.47,
+        "value": 17,
+        "symbol": "circle"
+       }
+      },
+      "values": [
+       8,
+       11,
+       13,
+       14,
+       18,
+       17
+      ],
+      "unanchored": false
+     }
+    ]
+   },
+   "ax": [
+    {
+     "role": "button",
+     "name": "Run"
+    },
+    {
+     "role": "application",
+     "name": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave."
+    },
+    {
+     "role": "button",
+     "name": "Revenue",
+     "pressed": true
+    },
+    {
+     "role": "button",
+     "name": "Costs",
+     "pressed": true
+    },
+    {
+     "role": "slider",
+     "name": "Zoom range start",
+     "value": 0,
+     "valuetext": "0",
+     "valuemin": 0,
+     "valuemax": 5,
+     "orientation": "horizontal"
+    },
+    {
+     "role": "slider",
+     "name": "Zoom range end",
+     "value": 5,
+     "valuetext": "5",
+     "valuemin": 0,
+     "valuemax": 5,
+     "orientation": "horizontal"
+    },
+    {
+     "role": "status",
+     "name": ""
+    }
+   ],
+   "focus": [
+    "body"
+   ]
+  },
+  {
+   "name": "line-parts-zoom-slider-pan",
+   "theme": "light",
+   "dir": "ltr",
+   "width": 640,
+   "html": "<style>md-line-chart::part(zoom-slider){opacity:0.6}md-line-chart::part(zoom-pan){background-color:#FFCDD2}</style><md-line-chart label=\"Quarterly results\" no-animation zoom=\"slider\" style=\"block-size:360px\"></md-line-chart>",
+   "props": {
+    "series": [
+     {
+      "label": "Revenue",
+      "data": [
+       12,
+       19,
+       15,
+       24,
+       22,
+       30
+      ]
+     },
+     {
+      "label": "Costs",
+      "data": [
+       8,
+       11,
+       13,
+       14,
+       18,
+       17
+      ]
+     }
+    ],
+    "xAxis": {
+     "data": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun"
+     ]
+    }
+   },
+   "clip": {
+    "x": 16,
+    "y": 16,
+    "width": 656,
+    "height": 376
+   },
+   "snap": {
+    "tag": "md-line-chart",
+    "rect": {
+     "x": 24,
+     "y": 24,
+     "width": 640,
+     "height": 360
+    },
+    "attrs": {
+     "role": "figure",
+     "aria-label": "Quarterly results, Line chart, with 2 series, from Jan to Jun.",
+     "style": "block-size:360px",
+     "legend": "top-end",
+     "density": "0",
+     "class": "md-line-chart md-line-chart--zoom-slider hydrated md-line-chart--mounted"
+    },
+    "style": {
+     "display": "block",
+     "visibility": "visible",
+     "opacity": "1",
+     "color": "rgb(0, 0, 0)",
+     "backgroundColor": "rgb(247, 242, 250)",
+     "transform": "none",
+     "borderTopLeftRadius": "16px",
+     "borderTopRightRadius": "16px",
+     "borderBottomRightRadius": "16px",
+     "borderBottomLeftRadius": "16px",
+     "borderTopWidth": "0px",
+     "borderTopColor": "rgb(0, 0, 0)",
+     "boxShadow": "none",
+     "outlineStyle": "none",
+     "outlineWidth": "3px",
+     "outlineColor": "rgb(0, 0, 0)",
+     "outlineOffset": "0px",
+     "fontFamily": "Roboto",
+     "fontSize": "16px",
+     "fontWeight": "400",
+     "lineHeight": "normal",
+     "letterSpacing": "normal",
+     "textAlign": "start",
+     "paddingTop": "16px",
+     "paddingRight": "16px",
+     "paddingBottom": "16px",
+     "paddingLeft": "16px",
+     "columnGap": "normal",
+     "rowGap": "normal",
+     "gap": "normal",
+     "zIndex": "auto",
+     "transitionProperty": "all",
+     "transitionDuration": "0s",
+     "transitionTimingFunction": "ease",
+     "cursor": "auto",
+     "pointerEvents": "auto",
+     "whiteSpace": "normal",
+     "overflow": "visible",
+     "position": "relative",
+     "width": "640px",
+     "height": "360px",
+     "minHeight": "160px",
+     "blockSize": "360px",
+     "flexDirection": "row",
+     "justifyContent": "normal",
+     "alignItems": "normal",
+     "direction": "ltr",
+     "forcedColorAdjust": "auto"
+    },
+    "parts": [
+     {
+      "tag": "header",
+      "part": "header",
+      "cls": "md-line-chart__header",
+      "attrs": {
+       "part": "header",
+       "class": "md-line-chart__header"
+      },
+      "rect": {
+       "x": 0,
+       "y": 0,
+       "width": 0,
+       "height": 0
+      },
+      "display": "contents",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "static",
+      "width": "auto",
+      "height": "auto",
+      "minHeight": "0px",
+      "blockSize": "auto",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "div",
+      "part": "canvas",
+      "cls": "md-line-chart__canvas",
+      "attrs": {
+       "role": "application",
+       "tabindex": "0",
+       "aria-label": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+       "part": "canvas",
+       "class": "md-line-chart__canvas"
+      },
+      "rect": {
+       "x": 40,
+       "y": 40,
+       "width": 608,
+       "height": 300
+      },
+      "display": "block",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "absolute",
+      "width": "608px",
+      "height": "300px",
+      "minHeight": "0px",
+      "blockSize": "300px",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "canvas",
+      "part": "plot-canvas",
+      "cls": null,
+      "attrs": {
+       "part": "plot-canvas",
+       "style": "position: absolute; inset: 0px; width: 100%; height: 100%; display: block;"
+      },
+      "rect": {
+       "x": 40,
+       "y": 40,
+       "width": 608,
+       "height": 300
+      },
+      "display": "block",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "clip",
+      "position": "absolute",
+      "width": "608px",
+      "height": "300px",
+      "minHeight": "0px",
+      "blockSize": "300px",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "div",
+      "part": "legend",
+      "cls": null,
+      "attrs": {
+       "part": "legend",
+       "style": "position: absolute; top: 2px; right: 12px; display: flex; flex-wrap: wrap; gap: 4px 12px; justify-content: flex-end; max-width: 88%; pointer-events: auto;"
+      },
+      "rect": {
+       "x": 486.91,
+       "y": 42,
+       "width": 149.09,
+       "height": 20
+      },
+      "display": "flex",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "12px",
+      "rowGap": "4px",
+      "gap": "4px 12px",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "absolute",
+      "width": "149.094px",
+      "height": "20px",
+      "minHeight": "0px",
+      "blockSize": "20px",
+      "flexDirection": "row",
+      "justifyContent": "flex-end",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "div",
+      "part": "zoom",
+      "cls": "md-line-chart__zoom",
+      "attrs": {
+       "part": "zoom",
+       "class": "md-line-chart__zoom"
+      },
+      "rect": {
+       "x": 40,
+       "y": 340,
+       "width": 608,
+       "height": 28
+      },
+      "display": "flex",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "absolute",
+      "width": "608px",
+      "height": "28px",
+      "minHeight": "0px",
+      "blockSize": "28px",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "center",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "md-slider",
+      "part": "zoom-slider",
+      "cls": "md-line-chart__zoom-slider md-slider md-slider--size-xs md-slider--horizontal md-slider--range hydrated",
+      "attrs": {
+       "part": "zoom-slider",
+       "style": "--_value-pct: 100%; --_center-pct: 50%; --_active-start-pct: 50%; --_active-width-pct: 50%; --_centered-start-gap: var(--_center-gap); --_centered-end-gap: var(--_track-thumb-gap); --_start-pct: 0%; --_end-pct: 100%;",
+       "density": "0",
+       "class": "md-line-chart__zoom-slider md-slider md-slider--size-xs md-slider--horizontal md-slider--range hydrated"
+      },
+      "rect": {
+       "x": 40,
+       "y": 340,
+       "width": 608,
+       "height": 28
+      },
+      "display": "flex",
+      "visibility": "visible",
+      "opacity": "0.6",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "pointer",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "relative",
+      "width": "608px",
+      "height": "28px",
+      "minHeight": "28px",
+      "blockSize": "28px",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "center",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "div",
+      "part": "zoom-pan",
+      "cls": "md-line-chart__zoom-pan",
+      "attrs": {
+       "part": "zoom-pan",
+       "style": "inset-inline-start: calc(0% + var(--_zoom-pan-inset)); inline-size: max(0px, calc(100% - 2 * var(--_zoom-pan-inset)));",
+       "class": "md-line-chart__zoom-pan"
+      },
+      "rect": {
+       "x": 50,
+       "y": 340,
+       "width": 588,
+       "height": 28
+      },
+      "display": "block",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgb(255, 205, 210)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "1",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "grab",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "absolute",
+      "width": "588px",
+      "height": "28px",
+      "minHeight": "0px",
+      "blockSize": "28px",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     },
+     {
+      "tag": "footer",
+      "part": "footer",
+      "cls": "md-line-chart__footer",
+      "attrs": {
+       "part": "footer",
+       "class": "md-line-chart__footer"
+      },
+      "rect": {
+       "x": 0,
+       "y": 0,
+       "width": 0,
+       "height": 0
+      },
+      "display": "contents",
+      "visibility": "visible",
+      "opacity": "1",
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "transform": "none",
+      "borderTopLeftRadius": "0px",
+      "borderTopRightRadius": "0px",
+      "borderBottomRightRadius": "0px",
+      "borderBottomLeftRadius": "0px",
+      "borderTopWidth": "0px",
+      "borderTopColor": "rgb(0, 0, 0)",
+      "boxShadow": "none",
+      "outlineStyle": "none",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineOffset": "0px",
+      "fontFamily": "Roboto",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "textAlign": "start",
+      "paddingTop": "0px",
+      "paddingRight": "0px",
+      "paddingBottom": "0px",
+      "paddingLeft": "0px",
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "gap": "normal",
+      "zIndex": "auto",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "transitionTimingFunction": "ease",
+      "cursor": "auto",
+      "pointerEvents": "auto",
+      "whiteSpace": "normal",
+      "overflow": "visible",
+      "position": "static",
+      "width": "auto",
+      "height": "auto",
+      "minHeight": "0px",
+      "blockSize": "auto",
+      "flexDirection": "row",
+      "justifyContent": "normal",
+      "alignItems": "normal",
+      "direction": "ltr",
+      "forcedColorAdjust": "auto"
+     }
+    ],
+    "overlay": [
+     {
+      "text": "Quarterly results",
+      "rect": {
+       "x": 62.75,
+       "y": 71,
+       "width": 105.34,
+       "height": 16
+      },
+      "color": "rgb(28, 27, 31)",
+      "font": "600 14px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, 0, 0)"
+     },
+     {
+      "text": "0",
+      "rect": {
+       "x": 48.56,
+       "y": 308.5,
+       "width": 6.19,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -6.1875, -6.5)"
+     },
+     {
+      "text": "5",
+      "rect": {
+       "x": 48.56,
+       "y": 272.16,
+       "width": 6.19,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -6.1875, -6.5)"
+     },
+     {
+      "text": "10",
+      "rect": {
+       "x": 42.38,
+       "y": 235.83,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "15",
+      "rect": {
+       "x": 42.38,
+       "y": 199.5,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "20",
+      "rect": {
+       "x": 42.38,
+       "y": 163.16,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "25",
+      "rect": {
+       "x": 42.38,
+       "y": 126.83,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "30",
+      "rect": {
+       "x": 42.38,
+       "y": 90.5,
+       "width": 12.38,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -12.375, -6.5)"
+     },
+     {
+      "text": "Jan",
+      "rect": {
+       "x": 100.91,
+       "y": 321,
+       "width": 18.14,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -9.07031, 0)"
+     },
+     {
+      "text": "Feb",
+      "rect": {
+       "x": 195.48,
+       "y": 321,
+       "width": 17.98,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -8.99219, 0)"
+     },
+     {
+      "text": "Mar",
+      "rect": {
+       "x": 289.27,
+       "y": 321,
+       "width": 19.33,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -9.66406, 0)"
+     },
+     {
+      "text": "Apr",
+      "rect": {
+       "x": 384.88,
+       "y": 321,
+       "width": 17.09,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -8.54688, 0)"
+     },
+     {
+      "text": "May",
+      "rect": {
+       "x": 477.53,
+       "y": 321,
+       "width": 20.72,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -10.3594, 0)"
+     },
+     {
+      "text": "Jun",
+      "rect": {
+       "x": 573.27,
+       "y": 321,
+       "width": 18.22,
+       "height": 13
+      },
+      "color": "rgb(73, 69, 79)",
+      "font": "400 11px/normal Roboto, sans-serif",
+      "opacity": "1",
+      "align": "start",
+      "transform": "matrix(1, 0, 0, 1, -9.10938, 0)"
+     }
+    ],
+    "legend": [
+     {
+      "tag": "button",
+      "attrs": {
+       "aria-pressed": "true",
+       "style": "display: inline-flex; align-items: center; gap: 6px; background: none; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; padding: 2px 4px; cursor: pointer; white-space: nowrap; flex: 0 0 auto; min-width: 0px; max-width: 100%; font: 400 14px Roboto, sans-serif; color: var(--md-sys-color-on-surface-variant, #49454F);"
+      },
+      "text": "Revenue",
+      "rect": {
+       "x": 486.91,
+       "y": 42,
+       "width": 76.95,
+       "height": 20
+      },
+      "opacity": "1"
+     },
+     {
+      "tag": "button",
+      "attrs": {
+       "aria-pressed": "true",
+       "style": "display: inline-flex; align-items: center; gap: 6px; background: none; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; padding: 2px 4px; cursor: pointer; white-space: nowrap; flex: 0 0 auto; min-width: 0px; max-width: 100%; font: 400 14px Roboto, sans-serif; color: var(--md-sys-color-on-surface-variant, #49454F);"
+      },
+      "text": "Costs",
+      "rect": {
+       "x": 575.86,
+       "y": 42,
+       "width": 60.14,
+       "height": 20
+      },
+      "opacity": "1"
+     }
+    ],
+    "live": {
+     "attrs": {
+      "role": "status",
+      "aria-live": "polite",
+      "aria-atomic": "true",
+      "class": "md-line-chart__live"
+     },
+     "text": ""
+    },
+    "table": {
+     "caption": "Quarterly results",
+     "rows": [
+      [
+       "X",
+       "Revenue",
+       "Costs"
+      ],
+      [
+       "Jan",
+       "12",
+       "8"
+      ],
+      [
+       "Feb",
+       "19",
+       "11"
+      ],
+      [
+       "Mar",
+       "15",
+       "13"
+      ],
+      [
+       "Apr",
+       "24",
+       "14"
+      ],
+      [
+       "May",
+       "22",
+       "18"
+      ],
+      [
+       "Jun",
+       "30",
+       "17"
+      ]
+     ],
+     "rowCount": 7,
+     "attrs": {}
+    },
+    "plot": {
+     "attrs": {
+      "role": "application",
+      "tabindex": "0",
+      "aria-label": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.",
+      "part": "canvas",
+      "class": "md-line-chart__canvas"
+     },
+     "rect": {
+      "x": 40,
+      "y": 40,
+      "width": 608,
+      "height": 300
+     },
+     "focused": false
+    },
+    "activeInShadow": null
+   },
+   "scene": {
+    "width": 608,
+    "height": 300,
+    "plot": {
+     "x": 22.76,
+     "y": 57,
+     "width": 566.86,
+     "height": 218
+    },
+    "bands": [],
+    "gridlines": [
+     {
+      "x1": 22.76,
+      "y1": 275,
+      "x2": 589.62,
+      "y2": 275,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 238.67,
+      "x2": 589.62,
+      "y2": 238.67,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 202.33,
+      "x2": 589.62,
+      "y2": 202.33,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 166,
+      "x2": 589.62,
+      "y2": 166,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 129.67,
+      "x2": 589.62,
+      "y2": 129.67,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 93.33,
+      "x2": 589.62,
+      "y2": 93.33,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 57,
+      "x2": 589.62,
+      "y2": 57,
+      "color": "rgba(202, 196, 208, 0.5)",
+      "width": 1
+     }
+    ],
+    "axisLines": [
+     {
+      "x1": 22.76,
+      "y1": 57,
+      "x2": 22.76,
+      "y2": 275,
+      "color": "#CAC4D0",
+      "width": 1
+     },
+     {
+      "x1": 22.76,
+      "y1": 275,
+      "x2": 589.62,
+      "y2": 275,
+      "color": "#CAC4D0",
+      "width": 1
+     }
+    ],
+    "areas": [],
+    "bars": [],
+    "slices": [],
+    "lines": [
+     {
+      "points": [
+       {
+        "x": 70,
+        "y": 187.8
+       },
+       {
+        "x": 72.59,
+        "y": 186.31
+       },
+       {
+        "x": 75.62,
+        "y": 184.41
+       },
+       {
+        "x": 79.05,
+        "y": 182.16
+       },
+       {
+        "x": 82.85,
+        "y": 179.6
+       },
+       {
+        "x": 86.97,
+        "y": 176.79
+       },
+       {
+        "x": 91.4,
+        "y": 173.76
+       },
+       {
+        "x": 96.08,
+        "y": 170.58
+       },
+       {
+        "x": 100.99,
+        "y": 167.28
+       },
+       {
+        "x": 106.08,
+        "y": 163.92
+       },
+       {
+        "x": 111.33,
+        "y": 160.55
+       },
+       {
+        "x": 116.7,
+        "y": 157.22
+       },
+       {
+        "x": 122.15,
+        "y": 153.97
+       },
+       {
+        "x": 127.65,
+        "y": 150.85
+       },
+       {
+        "x": 133.16,
+        "y": 147.92
+       },
+       {
+        "x": 138.64,
+        "y": 145.22
+       },
+       {
+        "x": 144.07,
+        "y": 142.8
+       },
+       {
+        "x": 149.4,
+        "y": 140.72
+       },
+       {
+        "x": 154.6,
+        "y": 139.01
+       },
+       {
+        "x": 159.64,
+        "y": 137.73
+       },
+       {
+        "x": 164.48,
+        "y": 136.93
+       },
+       {
+        "x": 169.2,
+        "y": 136.7
+       },
+       {
+        "x": 173.92,
+        "y": 137.03
+       },
+       {
+        "x": 178.65,
+        "y": 137.87
+       },
+       {
+        "x": 183.37,
+        "y": 139.14
+       },
+       {
+        "x": 188.09,
+        "y": 140.79
+       },
+       {
+        "x": 192.82,
+        "y": 142.75
+       },
+       {
+        "x": 197.54,
+        "y": 144.96
+       },
+       {
+        "x": 202.27,
+        "y": 147.34
+       },
+       {
+        "x": 206.99,
+        "y": 149.83
+       },
+       {
+        "x": 211.71,
+        "y": 152.38
+       },
+       {
+        "x": 216.44,
+        "y": 154.9
+       },
+       {
+        "x": 221.16,
+        "y": 157.34
+       },
+       {
+        "x": 225.88,
+        "y": 159.63
+       },
+       {
+        "x": 230.61,
+        "y": 161.71
+       },
+       {
+        "x": 235.33,
+        "y": 163.5
+       },
+       {
+        "x": 240.06,
+        "y": 164.95
+       },
+       {
+        "x": 244.78,
+        "y": 165.99
+       },
+       {
+        "x": 249.5,
+        "y": 166.56
+       },
+       {
+        "x": 254.23,
+        "y": 166.58
+       },
+       {
+        "x": 258.95,
+        "y": 166
+       },
+       {
+        "x": 263.68,
+        "y": 164.77
+       },
+       {
+        "x": 268.4,
+        "y": 162.93
+       },
+       {
+        "x": 273.12,
+        "y": 160.54
+       },
+       {
+        "x": 277.85,
+        "y": 157.69
+       },
+       {
+        "x": 282.57,
+        "y": 154.42
+       },
+       {
+        "x": 287.29,
+        "y": 150.81
+       },
+       {
+        "x": 292.02,
+        "y": 146.91
+       },
+       {
+        "x": 296.74,
+        "y": 142.8
+       },
+       {
+        "x": 301.47,
+        "y": 138.55
+       },
+       {
+        "x": 306.19,
+        "y": 134.21
+       },
+       {
+        "x": 310.91,
+        "y": 129.85
+       },
+       {
+        "x": 315.64,
+        "y": 125.54
+       },
+       {
+        "x": 320.36,
+        "y": 121.34
+       },
+       {
+        "x": 325.09,
+        "y": 117.32
+       },
+       {
+        "x": 329.81,
+        "y": 113.54
+       },
+       {
+        "x": 334.53,
+        "y": 110.08
+       },
+       {
+        "x": 339.26,
+        "y": 106.98
+       },
+       {
+        "x": 343.98,
+        "y": 104.33
+       },
+       {
+        "x": 348.7,
+        "y": 102.18
+       },
+       {
+        "x": 353.43,
+        "y": 100.6
+       },
+       {
+        "x": 358.15,
+        "y": 99.61
+       },
+       {
+        "x": 362.88,
+        "y": 99.14
+       },
+       {
+        "x": 367.6,
+        "y": 99.14
+       },
+       {
+        "x": 372.32,
+        "y": 99.55
+       },
+       {
+        "x": 377.05,
+        "y": 100.32
+       },
+       {
+        "x": 381.77,
+        "y": 101.37
+       },
+       {
+        "x": 386.5,
+        "y": 102.67
+       },
+       {
+        "x": 391.22,
+        "y": 104.15
+       },
+       {
+        "x": 395.94,
+        "y": 105.75
+       },
+       {
+        "x": 400.67,
+        "y": 107.41
+       },
+       {
+        "x": 405.39,
+        "y": 109.09
+       },
+       {
+        "x": 410.11,
+        "y": 110.72
+       },
+       {
+        "x": 414.84,
+        "y": 112.24
+       },
+       {
+        "x": 419.56,
+        "y": 113.6
+       },
+       {
+        "x": 424.29,
+        "y": 114.74
+       },
+       {
+        "x": 429.01,
+        "y": 115.6
+       },
+       {
+        "x": 433.73,
+        "y": 116.13
+       },
+       {
+        "x": 438.46,
+        "y": 116.26
+       },
+       {
+        "x": 443.18,
+        "y": 115.95
+       },
+       {
+        "x": 447.91,
+        "y": 115.13
+       },
+       {
+        "x": 452.74,
+        "y": 113.8
+       },
+       {
+        "x": 457.78,
+        "y": 112
+       },
+       {
+        "x": 462.98,
+        "y": 109.8
+       },
+       {
+        "x": 468.31,
+        "y": 107.23
+       },
+       {
+        "x": 473.74,
+        "y": 104.35
+       },
+       {
+        "x": 479.22,
+        "y": 101.2
+       },
+       {
+        "x": 484.73,
+        "y": 97.85
+       },
+       {
+        "x": 490.23,
+        "y": 94.32
+       },
+       {
+        "x": 495.68,
+        "y": 90.68
+       },
+       {
+        "x": 501.05,
+        "y": 86.98
+       },
+       {
+        "x": 506.3,
+        "y": 83.25
+       },
+       {
+        "x": 511.39,
+        "y": 79.56
+       },
+       {
+        "x": 516.3,
+        "y": 75.94
+       },
+       {
+        "x": 520.98,
+        "y": 72.46
+       },
+       {
+        "x": 525.41,
+        "y": 69.15
+       },
+       {
+        "x": 529.53,
+        "y": 66.07
+       },
+       {
+        "x": 533.33,
+        "y": 63.26
+       },
+       {
+        "x": 536.76,
+        "y": 60.79
+       },
+       {
+        "x": 539.79,
+        "y": 58.68
+       },
+       {
+        "x": 542.38,
+        "y": 57
+       }
+      ],
+      "color": "#6750A4",
+      "width": 2.5,
+      "seriesIndex": 0
+     },
+     {
+      "points": [
+       {
+        "x": 70,
+        "y": 216.87
+       },
+       {
+        "x": 72.59,
+        "y": 216.26
+       },
+       {
+        "x": 75.62,
+        "y": 215.54
+       },
+       {
+        "x": 79.05,
+        "y": 214.71
+       },
+       {
+        "x": 82.85,
+        "y": 213.79
+       },
+       {
+        "x": 86.97,
+        "y": 212.78
+       },
+       {
+        "x": 91.4,
+        "y": 211.7
+       },
+       {
+        "x": 96.08,
+        "y": 210.56
+       },
+       {
+        "x": 100.99,
+        "y": 209.37
+       },
+       {
+        "x": 106.08,
+        "y": 208.14
+       },
+       {
+        "x": 111.33,
+        "y": 206.88
+       },
+       {
+        "x": 116.7,
+        "y": 205.6
+       },
+       {
+        "x": 122.15,
+        "y": 204.31
+       },
+       {
+        "x": 127.65,
+        "y": 203.03
+       },
+       {
+        "x": 133.16,
+        "y": 201.76
+       },
+       {
+        "x": 138.64,
+        "y": 200.52
+       },
+       {
+        "x": 144.07,
+        "y": 199.31
+       },
+       {
+        "x": 149.4,
+        "y": 198.15
+       },
+       {
+        "x": 154.6,
+        "y": 197.05
+       },
+       {
+        "x": 159.64,
+        "y": 196.02
+       },
+       {
+        "x": 164.48,
+        "y": 195.07
+       },
+       {
+        "x": 169.2,
+        "y": 194.17
+       },
+       {
+        "x": 173.92,
+        "y": 193.29
+       },
+       {
+        "x": 178.65,
+        "y": 192.42
+       },
+       {
+        "x": 183.37,
+        "y": 191.58
+       },
+       {
+        "x": 188.09,
+        "y": 190.75
+       },
+       {
+        "x": 192.82,
+        "y": 189.94
+       },
+       {
+        "x": 197.54,
+        "y": 189.15
+       },
+       {
+        "x": 202.27,
+        "y": 188.38
+       },
+       {
+        "x": 206.99,
+        "y": 187.63
+       },
+       {
+        "x": 211.71,
+        "y": 186.89
+       },
+       {
+        "x": 216.44,
+        "y": 186.17
+       },
+       {
+        "x": 221.16,
+        "y": 185.47
+       },
+       {
+        "x": 225.88,
+        "y": 184.79
+       },
+       {
+        "x": 230.61,
+        "y": 184.13
+       },
+       {
+        "x": 235.33,
+        "y": 183.49
+       },
+       {
+        "x": 240.06,
+        "y": 182.86
+       },
+       {
+        "x": 244.78,
+        "y": 182.25
+       },
+       {
+        "x": 249.5,
+        "y": 181.66
+       },
+       {
+        "x": 254.23,
+        "y": 181.09
+       },
+       {
+        "x": 258.95,
+        "y": 180.53
+       },
+       {
+        "x": 263.68,
+        "y": 180.03
+       },
+       {
+        "x": 268.4,
+        "y": 179.61
+       },
+       {
+        "x": 273.12,
+        "y": 179.26
+       },
+       {
+        "x": 277.85,
+        "y": 178.96
+       },
+       {
+        "x": 282.57,
+        "y": 178.72
+       },
+       {
+        "x": 287.29,
+        "y": 178.51
+       },
+       {
+        "x": 292.02,
+        "y": 178.32
+       },
+       {
+        "x": 296.74,
+        "y": 178.15
+       },
+       {
+        "x": 301.47,
+        "y": 177.98
+       },
+       {
+        "x": 306.19,
+        "y": 177.81
+       },
+       {
+        "x": 310.91,
+        "y": 177.62
+       },
+       {
+        "x": 315.64,
+        "y": 177.39
+       },
+       {
+        "x": 320.36,
+        "y": 177.13
+       },
+       {
+        "x": 325.09,
+        "y": 176.82
+       },
+       {
+        "x": 329.81,
+        "y": 176.45
+       },
+       {
+        "x": 334.53,
+        "y": 176
+       },
+       {
+        "x": 339.26,
+        "y": 175.47
+       },
+       {
+        "x": 343.98,
+        "y": 174.84
+       },
+       {
+        "x": 348.7,
+        "y": 174.11
+       },
+       {
+        "x": 353.43,
+        "y": 173.27
+       },
+       {
+        "x": 358.15,
+        "y": 172.26
+       },
+       {
+        "x": 362.88,
+        "y": 171.08
+       },
+       {
+        "x": 367.6,
+        "y": 169.74
+       },
+       {
+        "x": 372.32,
+        "y": 168.27
+       },
+       {
+        "x": 377.05,
+        "y": 166.68
+       },
+       {
+        "x": 381.77,
+        "y": 165
+       },
+       {
+        "x": 386.5,
+        "y": 163.26
+       },
+       {
+        "x": 391.22,
+        "y": 161.47
+       },
+       {
+        "x": 395.94,
+        "y": 159.65
+       },
+       {
+        "x": 400.67,
+        "y": 157.83
+       },
+       {
+        "x": 405.39,
+        "y": 156.02
+       },
+       {
+        "x": 410.11,
+        "y": 154.26
+       },
+       {
+        "x": 414.84,
+        "y": 152.55
+       },
+       {
+        "x": 419.56,
+        "y": 150.94
+       },
+       {
+        "x": 424.29,
+        "y": 149.42
+       },
+       {
+        "x": 429.01,
+        "y": 148.04
+       },
+       {
+        "x": 433.73,
+        "y": 146.8
+       },
+       {
+        "x": 438.46,
+        "y": 145.73
+       },
+       {
+        "x": 443.18,
+        "y": 144.86
+       },
+       {
+        "x": 447.91,
+        "y": 144.2
+       },
+       {
+        "x": 452.74,
+        "y": 143.75
+       },
+       {
+        "x": 457.78,
+        "y": 143.49
+       },
+       {
+        "x": 462.98,
+        "y": 143.39
+       },
+       {
+        "x": 468.31,
+        "y": 143.44
+       },
+       {
+        "x": 473.74,
+        "y": 143.63
+       },
+       {
+        "x": 479.22,
+        "y": 143.94
+       },
+       {
+        "x": 484.73,
+        "y": 144.35
+       },
+       {
+        "x": 490.23,
+        "y": 144.84
+       },
+       {
+        "x": 495.68,
+        "y": 145.4
+       },
+       {
+        "x": 501.05,
+        "y": 146.02
+       },
+       {
+        "x": 506.3,
+        "y": 146.67
+       },
+       {
+        "x": 511.39,
+        "y": 147.34
+       },
+       {
+        "x": 516.3,
+        "y": 148.01
+       },
+       {
+        "x": 520.98,
+        "y": 148.68
+       },
+       {
+        "x": 525.41,
+        "y": 149.31
+       },
+       {
+        "x": 529.53,
+        "y": 149.9
+       },
+       {
+        "x": 533.33,
+        "y": 150.42
+       },
+       {
+        "x": 536.76,
+        "y": 150.87
+       },
+       {
+        "x": 539.79,
+        "y": 151.22
+       },
+       {
+        "x": 542.38,
+        "y": 151.47
+       }
+      ],
+      "color": "#7D5260",
+      "width": 2.5,
+      "seriesIndex": 1
+     }
+    ],
+    "markers": [],
+    "glyphs": [],
+    "endLabels": [],
+    "texts": [
+     {
+      "x": 22.76,
+      "y": 31,
+      "text": "Quarterly results",
+      "color": "#1C1B1F",
+      "fontSize": 14,
+      "fontWeight": 600,
+      "align": "start",
+      "baseline": "top",
+      "key": "title"
+     },
+     {
+      "x": 14.76,
+      "y": 275,
+      "text": "0",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-0"
+     },
+     {
+      "x": 14.76,
+      "y": 238.67,
+      "text": "5",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-1"
+     },
+     {
+      "x": 14.76,
+      "y": 202.33,
+      "text": "10",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-2"
+     },
+     {
+      "x": 14.76,
+      "y": 166,
+      "text": "15",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-3"
+     },
+     {
+      "x": 14.76,
+      "y": 129.67,
+      "text": "20",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-4"
+     },
+     {
+      "x": 14.76,
+      "y": 93.33,
+      "text": "25",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-5"
+     },
+     {
+      "x": 14.76,
+      "y": 57,
+      "text": "30",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "end",
+      "baseline": "middle",
+      "key": "yt-6"
+     },
+     {
+      "x": 70,
+      "y": 281,
+      "text": "Jan",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "xt-0"
+     },
+     {
+      "x": 164.48,
+      "y": 281,
+      "text": "Feb",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "xt-1"
+     },
+     {
+      "x": 258.95,
+      "y": 281,
+      "text": "Mar",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "xt-2"
+     },
+     {
+      "x": 353.43,
+      "y": 281,
+      "text": "Apr",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "xt-3"
+     },
+     {
+      "x": 447.91,
+      "y": 281,
+      "text": "May",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "xt-4"
+     },
+     {
+      "x": 542.38,
+      "y": 281,
+      "text": "Jun",
+      "color": "#49454F",
+      "fontSize": 11,
+      "align": "center",
+      "baseline": "top",
+      "key": "xt-5"
+     }
+    ],
+    "legend": [
+     {
+      "label": "Revenue",
+      "color": "#6750A4",
+      "seriesIndex": 0,
+      "hidden": false,
+      "x": 0,
+      "y": 0
+     },
+     {
+      "label": "Costs",
+      "color": "#7D5260",
+      "seriesIndex": 1,
+      "hidden": false,
+      "x": 0,
+      "y": 0
+     }
+    ],
+    "legendPosition": "top-end",
+    "xPositions": [
+     70,
+     164.48,
+     258.95,
+     353.43,
+     447.91,
+     542.38
+    ],
+    "xValues": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun"
+    ],
+    "xLabels": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun"
+    ],
+    "hoverPoints": [
+     {
+      "seriesIndex": 0,
+      "color": "#6750A4",
+      "label": "Revenue",
+      "byIndex": {
+       "0": {
+        "x": 70,
+        "y": 187.8,
+        "value": 12,
+        "symbol": "circle"
+       },
+       "1": {
+        "x": 164.48,
+        "y": 136.93,
+        "value": 19,
+        "symbol": "circle"
+       },
+       "2": {
+        "x": 258.95,
+        "y": 166,
+        "value": 15,
+        "symbol": "circle"
+       },
+       "3": {
+        "x": 353.43,
+        "y": 100.6,
+        "value": 24,
+        "symbol": "circle"
+       },
+       "4": {
+        "x": 447.91,
+        "y": 115.13,
+        "value": 22,
+        "symbol": "circle"
+       },
+       "5": {
+        "x": 542.38,
+        "y": 57,
+        "value": 30,
+        "symbol": "circle"
+       }
+      },
+      "values": [
+       12,
+       19,
+       15,
+       24,
+       22,
+       30
+      ],
+      "unanchored": false
+     },
+     {
+      "seriesIndex": 1,
+      "color": "#7D5260",
+      "label": "Costs",
+      "byIndex": {
+       "0": {
+        "x": 70,
+        "y": 216.87,
+        "value": 8,
+        "symbol": "circle"
+       },
+       "1": {
+        "x": 164.48,
+        "y": 195.07,
+        "value": 11,
+        "symbol": "circle"
+       },
+       "2": {
+        "x": 258.95,
+        "y": 180.53,
+        "value": 13,
+        "symbol": "circle"
+       },
+       "3": {
+        "x": 353.43,
+        "y": 173.27,
+        "value": 14,
+        "symbol": "circle"
+       },
+       "4": {
+        "x": 447.91,
+        "y": 144.2,
+        "value": 18,
+        "symbol": "circle"
+       },
+       "5": {
+        "x": 542.38,
+        "y": 151.47,
+        "value": 17,
+        "symbol": "circle"
+       }
+      },
+      "values": [
+       8,
+       11,
+       13,
+       14,
+       18,
+       17
+      ],
+      "unanchored": false
+     }
+    ]
+   },
+   "ax": [
+    {
+     "role": "button",
+     "name": "Run"
+    },
+    {
+     "role": "application",
+     "name": "Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave."
+    },
+    {
+     "role": "button",
+     "name": "Revenue",
+     "pressed": true
+    },
+    {
+     "role": "button",
+     "name": "Costs",
+     "pressed": true
+    },
+    {
+     "role": "slider",
+     "name": "Zoom range start",
+     "value": 0,
+     "valuetext": "0",
+     "valuemin": 0,
+     "valuemax": 5,
+     "orientation": "horizontal"
+    },
+    {
+     "role": "slider",
+     "name": "Zoom range end",
+     "value": 5,
+     "valuetext": "5",
+     "valuemin": 0,
+     "valuemax": 5,
+     "orientation": "horizontal"
+    },
+    {
+     "role": "status",
+     "name": ""
+    }
+   ],
+   "focus": [
+    "body"
+   ]
+  }
+ ],
+ "oracle": {
+  "page": "/ch-paint.html?chart=line&subset=parts",
+  "browser": "Chrome/153.0.8010.36",
+  "createdAt": "2026-10-31T18:41:18.805Z",
+  "deviceScaleFactor": 1,
+  "media": []
+ }
+}

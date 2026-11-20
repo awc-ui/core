@@ -1,0 +1,164 @@
+{
+ "tag": "md-slider",
+ "case": "vertical",
+ "request": {
+  "tag": "md-slider",
+  "properties": {
+   "value": 40,
+   "orientation": "vertical",
+   "sliderAriaLabel": "Volume"
+  },
+  "width": 640,
+  "dark": false
+ },
+ "platform": "macos",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "announcements": [],
+ "afterUpdate": null,
+ "tree": [
+  {
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "children": [
+      {
+       "actions": [
+        "AXIncrement",
+        "AXDecrement"
+       ],
+       "description": "Volume",
+       "enabled": true,
+       "focused": false,
+       "frame": [
+        272,
+        140,
+        44,
+        24
+       ],
+       "identifier": "example-md-slider",
+       "maxValue": 100,
+       "minValue": 0,
+       "orientation": "AXVerticalOrientation",
+       "role": "AXSlider",
+       "roleDescription": "slider",
+       "value": 40,
+       "valueDescription": "40"
+      },
+      {
+       "enabled": true,
+       "frame": [
+        336.5,
+        145,
+        15,
+        14
+       ],
+       "identifier": "example-md-slider",
+       "role": "AXStaticText",
+       "roleDescription": "text",
+       "value": "40"
+      }
+     ],
+     "focused": false,
+     "frame": [
+      0,
+      0,
+      640,
+      264
+     ],
+     "role": "AXGroup",
+     "roleDescription": "group",
+     "subrole": "AXHostingView"
+    }
+   ],
+   "focused": false,
+   "frame": [
+    0,
+    0,
+    640,
+    264
+   ],
+   "modal": false,
+   "role": "AXWindow",
+   "roleDescription": "window",
+   "subrole": "AXUnknown",
+   "title": ""
+  }
+ ],
+ "keyboardFocus": null,
+ "axFocused": null,
+ "axTrusted": false,
+ "node": {
+  "children": [],
+  "id": "example-md-slider",
+  "properties": {
+   "ariaLabelEnd": "",
+   "ariaLabelStart": "",
+   "controlled": false,
+   "density": 0,
+   "disabled": false,
+   "fullHeight": false,
+   "icon": "",
+   "insetIcon": false,
+   "labeled": true,
+   "max": 100,
+   "min": 0,
+   "name": "",
+   "nameEnd": "",
+   "nameStart": "",
+   "orientation": "vertical",
+   "range": false,
+   "size": "xs",
+   "sliderAriaLabel": "Volume",
+   "step": 1,
+   "stops": false,
+   "value": 40,
+   "valueEnd": 100,
+   "valueEndText": "",
+   "valueIndicator": false,
+   "valueStart": 0,
+   "valueStartText": "",
+   "valueText": "",
+   "variant": "standard"
+  },
+  "tag": "md-slider"
+ },
+ "focus": [],
+ "inspection": {
+  "nodes": [
+   {
+    "bounds": {
+     "height": 200,
+     "width": 576,
+     "x": 32,
+     "y": 32
+    },
+    "id": "component",
+    "metrics": {
+     "activeColor": "#6750A4",
+     "disabled": false,
+     "height": 200,
+     "thumbHeight": 4,
+     "thumbWidth": 44,
+     "thumbs": 1,
+     "trackHeight": 200,
+     "trackRadius": 8,
+     "value": 40,
+     "width": 576
+    },
+    "name": "md-slider"
+   }
+  ],
+  "source": "SwiftUI layout",
+  "unit": "pt",
+  "version": 1
+ }
+}

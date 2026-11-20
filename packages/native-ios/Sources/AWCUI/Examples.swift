@@ -43,7 +43,8 @@ public enum AWCExamples {
         case "md-accordion-item": set(["headline": "A shared design language", "supportingText": "Built for every surface", "expanded": true]); children = [text("Colors, spacing, shapes, and component contracts come from the same AWC source.")]
         case "md-list": set(["selectionMode": "single-select"]); children = ["Design review", "Prototype", "Release"].map { AWCNode(tag: "md-list-item", properties: ["headline": .string($0), "supportingText": "Project milestone", "leadingIcon": "folder"]) }
         case "md-list-item": set(["type": "button", "headline": "Design review", "supportingText": "Today, 14:30", "leadingIcon": "calendar_month", "selectionMode": "single-select"])
-        case "md-app-bar": set(["headline": "Workspace", "subtitle": "Build something useful", "leadingIcon": "menu", "variant": "large"])
+        case "md-app-bar": set(["headline": "Your workspace", "leadingIcon": "menu", "leadingIconLabel": "Open navigation"])
+            children = [AWCNode(tag: "md-icon-button", properties: ["icon": "search", "aria-label": "Search"], slot: "trailing")]
         case "md-toolbar": set(["variant": "floating", "ariaLabelProp": "Formatting"])
             children = [("undo", "Undo", false), ("redo", "Redo", false), ("", "", false), ("format_bold", "Bold", true), ("format_italic", "Italic", true)].map { icon, label, toggle in
                 icon.isEmpty ? AWCNode(tag: "md-divider", properties: ["vertical": true])
@@ -51,9 +52,9 @@ public enum AWCExamples {
         case "md-tabs": set(["ariaLabelProp": "Workspace sections"]); children = ["Overview", "Activity", "Settings"].map { AWCNode(tag: "md-tab", properties: ["label": .string($0)]) }
         case "md-navigation-bar": children = [("Home", "home"), ("Explore", "explore"), ("Saved", "bookmark")].map { AWCNode(tag: "md-navigation-tab", properties: ["label": .string($0.0), "icon": .string($0.1)]) }
         case "md-navigation-rail":
-            children = ["Home", "Projects", "Settings"].enumerated().map { index, title in AWCNode(tag: tag == "md-navigation-rail" ? "md-navigation-rail-tab" : "md-navigation-tab", properties: ["label": .string(title), "icon": .string(["home", "folder", "settings"][index]), "value": .string(title.lowercased()), "active": .bool(index == 0)]) }
+            children = ["Home", "Saved", "Settings"].enumerated().map { index, title in AWCNode(tag: tag == "md-navigation-rail" ? "md-navigation-rail-tab" : "md-navigation-tab", properties: ["label": .string(title), "icon": .string(["home", "favorite", "settings"][index])].merging(index == 0 ? ["active": true] : [:]) { a, _ in a }) }
         case "md-navigation-tab": set(["label": "Home", "icon": "home", "active": true])
-        case "md-navigation-rail-tab": set(["label": "Projects", "icon": "folder", "active": true])
+        case "md-navigation-rail-tab": set(["label": "Home", "icon": "home", "active": true])
         case "md-tab": set(["label": "Overview", "active": true])
         case "md-tab-panels": children = ["Your workspace, across every platform.", "Recent activity will appear here.", "Make this workspace your own."].enumerated().map { index, copy in AWCNode(tag: "md-tab-panel", properties: ["active": .bool(index == 0)], children: [text(copy)]) }
         case "md-tab-panel": set(["active": true]); children = [text("Your workspace, across every platform.")]

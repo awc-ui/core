@@ -16,6 +16,18 @@ private fun rippleValues(request:JSONObject,field:String):Map<String,Any?> {
 /** Defaults first, local values win (the nearer custom property). */
 internal fun parseLivePreviewRippleAppearance(request:JSONObject)=AWCRippleAppearance.fromValues(rippleValues(request,"rippleAppearanceDefaults")).merging(AWCRippleAppearance.fromValues(rippleValues(request,"rippleAppearance")))
 
+/** md-divider retained update (gate-7 r3-03): the four boolean source properties. */
+internal fun parseLivePreviewDividerUpdate(request:JSONObject):Map<String,AWCValue> {
+    require(request.keys().asSequence().all { it in setOf("command","properties") } && request.optString("command")=="update") { "Expected a property update." }
+    val properties=request.getJSONObject("properties")
+    require(properties.length()>0) { "A property update must contain at least one field." }
+    return properties.keys().asSequence().associateWith { name->
+        val value=properties.get(name)
+        require(name in setOf("vertical","inset","insetStart","insetEnd")) { "Unknown md-divider property: $name" }
+        require(value is Boolean) { "$name must be Boolean." }
+        value
+    }
+}
 internal fun parseLivePreviewRippleUpdate(request:JSONObject):Map<String,AWCValue> {
     require(request.keys().asSequence().all { it in setOf("command","properties") } && request.optString("command")=="update") { "Expected a property update." }
     val properties=request.getJSONObject("properties")

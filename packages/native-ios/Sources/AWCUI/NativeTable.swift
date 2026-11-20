@@ -133,7 +133,8 @@ extension AWCNode {
     /// captureFlip plays keyed by row id: movers glide from their old box (fast spatial spring), entrants fade and drop in
     /// from -8 px; 18 ms stagger per element (capped at 6). A new token restarts a row's keyframes.
     struct Flip: Equatable { var token: Int; var dy: Double; var delay: Double; var enter: Bool }
-    var flips: [String: Flip] = [:]
+    @ObservationIgnored var flips: [String: Flip] = [:]
+    @ObservationIgnored var lastFlipIDs: [String] = []
     @ObservationIgnored var flipToken = 0
     /// Last laid-out height of each row (old and new boxes of an order change).
     @ObservationIgnored var rowPitch: [String: Double] = [:]
@@ -186,6 +187,11 @@ struct AWCTableEnvironment {
     var axMode = AWCTableAXMode.table
     /// The family's `--md-table-*` custom properties at the table (inherited + the table's own declarations).
     var vars = AWCTableVars()
+    /// `::part()` rules in scope: tag-wide and per node id (r5 R5-07).
+    var parts: [AWCTablePart: AWCTablePartStyle] = [:]
+    var partTargets: [String: [AWCTablePart: AWCTablePartStyle]] = [:]
+    /// A part's rule for the component with node id `id` (forced colours drop the author colours, as Chrome does).
+    func part(_ p: AWCTablePart, _ id: String) -> AWCTablePartStyle { AWCTablePartStyle.resolve(p, id, parts, partTargets, forced: forcedColors) }
     var dividerHex: String {
         if forcedColors { return palette.hex("on-surface") }
         if noDividers { return "#00000000" }

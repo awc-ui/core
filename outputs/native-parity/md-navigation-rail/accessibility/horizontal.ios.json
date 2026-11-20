@@ -1,0 +1,160 @@
+{
+ "tag": "md-navigation-rail",
+ "case": "horizontal",
+ "elements": [
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup:Navigation"
+   ],
+   "depth": 8,
+   "frame": [
+    192,
+    364,
+    80,
+    72
+   ],
+   "interactive": true,
+   "label": "Home",
+   "traits": [
+    "button",
+    "selected"
+   ]
+  },
+  {
+   "class": "AccessibilityNode",
+   "containers": [
+    "semanticGroup:Navigation"
+   ],
+   "depth": 8,
+   "frame": [
+    192,
+    364,
+    80,
+    72
+   ],
+   "interactive": true,
+   "label": "Home",
+   "traits": [
+    "staticText"
+   ]
+  },
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup:Navigation"
+   ],
+   "depth": 8,
+   "frame": [
+    280,
+    364,
+    80,
+    72
+   ],
+   "interactive": true,
+   "label": "Saved",
+   "traits": [
+    "button"
+   ]
+  },
+  {
+   "class": "AccessibilityNode",
+   "containers": [
+    "semanticGroup:Navigation"
+   ],
+   "depth": 8,
+   "frame": [
+    280,
+    364,
+    80,
+    72
+   ],
+   "interactive": true,
+   "label": "Saved",
+   "traits": [
+    "staticText"
+   ]
+  },
+  {
+   "class": "AWCNativeButtonFocusView",
+   "containers": [
+    "semanticGroup:Navigation"
+   ],
+   "depth": 8,
+   "frame": [
+    368,
+    364,
+    80,
+    72
+   ],
+   "interactive": true,
+   "label": "Settings",
+   "traits": [
+    "button"
+   ]
+  },
+  {
+   "class": "AccessibilityNode",
+   "containers": [
+    "semanticGroup:Navigation"
+   ],
+   "depth": 8,
+   "frame": [
+    368,
+    364,
+    80,
+    72
+   ],
+   "interactive": true,
+   "label": "Settings",
+   "traits": [
+    "staticText"
+   ]
+  }
+ ],
+ "focus": [
+  {
+   "firstResponder": {
+    "class": "AWCNativeButtonFocusView",
+    "frame": [
+     192,
+     364,
+     80,
+     72
+    ],
+    "interactive": true,
+    "label": "Home",
+    "traits": [
+     "button",
+     "selected"
+    ]
+   },
+   "focusSystem": {
+    "class": "AWCNativeButtonFocusView",
+    "frame": [
+     192,
+     364,
+     80,
+     72
+    ],
+    "interactive": true,
+    "label": "Home",
+    "traits": [
+     "button",
+     "selected"
+    ]
+   }
+  }
+ ],
+ "id": "md-navigation-rail/horizontal",
+ "image": {
+  "scale": 2,
+  "offset": [
+   0,
+   0
+  ],
+  "cssPerUnit": 1
+ },
+ "ios": "26.3.1",
+ "platform": "ios"
+}

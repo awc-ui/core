@@ -1,6 +1,6 @@
 // Laboratory capture budgets. Public native components use their caller's
 // constraints and must not import these preview-only limits.
-export const supportsNativeViewportTag = tag => ['md-snackbar', 'md-tooltip', 'md-dialog', 'md-bottom-sheet', 'md-side-sheet', 'md-time-picker', 'md-color-picker'].includes(tag);
+export const supportsNativeViewportTag = tag => ['md-snackbar', 'md-tooltip', 'md-dialog', 'md-bottom-sheet', 'md-side-sheet', 'md-time-picker', 'md-color-picker', 'md-date-picker'].includes(tag);
 const finitePositive = value => typeof value === 'number' && Number.isFinite(value) && value > 0;
 export function nativeCaptureViewport(width = 640, height = 240) {
   const appliedWidth = Math.round(Math.min(1200, Math.max(320, width)));

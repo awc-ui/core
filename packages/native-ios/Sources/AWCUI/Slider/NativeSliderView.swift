@@ -37,6 +37,7 @@ struct AWCNativeSliderView: View {
     let emit: (String, AWCValue) -> Void
     @Environment(\.awcThemeTokens) private var envTokens
     @Environment(\.awcSliderAppearance) private var appearance
+    @Environment(\.awcSliderParts) private var sliderParts
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.layoutDirection) private var direction
     @Environment(\.awcNativeDensity) private var inheritedDensity
@@ -45,8 +46,12 @@ struct AWCNativeSliderView: View {
     @FocusState private var focused: String?
     @State private var dragging = false
 
-    init(nodeID: String = "", properties: [String: AWCValue], set: @escaping (String, AWCValue) -> Void, emit: @escaping (String, AWCValue) -> Void) {
-        self.nodeID = nodeID; self.properties = properties; self.set = set; self.emit = emit
+    /// R6-04: the `inset-icon` slot's content (the AWC renderer for the slotted node), drawn instead of the icon glyph.
+    var insetContent: AnyView? = nil
+
+    init(nodeID: String = "", properties: [String: AWCValue], set: @escaping (String, AWCValue) -> Void, emit: @escaping (String, AWCValue) -> Void,
+         insetContent: AnyView? = nil) {
+        self.nodeID = nodeID; self.properties = properties; self.set = set; self.emit = emit; self.insetContent = insetContent
     }
 
     private func num(_ k: String, _ d: Double) -> Double { properties[k]?.number ?? d }
@@ -118,12 +123,13 @@ struct AWCNativeSliderView: View {
     var body: some View {
         let _ = model.version
         let _ = sync()
-        let th = theme, hk = hooks
+        let th = theme, hk = AWCSliderParts.hooks(hooks, sliderParts), parts = sliderParts
         GeometryReader { geo in
             TimelineView(.animation(minimumInterval: nil, paused: !model.motion.active(Date().timeIntervalSince1970 * 1000))) { ctx in
                 let now = ctx.date.timeIntervalSince1970 * 1000
-                let p = AWCSliderLayout.layout(model.s, theme: th, hooks: hk, containerWidth: model.s.vertical && !fillsWidth ? 0 : geo.size.width,
-                                               containerHeight: geo.size.height, fullHeight: fullHeight, densityProp: densityProp, motion: model.motion, now: now)
+                let p = AWCSliderParts.applied(AWCSliderLayout.layout(model.s, theme: th, hooks: hk, containerWidth: model.s.vertical && !fillsWidth ? 0 : geo.size.width,
+                                               containerHeight: geo.size.height, fullHeight: fullHeight, densityProp: densityProp, motion: model.motion, now: now),
+                                               parts, vertical: model.s.vertical)
                 content(p)
             }
         }
@@ -131,7 +137,8 @@ struct AWCNativeSliderView: View {
         .frame(maxWidth: model.s.vertical && !fillsWidth ? settledWidth(th, hk) : .infinity, alignment: .leading)
         .environment(\.layoutDirection, .leftToRight)   // the layout model already mirrors RTL
         .awcInspect(nodeID: nodeID, name: "md-slider") { size in
-            let p = AWCSliderLayout.layout(model.s, theme: th, hooks: hk, containerWidth: Double(size.width), fullHeight: fullHeight, densityProp: densityProp)
+            let p = AWCSliderParts.applied(AWCSliderLayout.layout(model.s, theme: th, hooks: hk, containerWidth: Double(size.width), fullHeight: fullHeight, densityProp: densityProp),
+                                           parts, vertical: model.s.vertical)
             var m: [String: AWCValue] = ["width": .number(Double(size.width)), "height": .number(Double(size.height)), "disabled": .bool(model.s.disabled),
                                          "trackHeight": .number(p.track.height), "trackRadius": .number(p.trackRadius), "thumbs": .number(Double(p.thumbs.count))]
             if model.s.range { m["valueStart"] = .number(model.s.valueStart); m["valueEnd"] = .number(model.s.valueEnd) } else { m["value"] = .number(model.s.value) }
@@ -155,10 +162,16 @@ struct AWCNativeSliderView: View {
           // CSS `opacity` on the host: the painted layers fade as one composited group (indicator text over its bubble,
           // inset icon over the track), as Chrome composites them.
           ZStack(alignment: .topLeading) {
-            Canvas { ctx, _ in draw(p, into: &ctx) }
-                .frame(width: p.width, height: p.height)
+            // A 16 pt overflow margin: a thumb at the track's start / end overhangs the host box (Chrome paints it).
+            Canvas { ctx, _ in ctx.translateBy(x: Self.overflow, y: Self.overflow); draw(p, into: &ctx) }
+                .frame(width: p.width + 2 * Self.overflow, height: p.height + 2 * Self.overflow)
+                .offset(x: -Self.overflow, y: -Self.overflow).allowsHitTesting(false)
             if let inset = p.inset {
-                AWCMaterialSymbol(str("icon", "volume_up"), size: inset.size)
+                Group {
+                    // ::slotted([slot='inset-icon']): centred in the inset box, inset-size font, the inset colour inherited.
+                    if let insetContent { insetContent.font(.system(size: inset.size)).fixedSize() }
+                    else { AWCMaterialSymbol(str("icon", "volume_up"), size: inset.size) }
+                }
                     .foregroundStyle(Color(awcSRRGBA: inset.color))
                     .frame(width: inset.rect.width, height: inset.rect.height)
                     // The mask works in the icon's own (un-offset) frame, so it is applied before the offset.
@@ -176,7 +189,7 @@ struct AWCNativeSliderView: View {
             }
           }
           .frame(width: p.width, height: p.height, alignment: .topLeading)
-          .compositingGroup().opacity(p.opacity)
+          .padding(Self.overflow).compositingGroup().opacity(p.opacity).padding(-Self.overflow)
             ForEach(Array(p.thumbs.enumerated()), id: \.offset) { _, t in thumbHandle(t, p) }
         }
         .frame(width: p.width, height: p.height, alignment: .topLeading)
@@ -185,6 +198,7 @@ struct AWCNativeSliderView: View {
         .allowsHitTesting(!model.s.disabled)
     }
 
+    static let overflow: CGFloat = 16
     private func trackClip(_ p: AWCSliderPaint) -> some View {
         RoundedRectangle(cornerRadius: Swift.min(p.trackRadius, p.track.width / 2, p.track.height / 2))
             .frame(width: p.track.width, height: p.track.height).offset(x: p.track.x, y: p.track.y)

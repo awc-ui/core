@@ -45,10 +45,13 @@ class NativeTablePaintTest {
     private val assets get() = InstrumentationRegistry.getInstrumentation().context.assets
 
     private var nodes by mutableStateOf<List<Node>>(emptyList())
+    /** The case's ::part() rules (r5 R5-07). */
+    private var parts by mutableStateOf<Map<dev.awc.nativeui.AWCTablePart, dev.awc.nativeui.AWCTablePartStyle>>(emptyMap())
     private var dark by mutableStateOf(false); private var rtl by mutableStateOf(false); private var forced by mutableStateOf(false)
     private var width by mutableStateOf(760.0); private var page by mutableStateOf(Color.White); private var epoch by mutableIntStateOf(0)
     private val inspection = AWCTableInspection(); private val scroller = AWCTableScrollController()
     private var checks = 0; private val failures = mutableListOf<String>(); private val report = JSONArray()
+    private var spanChecks = 0
     private fun check(ok: Boolean, msg: () -> String) { checks++; if (!ok) failures += msg() }
 
     @Composable private fun Render(n: Node) {
@@ -57,14 +60,31 @@ class NativeTablePaintTest {
             "#symbol" -> AWCMaterialSymbol(n.props["name"]?.toString() ?: "", size = 24.dp)
             "br" -> {}
             "div", "p", "span", "strong", "em" -> {
-                val pad = padding(n.props["style"]?.toString() ?: "")
-                Column(Modifier.padding(start = pad[3].dp, top = pad[0].dp, end = pad[1].dp, bottom = pad[2].dp),
-                    horizontalAlignment = if ((n.props["style"]?.toString() ?: "").contains("text-align:center")) androidx.compose.ui.Alignment.CenterHorizontally else androidx.compose.ui.Alignment.Start) {
-                    n.children.forEach { Render(it) } }
+                // The page's light-DOM slot content with the inline style subset the oracle pages use (font, colour, background,
+                // flex centring, `position:absolute; inset:0` fill, padding, text-align).
+                val css = n.props["style"]?.toString() ?: ""; val pad = padding(css)
+                val st = css.split(';').mapNotNull { d -> d.split(':', limit = 2).takeIf { it.size == 2 }?.let { it[0].trim().lowercase() to it[1].trim() } }.toMap()
+                var size = st["font-size"]?.removeSuffix("px")?.toDoubleOrNull(); var weight = st["font-weight"]?.toDoubleOrNull() ?: if (n.tag == "strong") 700.0 else null
+                st["font"]?.split(' ')?.forEach { tk -> if (tk.endsWith("px")) size = tk.removeSuffix("px").toDoubleOrNull() else tk.toDoubleOrNull()?.takeIf { it in 100.0..1000.0 }?.let { weight = it } }
+                val color = cssHex(st["color"]); val base = androidx.compose.material3.LocalTextStyle.current
+                val ts = base.copy(fontSize = size?.let { androidx.compose.ui.unit.TextUnit(it.toFloat(), androidx.compose.ui.unit.TextUnitType.Sp) } ?: base.fontSize,
+                    fontWeight = weight?.let { androidx.compose.ui.text.font.FontWeight(it.toInt()) } ?: base.fontWeight, color = color ?: base.color)
+                var m: Modifier = if (st["position"] == "absolute" && st["inset"]?.trim() in setOf("0", "0px")) Modifier.fillMaxSize() else Modifier
+                cssHex(st["background"] ?: st["background-color"])?.let { m = m.background(it) }
+                m = m.padding(start = pad[3].dp, top = pad[0].dp, end = pad[1].dp, bottom = pad[2].dp)
+                CompositionLocalProvider(androidx.compose.material3.LocalTextStyle provides ts, androidx.compose.material3.LocalContentColor provides (color ?: androidx.compose.material3.LocalContentColor.current)) {
+                    if (st["display"]?.contains("flex") == true) Row(m, horizontalArrangement = if (st["justify-content"] == "center") Arrangement.Center else Arrangement.Start,
+                        verticalAlignment = if (st["align-items"] == "center") androidx.compose.ui.Alignment.CenterVertically else androidx.compose.ui.Alignment.Top) { n.children.forEach { Render(it) } }
+                    else Column(m, horizontalAlignment = if (st["text-align"]?.startsWith("center") == true) androidx.compose.ui.Alignment.CenterHorizontally else androidx.compose.ui.Alignment.Start) {
+                        n.children.forEach { Render(it) } }
+                }
             }
             else -> AWCComponent(n.tag, n.props + ("id" to n.id)) { slot -> n.children.filter { (it.slot ?: "") == slot }.forEach { Render(it) } }
         }
     }
+    private fun cssHex(v: String?): Color? = v?.trim()?.takeIf { it.startsWith("#") }?.let { x ->
+        val h = x.drop(1).let { if (it.length <= 4) it.map { c -> "$c$c" }.joinToString("") else it }
+        val n = h.toLong(16); if (h.length == 8) Color(((n shr 24) and 255).toInt(), ((n shr 16) and 255).toInt(), ((n shr 8) and 255).toInt(), (n and 255).toInt()) else Color(0xFF000000 or n) }
     private fun padding(style: String): List<Double> {
         val v = Regex("padding:\\s*([^;]+)").find(style)?.groupValues?.get(1)?.trim()?.split(Regex("\\s+"))?.mapNotNull { it.removeSuffix("px").toDoubleOrNull() } ?: return listOf(0.0, 0.0, 0.0, 0.0)
         return when (v.size) { 1 -> List(4) { v[0] }; 2 -> listOf(v[0], v[1], v[0], v[1]); 3 -> listOf(v[0], v[1], v[2], v[1]); 4 -> v; else -> listOf(0.0, 0.0, 0.0, 0.0) }
@@ -74,7 +94,7 @@ class NativeTablePaintTest {
             Box(Modifier.absoluteOffset(24.dp, 24.dp).wrapContentSize(androidx.compose.ui.AbsoluteAlignment.TopLeft, unbounded = true).width(width.dp)) {
                 CompositionLocalProvider(LocalLayoutDirection provides if (rtl) LayoutDirection.Rtl else LayoutDirection.Ltr) {
                     AWCTableInspectionScope(inspection) { AWCTableForcedColorsScope(forced) { AWCTableReducedMotionScope(true) { AWCTableScrollControllerScope(scroller) {
-                        Column { nodes.forEach { Render(it) } }
+                        dev.awc.nativeui.AWCTablePartAppearanceScope(parts) { Column { nodes.forEach { Render(it) } } }
                     } } } }
                 }
             }
@@ -153,6 +173,11 @@ class NativeTablePaintTest {
             dark = c.getString("theme") == "dark"; rtl = c.getString("dir") == "rtl"; forced = c.getString("subset") == "forced-colors"
             page = Color(webPx[0]); width = c.getDouble("width")
             var ns = c.getJSONArray("nodes").objects().map(::parse)
+            parts = c.optJSONArray("parts")?.objects()?.fold(emptyMap()) { all, r ->
+                val p = dev.awc.nativeui.AWCTablePart.of(r.getString("tag"), r.getString("part")) ?: return@fold all
+                val d = r.getJSONObject("declarations").let { o -> o.keys().asSequence().associateWith { o.getString(it) } }
+                all + (p to (all[p] ?: dev.awc.nativeui.AWCTablePartStyle()).merging(dev.awc.nativeui.AWCTablePartStyle.declarations(d)))
+            } ?: emptyMap()
             prep.optJSONArray("select")?.let { a -> val rows = (0 until a.length()).map { a.getInt(it) }; ns = ns.map { select(it, rows) } }
             // The loading overlay's indeterminate md-progress-indicator steps every frame (its own motion loop), so compose
             // never idles: drive frames by hand and capture the screen instead of the idle-synchronised captureToImage().
@@ -199,6 +224,18 @@ class NativeTablePaintTest {
                         check(abs(n.x - k[0]) <= 0.75 && abs(n.width - k[2]) <= 0.75 && abs((n.y + n.height / 2) - (k[1] + k[3] / 2)) <= 0.75) { "$name: cell $i content (${n.x},${n.y},${n.width},${n.height}) vs $k" } } }
                 }
             }
+            // R5-12: rowspan / colspan above 1 reach the semantics (CollectionItemInfo of the cells).
+            fun spansOf(n: Node): List<Pair<Int, Int>> = (if (n.tag == "md-table-cell") listOf(((n.props["rowSpan"] as? Number)?.toInt() ?: 1) to ((n.props["colSpan"] as? Number)?.toInt() ?: 1)) else emptyList()) + n.children.flatMap(::spansOf)
+            val authored = ns.flatMap(::spansOf)
+            if (authored.any { it.first > 1 || it.second > 1 }) {
+                val info = compose.onAllNodes(androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsProperties.CollectionItemInfo), useUnmergedTree = true)
+                    .fetchSemanticsNodes().map { it.config[androidx.compose.ui.semantics.SemanticsProperties.CollectionItemInfo] }
+                val wantR = authored.map { it.first }.filter { it > 1 }.sorted(); val gotR = info.map { it.rowSpan }.filter { it > 1 }.sorted()
+                val wantC = authored.map { it.second }.filter { it > 1 }.sorted(); val gotC = info.map { it.columnSpan }.filter { it > 1 }.sorted()
+                spanChecks += wantR.size + wantC.size
+                check(wantR == gotR) { "$name: CollectionItemInfo rowSpan $gotR vs authored $wantR" }
+                check(wantC == gotC) { "$name: CollectionItemInfo columnSpan $gotC vs authored $wantC" }
+            }
             // Pixels (1 dp = 1 px).
             S = 1f
             if (!prepareCase()) { if (notIdle >= 4) break; continue }
@@ -234,7 +271,7 @@ class NativeTablePaintTest {
             report.put(JSONObject().put("name", name).put("ok", failures.size == before).put("mean", mean).put("over", ratio).put("compared", n).put("columns", JSONArray(cols)))
         }
         val dir = InstrumentationRegistry.getInstrumentation().targetContext.getExternalFilesDir("accordion")!!
-        java.io.File(dir, "table-paint.json").writeText(JSONObject().put("checks", checks).put("failures", failures.size).put("passed", passed).put("failureList", JSONArray(failures.take(3000))).put("report", report).toString(1))
+        java.io.File(dir, "table-paint.json").writeText(JSONObject().put("checks", checks).put("failures", failures.size).put("passed", passed).put("spanChecks", spanChecks).put("failureList", JSONArray(failures.take(3000))).put("report", report).toString(1))
         assertTrue("NativeTablePaintTest: ${checks - failures.size}/$checks checks, $passed cases fully passing\n" + failures.take(60).joinToString("\n"), failures.isEmpty())
     }
 }

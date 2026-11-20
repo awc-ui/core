@@ -15,7 +15,9 @@ struct AWCNativeFabMenu:View {
     @Environment(\.awcEventTargetListeners) private var targetListeners
     @Environment(\.layoutDirection) private var direction
     @Environment(\.awcNativeDensity) private var inheritedDensity
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
+    @Environment(\.awcReducedMotion) private var reducedOverride
+    private var reduceMotion: Bool { reducedOverride ?? systemReduceMotion }
     @State private var ownedController=AWCFabMenuController()
     @State private var session:AWCFabMenuSession?
     private var controller:AWCFabMenuController {suppliedController ?? ownedController}
@@ -54,7 +56,7 @@ struct AWCNativeFabMenu:View {
         let gap=appearance.itemGap ?? (density == -4 ? 2:awcFabMenuToken(tokens,"--md-sys-spacing-gap-xs",4))
         let children=session.effectivePlacement=="up" ? Array(items.reversed()):items
         let scope=AWCEventDispatcher(id:node.id,parent:dispatcher) {context in
-            if context.event.name=="mdClick",context.event.tag=="md-fab-menu-item" {session.activatedItem()}
+            if context.event.name=="mdClick",context.event.tag=="md-fab-menu-item" {session.activatedItem(pointer:context.event.activation?.source == .pointer)}
         }
         let content=VStack(alignment:.trailing,spacing:CGFloat(gap)) {
             ForEach(children) {item in
@@ -64,6 +66,8 @@ struct AWCNativeFabMenu:View {
             }
         }
         .fixedSize()
+        // The menu's own box is the item stack, as the Web md-fab-menu box; the scope overlay is the `overlay` part.
+        .awcInspect(nodeID:node.id,name:"md-fab-menu"){_ in ["display":"SwiftUI item stack","gap":["row":.number(Double(gap)),"column":0],"padding":[0,0,0,0],"margin":[0,0,0,0],"border":[0,0,0,0],"direction":.string(rtl ? "rtl":"ltr")]}
         .environment(\.awcTheme,theme)
         .environment(\.awcNativeDensity,density)
         .environment(\.layoutDirection,rtl ? .rightToLeft:.leftToRight)

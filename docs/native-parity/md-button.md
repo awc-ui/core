@@ -62,8 +62,8 @@ Full suites: see `work/claude-runner/INTEGRATION.md` (i2).
 
 * Android: Compose places content at whole pixels; the border box is compared to 1 dp (Chrome's fractional
   LayoutUnits).
-* The Laboratory's button appearance module exposes the CSS hooks; the `::part(state-layer)` opacity is a
-  native API (`stateLayerOpacity`) without a Laboratory control.
+* The Laboratory's button appearance module exposes the CSS hooks; the `::part(state-layer)` opacity is the
+  native `stateLayerOpacity` field, which the Laboratory exposes as its own control (`button-appearance.js`).
 
 ## Evidence
 

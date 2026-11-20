@@ -25,7 +25,11 @@ test('the hooks cover each IR and both released policies', () => {
     assert.deepEqual(fields.map(f => f.cssProperty).sort(), ir.cssProperties.map(p => p.name).sort(), tag);
     for (const [platform, p] of [['ios', ios[tag]], ['android', android[tag]]]) {
       assert.deepEqual(p.appearance.fields, fields.map(f => f.name), `${platform} ${tag}`);
-      for (const kind of ['properties', 'methods', 'events', 'slots']) assert.deepEqual(p[kind], ir[kind].map(x => x.name), `${platform} ${tag} ${kind}`);
+      for (const kind of ['properties', 'events', 'slots']) assert.deepEqual(p[kind], ir[kind].map(x => x.name), `${platform} ${tag} ${kind}`);
+      // getInstance() (the ECharts instance) is the one method without a native counterpart (exception record): declared in
+      // unsupportedMethods only, so the generated IR / catalog and the inventory report the gap (R5-05).
+      assert.deepEqual(p.unsupportedMethods, ['getInstance'], `${platform} ${tag} unsupportedMethods`);
+      assert.deepEqual(p.methods, ir.methods.map(x => x.name).filter(name => name !== 'getInstance'), `${platform} ${tag} methods`);
     }
     const registry = componentAppearance(tag);
     assert.equal(registry.nativeType, 'AWCChartAppearance', tag);

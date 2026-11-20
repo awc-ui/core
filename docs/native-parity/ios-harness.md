@@ -409,14 +409,142 @@ modal stack 149/149, accordion pointer reorder 628/628, switch paint 10335/10335
 28. **md-text-field states fixture on iOS (compile).** The UIKit branch of `NativeTextFieldStatesIntegration.swift` declared
     `let os` twice in one scope; the second declaration (same value) is dropped (patch 45; md-text-field is n3's).
 
+29. **Touch press through SwiftUI's own hit test — production (iOS 18+, di patch-01).** `AWCTouchPressRouter` (item 23)
+    decided occlusion with a UIKit hit test of the focus bridges; where SwiftUI draws the content into the hosting view
+    itself (iOS 26, and md-button content on iOS 18.6) the probe fell through to the hosting view and the touch stayed
+    SwiftUI's, whose ButtonStyle `isPressed` is a frame late on iOS 18 (md-button `click2`: the wave restarted after the
+    release, R1-01). Each `awcFocusBridgeLayer` now attaches a passive `UIGestureRecognizerRepresentable`
+    (`AWCTouchPressRecognizer`) to the view under its bridge: SwiftUI hands it the touch only where its own hit test puts
+    it (scrims and content above, `allowsHitTesting`, nested controls), inside `UIApplication.sendEvent`, and it calls the
+    bridge's `touchPress` (press, click on release inside, slop / scroll cancel) as the router did. iOS 17 keeps the router.
+    Probe `di-lab/probes/NativeIOSRepresentableProbe.swift` (iPhone 26.3 and 18.6): the recognizer gets the touch in the
+    same turn as UIKit's delivery, SwiftUI's DragGesture and Button actions run in that turn too, a scrim or a Text above a
+    button keeps the touch, and the recognizer delays no SwiftUI gesture.
+30. **Host pointer at the touch's delivery (harness, di patch-03).** Fixtures that drive a host pointer model
+    (`AWCNativePointerState`) next to the touch updated it when the touch was queued, a frame or two before UIKit
+    delivered the press and again after the release: a click painted `:active` where Chrome's does not (md-list state
+    layer and corner morph, md-chip click shots, md-navigation-bar press under load; r3-22, R4-11, R6-16).
+    `AWCShimTouch.pointerDown` / `pointerUp` apply the pointer change when UIKit delivers the touch-down (before the app
+    handles it) and right after it handled the touch-up — AppKit's order on macOS; a release not delivered within the await
+    is applied at once. Used by the md-list, md-chip and md-navigation-bar states fixtures (md-button and md-card keep the
+    queue time: their press schedules are calibrated to it).
+31. **Event delay from the input's delivery (harness, di patch-02).** The dialog / side-sheet / bottom-sheet motion fixtures
+    time an event from the step that caused it, with Chrome + 40 ms allowed; Chrome times it from its trusted input's first
+    event, while the native step included the synthesized input's delivery (a click's release reaches the app 17–36 ms
+    after it is queued, more under load: md-dialog `basic-ok` / `fullscreen-rtl` 40.0–40.7 ms, md-side-sheet Escape
+    40–44 ms; r3-23, R4-19). `AWCShimTouch.deliveredAt` stamps every delivered touch / press, and the event delay is timed
+    from the delivery of the step's last input (per-frame motion keeps the queue time; `AWC_MOTION_STEP_ANCHOR=queue`
+    restores the old event timing).
+32. **Phase clocks (harness, di patches 04-05).** The md-card and md-chip states fixtures shot, and the md-button fixture
+    pressed and shot, on the run clock: a phase whose input started late because the previous window's captures overran
+    (6–12 ms per phase on an iPhone at 3x) was photographed that much earlier in its transition (md-card `dragClick
+    clickPress` second ripple, r3-11; md-button `click2` fade on iOS 18.6, R1-01). The phase's shots and inputs now run on
+    the phase's own clock, as the md-list fixture already did (`AWC_*_STATES_SHOT_ANCHOR=t0`: the old timing). macOS
+    results are unchanged (card 173306/173306, chip 148613/148613, button 645/645).
+33. **Diagnostics.** `AWC_LIST_STATES_TRACE=<case>:<row>:<prop>` (+ `AWC_LIST_STATES_TRACE_WINDOW=<from>-<to>`),
+    `AWC_CARD_STATES_TIMING=1`, `AWC_CHIP_STATES_TIMING=1`, `AWC_DIALOG_TIMING=1` print per-frame values or input lateness.
+34. **md-list reorder glides from the drag move — production (iOS, di patches 10 and 14).** The drop placeholder and the
+    sibling shift glided from SwiftUI's `onChange` of the new target, a frame or more after the touch move on iOS 18.6, and
+    the placeholder's paused TimelineView, resumed for each glide, rendered one frame and then none for 25–45 ms: the
+    glide's first frames trailed Chrome's beyond the 34 ms envelope (`drag` / `dragCancel` / custom reorder, r3-22). The
+    runtime stamps the move that changed the target (`targetChangedAt`); on iOS both glides start there
+    (`AWCListPlaceholderView.glideStart`) and the placeholder's timeline runs while it is shown (during a drag only).
+    macOS keeps the onChange start and the paused timeline.
+35. **md-list placeholder samples by their render time (harness, di patch 16).** The md-list states fixture timed the drop
+    placeholder's per-frame value by when it read it; while the placeholder's timeline waited for its next frame, a read
+    carried the previous frame's value at a later time (iOS 18.6 `drag` / `dragCancel`, r3-22). On iOS the value is now timed
+    by its `renderTime`, as the rows already were. macOS: unchanged.
+36. **Keys aimed at a text input (finding, harness).** UIKit hands a hardware key whose responder is a text input to the
+    keyboard (UIKeyboardImpl), not to the window as a UIPressesEvent; the keyboard applies it 5–69 ms after the HID
+    key-down (median ~30 ms, iPhone 26.3; `AWC_IOS_KEY_TIMING=1` prints each key's await). The shim's press await
+    therefore ends at its 30 ms timeout for every typed key. Awaiting the key's effect instead (text / selection /
+    responder change) dropped a key under load and was not adopted; `AWC_IOS_KEY_AWAIT=0` (diagnostic only) garbles typing.
+37. **Diagnostics.** `AWC_LIST_STATES_PH_TRACE=<case>` prints the drop placeholder's per-frame values with the step and
+    delivery times.
+38. **AppKit key repeats (harness, di patch-18).** The shim pressed and released a new HID key for every AppKit
+    auto-repeat (keyDown with `isARepeat`), so a fixture holding Space toggled md-switch / md-checkbox once per repeat
+    (d4's held-Space checks, R4-06). A repeat is now folded into the held press already sent (iPhone 26.3: switch states
+    16635/16635, checkbox states 17840/17840).
+39. **Accessibility runtime (harness, di patch-19).** UIKit loads its accessibility bundles when the simulator's
+    `com.apple.Accessibility` runtime is on, and they change what views report: an activity indicator with an empty label
+    answers "In progress" (md-skeleton, gate-7 R2-D12). tools/ax's iOS probe and Accessibility Inspector switch the runtime
+    on and it persists per simulator, so results depended on which simulator ran a suite. `run-fixture.sh` now sets it before
+    every launch: `AWC_IOS_AX_RUNTIME=voiceover` (default) = AccessibilityEnabled + ApplicationAccessibilityEnabled on and
+    AutomationEnabled off — the runtime VoiceOver runs an app in. VoiceOver itself stays off: it would take the synthesized
+    touches as its own gestures. `off` and `automation` (all three on, as tools/ax and XCUITest) are available. The host
+    prints the state the app launched with on its `AWC-IOS-START` line (`ax=<accessibility>/<application>/<automation>`,
+    from libAccessibility). Probe `di-lab/probes/NativeIOSAXRuntimeProbe.swift` (iPhone 26.3): off → an empty
+    `UIActivityIndicatorView` label reads "", voiceover and automation → "In progress".
+40. **One-turn clicks in the md-list fixture (harness, di patch-22).** A click the fixture queues in one turn never paints
+    `:active` in Chrome (mousedown and mouseup before its next frame). UIKit delivers the two touch phases on separate frames,
+    and when the release came more than a frame after the press the list item's press matured and painted one frame of it
+    (r3-22: `extra/expand…-hooks` r1 state layer 0.228 vs 0.2). `AWCShimTouch.pointerClick` moves the fixture's host pointer
+    down and up together right after the app handled the touch-up.
+41. **md-card shots from the delivered input (harness, di patch-24).** A phase's shot keeps Chrome's distance from the
+    phase's input as the app received it (the first touch or key UIKit delivered in the phase), less half a frame: the card
+    starts its press visuals in the delivery turn, Chrome in its next frame. Timed from the queued input, the shot came a
+    frame early when UIKit delivered the touch two frames late (iOS 18.6 `dragClick clickPress`: the second press's wave a
+    few points smaller than Chrome's, r3-11). `AWC_CARD_STATES_SHOT_AT=queue`: the queued input.
+42. **Chrome sample gaps around an input in the md-list fixture (harness, di patch-26).** The fixture judged a native frame
+    inside a Chrome sample gap of more than two frames against the gap's endpoints. Around a click Chrome sometimes recorded
+    no frame for 80–100 ms, and the state it passes through between its mousedown and click (a selected row no longer
+    active: icons in the selected colour) is not on the line between those endpoints (`select-options` r0 icons, r3-22,
+    about half of the iPhone 26.3 runs with the accessibility runtime on). On iOS a native frame inside such a gap that holds
+    one of the run's steps is recorded as a known gap (`KNOWN-GAP chrome-unsampled …` on the console), not judged.
+43. **md-navigation-bar transitions in the next frame — production (iOS, di patch-27).** A tab's state change started its
+    CSS transitions (state layer, colours, indicator) in the update of the input that caused it; Chrome computes style once
+    per frame after the input, so its transitions start a frame later. After an arrow key or a press the focus / press layers
+    ran a frame ahead of Chrome on iOS 18.6 (gate-7 R6-19 `manual-ltr arrow-forward t+50`, R6-16 `auto-ltr press t+66`; 2 of 3
+    runs with the accessibility runtime on, 0 of 3 off). On iOS the transitions now start one frame later (`AWCTabsTrack`
+    transition delay: the track holds its value until then, changes within the frame coalesce, a set-and-reset starts none),
+    as md-breadcrumbs, md-color-picker, md-list-item and md-org-chart already do. macOS: unchanged.
+44. **Wave values across a slipped input in the md-chip / md-card fixtures (harness, di patch-30, patch-29).** The per-frame
+    windows map a native render time to web time through the step in force at that moment. When the harness dispatches a
+    phase's input late (the window before it ran over with captures; under load 30–60 ms), every later sample and the end of
+    every window just before that step move back by the slip, though the md-ripple wave fading there is timed from the press
+    that started it. iOS 18.6 / 26.3 `pointer-filter-filled-error-light-ltr ripple opacity 0.0102 at web 2778 within Chrome
+    [0.0168, 0.12]`: 0.0168 is Chrome's value at web 2787, the window end (2818) folded back by leave2's 31 ms slip. On iOS the
+    wave's values (`ripple opacity` / `ripple scale`) are also read on the previous step's clock within 600 ms of a step that
+    slipped against it (`SLIP` lines name the samples that matched only there; `AWC_CHIP_STATES_SLIP=0` /
+    `AWC_CARD_STATES_SLIP=0`: one clock). Probe: `AWC_CHIP_STATES_LATE=leave2:40` dispatches that input 40 ms late; with it,
+    samples outside Chrome's envelope on the step clock lie inside on the click's (di-050 / di-050b, 26.3 and 18.6). Other
+    properties follow their own step's input: one clock. macOS: one clock.
+45. **md-card shot window while a wave runs (harness, di patch-29).** Chrome photographs a phase after its last sample and
+    before the next phase starts, not at a fixed time; the fixture's single delivery-anchored shot (item 41) caught iPad
+    `dragClick-outlined-dark-ltr/clickPress`'s growing wave a frame smaller than Chrome's photo (mean 1.03, >6: 1122 pixels at
+    its edge, 2 of 3 runs). On iOS, when a wave is growing or fading at the shot, the frames one display frame before (after
+    Chrome's last phase sample) and after (before the next phase) are candidates too, best of the three
+    (`AWC_CARD_STATES_WINDOW=0`: the shot only). Taking them in every phase slipped every input 37–67 ms on iPhone 26.3, hence
+    the restriction and item 44.
+46. **md-button / md-chip `click2`: Chrome's photo between two native frames (harness, di patch-28, patch-32).** Chrome makes
+    its phase photo on demand, at any moment of its animation clock; the simulator only has display frames. Across `click2`'s
+    150 ms release fade a large surface changes more per frame than the check allows (iPhone 26.3
+    `pointer-filled-xl-light-ltr`: native frames ~1 ms before and ~16 ms into the fade, Chrome's ~12 ms). On iOS, when no
+    single frame in Chrome's capture window matches and two consecutive distinct frames straddle Chrome's image (one darker,
+    one lighter over the compared pixels), the frame at Chrome's moment is their blend (1 − w)·A + w·B (the wave's opacity is
+    linear in the composited pixel), which must match under the same thresholds (`BRACKET` lines;
+    `AWC_BUTTON_STATES_BRACKET=0` / `AWC_CHIP_STATES_BRACKET=0`: off). Evidence: xl signed differences +1.72 / −0.96, w 0.65,
+    mean 0.32 (di-050); chip `pointer-filter-filled-error-light-ltr/click2` −1.40 / +1.72, w 0.45, mean 0.12 (di-050b).
+47. **md-button capture window two frames past Chrome's (harness, di patch-28b).** A simulator capture shows the last
+    committed frame, whose content is up to a frame older than the capture, plus TimelineView's content offset (probe
+    `NativeIOSTimelineDateProbe`: `context.date` is 2.3 ms (iOS 18.6), 7.8 ms (iPhone 26.3), 9.2 ms (iPad 26.3) before the
+    content is evaluated, 16.7 ms frames), and captures come about a frame apart. On iOS 18.6 the failing `click2` shots'
+    frames approached Chrome (native minus Chrome −3.05, −0.91, then a repeat at the window end) and stopped a frame short:
+    642/645 in 3 of 3 runs; captures two frames longer: 645/645 on single frames (di-050b). On iOS the md-button fixture's
+    captures now run two display frames past Chrome's window (`AWC_BUTTON_STATES_WINDOW_EXTRA=<ms>`, 0 = Chrome's window);
+    `FRAMES` lines print every window frame's signed difference when a shot still fails. The phases run on their own clocks
+    (item 32), so the next phase's start keeps Chrome's distances.
+
 ## Open items
 
-1. **Click timing outside the press router (iOS).** `AWCTouchPressRouter` (item 23) gives every `AWCNativeActionControl`
-   and md-card (item 26) its press from the UIKit touch. Views that still take a click from SwiftUI's gesture update land a
-   frame or two after Chrome on some samples: md-list expand / select state layer and corner morph after a click (r8: 10 /
-   4 / 9 checks on iPhone 26.3 / iPad / iOS 18.6; alone 9 / – / 13), md-card `dragClick/clickPress` shot (3 / 2 / 1; alone
-   2 / – / 3), md-button click shots on iOS 18.6 only (9; alone 2), md-chip one click shot on the iPad, md-side-sheet one
-   event 41–43 ms after its click (2 / 0 / 3; alone 0 / – / 2, Chrome + 40 ms allowed).
+1. **Synthesized input latency of the simulator (harness).** UIKit delivers a synthesized touch one phase per frame (a
+   click's release ~2 frames after it is queued); keys typed into a text input reach it through the keyboard 5–69 ms after
+   the key-down (item 36). Fixtures timed from the queued input rather than its delivery still carry that latency:
+   md-time-picker / md-color-picker taps and dial (fi, env leads `AWC_TP_*` / `AWC_CP_*`; `AWCShimTouch.deliveredAt` gives
+   the delivery, items 30–31) and md-otp-field characters typed on Chrome's cadence (n3). md-button `click2` (R1-01) is
+   resolved by items 46–47 (the capture, not the product: Chrome's photo between two native frames, and a capture's
+   content a frame behind it).
+   Per-fixture status: work/di-lab/PROGRESS.md.
 2. **md-text-field (n3).** `NativeBehaviorViewIntegration` stops on canonical since n3-020 (iOS: "Edited numeric input
    retains authored step base"; macOS: "Extreme invalid length constraints do not crash native editing"), so its later
    checks do not run. `NativeTextFieldStatesIntegration` on iOS: press-focus motion 2–3 frames of 84 outside Chrome's

@@ -70,12 +70,17 @@ data class AWCOrgChartAppearance(
 }
 
 /** Source metrics at a density rung (md-organization-chart.css), with the hooks applied. */
-data class OrgChartMetrics(val density: Double, val a: AWCOrgChartAppearance) {
+data class OrgChartMetrics(val density: Double, val a: AWCOrgChartAppearance, val parts: OrgChartParts = OrgChartParts()) {
     val toggle = a.toggleSize ?: max(20.0, 24 + density); val levelGap = a.levelGap ?: max(24.0, 28 + density); val siblingGap = a.siblingGap ?: max(8.0, 12 + density)
     val outline = a.nodeOutlineWidth ?: 1.0; val minWidth = a.nodeMinWidth ?: 176.0; val maxWidth = a.nodeMaxWidth ?: 260.0; val line = a.connectorWidth ?: 1.5
     val radius = a.nodeShape ?: 12.0; val duration = a.duration ?: 300.0
     val gap = max(6.0, 12 + 1.5 * density); val padBlock = max(6.0, 10 + density); val padInline = max(8.0, 14 + 1.5 * density); val avatar = max(28.0, 40 + 3 * density)
     val nameSize = max(11.0, 14 + density / 2); val nameLine = max(16.0, 20 + density); val titleSize = max(10.0, 12 + density / 2); val titleLine = max(14.0, 16 + density / 2)
+    fun border(selected: Boolean) = if(selected) outline + 1 else outline
+    /** A card's padding (physical edges): ::part(node) / ::part(node-selected), else the source's (1px less when selected: the
+     *  selected ring takes it, so the border box stays put). */
+    fun padding(selected: Boolean): AWCTableEdges =
+        parts.node(selected).padding ?: (if(selected) 1.0 else 0.0).let { d -> AWCTableEdges(padBlock - d, padInline - d, padBlock - d, padInline - d) }
     companion object { const val ELBOW = 12.0 }
 }
 
@@ -83,6 +88,15 @@ data class OrgChartMetrics(val density: Double, val a: AWCOrgChartAppearance) {
 class OrgChartText(context: Context) {
     private val bold: Typeface = context.resources.getFont(R.font.awc_roboto_bold)
     private val regular: Typeface = context.resources.getFont(R.font.awc_roboto_regular)
+    private val medium: Typeface = context.resources.getFont(R.font.awc_roboto_medium)
+    /** A run's advance in the face of [weight] with `letter-spacing` after every character (as Chrome spaces it). */
+    fun width(text: String, size: Double, weight: Double, tracking: Double): Double {
+        if(text.isEmpty()) return 0.0
+        val face = if(weight >= 600) 'b' else if(weight >= 500) 'm' else 'r'
+        return cache.getOrPut("$face$size|$text") {
+            paint.typeface = when(face) { 'b' -> bold; 'm' -> medium; else -> regular }; paint.textSize = (size * 16).toFloat(); paint.measureText(text) / 16.0
+        } + tracking * text.codePointCount(0, text.length)
+    }
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.LINEAR_TEXT_FLAG or Paint.SUBPIXEL_TEXT_FLAG)
     private val cache = HashMap<String, Double>()
     fun width(text: String, size: Double, name: Boolean): Double {
@@ -108,7 +122,9 @@ class OrgChartText(context: Context) {
 /** A CSS border box: physical rect plus per-side border widths, per-corner outer radii and per-side colour roles. */
 data class OrgChartBorderBox(var rect: OrgRect, var top: Double = 0.0, var right: Double = 0.0, var bottom: Double = 0.0, var left: Double = 0.0,
                              var topLeft: Double = 0.0, var topRight: Double = 0.0, var bottomRight: Double = 0.0, var bottomLeft: Double = 0.0,
-                             var roles: Map<String, Boolean> = emptyMap(), var owner: String? = null) {
+                             var roles: Map<String, Boolean> = emptyMap(), var owner: String? = null,
+                             /** The branch (tree item id) a ::before / ::after belongs to; null for a group's drop and trail run. */
+                             var branch: String? = null) {
     /** True when a side is drawn in the selected (trail) colour. */
     fun selected(side: String) = roles[side] == true
 }
@@ -169,10 +185,13 @@ class OrgChartModel(val roots: List<OrgChartNode>, val collapsed: Set<String>, v
     private class Measured(val node: OrgChartNode, val cw: Double, val ch: Double, val kids: List<Measured>, val gw: Double, val gh: Double, val w: Double, val h: Double, val pad: Double)
 
     fun cardSize(n: OrgChartNode): Pair<Double, Double> {
-        val m = metrics
-        val column = max(text.width(n.name, m.nameSize, true), if(n.title.isEmpty()) 0.0 else text.width(n.title, m.titleSize, false))
-        val w = min(m.maxWidth, max(m.minWidth, 2 * m.outline + 2 * m.padInline + m.avatar + m.gap + column))
-        val h = 2 * m.outline + 2 * m.padBlock + max(m.avatar, m.nameLine + (if(n.title.isEmpty()) 0.0 else 2 + m.titleLine))
+        val m = metrics; val np = m.parts[AWCOrgChartPart.NAME]; val tp = m.parts[AWCOrgChartPart.TITLE]
+        val column = max(text.width(n.name, np.fontSize ?: m.nameSize, np.fontWeight ?: 600.0, np.letterSpacing ?: 0.0),
+            if(n.title.isEmpty()) 0.0 else text.width(n.title, tp.fontSize ?: m.titleSize, tp.fontWeight ?: 400.0, tp.letterSpacing ?: 0.0))
+        // Border box (box-sizing: border-box, clamped to the min / max widths): border + padding (::part(node)) + content.
+        val sel = isSelected(n); val b = m.border(sel); val p = m.padding(sel)
+        val w = min(m.maxWidth, max(m.minWidth, 2 * b + p.left + p.right + m.avatar + m.gap + column))
+        val h = 2 * b + p.top + p.bottom + max(m.avatar, m.nameLine + (if(n.title.isEmpty()) 0.0 else 2 + m.titleLine))
         return w to h
     }
 
@@ -196,7 +215,10 @@ class OrgChartModel(val roots: List<OrgChartNode>, val collapsed: Set<String>, v
         if(trees.isEmpty()) return out
         val tw = if(vertical) trees.sumOf { it.w } else trees.maxOf { it.w }
         val th = if(vertical) trees.maxOf { it.h } else trees.sumOf { it.h }
-        val padStart = 8.0; val padEnd = if(vertical) 8.0 else m.toggle / 2 + 10; val padTop = 8.0; val padBottom = if(vertical) m.toggle / 2 + 10 else 8.0
+        // The viewport's padding (::part(viewport) physical edges; laid out inline-start first, mirrored for right-to-left).
+        val vp = m.parts[AWCOrgChartPart.VIEWPORT].padding
+        val padStart = vp?.let { if(rtl) it.right else it.left } ?: 8.0; val padEnd = vp?.let { if(rtl) it.left else it.right } ?: if(vertical) 8.0 else m.toggle / 2 + 10
+        val padTop = vp?.top ?: 8.0; val padBottom = vp?.bottom ?: if(vertical) m.toggle / 2 + 10 else 8.0
         val inner = W - padStart - padEnd
         val tx = padStart + max(0.0, (inner - tw) / 2)
         out.tree = OrgRect(tx, padTop, tw, th)
@@ -287,7 +309,7 @@ class OrgChartModel(val roots: List<OrgChartNode>, val collapsed: Set<String>, v
                     if(aS.isNotEmpty()) after = box(k.branch, bl, bh / 2, L, bh / 2, aS, if(first) mapOf("top-$start" to r) else emptyMap(), mapOf(start to false, "top" to riser))
                     if(k.onPath) { val rb = if(last) before!! else after!!; risers[k.node.id] = if(last) rb.rect.maxY - w to rb.rect.maxY else rb.rect.y to rb.rect.y + w }
                 }
-                before?.let { it.owner = parent.node.id; boxes += it }; after?.let { it.owner = parent.node.id; boxes += it }
+                before?.let { it.owner = parent.node.id; it.branch = k.node.id; boxes += it }; after?.let { it.owner = parent.node.id; it.branch = k.node.id; boxes += it }
             }
             val trail = kids.any { it.onPath }
             val drop = if(vertical) box(g, if(rtl) g.w - g.w / 2 - w else g.w / 2, 0.0, 0.0, L, setOf(start), roles = mapOf(start to trail))

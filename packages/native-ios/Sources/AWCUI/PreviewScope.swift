@@ -74,6 +74,8 @@ private struct AWCPreviewSheetModifier<Sheet: View>: ViewModifier {
     @Environment(\.awcPreviewEnabled) private var preview
     @State private var id = UUID()
     @Binding var presented: Bool
+    /// Called with the new value when the presentation itself changes it (scrim, Escape, system sheet dismissal).
+    let onChange: ((Bool) -> Void)?
     let placement: AWCPreviewPlacement
     let scrimDismissible: Bool
     let sheet: () -> Sheet
@@ -82,16 +84,16 @@ private struct AWCPreviewSheetModifier<Sheet: View>: ViewModifier {
             content
                 .preference(key: AWCPreviewPresentedKey.self, value: presented)
                 .preference(key: AWCPreviewPresentationsKey.self, value: presented ? [
-                    AWCPreviewPresentation(id: id, placement: placement, content: AnyView(sheet()), dismiss: { presented = false }, scrimDismissible: scrimDismissible)
+                    AWCPreviewPresentation(id: id, placement: placement, content: AnyView(sheet()), dismiss: { presented = false; onChange?(false) }, scrimDismissible: scrimDismissible)
                 ] : [])
         } else {
-            content.sheet(isPresented: $presented, content: sheet)
+            content.sheet(isPresented: Binding(get: { presented }, set: { presented = $0; onChange?($0) }), content: sheet)
         }
     }
 }
 
 extension View {
-    func awcPreviewSheet<Sheet: View>(isPresented: Binding<Bool>, placement: AWCPreviewPlacement = .center, scrimDismissible: Bool = true, @ViewBuilder content: @escaping () -> Sheet) -> some View {
-        modifier(AWCPreviewSheetModifier(presented: isPresented, placement: placement, scrimDismissible: scrimDismissible, sheet: content))
+    func awcPreviewSheet<Sheet: View>(isPresented: Binding<Bool>, onChange: ((Bool) -> Void)? = nil, placement: AWCPreviewPlacement = .center, scrimDismissible: Bool = true, @ViewBuilder content: @escaping () -> Sheet) -> some View {
+        modifier(AWCPreviewSheetModifier(presented: isPresented, onChange: onChange, placement: placement, scrimDismissible: scrimDismissible, sheet: content))
     }
 }

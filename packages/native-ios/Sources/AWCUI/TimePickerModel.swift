@@ -113,8 +113,15 @@ private extension Character { var isASCIIDigit: Bool { ("0"..."9").contains(self
     var settle = 0
     /// Presented motion per key (scrim, dialog, mode, hand), with frame times in ms (the interaction suites read them).
     @ObservationIgnored var motion: [String: [(t: Double, v: [Double])]] = [:]
+    /// When the dial's pointer handler last ran (ms): an `immediate` transition starts in that input's frame.
+    @ObservationIgnored var inputAt: Double?
+    /// When the focus trap last handled a Tab / Shift+Tab (ms): a hand change it causes starts at the frame after the key.
+    @ObservationIgnored var keyAt: Double?
+    /// The time of the last frame the picker presented (ms): the phase of the frame grid for `frameStart`.
+    @ObservationIgnored var lastFrameAt: Double?
     func record(_ key: String, _ v: [Double]) {
         let t = CACurrentMediaTime() * 1000
+        lastFrameAt = t
         var list = motion[key] ?? []
         if let last = list.last, last.v == v { return }
         list.append((t, v)); if list.count > 600 { list.removeFirst(list.count - 600) }
@@ -131,13 +138,25 @@ private extension Character { var isASCIIDigit: Bool { ("0"..."9").contains(self
         guard let track = transitions[key] else { transitions[key] = .init(target); return }
         guard track.value != target else { return }
         let now = CACurrentMediaTime() * 1000
-        var base = track, start = now + (immediate ? 0 : AWCColorPickerMotion.frame * 1000)
+        // An input-handler change starts at the begin time of the frame the input arrived in (`inputAt`, set by the handler).
+        // A keyboard change (no pointer input pending) keeps starting at the change itself.
+        // A focus-trap key (no pointer input) starts it at the frame after the key, as Chrome starts a transition after keydown.
+        let keyUsed = immediate && inputAt == nil ? keyAt.flatMap { now - $0 < 150 ? $0 : nil } : nil
+        var base = track, start = immediate ? (inputAt.map { frameStart(min(now, $0)) } ?? keyUsed.map { frameStart($0) + AWCColorPickerMotion.frame * 1000 } ?? now) : now + AWCColorPickerMotion.frame * 1000
+        if immediate { inputAt = nil; keyAt = nil }
         if let pending = pendingTransitions[key], now < pending.start { base = pending.base; start = pending.start }
         pendingTransitions[key] = (base, start)
         var next = base
         next.set(target, now: start, duration: max(duration, 0.001), curve: curve); transitions[key] = next
         let wait = UInt64(max(0, AWCColorPickerMotion.frame * 1000 + duration) + 34) * 1_000_000
         Task { @MainActor [weak self] in try? await Task.sleep(nanoseconds: wait); self?.settle &+= 1 }
+    }
+    /// The begin time of the frame in progress (ms). Chrome starts a transition at its frame's timestamp, which precedes the
+    /// input handled in that frame (d6 / di found the same frame-start pattern); the grid's phase is the last presented frame.
+    func frameStart(_ now: Double) -> Double {
+        let f = AWCColorPickerMotion.frame * 1000
+        guard let last = lastFrameAt, now >= last else { return now }
+        return last + floor((now - last) / f) * f
     }
     /// Colour transitions: Chrome interpolates two legacy colours (rgb(), hex, named) in premultiplied sRGB and any other pair
     /// (a `color-mix()` result is `color(srgb …)`) in premultiplied Oklab. Each colour runs in its pair's space; values are

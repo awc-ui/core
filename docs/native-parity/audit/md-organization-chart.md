@@ -1,3 +1,29 @@
+# Gate 7 re-check (s7-9, 2026-11-16): md-organization-chart
+
+**Verdict: PASS**
+
+
+
+## Re-run counts (reviewer s7-9, 2026-11-16, snapshot work/audit/s7-9-tree)
+| Suite | Platform | Result | Job |
+|---|---|---|---|
+| NativeOrgChartPaintIntegration | macOS / iPhone 26.3 / iOS 18 | 1644/1644 each | s7-9-002-macos / s7-9-003 / s7-9-004 |
+| NativeOrgChartStatesIntegration | macOS / iPhone / iOS 18 | 1253/1253 each | same |
+| Android NativeOrgChartPaintTest, NativeOrgChartStatesTest, LivePreviewOrgChartHostTest (emulator-5566) | Android | BUILD SUCCESSFUL, 3 of 3 | s7-9-A003-android |
+| stdio host validation, test-live-orgchart, 4177 probes | Laboratory | ok | s7-9-005-lab-ax |
+| Compiled examples | Swift typecheck / Kotlin compile | 22 / 22 | s7-9-006, s7-9-A004 |
+| tools/ax (8 cases) | macOS, iOS, Android | pass, 0 accepted, 0 open | s7-9-005, s7-9-A005 |
+
+## Findings re-checked
+- R5-06: 14 typed parts implemented (paint 1644/1644 on every runtime); no `::part` exception remains.
+- R5-08: generated IR `md-organization-chart` has 15 css properties and 14 parts (read in the snapshot). The inventory generator could not be re-run in the snapshot (no git metadata: s7-9-006 `inventory exit 1`); the IR read replaces it.
+No blocking finding.
+
+
+---
+
+## Earlier review (r5, 2026-10-31), superseded by the section above
+
 # Gate 7 audit — `md-organization-chart`
 
 Reviewer: gate-7 reviewer r5, 2026-10-31. **Verdict: FAIL** — findings R5-06 (`::part` exception rejected) and R5-08 (CEM / source metadata drift). Every suite, the Laboratory and the accessibility comparison re-ran green.

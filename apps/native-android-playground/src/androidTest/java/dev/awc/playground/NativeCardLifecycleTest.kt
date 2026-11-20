@@ -85,8 +85,8 @@ class NativeCardLifecycleTest {
         // authored-pointer
         make("button");compose.onNodeWithTag("authored").performTouchInput { down(center);moveBy(Offset(30f*density,0f));up() };compose.waitForIdle()
         check("mdDragStart" !in names() && values()["dragging"]==false,"authored-pointer: no drag from authored content ${names()}")
-        // Measured difference: Chrome's touch tap is cancelled by the 30-point move (trusted touch: no
-        // events); the Compose card reports the in-bounds release as a click (Android tap rules).
+        // Chrome cancels the touch tap after the 30-point move (trusted touch: no events); so does the Compose card.
+        check(names().filter { it=="mdClick" || it=="click" }.isEmpty() && trusted("authored-pointer").none { it=="mdClick" || it=="click" },"authored-pointer: a moved touch does not click ${names()} vs ${trusted("authored-pointer")}")
         report.put(JSONObject().put("scenario","authored-pointer-trusted-touch").put("chrome",JSONArray(trusted("authored-pointer"))).put("native",JSONArray(names())));record("authored-pointer")
         // pointer-ownership: a second pointer never takes over the drag of the first.
         make();touch { down(1,p*density);down(2,Offset(150f,30f)*density);moveTo(2,Offset(200f,30f)*density);up(2);moveTo(1,(p+Offset(20f,0f))*density) };compose.waitForIdle()
