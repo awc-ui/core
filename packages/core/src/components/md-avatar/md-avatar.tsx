@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Host, h, Prop, State, Event, EventEmitter, Element, Watch } from '@stencil/core';
 
 /**
@@ -56,7 +57,7 @@ function coerceCssLength(raw: string | number | null | undefined): string | unde
  */
 @Component({
   tag: 'md-avatar',
-  styleUrl: 'md-avatar.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-avatar.css'],
   shadow: true,
 })
 export class MdAvatar {
@@ -329,5 +330,30 @@ export class MdAvatar {
         )}
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidLoad() {
+    completeInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

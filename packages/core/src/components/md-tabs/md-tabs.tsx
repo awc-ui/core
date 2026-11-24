@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { createId } from '../../utils/id';
 import { Component, Host, h, Prop, Event, EventEmitter, Element, Watch, State, Method, Listen } from '@stencil/core';
 
@@ -8,7 +9,7 @@ import { Component, Host, h, Prop, Event, EventEmitter, Element, Watch, State, M
  */
 @Component({
   tag: 'md-tabs',
-  styleUrl: 'md-tabs.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-tabs.css'],
   shadow: true,
 })
 export class MdTabs {
@@ -105,25 +106,30 @@ export class MdTabs {
   // ─── Lifecycle ───────────────────────────────────────────
 
   componentDidLoad() {
-    const shadow = this.el.shadowRoot;
-    if (!shadow) return;
+    try {
+      const shadow = this.el.shadowRoot;
+      if (!shadow) return;
 
-    const slot = shadow.querySelector('slot') as HTMLSlotElement | null;
-    slot?.addEventListener('slotchange', () => this.syncTabs());
-    if (typeof ResizeObserver !== 'undefined') {
-      this.resizeObserver = new ResizeObserver(() => this.updateOverflow());
+      const slot = shadow.querySelector('slot') as HTMLSlotElement | null;
+      slot?.addEventListener('slotchange', () => this.syncTabs());
+      if (typeof ResizeObserver !== 'undefined') {
+        this.resizeObserver = new ResizeObserver(() => this.updateOverflow());
+      }
+      if (typeof MutationObserver !== 'undefined') {
+        // A runtime dir flip moves the clipped side without firing scroll or
+        // resize — the fades went stale on the wrong edge.
+        this.dirObserver = new MutationObserver(() => this.updateOverflow());
+      }
+      this.hasLoaded = true;
+      this.attachObservers();
+      this.syncTabs();
+} finally {
+      completeInitialInteractionMotion(this);
     }
-    if (typeof MutationObserver !== 'undefined') {
-      // A runtime dir flip moves the clipped side without firing scroll or
-      // resize — the fades went stale on the wrong edge.
-      this.dirObserver = new MutationObserver(() => this.updateOverflow());
-    }
-    this.hasLoaded = true;
-    this.attachObservers();
-    this.syncTabs();
   }
 
   connectedCallback() {
+    reconnectInteractionMotion(this);
     // Reparenting disconnects (tearing down tab listeners) and reconnects
     // WITHOUT a slotchange — the slot's assignment inside our own shadow
     // never changed. Rebind, or the component is permanently dead after
@@ -137,6 +143,7 @@ export class MdTabs {
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.removeTabListeners();
     this.resizeObserver?.disconnect();
     this.dirObserver?.disconnect();
@@ -596,5 +603,18 @@ export class MdTabs {
         </div>
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

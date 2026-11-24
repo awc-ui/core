@@ -83,6 +83,20 @@ describe('md-table-expand-toggle', () => {
     );
   });
 
+  it('reads the authored expanded state before the row is defined', async () => {
+    const page = await newSpecPage({
+      components: [MdTableExpandToggle, MdIconButton],
+      html: `
+        <md-table-row expandable expanded>
+          <md-table-expand-toggle></md-table-expand-toggle>
+        </md-table-row>`,
+    });
+    const toggle = page.body.querySelector('md-table-expand-toggle')!;
+    const button = toggle.shadowRoot!.querySelector('md-icon-button')!;
+    expect(toggle).toHaveClass('md-table-expand-toggle--expanded');
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+  });
+
   it('survives a row re-append (sort/page reorder) and still toggles', async () => {
     const page = await newSpecPage({
       components: [MdTable, MdTableBody, MdTableRow, MdTableCell, MdTableExpandToggle, MdIconButton],

@@ -1,3 +1,13 @@
+import {
+  canAnimateInteraction,
+  beginInitialInteractionMotion,
+  completeInitialInteractionMotion,
+  initialInteractionMotionRendered,
+  reconnectInteractionMotion,
+  disconnectInteractionMotion,
+  prepareInteractionUpdate,
+} from '../../utils/initial-motion';
+import { finishShellMotion, OverlayLifecycle } from '../../utils/overlay-lifecycle';
 import { createId } from '../../utils/id';
 import {
   Component,
@@ -28,7 +38,7 @@ export type ColorPickerVariant = 'inline' | 'popover';
 
 @Component({
   tag: 'md-color-picker',
-  styleUrl: 'md-color-picker.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-color-picker.css'],
   shadow: true,
 })
 export class MdColorPicker {
@@ -118,6 +128,10 @@ export class MdColorPicker {
    *  without one, so its absence is a dev-time warning rather than a silent
    *  empty host. */
   @State() private hasSlottedTrigger: boolean = false;
+  @State() private popoverEntering = false;
+
+  private overlayLifecycle = new OverlayLifecycle(() => this.el, () => this.open);
+  private popoverMotionRequest = 0;
 
   private satRect?: DOMRect;
   private hueRect?: DOMRect;
@@ -130,20 +144,26 @@ export class MdColorPicker {
   private uid = createId('md-color-picker');
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     this.applyValue(this.value, /* emit */ false);
     this.computeSlottedTrigger();
   }
 
   componentDidLoad() {
-    this.syncOutsideClickListener();
-    this.wireSlottedTrigger();
-    // A consumer may swap the trigger at runtime (a different md-button, or
-    // rendering it conditionally), so re-read on slotchange rather than once.
-    const slot = this.el.shadowRoot?.querySelector('slot[name="trigger"]') as HTMLSlotElement | null;
-    slot?.addEventListener('slotchange', () => {
-      this.computeSlottedTrigger();
+    try {
+      this.syncOutsideClickListener();
       this.wireSlottedTrigger();
-    });
+      // A consumer may swap the trigger at runtime (a different md-button, or
+      // rendering it conditionally), so re-read on slotchange rather than once.
+      const slot = this.el.shadowRoot?.querySelector('slot[name="trigger"]') as HTMLSlotElement | null;
+      slot?.addEventListener('slotchange', () => {
+        this.computeSlottedTrigger();
+        this.wireSlottedTrigger();
+      });
+    } finally {
+      completeInitialInteractionMotion(this);
+      this.overlayLifecycle.loaded();
+    }
   }
 
   private computeSlottedTrigger() {
@@ -523,19 +543,25 @@ export class MdColorPicker {
   /** Programmatically open the popover. */
   @Method()
   async show(): Promise<void> {
-    if (this.variant !== 'popover' || this.disabled) return;
-    this.open = true;
+    if (this.variant !== 'popover' || this.disabled || this.open) return;
+    await this.overlayLifecycle.show(() => {
+      if (this.variant === 'popover' && !this.disabled) this.open = true;
+    });
   }
 
   /** Programmatically close the popover. */
   @Method()
   async close(): Promise<void> {
+    this.overlayLifecycle.cancelOpen();
     if (this.variant !== 'popover') return;
     this.open = false;
   }
 
   @Watch('open')
   onOpenChange(value: boolean) {
+    this.updatePopoverMotion();
+    if (value) this.overlayLifecycle.opened();
+    else this.overlayLifecycle.closed();
     this.mdOpenChange.emit({ open: value });
     this.syncOutsideClickListener();
     // The trigger is the consumer's element, so nothing re-renders it — its
@@ -547,7 +573,18 @@ export class MdColorPicker {
 
   @Watch('variant')
   onVariantChange() {
+    this.updatePopoverMotion();
     this.syncOutsideClickListener();
+  }
+
+  private updatePopoverMotion() {
+    const request = ++this.popoverMotionRequest;
+    this.popoverEntering = this.open && this.variant === 'popover' && canAnimateInteraction(this.el);
+    if (this.popoverEntering) {
+      void finishShellMotion(this.el).then(() => {
+        if (request === this.popoverMotionRequest) this.popoverEntering = false;
+      });
+    }
   }
 
   @Watch('dismissOnOutsideClick')
@@ -561,6 +598,9 @@ export class MdColorPicker {
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
+    this.overlayLifecycle.disconnect();
+    this.popoverEntering = false;
     this.removeOutsideClickHandler();
     this.wiredTrigger?.removeEventListener('click', this.toggleOpen);
     this.wiredTrigger = null;
@@ -946,7 +986,15 @@ export class MdColorPicker {
               label on every consumer. */}
           <slot name="trigger" />
           {this.open && (
-            <div class="md-color-picker__popover" part="popover" role="dialog" aria-label={this.ariaLabelProp}>
+            <div
+              class={{
+                'md-color-picker__popover': true,
+                'md-color-picker__popover--entering': this.popoverEntering,
+              }}
+              part="popover"
+              role="dialog"
+              aria-label={this.ariaLabelProp}
+            >
               {this.renderPanel()}
             </div>
           )}
@@ -966,5 +1014,19 @@ export class MdColorPicker {
         {this.renderPanel()}
       </Host>
     );
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+    this.overlayLifecycle.connected();
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

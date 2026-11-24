@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Host, h, Prop } from '@stencil/core';
 
 /**
@@ -10,7 +11,7 @@ import { Component, Host, h, Prop } from '@stencil/core';
  */
 @Component({
   tag: 'md-tab-panel',
-  styleUrl: 'md-tab-panel.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-tab-panel.css'],
   shadow: true,
 })
 export class MdTabPanel {
@@ -28,5 +29,30 @@ export class MdTabPanel {
         </div>
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidLoad() {
+    completeInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

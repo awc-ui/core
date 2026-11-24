@@ -1,14 +1,25 @@
+import { Build } from '@stencil/core';
 import { newSpecPage, SpecPage } from '@stencil/core/testing';
 import { MdFabMenu } from './md-fab-menu';
 import { MdFabMenuItem } from '../md-fab-menu-item/md-fab-menu-item';
 import { MdFab } from '../md-fab/md-fab';
 
 describe('md-fab-menu', () => {
+  beforeEach(() => {
+    jest.replaceProperty(Build, 'isBrowser', true);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   async function createMenu(html: string): Promise<SpecPage> {
-    return newSpecPage({
+    const page = await newSpecPage({
       components: [MdFabMenu, MdFabMenuItem],
       html,
     });
+    page.root!.setAttribute('data-awc-motion-ready', '');
+    return page;
   }
 
   function setupAnchor(page: SpecPage, id = 'fab-anchor') {
@@ -347,6 +358,74 @@ describe('md-fab-menu', () => {
   /* ── Anchor FAB morph ── */
 
   describe('anchor morph', () => {
+    it.each([false, true])('reconciles a late FAB definition while its menu is still open (replaced: %s)', async (replaceAnchor) => {
+      const page = await newSpecPage({ components: [MdFabMenu, MdFabMenuItem], html: '' });
+      let finishDefinition!: (definition: CustomElementConstructor) => void;
+      const define = jest.spyOn(page.win.customElements, 'whenDefined')
+        .mockReturnValue(new Promise(resolve => { finishDefinition = resolve; }));
+      await page.setContent(`
+        <md-fab id="late-fab" label="Actions"></md-fab>
+        <md-fab id="replacement-fab" label="New actions"></md-fab>
+        <md-fab-menu anchor="late-fab" open></md-fab-menu>`);
+
+      const menu = page.body.querySelector('md-fab-menu')!;
+      const oldFab = page.body.querySelector('#late-fab') as HTMLMdFabElement;
+      const newFab = page.body.querySelector('#replacement-fab') as HTMLMdFabElement;
+      expect(define).toHaveBeenCalledWith('md-fab');
+      expect(oldFab.getAttribute('data-shape')).toBe('circle');
+      if (replaceAnchor) menu.anchor = newFab.id;
+
+      oldFab.setMenuIcon = jest.fn(async () => {});
+      newFab.setMenuIcon = jest.fn(async () => {});
+      finishDefinition(HTMLElement);
+      await page.waitForChanges();
+
+      const currentFab = replaceAnchor ? newFab : oldFab;
+      const otherFab = replaceAnchor ? oldFab : newFab;
+      expect(currentFab.setMenuIcon).toHaveBeenCalledWith('close');
+      expect(currentFab.hasAttribute('data-icon-morphing')).toBe(false);
+      expect(otherFab.setMenuIcon).not.toHaveBeenCalledWith('close');
+      expect(otherFab.hasAttribute('data-shape')).toBe(false);
+    });
+
+    it.each([
+      '<md-fab id="initial-fab" icon="add" label="Create"></md-fab>',
+      '<md-fab id="initial-fab" label="Create"><span slot="icon">+</span></md-fab>',
+    ])('shows the close icon immediately on mount and reconnect with %s', async (anchorHtml) => {
+      const page = await newSpecPage({
+        components: [MdFab, MdFabMenu, MdFabMenuItem],
+        html: `
+          ${anchorHtml}
+          <md-fab-menu anchor="initial-fab" open>
+            <md-fab-menu-item label="Create folder"></md-fab-menu-item>
+          </md-fab-menu>
+        `,
+      });
+      await page.waitForChanges();
+
+      const fab = page.body.querySelector('md-fab')!;
+      const menu = page.body.querySelector('md-fab-menu')!;
+      const open = jest.fn();
+      menu.addEventListener('mdOpen', open);
+      expect(fab.getAttribute('data-shape')).toBe('circle');
+      expect(fab.getAttribute('aria-expanded')).toBe('true');
+      expect(fab.hasAttribute('data-icon-morphing')).toBe(false);
+      expect(fab.shadowRoot!.querySelector('[part="icon"]')?.textContent).toBe('close');
+
+      menu.remove();
+      await page.waitForChanges();
+      expect(fab.hasAttribute('data-shape')).toBe(false);
+
+      page.body.appendChild(menu);
+      // Let Stencil forward the anchor's async setMenuIcon call before flushing renders.
+      await Promise.resolve();
+      await page.waitForChanges();
+      expect(fab.getAttribute('data-shape')).toBe('circle');
+      expect(fab.hasAttribute('data-icon-morphing')).toBe(false);
+      expect(fab.shadowRoot!.querySelector('[part="icon"]')?.textContent).toBe('close');
+      expect(open).not.toHaveBeenCalled();
+    });
+
     it('sets data-shape="circle" on anchor when open', async () => {
       const page = await createMenu(`
         <md-fab-menu anchor="fab-anchor">
@@ -1878,6 +1957,7 @@ describe('md-fab-menu', () => {
       const fab = page.body.querySelector('md-fab')!;
       const menu = page.body.querySelector('md-fab-menu')!;
       const presentationIcon = () => fab.shadowRoot!.querySelector('[part="icon"]');
+      menu.setAttribute('data-awc-motion-ready', '');
       menu.open = true;
       await page.waitForChanges();
       await new Promise((resolve) => setTimeout(resolve, 140));

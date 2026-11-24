@@ -1,3 +1,4 @@
+import { Build } from '@stencil/core';
 import { newSpecPage } from '@stencil/core/testing';
 import { MdStep } from './md-step';
 import { MdRipple } from '../md-ripple/md-ripple';
@@ -68,6 +69,98 @@ describe('md-step', () => {
     it('error-text overrides the description when in error', async () => {
       const p = await create(`<md-step ${data()} label="A" description="d" error error-text="Bad input"></md-step>`);
       expect(p.root!.shadowRoot!.querySelector('.md-step__description')?.textContent).toContain('Bad input');
+    });
+  });
+
+  describe('state motion', () => {
+    beforeEach(() => {
+      jest.replaceProperty(Build, 'isBrowser', true);
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it.each([
+      ['completed', 'check'],
+      ['error', 'priority_high'],
+    ] as const)('reveals the initial %s glyph and animates a later state change', async (status, symbol) => {
+      const p = await create(`<md-step ${data()} label="A" ${status}></md-step>`);
+      const step = p.root as HTMLMdStepElement;
+      const shadow = step.shadowRoot!;
+      const getEnteringGlyph = () => shadow.querySelector('.md-step__glyph--entering');
+      const getPulse = () => shadow.querySelector('.md-step__bubble--pulsing');
+      expect(glyph(step)).toBe(symbol);
+      expect(getEnteringGlyph()).toBeNull();
+      expect(getPulse()).toBeNull();
+
+      step.setAttribute('data-awc-motion-ready', '');
+      step.label = 'Updated label';
+      await p.waitForChanges();
+      expect(getEnteringGlyph()).toBeNull();
+      expect(getPulse()).toBeNull();
+
+      step[status] = false;
+      await p.waitForChanges();
+      step[status] = true;
+      await p.waitForChanges();
+      expect(getEnteringGlyph()).not.toBeNull();
+      expect(!!getPulse()).toBe(status === 'error');
+
+      getEnteringGlyph()!.dispatchEvent(Object.assign(new Event('animationend', { bubbles: true }), {
+        animationName: 'md-step-glyph-in',
+      }));
+      await p.waitForChanges();
+      expect(glyph(step)).toBe(symbol);
+      expect(getEnteringGlyph()).toBeNull();
+      if (status === 'error') {
+        getPulse()!.dispatchEvent(Object.assign(new Event('animationcancel'), { animationName: 'md-step-error-pulse' }));
+        await p.waitForChanges();
+        expect(getPulse()).toBeNull();
+      }
+    });
+
+    it('shows a later error without feedback under reduced motion', async () => {
+      const p = await create(`<md-step ${data()} label="A"></md-step>`);
+      const step = p.root as HTMLMdStepElement;
+      const matchMedia = Object.getOwnPropertyDescriptor(p.win, 'matchMedia');
+      Object.defineProperty(p.win, 'matchMedia', { configurable: true, value: () => ({ matches: true }) });
+      try {
+        step.setAttribute('data-awc-motion-ready', '');
+        step.error = true;
+        await p.waitForChanges();
+
+        expect(glyph(step)).toBe('priority_high');
+        expect(step.shadowRoot!.querySelector('.md-step__glyph--entering, .md-step__bubble--pulsing')).toBeNull();
+      } finally {
+        if (matchMedia) Object.defineProperty(p.win, 'matchMedia', matchMedia);
+        else Reflect.deleteProperty(p.win, 'matchMedia');
+      }
+    });
+
+    it('opens the initial lazy panel immediately and animates a later activation', async () => {
+      const p = await create(`
+        <md-step ${data({ 'data-orientation': 'vertical', 'data-lazy': 'true' })} label="A" active>
+          <p>Panel contents</p>
+        </md-step>`);
+      const step = p.root as HTMLMdStepElement;
+      const panel = () => step.shadowRoot!.querySelector('[part="content"]');
+      expect(panel()).toHaveClass('md-step__content--lazy');
+      expect(panel()).toHaveClass('md-step__content--open');
+      expect(panel()).not.toHaveClass('md-step__content--entering');
+
+      step.setAttribute('data-awc-motion-ready', '');
+      step.label = 'Updated label';
+      await p.waitForChanges();
+      expect(panel()).not.toHaveClass('md-step__content--entering');
+
+      step.active = false;
+      await p.waitForChanges();
+      expect(panel()).toBeNull();
+
+      step.active = true;
+      await p.waitForChanges();
+      expect(panel()).toHaveClass('md-step__content--entering');
     });
   });
 

@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import {
   Component,
   Host,
@@ -30,7 +31,7 @@ import {
  */
 @Component({
   tag: 'md-select-option',
-  styleUrl: 'md-select-option.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-select-option.css'],
   shadow: true,
 })
 export class MdSelectOption {
@@ -75,10 +76,12 @@ export class MdSelectOption {
   }
 
   connectedCallback() {
+    reconnectInteractionMotion(this);
     this.mdSelectOptionChange?.emit();
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.mdSelectOptionChange?.emit();
   }
 
@@ -97,5 +100,22 @@ export class MdSelectOption {
         <slot />
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidLoad() {
+    completeInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

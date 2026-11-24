@@ -1,10 +1,11 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Host, h, Prop, State, Event, EventEmitter, Element } from '@stencil/core';
 import { triggerRipple } from '../../utils/ripple';
 import { sanitizeHref, SAFE_WINDOW_FEATURES } from '../../utils/url';
 
 @Component({
   tag: 'md-icon-button',
-  styleUrl: 'md-icon-button.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-icon-button.css'],
   shadow: true,
 })
 export class MdIconButton {
@@ -92,19 +93,24 @@ export class MdIconButton {
   }
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     this.syncSlottedIcons();
   }
 
   componentDidLoad() {
-    const shadow = this.el.shadowRoot;
-    if (!shadow) return;
+    try {
+      const shadow = this.el.shadowRoot;
+      if (!shadow) return;
 
-    const iconSlot = shadow.querySelector('slot:not([name])') as HTMLSlotElement | null;
-    const selectedSlot = shadow.querySelector('slot[name="selected"]') as HTMLSlotElement | null;
+      const iconSlot = shadow.querySelector('slot:not([name])') as HTMLSlotElement | null;
+      const selectedSlot = shadow.querySelector('slot[name="selected"]') as HTMLSlotElement | null;
 
-    this.syncSlottedIcons();
-    iconSlot?.addEventListener('slotchange', () => this.syncSlottedIcons());
-    selectedSlot?.addEventListener('slotchange', () => this.syncSlottedIcons());
+      this.syncSlottedIcons();
+      iconSlot?.addEventListener('slotchange', () => this.syncSlottedIcons());
+      selectedSlot?.addEventListener('slotchange', () => this.syncSlottedIcons());
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
 
   /** Ignore whitespace-only text nodes (e.g. Lit template indentation) when detecting slots. */
@@ -243,5 +249,22 @@ export class MdIconButton {
         )}
       </Host>
     );
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

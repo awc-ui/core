@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { AttachInternals, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, Watch, forceUpdate, h } from '@stencil/core';
 import { LazyLoadingIndicator } from '../../utils/lazy-loading-indicator';
 import {
@@ -76,7 +77,7 @@ type VirtualMenuEl = HTMLElement & {
  */
 @Component({
   tag: 'md-select',
-  styleUrl: 'md-select.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-select.css'],
   shadow: true,
   formAssociated: true,
 })
@@ -408,6 +409,7 @@ export class MdSelect {
   private defaultValue = '';
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     this.refreshOptions();
     // Adopt an option-declared `selected` hint when no value was provided.
     if (!this.value) {
@@ -702,6 +704,7 @@ export class MdSelect {
   /** Register/clear the virtual provider on the menu once it's rendered, and
    *  (re)try viewport wiring for menus opened mid-pack. */
   componentDidRender() {
+    initialInteractionMotionRendered(this);
     this.syncSearchField();
     if (!this.menuEl) return;
     if (this.vc.active && !this.providerSet) {
@@ -715,6 +718,7 @@ export class MdSelect {
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     clearTimeout(this.searchDebounce);
     this.vc.detachViewport();
   }
@@ -1079,5 +1083,18 @@ export class MdSelect {
         </div>
       </Host>
     );
+  }
+
+  componentDidLoad() {
+    completeInitialInteractionMotion(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

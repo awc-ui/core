@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Host, h, Prop, Element } from '@stencil/core';
 
 /**
@@ -62,7 +63,7 @@ export type MdStatusDotSize = 'small' | 'medium' | 'large';
  */
 @Component({
   tag: 'md-status-dot',
-  styleUrl: 'md-status-dot.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-status-dot.css'],
   shadow: true,
 })
 export class MdStatusDot {
@@ -182,5 +183,30 @@ export class MdStatusDot {
         aria-hidden={labelled ? null : 'true'}
       />
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidLoad() {
+    completeInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

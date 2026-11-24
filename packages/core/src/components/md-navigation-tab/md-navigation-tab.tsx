@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import {
   Component,
   Element,
@@ -43,7 +44,7 @@ export type MdNavigationTabLabelBehavior = 'always' | 'selected' | 'none';
  */
 @Component({
   tag: 'md-navigation-tab',
-  styleUrl: 'md-navigation-tab.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-navigation-tab.css'],
   shadow: true,
 })
 export class MdNavigationTab {
@@ -171,6 +172,7 @@ export class MdNavigationTab {
   // ─── Lifecycle ───────────────────────────────────────────────────
 
   connectedCallback() {
+    reconnectInteractionMotion(this);
     // Defaults — the bar may override these on mount.
     if (!this.el.hasAttribute('role')) this.el.setAttribute('role', 'tab');
     this.el.setAttribute('aria-selected', String(this.active));
@@ -389,5 +391,26 @@ export class MdNavigationTab {
         </span>
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidLoad() {
+    completeInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

@@ -1,8 +1,9 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Host, h, Prop } from '@stencil/core';
 
 @Component({
   tag: 'md-loading-indicator',
-  styleUrl: 'md-loading-indicator.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-loading-indicator.css'],
   shadow: true,
 })
 export class MdLoadingIndicator {
@@ -34,5 +35,30 @@ export class MdLoadingIndicator {
         <span class="md-loading-indicator__sr-only" role="status">{this.label}</span>
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidLoad() {
+    completeInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

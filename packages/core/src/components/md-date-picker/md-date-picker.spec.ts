@@ -3523,8 +3523,9 @@ describe('md-date-picker', () => {
       calendarButton(page)?.dispatchEvent(
         new CustomEvent('mdClick', { bubbles: true, composed: true, detail: { selected: false } }),
       );
-      await page.waitForChanges();
       expect(page.rootInstance.open).toBe(true);
+      await page.waitForChanges();
+      expect(shadow(page)?.querySelector('[part="panel"]')).toBeTruthy();
     });
   });
 

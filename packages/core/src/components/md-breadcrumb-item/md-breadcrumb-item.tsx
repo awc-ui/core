@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import {
   Component,
   Host,
@@ -31,7 +32,7 @@ export interface MdBreadcrumbSelectDetail {
 
 @Component({
   tag: 'md-breadcrumb-item',
-  styleUrl: 'md-breadcrumb-item.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-breadcrumb-item.css'],
   shadow: true,
 })
 export class MdBreadcrumbItem {
@@ -124,23 +125,28 @@ export class MdBreadcrumbItem {
   }
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     this.hasSlottedIcon = this.hasDirectSlottedChild('icon');
     this.hasSlottedLabel = this.hasDefaultSlotContent();
   }
 
   componentDidLoad() {
-    const iconSlot = this.el.shadowRoot?.querySelector(
-      'slot[name="icon"]',
-    ) as HTMLSlotElement | null;
-    iconSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedIcon = iconSlot.assignedElements().length > 0;
-    });
-    const mainSlot = this.el.shadowRoot?.querySelector(
-      'slot:not([name])',
-    ) as HTMLSlotElement | null;
-    mainSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedLabel = (mainSlot?.assignedNodes() ?? []).length > 0;
-    });
+    try {
+      const iconSlot = this.el.shadowRoot?.querySelector(
+        'slot[name="icon"]',
+      ) as HTMLSlotElement | null;
+      iconSlot?.addEventListener('slotchange', () => {
+        this.hasSlottedIcon = iconSlot.assignedElements().length > 0;
+      });
+      const mainSlot = this.el.shadowRoot?.querySelector(
+        'slot:not([name])',
+      ) as HTMLSlotElement | null;
+      mainSlot?.addEventListener('slotchange', () => {
+        this.hasSlottedLabel = (mainSlot?.assignedNodes() ?? []).length > 0;
+      });
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
 
   private getLabelText(): string {
@@ -305,5 +311,22 @@ export class MdBreadcrumbItem {
         {this.renderInner()}
       </Host>
     );
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

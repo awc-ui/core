@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import {
   Component,
   Host,
@@ -47,7 +48,7 @@ function containsFocus(el: Element): boolean {
   return false;
 }
 
-@Component({ tag: 'md-list', styleUrl: 'md-list.css', shadow: true })
+@Component({ tag: 'md-list', styleUrls: ['../../utils/initial-motion.css', 'md-list.css'], shadow: true })
 export class MdList {
   @Element() el!: HTMLElement;
 
@@ -262,37 +263,42 @@ export class MdList {
   }
 
   componentDidLoad() {
-    this.syncSelectionMode();
-    this.syncInteractionMode();
-    this.syncReorderable();
-    this.syncContainerRole();
-    this.syncDividers();
-    this.originalOrder = [...this.items];
-    this.refreshRovingTabindex(this.findInitialActiveIndex(), false);
-    this.el.addEventListener('mdItemSelect', this.handleMdItemSelect);
+    try {
+      this.syncSelectionMode();
+      this.syncInteractionMode();
+      this.syncReorderable();
+      this.syncContainerRole();
+      this.syncDividers();
+      this.originalOrder = [...this.items];
+      this.refreshRovingTabindex(this.findInitialActiveIndex(), false);
+      this.el.addEventListener('mdItemSelect', this.handleMdItemSelect);
 
-    if (typeof MutationObserver !== 'undefined') {
-      this.childObserver = new MutationObserver(records => {
-        const childListChanged = records.some(r => r.type === 'childList');
-        if (childListChanged) {
-          this.syncSelectionMode();
-          this.syncInteractionMode();
-          this.syncReorderable();
-          this.syncContainerRole();
-          this.syncDividers();
-          /* Adopt any newly-added rows into the as-authored baseline so their
-             `mdReorder.order` index isn't -1. Existing rows keep their slot. */
-          this.items.forEach(item => {
-            if (!this.originalOrder.includes(item)) this.originalOrder.push(item);
-          });
-          this.refreshRovingTabindex(this.activeIndex, false);
-        }
-      });
-      this.childObserver.observe(this.el, { childList: true });
+      if (typeof MutationObserver !== 'undefined') {
+        this.childObserver = new MutationObserver(records => {
+          const childListChanged = records.some(r => r.type === 'childList');
+          if (childListChanged) {
+            this.syncSelectionMode();
+            this.syncInteractionMode();
+            this.syncReorderable();
+            this.syncContainerRole();
+            this.syncDividers();
+            /* Adopt any newly-added rows into the as-authored baseline so their
+               `mdReorder.order` index isn't -1. Existing rows keep their slot. */
+            this.items.forEach(item => {
+              if (!this.originalOrder.includes(item)) this.originalOrder.push(item);
+            });
+            this.refreshRovingTabindex(this.activeIndex, false);
+          }
+        });
+        this.childObserver.observe(this.el, { childList: true });
+      }
+} finally {
+      completeInitialInteractionMotion(this);
     }
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.el.removeEventListener('mdItemSelect', this.handleMdItemSelect);
     this.childObserver?.disconnect();
     this.childObserver = null;
@@ -954,5 +960,22 @@ export class MdList {
         <slot />
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

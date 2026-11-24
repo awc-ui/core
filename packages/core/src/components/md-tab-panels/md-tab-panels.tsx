@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { createId } from '../../utils/id';
 import { Component, Element, Host, h, Prop, Watch } from '@stencil/core';
 
@@ -18,7 +19,7 @@ import { Component, Element, Host, h, Prop, Watch } from '@stencil/core';
  */
 @Component({
   tag: 'md-tab-panels',
-  styleUrl: 'md-tab-panels.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-tab-panels.css'],
   shadow: true,
 })
 export class MdTabPanels {
@@ -46,18 +47,24 @@ export class MdTabPanels {
   }
 
   componentDidLoad() {
-    this.hasLoaded = true;
-    const slot = this.el.shadowRoot?.querySelector('slot');
-    slot?.addEventListener('slotchange', () => this.sync());
-    this.wire();
+    try {
+      this.hasLoaded = true;
+      const slot = this.el.shadowRoot?.querySelector('slot');
+      slot?.addEventListener('slotchange', () => this.sync());
+      this.wire();
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
 
   connectedCallback() {
+    reconnectInteractionMotion(this);
     // house rule: reconnects must rebind (disconnect tears the listener down)
     if (this.hasLoaded) queueMicrotask(() => this.wire());
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.unwire();
   }
 
@@ -150,5 +157,18 @@ export class MdTabPanels {
         <slot />
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

@@ -1,23 +1,37 @@
+import { activateInteractionMotion } from './initial-motion';
+
 function deferred() {
   let resolve!: () => void;
   const promise = new Promise<void>((done) => { resolve = done; });
   return { promise, resolve };
 }
 
-function frame(element: HTMLElement): Promise<void> {
-  const view = element.ownerDocument?.defaultView;
-  return new Promise((resolve) => {
-    if (!view?.requestAnimationFrame || element.ownerDocument.hidden) {
-      setTimeout(resolve, 0);
+function afterFrame(document: Document, callback: () => void): () => void {
+  const view = document.defaultView as (Window & typeof globalThis) | null;
+  if (!view) {
+    const timer = setTimeout(callback, 0);
+    return () => clearTimeout(timer);
+  }
+
+  // A host may belong to a new window while its class still lives in a
+  // detached iframe. Schedule a native callback from the destination realm.
+  const ViewPromise = view.Promise ?? Promise;
+  let cancel!: () => void;
+  void new ViewPromise<unknown>((resolve) => {
+    if (!view.requestAnimationFrame || document.hidden) {
+      const timer = view.setTimeout(resolve, 0);
+      cancel = () => view.clearTimeout(timer);
     } else {
-      view.requestAnimationFrame(() => resolve());
+      const frame = view.requestAnimationFrame(resolve);
+      cancel = () => view.cancelAnimationFrame?.(frame);
     }
-  });
+  }).then(callback);
+  return cancel;
 }
 
 async function painted(element: HTMLElement): Promise<void> {
-  await frame(element);
-  await frame(element);
+  await new Promise<void>(resolve => { afterFrame(element.ownerDocument, resolve); });
+  await new Promise<void>(resolve => { afterFrame(element.ownerDocument, resolve); });
 }
 
 /** Wait only for this overlay's shell, not slotted controls or their spinners. */
@@ -42,6 +56,10 @@ export async function finishShellMotion(element: HTMLElement): Promise<void> {
  */
 export class OverlayLifecycle {
   private initialized = deferred();
+  private initialDocument?: Document;
+  private initialBaselineComplete = false;
+  private initializationEpoch = 0;
+  private cancelInitializationFrame?: () => void;
   private pendingOpen?: ReturnType<typeof deferred>;
   private cycle?: ReturnType<typeof deferred>;
   private request = 0;
@@ -50,11 +68,45 @@ export class OverlayLifecycle {
 
   constructor(private element: () => HTMLElement, private isOpen: () => boolean) {}
 
-  connected(): void { this.disconnected = false; }
+  connected(): void {
+    this.disconnected = false;
+    this.prepareInitialBaseline();
+  }
 
   loaded(): void {
+    if (!this.initialBaselineComplete) this.initialDocument ??= this.element().ownerDocument;
     if (this.isOpen()) this.opened();
-    void painted(this.element()).then(() => this.initialized.resolve());
+    this.prepareInitialBaseline();
+  }
+
+  private prepareInitialBaseline(): void {
+    if (!this.initialDocument || this.initialBaselineComplete || this.disconnected) return;
+    this.cancelInitializationFrame?.();
+    const element = this.element();
+    const document = element.ownerDocument;
+    const epoch = ++this.initializationEpoch;
+    if (document !== this.initialDocument) {
+      // The rendered overlay can outlive the iframe that defined its class.
+      // Commit its existing styles in the new document before enabling show().
+      element.getBoundingClientRect();
+      this.completeInitialBaseline();
+      return;
+    }
+    const isCurrent = () => epoch === this.initializationEpoch && element.ownerDocument === document;
+    this.cancelInitializationFrame = afterFrame(document, () => {
+      if (!isCurrent()) return;
+      this.cancelInitializationFrame = afterFrame(document, () => {
+        if (!isCurrent()) return;
+        this.completeInitialBaseline();
+      });
+    });
+  }
+
+  private completeInitialBaseline(): void {
+    this.initialDocument = undefined;
+    this.cancelInitializationFrame = undefined;
+    this.initialBaselineComplete = true;
+    this.initialized.resolve();
   }
 
   async show(open: () => void): Promise<void> {
@@ -66,6 +118,7 @@ export class OverlayLifecycle {
     await Promise.race([this.initialized.promise, pending.promise]);
     if (this.disconnected || request !== this.request) return;
     this.pendingOpen = undefined;
+    activateInteractionMotion(this.element());
     open();
   }
 
@@ -100,6 +153,9 @@ export class OverlayLifecycle {
 
   disconnect(): void {
     this.disconnected = true;
+    ++this.initializationEpoch;
+    this.cancelInitializationFrame?.();
+    this.cancelInitializationFrame = undefined;
     ++this.request;
     ++this.transition;
     this.pendingOpen?.resolve();

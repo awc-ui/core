@@ -1,3 +1,4 @@
+import { Build } from '@stencil/core';
 import { newSpecPage } from '@stencil/core/testing';
 import { MdNavigationRailTab } from './md-navigation-rail-tab';
 
@@ -356,14 +357,19 @@ describe('md-navigation-rail-tab layout motion', () => {
   }
 
   let restoreMedia: (() => void) | undefined;
+  beforeEach(() => {
+    jest.replaceProperty(Build, 'isBrowser', true);
+  });
+
   afterEach(() => {
     jest.restoreAllMocks();
     restoreMedia?.();
     restoreMedia = undefined;
   });
 
-  async function fixture() {
+  async function fixture(motionReady = true) {
     const page = await create('<md-navigation-rail-tab icon="home" label="Home" active></md-navigation-rail-tab>');
+    if (motionReady) page.root!.setAttribute('data-awc-motion-ready', '');
     const icon = page.root!.shadowRoot!.querySelector('[part="icon-wrapper"]') as HTMLElement;
     const indicator = page.root!.shadowRoot!.querySelector('[part="indicator"]') as HTMLElement;
     const label = page.root!.shadowRoot!.querySelector('[part="label"]') as HTMLElement;
@@ -464,6 +470,20 @@ describe('md-navigation-rail-tab layout motion', () => {
       },
     };
   }
+
+  it('settles an expanded layout set during initial rail adoption without animation', async () => {
+    const f = await fixture(false);
+    await f.toggle(true);
+
+    expect(f.page.root).toHaveClass('md-navigation-rail-tab--expanded');
+    expect(f.iconAnimations).toHaveLength(0);
+    expect(f.indicatorAnimations).toHaveLength(0);
+    expect(f.labelAnimations).toHaveLength(0);
+
+    f.page.root!.setAttribute('data-awc-motion-ready', '');
+    await f.toggle(false);
+    expect(f.indicatorAnimations).toHaveLength(1);
+  });
 
   it('expands the active indicator from its previous nonzero position and size', async () => {
     const f = await fixture();

@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Host, h, Prop, State, Element, Method, Watch, Build } from '@stencil/core';
 
 /**
@@ -35,7 +36,7 @@ import { Component, Host, h, Prop, State, Element, Method, Watch, Build } from '
  */
 @Component({
   tag: 'md-toolbar',
-  styleUrl: 'md-toolbar.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-toolbar.css'],
   shadow: true,
 })
 export class MdToolbar {
@@ -138,6 +139,7 @@ export class MdToolbar {
   }
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     // A whitespace-only aria-label yields an empty accessible name — strip it so
     // the host renders as unnamed (the `aria-label` attribute both feeds the prop
     // and is rendered, so a blank value would otherwise linger on the host).
@@ -146,6 +148,7 @@ export class MdToolbar {
   }
 
   connectedCallback() {
+    reconnectInteractionMotion(this);
     /* Bubble: slotted controls dispatch keydown/focusin; the host receives after the
        target (matches real Tab/arrow use). */
     this.el.addEventListener('keydown', this.onHostKeyDown, false);
@@ -156,21 +159,26 @@ export class MdToolbar {
   }
 
   componentDidLoad() {
-    this.hasLoaded = true;
-    this.setupObservers();
-    if (Build.isDev) {
-      const named = this.hasAccessibleName();
-      if (this.containerSemantics === 'toolbar' && !named) {
-        console.warn(
-          '[md-toolbar] role="toolbar" without an accessible name. Set `aria-label` (or `aria-labelledby`) to a meaningful description, e.g. aria-label="Text formatting".',
-        );
-      } else if (this.containerSemantics === 'generic' && named) {
-        this.warnGenericNamed();
+    try {
+      this.hasLoaded = true;
+      this.setupObservers();
+      if (Build.isDev) {
+        const named = this.hasAccessibleName();
+        if (this.containerSemantics === 'toolbar' && !named) {
+          console.warn(
+            '[md-toolbar] role="toolbar" without an accessible name. Set `aria-label` (or `aria-labelledby`) to a meaningful description, e.g. aria-label="Text formatting".',
+          );
+        } else if (this.containerSemantics === 'generic' && named) {
+          this.warnGenericNamed();
+        }
       }
+} finally {
+      completeInitialInteractionMotion(this);
     }
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.el.removeEventListener('keydown', this.onHostKeyDown, false);
     this.el.removeEventListener('focusin', this.onFocusIn, false);
     this.teardownObservers();
@@ -566,5 +574,14 @@ export class MdToolbar {
         </div>
       </Host>
     );
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

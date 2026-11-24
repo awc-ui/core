@@ -172,6 +172,7 @@
     "test:spec:coverage:html": "node scripts/coverage-html.mjs",
     "test:ssr:coverage": "node scripts/ssr-coverage.mjs",
     "test:ssr": "node scripts/ssr-smoke.mjs",
+    "test:motion": "node --test scripts/initial-motion.test.mjs",
     "test:csr": "node --test scripts/overlay-csr.test.mjs scripts/tables-csr.test.mjs",
     "lint": "tsc --noEmit",
     "dev": "stencil build --dev --watch --serve",

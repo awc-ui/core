@@ -12,6 +12,7 @@ import {
   Method,
 } from '@stencil/core';
 import { triggerRipple } from '../../utils/ripple';
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, canAnimateInteraction, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { getRailTransitionTiming, parseRailMotionDuration, registerRailTabTransition, synchronizeRailAnimation } from '../../utils/navigation-rail-motion';
 import { sanitizeHref, SAFE_LINK_REL } from '../../utils/url';
 
@@ -30,7 +31,7 @@ import { sanitizeHref, SAFE_LINK_REL } from '../../utils/url';
  */
 @Component({
   tag: 'md-navigation-rail-tab',
-  styleUrl: 'md-navigation-rail-tab.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-navigation-rail-tab.css'],
   shadow: true,
 })
 export class MdNavigationRailTab {
@@ -125,6 +126,7 @@ export class MdNavigationRailTab {
   private unregisterTransition?: () => void;
 
   connectedCallback() {
+    reconnectInteractionMotion(this);
     this.unregisterTransition = registerRailTabTransition(this.el, () => {
       this.captureTransition();
       this.transitionPrepared = true;
@@ -132,6 +134,7 @@ export class MdNavigationRailTab {
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.unregisterTransition?.();
     this.cancelAnimations();
     this.iconFirst = null;
@@ -150,29 +153,33 @@ export class MdNavigationRailTab {
   @State() private submenuHasSelection: boolean = false;
 
   componentDidLoad() {
-    if (
-      typeof window !== 'undefined' &&
-      window.__STENCIL_DEV_MODE__ !== false
-    ) {
-      this.warnMissingAccessibleName();
-    }
+    try {
+      if (
+        typeof window !== 'undefined' &&
+        window.__STENCIL_DEV_MODE__ !== false
+      ) {
+        this.warnMissingAccessibleName();
+      }
 
-    // A slotted submenu needs its anchor wired once this tab is in the DOM.
-    this.ensureSubmenuAnchor();
-    const submenu = this.submenu;
-    this.hasSubmenu = !!submenu;
-    if (submenu) {
-      submenu.addEventListener('mdOpen', () => {
-        this.submenuOpen = true;
-        this.mdSubmenuToggle.emit({ open: true });
-      });
-      submenu.addEventListener('mdClose', () => {
-        this.submenuOpen = false;
+      // A slotted submenu needs its anchor wired once this tab is in the DOM.
+      this.ensureSubmenuAnchor();
+      const submenu = this.submenu;
+      this.hasSubmenu = !!submenu;
+      if (submenu) {
+        submenu.addEventListener('mdOpen', () => {
+          this.submenuOpen = true;
+          this.mdSubmenuToggle.emit({ open: true });
+        });
+        submenu.addEventListener('mdClose', () => {
+          this.submenuOpen = false;
+          this.syncSubmenuSelection();
+          this.mdSubmenuToggle.emit({ open: false });
+        });
+        submenu.addEventListener('mdClick', (e) => this.handleSubmenuClick(e));
         this.syncSubmenuSelection();
-        this.mdSubmenuToggle.emit({ open: false });
-      });
-      submenu.addEventListener('mdClick', (e) => this.handleSubmenuClick(e));
-      this.syncSubmenuSelection();
+      }
+} finally {
+      completeInitialInteractionMotion(this);
     }
   }
 
@@ -185,6 +192,14 @@ export class MdNavigationRailTab {
   }
 
   private captureTransition() {
+    if (!canAnimateInteraction(this.el)) {
+      this.cancelAnimations();
+      this.iconFirst = null;
+      this.indicatorFirst = null;
+      this.labelFirst = null;
+      this.pendingTransition = false;
+      return;
+    }
     const sr = this.el.shadowRoot;
     const indicator = sr?.querySelector<HTMLElement>('[part="indicator"]');
     const label = sr?.querySelector<HTMLElement>('[part="label"]');
@@ -210,12 +225,7 @@ export class MdNavigationRailTab {
       boxSizing: labelCss.boxSizing,
     } : null;
     this.cancelAnimations();
-    this.pendingTransition = !this.prefersReducedMotion();
-    if (!this.pendingTransition) {
-      this.iconFirst = null;
-      this.indicatorFirst = null;
-      this.labelFirst = null;
-    }
+    this.pendingTransition = true;
   }
 
   private cancelAnimations() {
@@ -268,16 +278,10 @@ export class MdNavigationRailTab {
   }
 
   componentDidRender() {
+    initialInteractionMotionRendered(this);
     if (!this.pendingTransition) return;
     this.pendingTransition = false;
     this.playTransition();
-  }
-
-  private prefersReducedMotion(): boolean {
-    return (
-      typeof window !== 'undefined' &&
-      !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-    );
   }
 
   private iconCentre(): { cx: number; cy: number } | null {
@@ -677,5 +681,14 @@ export class MdNavigationRailTab {
         )}
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import {
   Component,
   Host,
@@ -58,7 +59,7 @@ function findSiblings(items: MdPieDatum[], d: MdPieDatum): MdPieDatum[] | null {
 
 @Component({
   tag: 'md-pie-chart',
-  styleUrl: 'md-pie-chart.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-pie-chart.css'],
   shadow: true,
 })
 export class MdPieChart {
@@ -237,13 +238,18 @@ export class MdPieChart {
   }
 
   componentDidLoad() {
-    this.initChart();
-    // Repaint whenever the resolved tokens change — an OS dark-mode flip, a
-    // data-theme toggle, or a seed/accent palette written as --md-sys-color-*
-    // overrides at runtime. A canvas is pixels: nothing retints it for us.
-    this.disposeThemeWatch = watchMdChartTheme(this.el, () => this.applyEngine());
+    try {
+      this.initChart();
+      // Repaint whenever the resolved tokens change — an OS dark-mode flip, a
+      // data-theme toggle, or a seed/accent palette written as --md-sys-color-*
+      // overrides at runtime. A canvas is pixels: nothing retints it for us.
+      this.disposeThemeWatch = watchMdChartTheme(this.el, () => this.applyEngine());
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.ro?.disconnect();
     this.ro = null;
     this.engine?.dispose();
@@ -713,5 +719,22 @@ export class MdPieChart {
         </div>
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

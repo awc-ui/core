@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import {
   Component,
   Host,
@@ -43,7 +44,7 @@ export interface MdSliderDragDetail {
  */
 @Component({
   tag: 'md-slider',
-  styleUrl: 'md-slider.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-slider.css'],
   shadow: true,
   formAssociated: true,
 })
@@ -240,15 +241,24 @@ export class MdSlider {
   private initialEnd = 0;
 
   connectedCallback() {
+    reconnectInteractionMotion(this);
     this.initialValue = this.value;
     this.initialStart = this.valueStart;
     this.initialEnd = this.valueEnd;
   }
 
-  componentDidLoad() {
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
     this.clampValues();
     this.syncCssVars();
-    this.syncFormValue();
+  }
+
+  componentDidLoad() {
+    try {
+      this.syncFormValue();
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
 
   /**
@@ -985,5 +995,18 @@ export class MdSlider {
         </div>
       </Host>
     );
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

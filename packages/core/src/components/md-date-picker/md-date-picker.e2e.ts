@@ -28,6 +28,40 @@ async function clickPickerPart(page: E2EPage, selector: string) {
 }
 
 describe('md-date-picker (e2e)', () => {
+  it.each([
+    ['modal', 'md-date-picker-scale', 'md-date-picker-fade-in'],
+    ['docked', 'md-date-picker-selection-bloom-in', null],
+  ])('renders an authored open %s panel fully visible and animates show()', async (variant, panelAnimation, scrimAnimation) => {
+    const page = await newE2EPage();
+    await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
+    await page.setContent(`
+      <md-date-picker variant="${variant}" open value="2025-06-15"
+        style="--md-sys-motion-duration-medium2: 10s; --md-sys-motion-duration-short3: 10s; --md-date-picker-selection-bloom-duration: 10s">
+      </md-date-picker>
+    `);
+    const style = () => page.evaluate(() => {
+      const root = document.querySelector('md-date-picker')!.shadowRoot!;
+      const panel = getComputedStyle(root.querySelector('[part="panel"]')!);
+      const scrim = root.querySelector('[part="scrim"]');
+      return {
+        panelAnimation: panel.animationName,
+        panelOpacity: panel.opacity,
+        scrimAnimation: scrim ? getComputedStyle(scrim).animationName : null,
+        scrimOpacity: scrim ? getComputedStyle(scrim).opacity : null,
+      };
+    });
+    expect(await style()).toEqual({
+      panelAnimation: 'none', panelOpacity: '1',
+      scrimAnimation: scrimAnimation ? 'none' : null, scrimOpacity: scrimAnimation ? '1' : null,
+    });
+
+    await page.evaluate(() => document.querySelector('md-date-picker')!.close());
+    await page.waitForChanges();
+    await page.evaluate(() => document.querySelector('md-date-picker')!.show());
+    await page.waitForChanges();
+    expect(await style()).toMatchObject({ panelAnimation, scrimAnimation });
+  });
+
   it('renders the trigger field by default', async () => {
     const page = await newE2EPage();
     await page.setContent('<md-date-picker label="Date"></md-date-picker>');
@@ -37,9 +71,10 @@ describe('md-date-picker (e2e)', () => {
     expect(field).not.toBeNull();
   });
 
-  it('opens the dialog when the calendar button is clicked', async () => {
+  it('opens and animates the dialog on the first calendar click', async () => {
     const page = await newE2EPage();
-    await page.setContent('<md-date-picker value="2025-06-15"></md-date-picker>');
+    await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
+    await page.setContent('<md-date-picker value="2025-06-15" style="--md-sys-motion-duration-medium2: 10s"></md-date-picker>');
     const button = await page.find('md-date-picker >>> [part="calendar-button"]');
     await button.click();
     await page.waitForChanges();
@@ -47,6 +82,11 @@ describe('md-date-picker (e2e)', () => {
     expect(panel).not.toBeNull();
     expect(panel.getAttribute('role')).toBe('dialog');
     expect(panel.getAttribute('aria-modal')).toBe('true');
+    const animation = await page.evaluate(() => {
+      const dialog = document.querySelector('md-date-picker')!.shadowRoot!.querySelector('[part="panel"]')!;
+      return getComputedStyle(dialog).animationName;
+    });
+    expect(animation).toBe('md-date-picker-scale');
   });
 
   it('stages a docked day selection and commits on OK', async () => {

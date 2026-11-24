@@ -1,6 +1,42 @@
 import { newE2EPage } from '@stencil/core/testing';
 
 describe('md-list-item e2e', () => {
+  it('renders initial image selection at full size and animates a subsequent selection', async () => {
+    const page = await newE2EPage();
+    await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
+    await page.setContent(`
+      <md-list-item headline="Photo" leading-image="photo.png" selected
+        style="--md-sys-motion-duration-medium2: 10s"></md-list-item>
+    `);
+    const state = () => page.evaluate(() => {
+      const circle = document.querySelector('md-list-item')!.shadowRoot!.querySelector('[part="image-selection-circle"]')!;
+      const { animationName, opacity, transform } = getComputedStyle(circle);
+      return { animationName, opacity, transform };
+    });
+    expect(await state()).toEqual({ animationName: 'none', opacity: '1', transform: 'matrix(1, 0, 0, 1, 0, 0)' });
+
+    await page.evaluate(async () => {
+      for (let frame = 0; frame < 3; frame++) {
+        await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+      }
+    });
+    const item = await page.find('md-list-item');
+    await item.setProperty('selected', false);
+    await page.waitForChanges();
+    await item.setProperty('selected', true);
+    await page.waitForChanges();
+    expect((await state()).animationName).toBe('md-list-item-image-selection-in');
+
+    await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+    expect(await state()).toEqual({ animationName: 'none', opacity: '1', transform: 'matrix(1, 0, 0, 1, 0, 0)' });
+    const transitions = await page.evaluate(() => {
+      const host = document.querySelector('md-list-item')!;
+      const row = host.shadowRoot!.querySelector('.md-list-item__row')!;
+      return [getComputedStyle(host).transitionProperty, getComputedStyle(row).transitionProperty];
+    });
+    expect(transitions).toEqual(['box-shadow', 'none']);
+  });
+
   it('renders', async () => {
     const page = await newE2EPage();
     await page.setContent('<md-list-item headline="Item"></md-list-item>');

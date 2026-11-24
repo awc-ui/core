@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import {
   Component,
   Host,
@@ -45,7 +46,7 @@ import {
  */
 @Component({
   tag: 'md-stepper',
-  styleUrl: 'md-stepper.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-stepper.css'],
   shadow: true,
 })
 export class MdStepper {
@@ -193,6 +194,7 @@ export class MdStepper {
   private lastActive = 0;
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     // Sync before first render: steps get correct data-* immediately (no
     // "every bubble is 1" flash), stepCount is set outside didLoad (no Stencil
     // re-render warning), and an out-of-range initial `active` clamps.
@@ -203,11 +205,16 @@ export class MdStepper {
   }
 
   componentDidLoad() {
-    this.syncSteps();
-    this.observeStepState();
+    try {
+      this.syncSteps();
+      this.observeStepState();
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.stepObserver?.disconnect();
     this.stepObserver = undefined;
   }
@@ -676,5 +683,18 @@ export class MdStepper {
         )}
       </Host>
     );
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

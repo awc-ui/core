@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Element, Host, h, Prop, Event, EventEmitter, Watch } from '@stencil/core';
 
 /** Material Symbols 24px `arrow_upward` glyph. */
@@ -23,7 +24,7 @@ const ICON_ARROW = 'M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z'
  */
 @Component({
   tag: 'md-table-sort-label',
-  styleUrl: 'md-table-sort-label.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-table-sort-label.css'],
   shadow: true,
 })
 export class MdTableSortLabel {
@@ -97,6 +98,7 @@ export class MdTableSortLabel {
   @Event() mdSortRequest: EventEmitter<{ column: string; defaultOrder: 'asc' | 'desc' }>;
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     this.notifyColumnChange();
   }
 
@@ -171,5 +173,26 @@ export class MdTableSortLabel {
         </span>
       </Host>
     );
+  }
+
+  componentDidLoad() {
+    completeInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

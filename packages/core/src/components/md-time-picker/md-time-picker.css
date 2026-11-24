@@ -401,8 +401,11 @@
   justify-content: center;
   background: var(--_scrim-color);
   padding: var(--md-sys-spacing-inset-xl, 24px);
-  animation: md-time-picker-scrim-in var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)) forwards;
   box-sizing: border-box;
+}
+
+.md-time-picker__scrim--entering {
+  animation: md-time-picker-scrim-in var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)) forwards;
 }
 
 @keyframes md-time-picker-scrim-in {
@@ -438,6 +441,10 @@
      horizontal one against the fixed-width body. */
   overflow-x: hidden;
   box-sizing: border-box;
+  transform-origin: center top;
+}
+
+.md-time-picker__dialog--entering {
   /* Dialog entrance: a deliberate "unfold + bloom" motion that
      mirrors the inner mode-swap bloom (same easing, same anchor)
      so the whole picker feels like one motion family. The 500ms
@@ -451,7 +458,6 @@
      to `200ms` for snappier desktop UX) or swap the easing via
      `--md-time-picker-motion-easing`. */
   animation: md-time-picker-dialog-in var(--_dialog-enter-duration) var(--_motion-easing) both;
-  transform-origin: center top;
 }
 
 .md-time-picker__dialog--input {
@@ -789,7 +795,11 @@
   justify-content: center;
   align-items: center;
   margin-block-end: var(--md-sys-spacing-inset-xl, 24px);
-  /* Bloom in on mount (dialog open AND swap from input → dial) —
+  transform-origin: center top;
+}
+
+.md-time-picker__mode--entering {
+  /* Bloom on an interactive dialog open or mode swap —
      paired with `.md-time-picker__input-area` so both modes
      animate symmetrically. The transform-origin pulls the bloom
      toward the headline so the dial visually "grows" out of the
@@ -802,7 +812,6 @@
     var(--_mode-swap-duration)
     var(--_motion-easing)
     both;
-  transform-origin: center top;
 }
 
 .md-time-picker__dial {
@@ -981,15 +990,6 @@
      to the top of the footer / actions row. Previously this was
      36px, which inflated the dialog beyond the canonical layout. */
   margin-block-end: var(--md-sys-spacing-inset-xl, 24px);
-  /* Bloom in on mount (dialog open AND mode swap) — see the
-     `@keyframes md-time-picker-mode-in` comment for the geometry
-     rationale, and the .md-time-picker__dial-wrap rule for why
-     the duration is long1 (450ms) — 50ms quicker than the outer
-     dialog unfold so the nested content settles first. */
-  animation: md-time-picker-mode-in
-    var(--_mode-swap-duration)
-    var(--_motion-easing)
-    both;
   transform-origin: center top;
 }
 

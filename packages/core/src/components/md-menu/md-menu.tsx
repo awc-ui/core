@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Host, h, Prop, State, Event, EventEmitter, Element, Method, Watch, Listen } from '@stencil/core';
 import { OverlayLifecycle } from '../../utils/overlay-lifecycle';
 import { MenuElement, VirtualMenuProvider } from '../../utils/types';
@@ -21,7 +22,7 @@ const NATIVE_EXPANDABLE_TAGS = new Set(['BUTTON', 'SUMMARY']);
 
 let menuIdCounter = 0;
 
-@Component({ tag: 'md-menu', styleUrl: 'md-menu.css', shadow: true })
+@Component({ tag: 'md-menu', styleUrls: ['../../utils/initial-motion.css', 'md-menu.css'], shadow: true })
 export class MdMenu {
   @Element() el!: HTMLElement;
 
@@ -212,6 +213,7 @@ export class MdMenu {
   }
 
   connectedCallback() {
+    reconnectInteractionMotion(this);
     this.overlayLifecycle.connected();
     if (typeof document === 'undefined') return;
     document.addEventListener('keydown', this.trackKeyboardModality, true);
@@ -222,23 +224,27 @@ export class MdMenu {
   private trackPointerModality = () => { this.keyboardModality = false; };
 
   componentDidLoad() {
-    this.overlayLifecycle.loaded();
-    if (this.open) {
-      this.applyDepthZIndex();
+    try {
+      this.overlayLifecycle.loaded();
+      if (this.open) {
+        this.applyDepthZIndex();
+      }
+      // Run an initial scan so a menu that mounts already-empty
+      // (e.g. SSR snapshot, or items hidden before first paint)
+      // shows the empty-state on its first frame instead of after
+      // the first slotchange.
+      this.wireItemObserver();
+      this.updateEmpty();
+      // Propagate variant/use-gap to slotted groups on load. The initial
+      // `slotchange` can fire before our handler is wired (so it's missed), which
+      // left grouped+gap groups without their data-variant/data-use-gap
+      // attributes — the group cards then have no background (transparent surface,
+      // floating items). componentDidLoad runs once children are assigned, so this
+      // is the reliable initial pass; handleSlotChange keeps it in sync after.
+      this.propagateVariant();
+} finally {
+      completeInitialInteractionMotion(this);
     }
-    // Run an initial scan so a menu that mounts already-empty
-    // (e.g. SSR snapshot, or items hidden before first paint)
-    // shows the empty-state on its first frame instead of after
-    // the first slotchange.
-    this.wireItemObserver();
-    this.updateEmpty();
-    // Propagate variant/use-gap to slotted groups on load. The initial
-    // `slotchange` can fire before our handler is wired (so it's missed), which
-    // left grouped+gap groups without their data-variant/data-use-gap
-    // attributes — the group cards then have no background (transparent surface,
-    // floating items). componentDidLoad runs once children are assigned, so this
-    // is the reliable initial pass; handleSlotChange keeps it in sync after.
-    this.propagateVariant();
   }
 
   @Watch('emptyText')
@@ -1358,6 +1364,7 @@ export class MdMenu {
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.cancelOpenTasks();
     this.overlayLifecycle.disconnect();
     document.removeEventListener('click', this.handleOutsideClick);
@@ -1520,5 +1527,18 @@ export class MdMenu {
         </div>
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

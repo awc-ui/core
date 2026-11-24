@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { createId } from '../../utils/id';
 import { AttachInternals, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, Watch, h } from '@stencil/core';
 import { RadioElement } from '../../utils/types';
@@ -13,7 +14,7 @@ import {
 
 @Component({
   tag: 'md-radio',
-  styleUrl: 'md-radio.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-radio.css'],
   shadow: true,
   formAssociated: true,
 })
@@ -65,6 +66,7 @@ export class MdRadio {
   }
 
   componentDidRender() {
+    initialInteractionMotionRendered(this);
     // The interactive host and its supporting text are in different roots.
     // Element references keep the description associated across that boundary.
     if (this.internals && 'ariaDescribedByElements' in this.internals) {
@@ -133,24 +135,31 @@ export class MdRadio {
   // ─── Lifecycle ─────────────────────────────────────────────
 
   connectedCallback() {
+    reconnectInteractionMotion(this);
     this.parentLabel = this.el.closest('label');
     this.parentLabel?.addEventListener('click', this.handleLabelClick);
   }
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     this.defaultChecked = this.checked;
     this.syncFormValue();
   }
 
   componentDidLoad() {
-    this.updateRovingTabIndex();
-    // Group validity depends on SIBLINGS, which may not have upgraded when this
-    // radio first rendered. Re-sync once the whole group exists, or a group
-    // whose pre-checked member upgraded last would report itself empty.
-    this.syncGroupValidity();
+    try {
+      this.updateRovingTabIndex();
+      // Group validity depends on SIBLINGS, which may not have upgraded when this
+      // radio first rendered. Re-sync once the whole group exists, or a group
+      // whose pre-checked member upgraded last would report itself empty.
+      this.syncGroupValidity();
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.parentLabel?.removeEventListener('click', this.handleLabelClick);
     this.parentLabel = null;
   }
@@ -563,5 +572,10 @@ export class MdRadio {
         )}
       </Host>
     );
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

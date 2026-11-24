@@ -1,4 +1,5 @@
 import { Component, Host, h, Prop, State, Event, EventEmitter, Element, Method, Watch, Listen } from '@stencil/core';
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, activateInteractionMotion, canAnimateInteraction, suppressInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { OverlayLifecycle } from '../../utils/overlay-lifecycle';
 
 type FabMenuFocusableElement = HTMLElement & { rovingFocusVisible?: boolean; label?: string };
@@ -18,7 +19,7 @@ let fabMenuIdCounter = 0;
 
 @Component({
   tag: 'md-fab-menu',
-  styleUrl: 'md-fab-menu.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-fab-menu.css'],
   shadow: true,
 })
 export class MdFabMenu {
@@ -76,11 +77,14 @@ export class MdFabMenu {
   @State() private effectivePlacement: 'up' | 'down' = 'up';
 
   private menuId = `md-fab-menu-${++fabMenuIdCounter}`;
+  private loaded = false;
   private closeTimer?: ReturnType<typeof setTimeout>;
   private openTaskGeneration = 0;
   private openTaskFrames = new Set<number>();
   private openTaskTimers = new Set<ReturnType<typeof setTimeout>>();
   private iconMorphTimer?: ReturnType<typeof setTimeout>;
+  private anchorIconGeneration = 0;
+  private wiredAnchor: FabMenuAnchor | null = null;
   private focusedIndex = -1;
   /** Set when the anchor is activated via Enter/Space (cleared on pointer down). */
   private openedViaKeyboard = false;
@@ -96,22 +100,37 @@ export class MdFabMenu {
     null;
 
   connectedCallback() {
+    reconnectInteractionMotion(this);
     this.overlayLifecycle.connected();
     this.effectivePlacement = this.placement === 'auto' ? 'up' : this.placement;
+    if (this.loaded) {
+      this.closing = false;
+      if (this.open) this.overlayLifecycle.opened();
+      this.setupInitialState();
+    }
   }
 
   componentDidLoad() {
-    this.overlayLifecycle.loaded();
+    try {
+      this.loaded = true;
+      this.overlayLifecycle.loaded();
+      this.setupInitialState();
+} finally {
+      completeInitialInteractionMotion(this);
+    }
+  }
+
+  private setupInitialState() {
     this.wireAnchor();
     if (this.open) {
       this.resolveEffectivePlacement();
-      this.deferOpenFrame(() => this.positionMenu());
       // Initial open=true requires the same anchor-FAB setup that
       // `@Watch('open')` does on a closed→open transition. We deliberately skip
       // mdOpen.emit() and the autofocus dance — both are interaction
       // semantics; this branch is for "already open at mount" only.
       this.updateAnchorAria(true);
-      this.morphAnchorFab(true);
+      this.morphAnchorFab(true, false);
+      this.positionMenu();
       this.addGlobalListeners();
       this.updateItemDelays();
       this.scheduleFocus(() => this.initRovingTabindex());
@@ -119,20 +138,29 @@ export class MdFabMenu {
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.cancelOpenTasks();
     this.overlayLifecycle.disconnect();
+    this.resetAnchorFab(this.wiredAnchor ?? this.getAnchorEl());
     this.unwireAnchor();
     this.removeGlobalListeners();
     clearTimeout(this.closeTimer);
-    clearTimeout(this.iconMorphTimer);
     clearTimeout(this.typeaheadTimer);
-    this.resetAnchorFab();
   }
 
   @Watch('anchor')
   onAnchorChange() {
-    this.unwireAnchor();
+    if (this.wiredAnchor) {
+      if (this.open) this.wiredAnchor.setAttribute('aria-expanded', 'false');
+      this.resetAnchorFab(this.wiredAnchor);
+    }
     this.wireAnchor();
+    if (this.open && !this.closing && this.el.isConnected) {
+      this.updateAnchorAria(true);
+      this.morphAnchorFab(true, false);
+      this.resolveEffectivePlacement();
+      this.positionMenu();
+    }
   }
 
   @Watch('placement')
@@ -193,6 +221,7 @@ export class MdFabMenu {
     await this.overlayLifecycle.show(() => {
       const wasOpen = this.open;
       clearTimeout(this.closeTimer);
+      if (!wasOpen || this.closing) activateInteractionMotion(this.el);
       this.closing = false;
       this.open = true;
       if (wasOpen && this.open && !this.closing) {
@@ -216,6 +245,7 @@ export class MdFabMenu {
     this.overlayLifecycle.cancelOpen();
     if (!this.open || this.closing) return;
 
+    activateInteractionMotion(this.el);
     if (this.quick) {
       this.open = false;
       return;
@@ -230,8 +260,8 @@ export class MdFabMenu {
 
   /* ── Anchor wiring ────────────────────────────────────── */
 
-  private getAnchorEl(): HTMLElement | null {
-    return this.anchor ? document.getElementById(this.anchor) : null;
+  private getAnchorEl(): FabMenuAnchor | null {
+    return this.anchor ? this.el.ownerDocument.getElementById(this.anchor) as FabMenuAnchor | null : null;
   }
 
   private toggleMenu() {
@@ -290,6 +320,7 @@ export class MdFabMenu {
     const anchorEl = this.getAnchorEl();
     if (!anchorEl) return;
 
+    this.wiredAnchor = anchorEl;
     anchorEl.addEventListener('keydown', this.anchorKeyHandler, true);
     anchorEl.addEventListener('click', this.anchorClickHandler, true);
     anchorEl.addEventListener('mousedown', this.anchorPointerHandler);
@@ -297,8 +328,8 @@ export class MdFabMenu {
   }
 
   private unwireAnchor() {
-    if (!this.anchor || typeof document === 'undefined') return;
-    const anchorEl = this.getAnchorEl();
+    const anchorEl = this.wiredAnchor;
+    this.wiredAnchor = null;
     if (!anchorEl) return;
 
     anchorEl.removeEventListener('keydown', this.anchorKeyHandler, true);
@@ -328,15 +359,21 @@ export class MdFabMenu {
    *
    * Icon cross-fade: fade-out (120ms) → swap icon → fade-in (120ms).
    */
-  private morphAnchorFab(toOpen: boolean) {
-    const anchorEl = this.getAnchorEl() as FabMenuAnchor | null;
+  private morphAnchorFab(toOpen: boolean, animate = canAnimateInteraction(this.el)) {
+    const generation = ++this.anchorIconGeneration;
+    clearTimeout(this.iconMorphTimer);
+    const anchorEl = this.getAnchorEl();
     if (!anchorEl) return;
 
-    clearTimeout(this.iconMorphTimer);
+    if (animate) {
+      activateInteractionMotion(anchorEl);
+      anchorEl.setAttribute('data-icon-morphing', '');
+    } else {
+      suppressInteractionMotion(anchorEl);
+    }
 
     if (toOpen) {
       anchorEl.setAttribute('data-shape', 'circle');
-      anchorEl.setAttribute('data-icon-morphing', '');
 
       const colors = VARIANT_COLORS[this.variant];
       if (colors) {
@@ -344,32 +381,43 @@ export class MdFabMenu {
         anchorEl.style.setProperty('--md-fab-icon-color', colors.fg);
       }
 
-      this.iconMorphTimer = setTimeout(() => {
-        void anchorEl.setMenuIcon?.('close');
-        anchorEl.removeAttribute('data-icon-morphing');
-      }, ICON_FADE_MS);
-
       anchorEl.addEventListener('keydown', this.handleAnchorKeyDown);
     } else {
       anchorEl.removeAttribute('data-shape');
-      anchorEl.setAttribute('data-icon-morphing', '');
 
       anchorEl.style.removeProperty('--md-fab-container-color');
       anchorEl.style.removeProperty('--md-fab-icon-color');
 
-      this.iconMorphTimer = setTimeout(() => {
-        void anchorEl.setMenuIcon?.(null);
-        anchorEl.removeAttribute('data-icon-morphing');
-      }, ICON_FADE_MS);
-
       anchorEl.removeEventListener('keydown', this.handleAnchorKeyDown);
+    }
+
+    const swapIcon = () => {
+      this.updateAnchorIcon(anchorEl, toOpen, generation);
+      anchorEl.removeAttribute('data-icon-morphing');
+    };
+    if (animate) this.iconMorphTimer = setTimeout(swapIcon, ICON_FADE_MS);
+    else swapIcon();
+  }
+
+  private updateAnchorIcon(anchorEl: FabMenuAnchor, toOpen: boolean, generation: number) {
+    if (typeof anchorEl.setMenuIcon === 'function') {
+      void anchorEl.setMenuIcon(toOpen ? 'close' : null);
+    } else if (toOpen && anchorEl.localName === 'md-fab') {
+      const registry = anchorEl.ownerDocument.defaultView?.customElements;
+      void registry?.whenDefined('md-fab').then(() => {
+        if (generation !== this.anchorIconGeneration || !this.open || this.closing ||
+          !this.el.isConnected || !anchorEl.isConnected || this.getAnchorEl() !== anchorEl) return;
+        suppressInteractionMotion(anchorEl);
+        void anchorEl.setMenuIcon?.('close');
+      });
     }
   }
 
-  private resetAnchorFab() {
-    const anchorEl = this.getAnchorEl() as FabMenuAnchor | null;
-    if (!anchorEl) return;
+  private resetAnchorFab(anchorEl = this.getAnchorEl()) {
+    ++this.anchorIconGeneration;
     clearTimeout(this.iconMorphTimer);
+    if (!anchorEl) return;
+    suppressInteractionMotion(anchorEl);
     anchorEl.removeAttribute('data-shape');
     anchorEl.removeAttribute('data-icon-morphing');
     void anchorEl.setMenuIcon?.(null);
@@ -805,5 +853,18 @@ export class MdFabMenu {
         </div>
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

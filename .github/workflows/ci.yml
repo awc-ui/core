@@ -87,6 +87,12 @@ jobs:
         # build step above.
         run: pnpm --filter @awc-ui/core test:ssr
 
+      - name: Install browser for initial interaction motion checks
+        run: pnpm --filter @awc-ui/core exec puppeteer browsers install chrome-headless-shell
+
+      - name: Initial interaction motion gate (all components, CSR and SSR)
+        run: pnpm --filter @awc-ui/core test:motion
+
       - name: Spec tests (with coverage)
         # Runs jest directly via jest.coverage.config.cjs — that file's header
         # documents that `stencil test --spec --coverage` wedges and ignores

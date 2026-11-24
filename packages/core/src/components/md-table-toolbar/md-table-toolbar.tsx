@@ -1,4 +1,5 @@
-import { Component, Host, h, Prop, Element, State } from '@stencil/core';
+import { Component, Host, h, Prop, Element, State, Watch } from '@stencil/core';
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, canAnimateInteraction, suppressInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 
 /**
  * Material Design 3 — Table Toolbar.
@@ -19,7 +20,7 @@ import { Component, Host, h, Prop, Element, State } from '@stencil/core';
  */
 @Component({
   tag: 'md-table-toolbar',
-  styleUrl: 'md-table-toolbar.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-table-toolbar.css'],
   shadow: true,
 })
 export class MdTableToolbar {
@@ -60,27 +61,99 @@ export class MdTableToolbar {
   @State() private hasSelectionActions: boolean = false;
   @State() private hasActions: boolean = false;
   @State() private hasLeading: boolean = false;
+  @State() private selectionCaptionEntering = false;
 
-  private parentTable: HTMLElement | null = null;
-  private boundListener: ((e: Event) => void) | null = null;
+  private selectionCaptionAnimation?: Animation;
 
-  componentDidLoad() {
-    const shadow = this.el.shadowRoot;
-    if (!shadow) return;
-    this.bindSlotChanges(shadow);
-
-    if (this.autoBind) {
-      this.parentTable = this.el.closest('md-table-container')?.querySelector('md-table') ?? null;
-      if (!this.parentTable) return;
-      this.boundListener = (e: Event) => {
-        const detail = (e as CustomEvent).detail as { count: number };
-        this.numSelected = detail?.count ?? 0;
-      };
-      this.parentTable.addEventListener('mdSelectionChange', this.boundListener);
+  @Watch('numSelected')
+  onNumSelectedChange(value: number, previousValue: number) {
+    if (!(value > 0)) {
+      this.selectionCaptionEntering = false;
+    } else if (!(previousValue > 0)) {
+      this.selectionCaptionEntering = canAnimateInteraction(this.el);
     }
   }
 
+  private parentTable: HTMLMdTableElement | null = null;
+  private boundListener: ((e: Event) => void) | null = null;
+  private loaded = false;
+
+  componentDidLoad() {
+    try {
+      this.loaded = true;
+      const shadow = this.el.shadowRoot;
+      if (!shadow) return;
+      this.bindSlotChanges(shadow);
+      if (!this.parentTable) this.bindSelection();
+    } finally {
+      completeInitialInteractionMotion(this);
+    }
+  }
+
+  private bindSelection() {
+    if (!this.autoBind) return;
+    const table = this.el.closest('md-table-container')?.querySelector('md-table');
+    if (!table) return;
+
+    let receivedEvent = false;
+    const listener = (event: Event) => {
+      receivedEvent = true;
+      const detail = (event as CustomEvent<{ count: number }>).detail;
+      this.numSelected = detail?.count ?? 0;
+    };
+    this.parentTable = table;
+    this.boundListener = listener;
+    table.addEventListener('mdSelectionChange', listener);
+
+    // The toolbar can render before the table or rows are upgraded. Mirror
+    // the authored body selection, then adopt the table's initialized model.
+    const rows = Array.from(table.querySelectorAll('md-table-row')).filter(row => !row.closest('md-table-head, md-table-foot'));
+    const selection = rows.filter(row => {
+      const selected = row.selected ?? (row.hasAttribute('selected') && row.getAttribute('selected') !== 'false');
+      const disabled = row.disabled ?? (row.hasAttribute('disabled') && row.getAttribute('disabled') !== 'false');
+      return selected && !disabled && (row.selectable ?? row.getAttribute('selectable') !== 'false');
+    });
+    this.seedSelectionCount(selection.length);
+
+    const bindingIsCurrent = () => this.boundListener === listener && !receivedEvent && this.el.isConnected;
+    const reconcile = async () => {
+      const registry = table.ownerDocument.defaultView?.customElements;
+      if (!table.getSelection) await registry?.whenDefined('md-table');
+      if (rows.some(row => typeof row.selected !== 'boolean')) await registry?.whenDefined('md-table-row');
+      if (!bindingIsCurrent()) return;
+      const selection = await table.getSelection?.();
+      if (selection && bindingIsCurrent()) this.seedSelectionCount(selection.count);
+    };
+    void reconcile();
+  }
+
+  private seedSelectionCount(count: number) {
+    if (this.numSelected === count) return;
+    suppressInteractionMotion(this.el);
+    this.numSelected = count;
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+    if (!this.selectionCaptionEntering) {
+      this.selectionCaptionAnimation = undefined;
+      return;
+    }
+
+    const animation = this.el.shadowRoot?.querySelector('.md-table-toolbar__selection-caption--entering')
+      ?.getAnimations?.().find((motion) => (motion as CSSAnimation).animationName === 'md-table-toolbar-fade');
+    if (animation && animation === this.selectionCaptionAnimation) return;
+    this.selectionCaptionAnimation = animation;
+    const clear = () => {
+      if (this.selectionCaptionAnimation !== animation) return;
+      this.selectionCaptionEntering = false;
+    };
+    void Promise.resolve(animation?.finished).then(clear, clear);
+  }
+
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
+    this.selectionCaptionEntering = false;
     if (this.parentTable && this.boundListener) {
       this.parentTable.removeEventListener('mdSelectionChange', this.boundListener);
     }
@@ -135,7 +208,14 @@ export class MdTableToolbar {
 
         <div class="md-table-toolbar__main" part="main">
           {this.inSelectionMode ? (
-            <span class="md-table-toolbar__selection-caption" part="selection-caption" aria-live="polite">
+            <span
+              class={{
+                'md-table-toolbar__selection-caption': true,
+                'md-table-toolbar__selection-caption--entering': this.selectionCaptionEntering,
+              }}
+              part="selection-caption"
+              aria-live="polite"
+            >
               {this.selectionLabel}
             </span>
           ) : (
@@ -166,5 +246,20 @@ export class MdTableToolbar {
         </div>
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+    this.bindSelection();
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+    if (this.loaded) this.bindSelection();
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

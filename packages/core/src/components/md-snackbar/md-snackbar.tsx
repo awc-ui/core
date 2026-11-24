@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Host, h, Prop, State, Event, EventEmitter, Element, Method, Watch } from '@stencil/core';
 
 /**
@@ -12,7 +13,7 @@ import { Component, Host, h, Prop, State, Event, EventEmitter, Element, Method, 
  */
 @Component({
   tag: 'md-snackbar',
-  styleUrl: 'md-snackbar.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-snackbar.css'],
   shadow: true,
 })
 export class MdSnackbar {
@@ -94,31 +95,36 @@ export class MdSnackbar {
   // ─── Lifecycle ─────────────────────────────────────────────
 
   componentDidLoad() {
-    const shadow = this.el.shadowRoot;
-    if (!shadow) return;
+    try {
+      const shadow = this.el.shadowRoot;
+      if (!shadow) return;
 
-    const defaultSlot = shadow.querySelector('slot:not([name])') as HTMLSlotElement | null;
-    const actionSlot = shadow.querySelector('slot[name="action"]') as HTMLSlotElement | null;
-    const closeSlot = shadow.querySelector('slot[name="close"]') as HTMLSlotElement | null;
+      const defaultSlot = shadow.querySelector('slot:not([name])') as HTMLSlotElement | null;
+      const actionSlot = shadow.querySelector('slot[name="action"]') as HTMLSlotElement | null;
+      const closeSlot = shadow.querySelector('slot[name="close"]') as HTMLSlotElement | null;
 
-    defaultSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedDefault = defaultSlot.assignedNodes().some(n =>
-        n.nodeType === Node.ELEMENT_NODE || (n.nodeType === Node.TEXT_NODE && n.textContent?.trim() !== ''),
-      );
-    });
-    actionSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedAction = actionSlot.assignedElements().length > 0;
-    });
-    closeSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedClose = closeSlot.assignedElements().length > 0;
-    });
+      defaultSlot?.addEventListener('slotchange', () => {
+        this.hasSlottedDefault = defaultSlot.assignedNodes().some(n =>
+          n.nodeType === Node.ELEMENT_NODE || (n.nodeType === Node.TEXT_NODE && n.textContent?.trim() !== ''),
+        );
+      });
+      actionSlot?.addEventListener('slotchange', () => {
+        this.hasSlottedAction = actionSlot.assignedElements().length > 0;
+      });
+      closeSlot?.addEventListener('slotchange', () => {
+        this.hasSlottedClose = closeSlot.assignedElements().length > 0;
+      });
 
-    if (this.open) {
-      this.onOpenChange(true, false);
+      if (this.open) {
+        this.onOpenChange(true, false);
+      }
+} finally {
+      completeInitialInteractionMotion(this);
     }
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.clearAutoHide();
     if (this.rippleDismissTimer != null) {
       clearTimeout(this.rippleDismissTimer);
@@ -316,5 +322,22 @@ export class MdSnackbar {
         </div>
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

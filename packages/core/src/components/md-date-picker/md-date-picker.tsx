@@ -1,3 +1,15 @@
+import {
+  activateInteractionMotion,
+  canAnimateInteraction,
+  beginInitialInteractionMotion,
+  completeInitialInteractionMotion,
+  initialInteractionMotionRendered,
+  reconnectInteractionMotion,
+  disconnectInteractionMotion,
+  prepareInteractionUpdate,
+  suppressInteractionMotion,
+} from '../../utils/initial-motion';
+import { finishShellMotion, OverlayLifecycle } from '../../utils/overlay-lifecycle';
 import { AttachInternals, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, Watch, h } from '@stencil/core';
 import {
   toIsoDate,
@@ -114,7 +126,7 @@ export interface MdDatePickerModeChangeDetail {
  */
 @Component({
   tag: 'md-date-picker',
-  styleUrl: 'md-date-picker.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-date-picker.css'],
   shadow: true,
   formAssociated: true,
 })
@@ -419,6 +431,11 @@ export class MdDatePicker {
   @State() private modalCalendarBloom = false;
   /** Entire panel playing exit bloom before unmount. */
   @State() private panelClosing = false;
+  @State() private panelEntering = false;
+
+  private overlayLifecycle = new OverlayLifecycle(() => this.el, () => this.open);
+  private panelMotionRequest = 0;
+  private restoringOpenForDismiss = false;
   /** Docked panel horizontal alignment vs the trigger anchor. */
   @State() private dockedPanelAlign: 'start' | 'end' = 'start';
   /** Docked panel vertical placement relative to the trigger anchor. */
@@ -434,7 +451,7 @@ export class MdDatePicker {
   private monthMenuButtonEl?: HTMLElement;
   private yearMenuButtonEl?: HTMLElement;
   private restoreFocusEl: HTMLElement | null = null;
-  private gridShouldFocus = false;
+  private gridFocusRequest: 'initial' | 'interaction' | null = null;
   private menuShouldFocus: 'month' | 'year' | null = null;
   private menuRestoreFocus: 'month' | 'year' | null = null;
   /** Modal year grid should scroll the active year into view after paint. */
@@ -470,10 +487,13 @@ export class MdDatePicker {
   }
 
   connectedCallback() {
+    reconnectInteractionMotion(this);
+    this.overlayLifecycle.connected();
     this.syncViewToValue();
   }
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     this.defaultValue = this.value;
     this.syncFormValue();
     // Detect projected content from the light DOM up-front so conditionally
@@ -488,29 +508,37 @@ export class MdDatePicker {
     if (this.open) {
       this.seedPending();
       this.lockScroll();
-      this.gridShouldFocus = true;
+      this.gridFocusRequest = 'initial';
     }
   }
 
   componentDidLoad() {
-    const shadow = this.el.shadowRoot;
-    if (!shadow) return;
-    const watch = (name: string, set: (has: boolean) => void) => {
-      const slot = shadow.querySelector(
-        `slot[name="${name}"]`,
-      ) as HTMLSlotElement | null;
-      if (!slot) return;
-      const update = () => set(slot.assignedElements().length > 0);
-      slot.addEventListener('slotchange', update);
-      update();
-    };
-    watch('header', (h) => (this.hasSlottedHeader = h));
-    watch('actions', (h) => (this.hasSlottedActions = h));
-    watch('leading-icon', (h) => (this.hasSlottedLeading = h));
-    watch('calendar-icon', (h) => (this.hasSlottedCalendarIcon = h));
+    try {
+      const shadow = this.el.shadowRoot;
+      if (!shadow) return;
+      const watch = (name: string, set: (has: boolean) => void) => {
+        const slot = shadow.querySelector(
+          `slot[name="${name}"]`,
+        ) as HTMLSlotElement | null;
+        if (!slot) return;
+        const update = () => set(slot.assignedElements().length > 0);
+        slot.addEventListener('slotchange', update);
+        update();
+      };
+      watch('header', (h) => (this.hasSlottedHeader = h));
+      watch('actions', (h) => (this.hasSlottedActions = h));
+      watch('leading-icon', (h) => (this.hasSlottedLeading = h));
+      watch('calendar-icon', (h) => (this.hasSlottedCalendarIcon = h));
+    } finally {
+      completeInitialInteractionMotion(this);
+      this.overlayLifecycle.loaded();
+    }
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
+    this.overlayLifecycle.disconnect();
+    this.panelEntering = false;
     this.unlockScroll();
     this.unbindDockedPositionListeners();
   }
@@ -715,9 +743,21 @@ export class MdDatePicker {
     if (now === prev) return;
     if (now) {
       this.panelClosing = false;
+      // A controlled close briefly restores open while the existing panel
+      // exits. Only a newly presented panel should play the entrance.
+      this.panelEntering = !this.restoringOpenForDismiss && canAnimateInteraction(this.el);
+      const request = ++this.panelMotionRequest;
+      if (this.panelEntering) {
+        void finishShellMotion(this.el).then(() => {
+          if (request === this.panelMotionRequest) this.panelEntering = false;
+        });
+      }
+      this.overlayLifecycle.opened();
       this.handleOpen();
     } else if (!this.closingFromDismiss && !this.panelClosing) {
+      this.restoringOpenForDismiss = true;
       this.open = true;
+      this.restoringOpenForDismiss = false;
       void this.dismissPanel();
     } else {
       this.handleClose();
@@ -727,8 +767,10 @@ export class MdDatePicker {
   /** Open the picker. */
   @Method()
   async show(): Promise<void> {
-    if (this.disabled) return;
-    this.open = true;
+    if (this.disabled || this.open) return;
+    await this.overlayLifecycle.show(() => {
+      if (!this.disabled) this.open = true;
+    });
   }
 
   /** Close the picker without committing. */
@@ -841,13 +883,14 @@ export class MdDatePicker {
     this.seedPending();
     this.lockScroll();
     this.mdOpen.emit();
-    this.gridShouldFocus = true;
+    this.gridFocusRequest = 'interaction';
     if (this.isDocked) {
       this.bindDockedPositionListeners();
     }
   }
 
   private handleClose() {
+    this.overlayLifecycle.closed();
     this.unlockScroll();
     this.unbindDockedPositionListeners();
     this.resetDockedPanelPosition();
@@ -871,6 +914,8 @@ export class MdDatePicker {
 
   /** Animated panel dismiss — bloom-out then unmount (docked + modal). */
   private async dismissPanel(): Promise<void> {
+    this.overlayLifecycle.cancelOpen();
+    this.panelEntering = false;
     if (!this.open || this.panelClosing) return;
 
     if (
@@ -1281,10 +1326,10 @@ export class MdDatePicker {
       this.clearYearListRange();
     }
     if (restoreFocus) {
-      this.gridShouldFocus = false;
+      this.gridFocusRequest = null;
       this.menuRestoreFocus = kind;
     } else if (bloomCalendar && !this.monthMenuOpen && !this.yearMenuOpen) {
-      this.gridShouldFocus = true;
+      this.gridFocusRequest = 'interaction';
     }
     if (bloomCalendar && !this.monthMenuOpen && !this.yearMenuOpen) {
       this.beginDockedCalendarBloom();
@@ -1989,7 +2034,7 @@ export class MdDatePicker {
       !this.monthMenuOpen &&
       !this.yearMenuOpen
     ) {
-      this.gridShouldFocus = true;
+      this.gridFocusRequest = 'interaction';
     }
   };
 
@@ -2102,7 +2147,7 @@ export class MdDatePicker {
     }
     this.viewYear = this.focusedDate.getFullYear();
     this.viewMonth = this.focusedDate.getMonth();
-    this.gridShouldFocus = true;
+    this.gridFocusRequest = 'interaction';
   };
 
   /**
@@ -2234,11 +2279,19 @@ export class MdDatePicker {
   };
 
   /** Move roving tabindex to the focused day after open / keyboard navigation. */
-  private focusFocusedDay() {
+  private focusFocusedDay(initial: boolean) {
     const iso = toIsoDate(this.focusedDate);
     const btn = this.panelEl?.querySelector<HTMLElement>(`[data-date="${iso}"]`);
     if (!btn) return;
-    const run = () => btn.focus();
+    const run = () => {
+      if (!this.open || !btn.isConnected || iso !== toIsoDate(this.focusedDate)) return;
+      if (initial && !btn.matches(':focus-within')) {
+        // The initial focus waits for the day button to render. Its motion
+        // may already be armed by the time that queued focus runs.
+        suppressInteractionMotion(btn);
+      }
+      btn.focus();
+    };
     if (typeof requestAnimationFrame === 'function') {
       requestAnimationFrame(() => requestAnimationFrame(run));
     } else {
@@ -2268,6 +2321,7 @@ export class MdDatePicker {
   }
 
   componentDidRender() {
+    initialInteractionMotionRendered(this);
     if (
       this.isDocked &&
       this.open &&
@@ -2307,14 +2361,14 @@ export class MdDatePicker {
     }
     if (
       this.open &&
-      this.gridShouldFocus &&
+      this.gridFocusRequest &&
       this.viewMode === 'calendar' &&
       !this.inputMode &&
       !this.monthMenuOpen &&
       !this.yearMenuOpen
     ) {
-      this.focusFocusedDay();
-      this.gridShouldFocus = false;
+      this.focusFocusedDay(this.gridFocusRequest === 'initial');
+      this.gridFocusRequest = null;
     }
   }
 
@@ -2345,6 +2399,16 @@ export class MdDatePicker {
     this.commitDialogInput();
     if (this.error) return;
     this.commit();
+  };
+
+  private onCalendarButtonClick = () => {
+    if (this.open) {
+      void this.close();
+      return;
+    }
+    if (this.disabled) return;
+    activateInteractionMotion(this.el);
+    this.open = true;
   };
 
   private renderTextFieldTrigger() {
@@ -2414,7 +2478,7 @@ export class MdDatePicker {
           aria-expanded={this.triggerExpanded ? 'true' : 'false'}
           disabled={this.disabled}
           ref={(el) => (this.triggerEl = el as HTMLElement)}
-          onMdClick={() => (this.open ? this.close() : this.show())}
+          onMdClick={this.onCalendarButtonClick}
         >
           {this.hasSlottedCalendarIcon && (
             <slot name="calendar-icon" slot="" />
@@ -3159,7 +3223,7 @@ export class MdDatePicker {
           'md-date-picker__panel--placement-above':
             docked && this.dockedPanelPlacement === 'above',
           'md-date-picker__panel--input-mode': !docked && this.inputMode,
-          'md-date-picker__panel--bloom-in': !this.panelClosing,
+          'md-date-picker__panel--bloom-in': this.panelEntering && !this.panelClosing,
           'md-date-picker__panel--bloom-out': this.panelClosing,
         }}
         part="panel"
@@ -3184,6 +3248,7 @@ export class MdDatePicker {
       <div
         class={{
           'md-date-picker__modal': true,
+          'md-date-picker__modal--entering': this.panelEntering && !this.panelClosing,
           'md-date-picker__modal--closing': this.panelClosing,
         }}
         part="modal"
@@ -3328,4 +3393,9 @@ export class MdDatePicker {
     this.syncFormValue();
   }
 
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
+  }
 }

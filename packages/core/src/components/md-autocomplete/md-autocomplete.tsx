@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { AttachInternals, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, Watch, forceUpdate, h } from '@stencil/core';
 import { LazyLoadingIndicator } from '../../utils/lazy-loading-indicator';
 import { setFormValue, checkValidityOf, reportValidityOf, getValidityOf, InlineValidationPresenter } from '../../utils/form';
@@ -68,7 +69,7 @@ interface VirtualMenuEl extends HTMLElement {
  */
 @Component({
   tag: 'md-autocomplete',
-  styleUrl: 'md-autocomplete.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-autocomplete.css'],
   shadow: true,
   formAssociated: true,
 })
@@ -539,6 +540,7 @@ export class MdAutocomplete {
   private defaultInputValue = '';
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     this.refreshOptions();
     this.defaultValue = Array.isArray(this.value) ? [...this.value] : this.value;
     this.defaultInputValue = this.inputValue;
@@ -546,14 +548,19 @@ export class MdAutocomplete {
   }
 
   componentDidLoad() {
-    // @Watch('open') does not fire for the initial value.
-    if (this.open && !this.disabled) {
-      void this.menuEl?.show?.({ autoFocus: false });
-      this.mdOpen.emit();
+    try {
+      // @Watch('open') does not fire for the initial value.
+      if (this.open && !this.disabled) {
+        void this.menuEl?.show?.({ autoFocus: false });
+        this.mdOpen.emit();
+      }
+} finally {
+      completeInitialInteractionMotion(this);
     }
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.cancelListFocus();
     clearTimeout(this.searchDebounce);
     this.vc.detachViewport();
@@ -788,6 +795,7 @@ export class MdAutocomplete {
    *  (re)try the viewport wiring — the menu may have been opened while the
    *  dataset was still packing, before the scroll viewport existed. */
   componentDidRender() {
+    initialInteractionMotionRendered(this);
     void this.syncComboboxRefs();
     if (!this.menuEl) return;
     if (this.vc.active && !this.providerSet) {
@@ -1388,5 +1396,14 @@ export class MdAutocomplete {
         </span>
       </Host>
     );
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

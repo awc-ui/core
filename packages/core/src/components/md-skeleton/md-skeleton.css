@@ -58,9 +58,10 @@
   display: block;
   box-sizing: border-box;
   inline-size: var(--_w);
+}
 
-  /* Bloom entrance — every skeleton mounts with a soft scale-in.
-     The spring easing gives it the M3 Expressive "settle" feel. */
+/* The entrance is part of the animated loading treatment. */
+:host(:is(.md-skeleton--anim-pulse, .md-skeleton--anim-wave)) {
   animation: md-skeleton-bloom var(--_bloom-duration) var(--_bloom-easing) both;
 }
 

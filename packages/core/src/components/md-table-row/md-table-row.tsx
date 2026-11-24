@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import {
   Component,
   Host,
@@ -33,7 +34,7 @@ import {
  */
 @Component({
   tag: 'md-table-row',
-  styleUrl: 'md-table-row.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-table-row.css'],
   shadow: true,
 })
 export class MdTableRow {
@@ -85,11 +86,15 @@ export class MdTableRow {
   @State() private _hasExpandedSlot = false;
 
   componentDidLoad() {
-    const slot = this.el.shadowRoot?.querySelector('slot[name="expanded"]') as HTMLSlotElement | null;
-    slot?.addEventListener('slotchange', () => {
-      this._hasExpandedSlot = slot.assignedElements().length > 0;
-    });
-    this._hasExpandedSlot = !!slot && slot.assignedElements().length > 0;
+    try {
+      const slot = this.el.shadowRoot?.querySelector('slot[name="expanded"]') as HTMLSlotElement | null;
+      slot?.addEventListener('slotchange', () => {
+        this._hasExpandedSlot = slot.assignedElements().length > 0;
+      });
+      this._hasExpandedSlot = !!slot && slot.assignedElements().length > 0;
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
 
   @Watch('selected')
@@ -209,5 +214,26 @@ export class MdTableRow {
         )}
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Host, h, Prop, Element, Event, EventEmitter, Watch } from '@stencil/core';
 import { ToggleableElement } from '../../utils/types';
 
@@ -30,7 +31,7 @@ export interface MdButtonGroupChangeDetail {
 
 @Component({
   tag: 'md-button-group',
-  styleUrl: 'md-button-group.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-button-group.css'],
   shadow: true,
 })
 export class MdButtonGroup {
@@ -104,19 +105,24 @@ export class MdButtonGroup {
   }
 
   componentDidLoad() {
-    this.observeSlot();
-    this.syncChildren();
-    this.updateRovingTabindex();
-    this.el.addEventListener('click', this.onGroupClick);
-    this.el.addEventListener('keydown', this.onArrowNav);
-    this.el.addEventListener('focusin', this.onFocusIn);
-    if (this.variant === 'standard') {
-      this.el.addEventListener('pointerdown', this.onGroupPointerDown);
-      this.el.addEventListener('keydown', this.onGroupKeyDown, true);
+    try {
+      this.observeSlot();
+      this.syncChildren();
+      this.updateRovingTabindex();
+      this.el.addEventListener('click', this.onGroupClick);
+      this.el.addEventListener('keydown', this.onArrowNav);
+      this.el.addEventListener('focusin', this.onFocusIn);
+      if (this.variant === 'standard') {
+        this.el.addEventListener('pointerdown', this.onGroupPointerDown);
+        this.el.addEventListener('keydown', this.onGroupKeyDown, true);
+      }
+} finally {
+      completeInitialInteractionMotion(this);
     }
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.observer?.disconnect();
     this.el.removeEventListener('click', this.onGroupClick);
     this.el.removeEventListener('keydown', this.onArrowNav);
@@ -240,6 +246,7 @@ export class MdButtonGroup {
   }
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     // Seed the previous values so the first emitted diff is meaningful.
     this.previousValues = this.collectSelectedValues(this.getChildren());
   }
@@ -438,5 +445,18 @@ export class MdButtonGroup {
         <slot></slot>
       </Host>
     );
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

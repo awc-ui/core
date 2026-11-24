@@ -25,6 +25,30 @@ describe('md-slider', () => {
       expect(page.rootInstance.value).toBe(50);
     });
 
+    it('renders the initial range thumbs and track from the same clamped values', async () => {
+      const render = MdSlider.prototype.render;
+      const renderPositions = jest.fn();
+      const renderSpy = jest.spyOn(MdSlider.prototype, 'render').mockImplementation(function (this: MdSlider) {
+        renderPositions(
+          this.valueStart,
+          this.valueEnd,
+          this.el.style.getPropertyValue('--_start-pct'),
+          this.el.style.getPropertyValue('--_end-pct'),
+        );
+        return render.call(this);
+      });
+      try {
+        const page = await create('<md-slider range stops min="20" max="60" step="10" value-start="10" value-end="50"></md-slider>');
+        expect(renderPositions).toHaveBeenNthCalledWith(1, 20, 50, '0%', '75%');
+
+        page.root!.valueEnd = 40;
+        await page.waitForChanges();
+        expect(page.root!.style.getPropertyValue('--_end-pct')).toBe('50%');
+      } finally {
+        renderSpy.mockRestore();
+      }
+    });
+
     it('reflects disabled prop', async () => {
       const page = await create('<md-slider disabled></md-slider>');
       expect(page.rootInstance.disabled).toBe(true);

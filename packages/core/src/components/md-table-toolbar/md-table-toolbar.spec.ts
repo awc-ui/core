@@ -37,6 +37,45 @@ describe('md-table-toolbar', () => {
     expect(cap?.textContent).toBe('Selected 5 items');
   });
 
+  it('starts with the authored body selection before the table and rows upgrade', async () => {
+    const page = await create(`
+      <md-table-container>
+        <md-table-toolbar auto-bind headline="Users"></md-table-toolbar>
+        <md-table selection="multiple">
+          <md-table-head><md-table-row selected></md-table-row></md-table-head>
+          <md-table-body>
+            <md-table-row selected></md-table-row>
+            <md-table-row selected disabled></md-table-row>
+            <md-table-row selected selectable="false"></md-table-row>
+          </md-table-body>
+        </md-table>
+      </md-table-container>`);
+    const toolbar = page.body.querySelector('md-table-toolbar')!;
+    const caption = () => toolbar.shadowRoot!.querySelector('[part="selection-caption"]');
+    expect(caption()?.textContent).toBe('1 selected');
+    expect(caption()).not.toHaveClass('md-table-toolbar__selection-caption--entering');
+
+    page.body.querySelector('md-table')!.dispatchEvent(new CustomEvent('mdSelectionChange', { detail: { count: 2 } }));
+    await page.waitForChanges();
+    expect(caption()?.textContent).toBe('2 selected');
+  });
+
+  it('keeps newer selection events when an initial table snapshot resolves later', async () => {
+    const page = await create('<md-table-container><md-table></md-table></md-table-container>');
+    const table = page.body.querySelector('md-table')!;
+    let resolveSelection!: (selection: Awaited<ReturnType<typeof table.getSelection>>) => void;
+    table.getSelection = jest.fn(() => new Promise(resolve => { resolveSelection = resolve; }));
+    const toolbar = page.doc.createElement('md-table-toolbar');
+    toolbar.setAttribute('auto-bind', '');
+    table.parentElement!.prepend(toolbar);
+    await page.waitForChanges();
+
+    table.dispatchEvent(new CustomEvent('mdSelectionChange', { detail: { count: 2 } }));
+    resolveSelection({ count: 1, total: 3, all: false, indeterminate: true, values: ['1'] });
+    await page.waitForChanges();
+    expect(toolbar.shadowRoot!.querySelector('[part="selection-caption"]')?.textContent).toBe('2 selected');
+  });
+
   it('exposes parts', async () => {
     const page = await create('<md-table-toolbar headline="x"></md-table-toolbar>');
     const shadow = page.root?.shadowRoot;

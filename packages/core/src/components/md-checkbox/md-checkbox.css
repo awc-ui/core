@@ -269,8 +269,7 @@
   100% { transform: scale(1); opacity: 1; }
 }
 
-:host(.md-checkbox--checked) .md-checkbox__icon .material-symbols-outlined,
-:host(.md-checkbox--indeterminate) .md-checkbox__icon .material-symbols-outlined {
+.md-checkbox__icon .md-checkbox__glyph--entering {
   animation: md-checkbox-glyph-in
     var(--md-sys-motion-duration-short2, 200ms)
     var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)) both;
@@ -346,7 +345,7 @@
     transition: none;
   }
 
-  .md-checkbox__icon .material-symbols-outlined {
+  .md-checkbox__icon .md-checkbox__glyph--entering {
     animation: none;
   }
 }

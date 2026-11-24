@@ -1,8 +1,9 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 
 @Component({
   tag: 'md-badge',
-  styleUrl: 'md-badge.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-badge.css'],
   shadow: true,
 })
 export class MdBadge {
@@ -58,6 +59,7 @@ export class MdBadge {
   @State() private hasSlottedIcon = false;
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     this.readSlottedIcon();
   }
 
@@ -123,5 +125,26 @@ export class MdBadge {
         )}
       </Host>
     );
+  }
+
+  componentDidLoad() {
+    completeInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

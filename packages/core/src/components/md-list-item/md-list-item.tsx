@@ -1,4 +1,5 @@
 import { Component, Host, h, Prop, State, Event, EventEmitter, Element, Watch, Method, Listen } from '@stencil/core';
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, canAnimateInteraction, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { triggerRipple } from '../../utils/ripple';
 import { sanitizeHref, SAFE_LINK_REL, SAFE_WINDOW_FEATURES } from '../../utils/url';
 
@@ -19,7 +20,7 @@ let expandedPanelIdCounter = 0;
 
 @Component({
   tag: 'md-list-item',
-  styleUrl: 'md-list-item.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-list-item.css'],
   shadow: true,
 })
 export class MdListItem {
@@ -247,6 +248,9 @@ export class MdListItem {
   @State() private hasLeadingVideo = false;
   @State() private pressed = false;
   @State() private hostedByList = false;
+  @State() private imageSelectionEntering = false;
+
+  private imageSelectionAnimation?: Animation;
 
   private observer: MutationObserver | null = null;
   private expandedPanelId = `md-list-item-panel-${++expandedPanelIdCounter}`;
@@ -379,6 +383,7 @@ export class MdListItem {
   }
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     const parent = this.el.parentElement;
     this.hostedByList = !!parent && parent.tagName === 'MD-LIST';
     if (this.expandable && this.selected) {
@@ -457,92 +462,116 @@ export class MdListItem {
   }
 
   componentDidLoad() {
-    const shadow = this.el.shadowRoot;
-    if (!shadow) return;
+    try {
+      const shadow = this.el.shadowRoot;
+      if (!shadow) return;
 
-    const wireSlot = (name: string, setHas: (v: boolean) => void, onChange?: () => void) => {
-      const slot = shadow.querySelector(`slot[name="${name}"]`) as HTMLSlotElement | null;
-      if (!slot) return;
-      const update = () => {
-        try {
-          setHas(slot.assignedElements().length > 0);
-        } catch {
-          /* jsdom mock may not implement assignedElements; ignore */
-        }
-        onChange?.();
+      const wireSlot = (name: string, setHas: (v: boolean) => void, onChange?: () => void) => {
+        const slot = shadow.querySelector(`slot[name="${name}"]`) as HTMLSlotElement | null;
+        if (!slot) return;
+        const update = () => {
+          try {
+            setHas(slot.assignedElements().length > 0);
+          } catch {
+            /* jsdom mock may not implement assignedElements; ignore */
+          }
+          onChange?.();
+        };
+        slot.addEventListener('slotchange', update);
+        update();
       };
-      slot.addEventListener('slotchange', update);
-      update();
+
+      wireSlot('leading', v => (this.hasSlottedLeading = v));
+      wireSlot('trailing', v => (this.hasSlottedTrailing = v));
+      /* Headline + supporting slots re-measure truncation on slotchange — rich
+         slotted content can be wider/narrower than the prop fallback it
+         replaces, flipping whether the tooltip should be enabled. */
+      wireSlot('headline', v => (this.hasSlottedHeadline = v), () => this.scheduleTruncationCheck());
+      wireSlot('overline', v => (this.hasSlottedOverline = v));
+      wireSlot('supporting-text', v => (this.hasSlottedSupportingText = v), () => this.scheduleTruncationCheck());
+      wireSlot('trailing-supporting-text', v => (this.hasSlottedTrailingSupportingText = v));
+      wireSlot('expanded-content', v => (this.hasSlottedExpandedContent = v));
+
+      if (typeof MutationObserver !== 'undefined') {
+        this.observer = new MutationObserver(mutations => {
+          let rescanSlots = false;
+          for (const m of mutations) {
+            if (m.type === 'attributes' && m.target === this.el && m.attributeName === 'data-selection-mode') {
+              const attr = this.el.getAttribute('data-selection-mode');
+              if (attr === 'single-select' || attr === 'multi-select') {
+                this.selectionMode = attr;
+              } else if (!attr) {
+                this.selectionMode = 'none';
+              }
+            }
+            if (m.type === 'attributes' && m.target === this.el && m.attributeName === 'data-interaction-mode') {
+              const attr = this.el.getAttribute('data-interaction-mode');
+              if (attr === 'multi-action') {
+                this.interactionMode = 'multi-action';
+              } else if (!attr) {
+                this.interactionMode = 'single-action';
+              }
+            }
+            /* Either a child was added/removed OR a child's `slot=` attr
+               changed — both can flip our render decision for the
+               trailing wrapper. */
+            if (m.type === 'childList') rescanSlots = true;
+            if (m.type === 'attributes' && m.attributeName === 'slot' && m.target !== this.el) {
+              rescanSlots = true;
+            }
+          }
+          if (rescanSlots) {
+            this.detectSlottedFromLightDom();
+            this.syncExpandedContentSelectionMode();
+            this.syncExpandedContentDividers();
+          }
+        });
+        this.observer.observe(this.el, {
+          attributes: true,
+          attributeFilter: ['data-selection-mode', 'data-interaction-mode', 'slot'],
+          childList: true,
+          subtree: true,
+        });
+      }
+
+      /* Single ResizeObserver on the host. Width changes are the only thing
+         that can flip whether the headline / supporting text clips, so we
+         observe the host and re-measure (debounced) on every resize. */
+      if (typeof ResizeObserver !== 'undefined') {
+        this.resizeObserver = new ResizeObserver(() => this.scheduleTruncationCheck());
+        this.resizeObserver.observe(this.el);
+      }
+
+      /* Initial pass once layout has settled after first paint. */
+      this.runTruncationCheck();
+      this.syncExpandedContentSelectionMode();
+      this.syncExpandedContentDividers();
+} finally {
+      completeInitialInteractionMotion(this);
+    }
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+    if (!this.imageSelectionEntering) {
+      this.imageSelectionAnimation = undefined;
+      return;
+    }
+
+    const animation = this.el.shadowRoot?.querySelector('.md-list-item__image-selection-circle--entering')
+      ?.getAnimations?.().find((motion) => (motion as CSSAnimation).animationName === 'md-list-item-image-selection-in');
+    if (animation && animation === this.imageSelectionAnimation) return;
+    this.imageSelectionAnimation = animation;
+    const clear = () => {
+      if (this.imageSelectionAnimation !== animation) return;
+      this.imageSelectionEntering = false;
     };
-
-    wireSlot('leading', v => (this.hasSlottedLeading = v));
-    wireSlot('trailing', v => (this.hasSlottedTrailing = v));
-    /* Headline + supporting slots re-measure truncation on slotchange — rich
-       slotted content can be wider/narrower than the prop fallback it
-       replaces, flipping whether the tooltip should be enabled. */
-    wireSlot('headline', v => (this.hasSlottedHeadline = v), () => this.scheduleTruncationCheck());
-    wireSlot('overline', v => (this.hasSlottedOverline = v));
-    wireSlot('supporting-text', v => (this.hasSlottedSupportingText = v), () => this.scheduleTruncationCheck());
-    wireSlot('trailing-supporting-text', v => (this.hasSlottedTrailingSupportingText = v));
-    wireSlot('expanded-content', v => (this.hasSlottedExpandedContent = v));
-
-    if (typeof MutationObserver !== 'undefined') {
-      this.observer = new MutationObserver(mutations => {
-        let rescanSlots = false;
-        for (const m of mutations) {
-          if (m.type === 'attributes' && m.target === this.el && m.attributeName === 'data-selection-mode') {
-            const attr = this.el.getAttribute('data-selection-mode');
-            if (attr === 'single-select' || attr === 'multi-select') {
-              this.selectionMode = attr;
-            } else if (!attr) {
-              this.selectionMode = 'none';
-            }
-          }
-          if (m.type === 'attributes' && m.target === this.el && m.attributeName === 'data-interaction-mode') {
-            const attr = this.el.getAttribute('data-interaction-mode');
-            if (attr === 'multi-action') {
-              this.interactionMode = 'multi-action';
-            } else if (!attr) {
-              this.interactionMode = 'single-action';
-            }
-          }
-          /* Either a child was added/removed OR a child's `slot=` attr
-             changed — both can flip our render decision for the
-             trailing wrapper. */
-          if (m.type === 'childList') rescanSlots = true;
-          if (m.type === 'attributes' && m.attributeName === 'slot' && m.target !== this.el) {
-            rescanSlots = true;
-          }
-        }
-        if (rescanSlots) {
-          this.detectSlottedFromLightDom();
-          this.syncExpandedContentSelectionMode();
-          this.syncExpandedContentDividers();
-        }
-      });
-      this.observer.observe(this.el, {
-        attributes: true,
-        attributeFilter: ['data-selection-mode', 'data-interaction-mode', 'slot'],
-        childList: true,
-        subtree: true,
-      });
-    }
-
-    /* Single ResizeObserver on the host. Width changes are the only thing
-       that can flip whether the headline / supporting text clips, so we
-       observe the host and re-measure (debounced) on every resize. */
-    if (typeof ResizeObserver !== 'undefined') {
-      this.resizeObserver = new ResizeObserver(() => this.scheduleTruncationCheck());
-      this.resizeObserver.observe(this.el);
-    }
-
-    /* Initial pass once layout has settled after first paint. */
-    this.runTruncationCheck();
-    this.syncExpandedContentSelectionMode();
-    this.syncExpandedContentDividers();
+    void Promise.resolve(animation?.finished).then(clear, clear);
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
+    this.imageSelectionEntering = false;
     this.observer?.disconnect();
     this.observer = null;
     this.resizeObserver?.disconnect();
@@ -561,7 +590,9 @@ export class MdListItem {
   onSelectedChange(newVal: boolean) {
     if (this.expandable && newVal) {
       this.selected = false;
+      return;
     }
+    this.imageSelectionEntering = newVal && !!this.leadingImage && canAnimateInteraction(this.el);
   }
 
   @Watch('expandable')
@@ -1118,7 +1149,10 @@ export class MdListItem {
                 aria-hidden="true"
               >
                 <span
-                  class="md-list-item__image-selection-circle"
+                  class={{
+                    'md-list-item__image-selection-circle': true,
+                    'md-list-item__image-selection-circle--entering': this.selected && this.imageSelectionEntering,
+                  }}
                   part="image-selection-circle"
                 >
                   <span
@@ -1486,5 +1520,14 @@ export class MdListItem {
         )}
       </Host>
     );
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

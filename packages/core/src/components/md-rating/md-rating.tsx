@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import {
   Component,
   Host,
@@ -28,7 +29,7 @@ import { setFormValue } from '../../utils/form';
  */
 @Component({
   tag: 'md-rating',
-  styleUrl: 'md-rating.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-rating.css'],
   shadow: true,
   formAssociated: true,
 })
@@ -133,6 +134,7 @@ export class MdRating {
   private initialValue = 0;
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     this.validateValue(this.value);
     this.initialValue = this.value;
   }
@@ -511,5 +513,26 @@ export class MdRating {
         )}
       </Host>
     );
+  }
+
+  componentDidLoad() {
+    completeInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

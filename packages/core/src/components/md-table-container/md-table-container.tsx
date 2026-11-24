@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Host, h, Prop, Element, Listen, forceUpdate } from '@stencil/core';
 
 /**
@@ -19,7 +20,7 @@ import { Component, Host, h, Prop, Element, Listen, forceUpdate } from '@stencil
  */
 @Component({
   tag: 'md-table-container',
-  styleUrl: 'md-table-container.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-table-container.css'],
   shadow: true,
 })
 export class MdTableContainer {
@@ -83,6 +84,7 @@ export class MdTableContainer {
   private childMirror?: MutationObserver;
 
   connectedCallback() {
+    reconnectInteractionMotion(this);
     if (typeof MutationObserver === 'undefined') return;
     // Two narrowly-scoped observers: subtree childList would forceUpdate on
     // EVERY row mutation (pagination re-slices, sorts). We only care about
@@ -108,6 +110,7 @@ export class MdTableContainer {
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.frozenMirror?.disconnect();
     this.frozenMirror = undefined;
     this.childMirror?.disconnect();
@@ -165,5 +168,22 @@ export class MdTableContainer {
         </div>
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidLoad() {
+    completeInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

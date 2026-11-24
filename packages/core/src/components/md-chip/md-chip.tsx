@@ -1,7 +1,8 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Host, h, Prop, State, Event, EventEmitter, Element } from '@stencil/core';
 import { triggerRipple } from '../../utils/ripple';
 
-@Component({ tag: 'md-chip', styleUrl: 'md-chip.css', shadow: true })
+@Component({ tag: 'md-chip', styleUrls: ['../../utils/initial-motion.css', 'md-chip.css'], shadow: true })
 export class MdChip {
   @Element() el!: HTMLElement;
 
@@ -205,18 +206,22 @@ export class MdChip {
   }
 
   componentDidLoad() {
-    const shadow = this.el.shadowRoot;
-    if (!shadow) return;
+    try {
+      const shadow = this.el.shadowRoot;
+      if (!shadow) return;
 
-    const leadingSlot = shadow.querySelector('slot[name="leading-icon"]') as HTMLSlotElement | null;
-    const trailingSlot = shadow.querySelector('slot[name="trailing-icon"]') as HTMLSlotElement | null;
+      const leadingSlot = shadow.querySelector('slot[name="leading-icon"]') as HTMLSlotElement | null;
+      const trailingSlot = shadow.querySelector('slot[name="trailing-icon"]') as HTMLSlotElement | null;
 
-    leadingSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedLeadingIcon = leadingSlot.assignedElements().length > 0;
-    });
-    trailingSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedTrailingIcon = trailingSlot.assignedElements().length > 0;
-    });
+      leadingSlot?.addEventListener('slotchange', () => {
+        this.hasSlottedLeadingIcon = leadingSlot.assignedElements().length > 0;
+      });
+      trailingSlot?.addEventListener('slotchange', () => {
+        this.hasSlottedTrailingIcon = trailingSlot.assignedElements().length > 0;
+      });
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
 
   /**
@@ -385,5 +390,26 @@ export class MdChip {
         )}
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import {
   Component,
   Element,
@@ -33,7 +34,7 @@ export type MdNavigationBarLabelBehavior = 'always' | 'selected' | 'none';
  */
 @Component({
   tag: 'md-navigation-bar',
-  styleUrl: 'md-navigation-bar.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-navigation-bar.css'],
   shadow: true,
 })
 export class MdNavigationBar {
@@ -94,6 +95,7 @@ export class MdNavigationBar {
   // ─── Lifecycle ───────────────────────────────────────────────────
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     // Resolve existing light-DOM children before the first paint. Waiting for
     // componentDidLoad would briefly select an invalid/disabled destination and
     // require a second render just to reflect the normalized index.
@@ -107,10 +109,15 @@ export class MdNavigationBar {
   }
 
   componentDidLoad() {
-    this.syncTabs();
+    try {
+      this.syncTabs();
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.slotObserver?.disconnect();
   }
 
@@ -381,5 +388,18 @@ export class MdNavigationBar {
         </div>
       </Host>
     );
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

@@ -1,7 +1,8 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Host, h, Prop, State, Watch, Event, EventEmitter, Element, Method } from '@stencil/core';
 import { triggerRipple } from '../../utils/ripple';
 
-@Component({ tag: 'md-fab', styleUrl: 'md-fab.css', shadow: true })
+@Component({ tag: 'md-fab', styleUrls: ['../../utils/initial-motion.css', 'md-fab.css'], shadow: true })
 export class MdFab {
   @Element() el!: HTMLElement;
 
@@ -78,6 +79,7 @@ export class MdFab {
   private authoredAccessibleName = false;
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     this.authoredAccessibleName =
       this.el.hasAttribute('aria-label') || this.el.hasAttribute('aria-labelledby');
 
@@ -96,37 +98,38 @@ export class MdFab {
   }
 
   componentDidLoad() {
-    const shadow = this.el.shadowRoot;
-    if (!shadow) return;
+    try {
+      const shadow = this.el.shadowRoot;
+      if (!shadow) return;
 
-    const iconSlot = shadow.querySelector('slot[name="icon"]') as HTMLSlotElement | null;
-    iconSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedIcon = iconSlot.assignedElements().length > 0;
-    });
+      const iconSlot = shadow.querySelector('slot[name="icon"]') as HTMLSlotElement | null;
+      iconSlot?.addEventListener('slotchange', () => {
+        this.hasSlottedIcon = iconSlot.assignedElements().length > 0;
+      });
 
-    this.measureLabel();
-    // Enable transitions only after the first paint so the initial
-    // extended/collapsed state is applied without a mount-time morph, and
-    // re-measure once layout has flushed (componentDidLoad can run before the
-    // label's text has been laid out / fonts applied → scrollWidth 0).
-    requestAnimationFrame(() => {
       this.measureLabel();
-      this.el.setAttribute('data-ready', '');
-    });
-    // Web fonts (Roboto) can load after first paint and change the label width.
-    if (typeof document !== 'undefined' && 'fonts' in document) {
-      document.fonts.ready.then(() => this.measureLabel());
-    }
+      const document = this.el.ownerDocument;
+      // Re-measure after initial layout and again when the initial fonts settle.
+      requestAnimationFrame(() => {
+        if (this.el.isConnected && this.el.ownerDocument === document) this.measureLabel(true);
+      });
+      void document.fonts?.ready.then(() => {
+        if (this.el.isConnected && this.el.ownerDocument === document) this.measureLabel(true);
+      });
 
-    if (
-      typeof window !== 'undefined' &&
-      window.__STENCIL_DEV_MODE__ !== false
-    ) {
-      this.warnMissingAccessibleName();
+      if (
+        typeof window !== 'undefined' &&
+        window.__STENCIL_DEV_MODE__ !== false
+      ) {
+        this.warnMissingAccessibleName();
+      }
+} finally {
+      completeInitialInteractionMotion(this);
     }
   }
 
   componentDidRender() {
+    initialInteractionMotionRendered(this);
     this.measureLabel();
   }
 
@@ -142,12 +145,25 @@ export class MdFab {
    * too early). `scrollWidth` reports the full content width even while the
    * label is clipped to 0, so this stays correct in either state.
    */
-  private measureLabel() {
+  private measureLabel(initialMeasurement = false) {
     const label = this.el.shadowRoot?.querySelector('.md-fab__label') as HTMLElement | null;
     // Guard against 0 (text not yet laid out): never overwrite a good width
     // with 0, which would collapse the label even while extended.
-    if (label && label.scrollWidth > 0) {
-      this.el.style.setProperty('--_fab-label-w', `${label.scrollWidth}px`);
+    const width = label?.scrollWidth ?? 0;
+    const value = `${width}px`;
+    if (!label || width <= 0 || this.el.style.getPropertyValue('--_fab-label-w') === value) return;
+
+    const widthDuration = '--_fab-label-width-duration';
+    const snapWidth = initialMeasurement && !label.getAnimations?.().some((motion) => {
+      // CSSOM can report the physical property for a logical-size transition.
+      const { transitionProperty } = motion as CSSTransition;
+      return transitionProperty === 'max-inline-size' || transitionProperty === 'max-width' || transitionProperty === 'max-height';
+    });
+    if (snapWidth) label.style.setProperty(widthDuration, '0s');
+    this.el.style.setProperty('--_fab-label-w', value);
+    if (snapWidth) {
+      label.getBoundingClientRect();
+      label.style.removeProperty(widthDuration);
     }
   }
 
@@ -218,5 +234,18 @@ export class MdFab {
         {hasLabel && <span class="md-fab__label" part="label" aria-hidden={!isExtended ? 'true' : undefined}>{this.label}</span>}
       </Host>
     );
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

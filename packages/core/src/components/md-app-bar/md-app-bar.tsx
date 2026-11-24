@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import {
   Component,
   Element,
@@ -25,7 +26,7 @@ import {
  */
 @Component({
   tag: 'md-app-bar',
-  styleUrl: 'md-app-bar.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-app-bar.css'],
   shadow: true,
 })
 export class MdAppBar {
@@ -124,18 +125,21 @@ export class MdAppBar {
   private searchInput?: HTMLInputElement;
 
   connectedCallback() {
+    reconnectInteractionMotion(this);
     if (typeof document === 'undefined') return;
     document.addEventListener('keydown', this.trackSearchKeyboardModality, true);
     document.addEventListener('pointerdown', this.trackSearchPointerModality, true);
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     if (typeof document === 'undefined') return;
     document.removeEventListener('keydown', this.trackSearchKeyboardModality, true);
     document.removeEventListener('pointerdown', this.trackSearchPointerModality, true);
   }
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     this.hasSlottedLeading = this.el.querySelector('[slot="leading"]') !== null;
     this.hasSlottedHeadline = this.el.querySelector('[slot="headline"]') !== null;
     this.hasSlottedSubtitle = this.el.querySelector('[slot="subtitle"]') !== null;
@@ -145,52 +149,56 @@ export class MdAppBar {
   }
 
   componentDidLoad() {
-    const shadow = this.el.shadowRoot;
-    if (!shadow) return;
+    try {
+      const shadow = this.el.shadowRoot;
+      if (!shadow) return;
 
-    const leadingSlot = shadow.querySelector('slot[name="leading"]') as HTMLSlotElement | null;
-    const headlineSlot = shadow.querySelector('slot[name="headline"]') as HTMLSlotElement | null;
-    const subtitleSlot = shadow.querySelector('slot[name="subtitle"]') as HTMLSlotElement | null;
-    const searchSlot = shadow.querySelector('slot[name="search"]') as HTMLSlotElement | null;
-    const searchTrailingSlot = shadow.querySelector(
-      'slot[name="search-trailing"]',
-    ) as HTMLSlotElement | null;
-    const trailingSlot = shadow.querySelector('slot[name="trailing"]') as HTMLSlotElement | null;
+      const leadingSlot = shadow.querySelector('slot[name="leading"]') as HTMLSlotElement | null;
+      const headlineSlot = shadow.querySelector('slot[name="headline"]') as HTMLSlotElement | null;
+      const subtitleSlot = shadow.querySelector('slot[name="subtitle"]') as HTMLSlotElement | null;
+      const searchSlot = shadow.querySelector('slot[name="search"]') as HTMLSlotElement | null;
+      const searchTrailingSlot = shadow.querySelector(
+        'slot[name="search-trailing"]',
+      ) as HTMLSlotElement | null;
+      const trailingSlot = shadow.querySelector('slot[name="trailing"]') as HTMLSlotElement | null;
 
-    const syncLeading = () => {
-      this.hasSlottedLeading =
-        this.el.querySelector('[slot="leading"]') !== null ||
-        (leadingSlot?.assignedElements().length ?? 0) > 0;
-    };
-    const syncHeadline = () => {
-      this.hasSlottedHeadline =
-        this.el.querySelector('[slot="headline"]') !== null ||
-        (headlineSlot?.assignedElements().length ?? 0) > 0;
-    };
-    const syncSubtitle = () => {
-      this.hasSlottedSubtitle =
-        this.el.querySelector('[slot="subtitle"]') !== null ||
-        (subtitleSlot?.assignedElements().length ?? 0) > 0;
-    };
-    const syncSearch = () => {
-      this.hasSlottedSearch =
-        this.el.querySelector('[slot="search"]') !== null ||
-        (searchSlot?.assignedElements().length ?? 0) > 0;
-    };
-    const syncSearchTrailing = () => {
-      this.hasSlottedSearchTrailing =
-        this.el.querySelector('[slot="search-trailing"]') !== null ||
-        (searchTrailingSlot?.assignedElements().length ?? 0) > 0;
-    };
-    const syncTrailing = () => this.enforceTrailingSlotLimit(trailingSlot);
+      const syncLeading = () => {
+        this.hasSlottedLeading =
+          this.el.querySelector('[slot="leading"]') !== null ||
+          (leadingSlot?.assignedElements().length ?? 0) > 0;
+      };
+      const syncHeadline = () => {
+        this.hasSlottedHeadline =
+          this.el.querySelector('[slot="headline"]') !== null ||
+          (headlineSlot?.assignedElements().length ?? 0) > 0;
+      };
+      const syncSubtitle = () => {
+        this.hasSlottedSubtitle =
+          this.el.querySelector('[slot="subtitle"]') !== null ||
+          (subtitleSlot?.assignedElements().length ?? 0) > 0;
+      };
+      const syncSearch = () => {
+        this.hasSlottedSearch =
+          this.el.querySelector('[slot="search"]') !== null ||
+          (searchSlot?.assignedElements().length ?? 0) > 0;
+      };
+      const syncSearchTrailing = () => {
+        this.hasSlottedSearchTrailing =
+          this.el.querySelector('[slot="search-trailing"]') !== null ||
+          (searchTrailingSlot?.assignedElements().length ?? 0) > 0;
+      };
+      const syncTrailing = () => this.enforceTrailingSlotLimit(trailingSlot);
 
-    leadingSlot?.addEventListener('slotchange', syncLeading);
-    headlineSlot?.addEventListener('slotchange', syncHeadline);
-    subtitleSlot?.addEventListener('slotchange', syncSubtitle);
-    searchSlot?.addEventListener('slotchange', syncSearch);
-    searchTrailingSlot?.addEventListener('slotchange', syncSearchTrailing);
-    trailingSlot?.addEventListener('slotchange', syncTrailing);
-    syncTrailing();
+      leadingSlot?.addEventListener('slotchange', syncLeading);
+      headlineSlot?.addEventListener('slotchange', syncHeadline);
+      subtitleSlot?.addEventListener('slotchange', syncSubtitle);
+      searchSlot?.addEventListener('slotchange', syncSearch);
+      searchTrailingSlot?.addEventListener('slotchange', syncSearchTrailing);
+      trailingSlot?.addEventListener('slotchange', syncTrailing);
+      syncTrailing();
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
 
   /**
@@ -488,5 +496,14 @@ export class MdAppBar {
         {this.renderTop()}
       </Host>
     );
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

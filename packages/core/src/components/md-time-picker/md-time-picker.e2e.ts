@@ -229,11 +229,9 @@ describe('md-time-picker (e2e)', () => {
      Material Design 3 time-picker spec so future styling tweaks can
      never silently drift them.
 
-     Important: the dialog has a 300ms `scale(0.92 → 1)` entrance
-     animation, so measurements taken before it lands are off by
-     ~1% (e.g. a 96px tile reads back as ~95.04). Each test below
-     awaits the animation via the `animationend` event (with a small
-     wall-clock fallback) before reading any geometry.
+     When a dialog is opened interactively, measure its geometry
+     after its entrance settles. Authored open dialogs are ready
+     as soon as their initial render completes.
 
      Spec source:
      https://m3.material.io/components/time-pickers/specs */
@@ -241,24 +239,9 @@ describe('md-time-picker (e2e)', () => {
   /** Wait until the dialog's entrance animation has fully landed.
    *  Shared by the MD3 spec-dimensions and color-roles suites below. */
   async function awaitDialogReady(page: E2EPage) {
-    await page.evaluate(() => {
-      const host = document.querySelector('md-time-picker');
-      const dialog = host?.shadowRoot?.querySelector('[part="dialog"]') as HTMLElement | null;
-      if (!dialog) return undefined;
-      return new Promise<void>((resolve) => {
-        // The dialog entrance animation runs 500ms (long2). The
-        // safety timer must comfortably exceed that or every
-        // dimension assertion below runs against a transformed
-        // element (scale 0.88 → 1) and reads sub-pixel sizes.
-        // 800ms gives the animation 300ms of slack to fire its
-        // `animationend` event across slower CI machines.
-        const timer = setTimeout(resolve, 800);
-        dialog.addEventListener(
-          'animationend',
-          () => { clearTimeout(timer); resolve(); },
-          { once: true },
-        );
-      });
+    await page.evaluate(async () => {
+      const dialog = document.querySelector('md-time-picker')?.shadowRoot?.querySelector('[part="dialog"]');
+      await Promise.allSettled((dialog?.getAnimations() ?? []).map((animation) => animation.finished));
     });
     // Force a fresh layout pass after the animation lands.
     await page.waitForChanges();
@@ -1238,7 +1221,25 @@ describe('md-time-picker (e2e)', () => {
       expect(sizes).toEqual({ hour: 45, minute: 45, separator: 45 });
     });
 
-    it('mounts the dial-wrap with the emphasized-decelerate bloom animation', async () => {
+    it.each([
+      ['dial', '[part="dial-wrap"]'],
+      ['input', '[part="input-area"]'],
+    ])('renders the initially open %s picker without entrance motion', async (variant, content) => {
+      const page = await newE2EPage();
+      await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
+      await page.setContent(`<md-time-picker open variant="${variant}" value="07:00"></md-time-picker>`);
+
+      const states = await page.evaluate((contentSelector) => {
+        const root = document.querySelector('md-time-picker')!.shadowRoot!;
+        return ['[part="scrim"]', '[part="dialog"]', contentSelector].map((selector) => {
+          const { animationName, opacity } = getComputedStyle(root.querySelector(selector)!);
+          return [animationName, opacity];
+        });
+      }, content);
+      expect(states).toEqual([['none', '1'], ['none', '1'], ['none', '1']]);
+    });
+
+    it('blooms the dial when show() opens the picker', async () => {
       // Both branches share the same `md-time-picker-mode-in`
       // keyframe + long1 (450ms) + emphasized-decelerate
       // (cubic-bezier(0.05, 0.7, 0.1, 1)) — they're symmetric so
@@ -1248,8 +1249,10 @@ describe('md-time-picker (e2e)', () => {
       // before the dialog locks in, reading as a single staged
       // motion rather than two competing animations.
       const page = await newE2EPage();
-      await page.setContent('<md-time-picker open variant="dial" format="12h" value="07:00"></md-time-picker>');
-      await awaitDialogReady(page);
+      await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
+      await page.setContent('<md-time-picker variant="dial" format="12h" value="07:00"></md-time-picker>');
+      await page.evaluate(() => document.querySelector('md-time-picker')!.show());
+      await page.waitForChanges();
 
       const anim = await page.evaluate(() => {
         const host = document.querySelector('md-time-picker');
@@ -1277,10 +1280,12 @@ describe('md-time-picker (e2e)', () => {
       expect(anim?.transformOrigin).toMatch(/0px$/);
     });
 
-    it('mounts the input-area with the same emphasized-decelerate bloom', async () => {
+    it('blooms the input area when show() opens the picker', async () => {
       const page = await newE2EPage();
-      await page.setContent('<md-time-picker open variant="input" format="12h" value="07:00"></md-time-picker>');
-      await awaitDialogReady(page);
+      await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
+      await page.setContent('<md-time-picker variant="input" format="12h" value="07:00"></md-time-picker>');
+      await page.evaluate(() => document.querySelector('md-time-picker')!.show());
+      await page.waitForChanges();
 
       const anim = await page.evaluate(() => {
         const host = document.querySelector('md-time-picker');
@@ -1308,8 +1313,10 @@ describe('md-time-picker (e2e)', () => {
       // the transform-origin makes the dialog drop down from the
       // trigger above instead of zooming from its centre.
       const page = await newE2EPage();
-      await page.setContent('<md-time-picker open variant="dial" format="12h" value="07:00"></md-time-picker>');
-      await awaitDialogReady(page);
+      await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
+      await page.setContent('<md-time-picker variant="dial" format="12h" value="07:00"></md-time-picker>');
+      await page.evaluate(() => document.querySelector('md-time-picker')!.show());
+      await page.waitForChanges();
 
       const anim = await page.evaluate(() => {
         const host = document.querySelector('md-time-picker');
@@ -1342,6 +1349,7 @@ describe('md-time-picker (e2e)', () => {
       // `getAnimations()` on the freshly-mounted sub-tree right
       // after toggle.
       const page = await newE2EPage();
+      await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
       await page.setContent('<md-time-picker open variant="dial" format="12h" value="07:00"></md-time-picker>');
       await awaitDialogReady(page);
 

@@ -1,6 +1,31 @@
 import { newE2EPage } from '@stencil/core/testing';
 
 describe('md-color-picker (e2e)', () => {
+  it('renders an authored open popover at full opacity and animates show()', async () => {
+    const page = await newE2EPage();
+    await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
+    await page.setContent(`
+      <md-color-picker variant="popover" open style="--md-sys-motion-duration-medium2: 10s">
+        <button slot="trigger">Pick a color</button>
+      </md-color-picker>
+    `);
+    const popover = () => page.evaluate(() => {
+      const panel = document.querySelector('md-color-picker')!.shadowRoot!.querySelector('[part="popover"]')!;
+      const { opacity, animationName } = getComputedStyle(panel);
+      return { opacity, animationName };
+    });
+    expect(await popover()).toEqual({ opacity: '1', animationName: 'none' });
+
+    await page.evaluate(async () => {
+      const picker = document.querySelector('md-color-picker')!;
+      await picker.close();
+    });
+    await page.waitForChanges();
+    await page.evaluate(() => document.querySelector('md-color-picker')!.show());
+    await page.waitForChanges();
+    expect((await popover()).animationName).toBe('md-color-picker-pop-in');
+  });
+
   it.each(['ltr', 'rtl'])('fills a responsive settings column with the public width token (%s)', async (direction) => {
     const page = await newE2EPage();
     await page.setViewport({ width: 390, height: 844 });
