@@ -6,6 +6,7 @@ import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
+import { stripLightDomAnnotations } from '../../../scripts/lib/html-comments.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const { renderToString } = await import('@awc-ui/core/hydrate');
@@ -23,7 +24,8 @@ for (const f of readdirSync(browserDir)) {
     removeScripts: false,
     removeHtmlComments: false,
   });
-  writeFileSync(p, hydrated);
+  // Angular claims the light DOM. Stencil still needs its shadow annotations.
+  writeFileSync(p, stripLightDomAnnotations(hydrated));
   touched += 1;
 }
 console.log(`inject-dsd: rewrote ${touched} prerendered HTML file(s) with Declarative Shadow DOM.`);

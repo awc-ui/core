@@ -13,7 +13,7 @@ const { build } = core('esbuild');
 const { compile } = svelte('svelte/compiler');
 const { renderToString } = core('./hydrate/index.js');
 const options = { fullDocument: false, serializeShadowRoot: 'declarative-shadow-dom', removeScripts: false, removeHtmlComments: false };
-const source = '<script>let count = 0;</script><md-card variant="elevated"><span>Revenue</span></md-card><button onclick={() => count += 1}>{count}</button>';
+const source = '<script>let count = 0;</script><md-card variant="elevated">Revenue {count}</md-card><button onclick={() => count += 1}>{count}</button>';
 const bundle = async (contents, platform = 'browser', format = 'iife') => (await build({
   stdin: { contents, resolveDir: join(root, 'apps/example-sveltekit') },
   bundle: true, format, write: false, platform,
@@ -43,13 +43,16 @@ async function hydrate(preserve) {
     const serverCard = window.document.querySelector('md-card');
     const serverShadow = serverCard.shadowRoot;
     const lifecycle = createSvelteHydration();
-    lifecycle.capture(window.document);
+    const marker = serverCard.firstChild;
+    assert.equal(marker.nodeValue, 'r.' + serverCard.getAttribute('s-id'));
+    if (preserve) lifecycle.capture(window.document);
     window.eval(framework);
     window.mountProbe();
     const card = window.document.querySelector('md-card');
     assert.equal(card, serverCard, 'Svelte must hydrate the existing custom-element host');
     assert.equal(card.shadowRoot, serverShadow, 'framework hydration must preserve server shadow DOM');
-    if (preserve) lifecycle.restore();
+    lifecycle.restore();
+    assert.equal(card.firstChild, marker, 'return the original render marker before component adoption');
     assert.ok(card.hasAttribute('s-id'), 'Stencil adoption needs the server host annotation');
     window.eval(components);
     await new Promise((resolve) => window.requestAnimationFrame(() => window.requestAnimationFrame(resolve)));
@@ -58,6 +61,7 @@ async function hydrate(preserve) {
     button.click();
     window.flushProbe();
     assert.equal(button.textContent, '1', 'the Svelte component must be interactive after hydration');
+    assert.equal(card.textContent, 'Revenue 1', 'Svelte must update the adopted slotted text');
     return {
       slots: card.shadowRoot.querySelectorAll('slot').length,
       unclaimed: card.shadowRoot.querySelectorAll('[c-id]').length,
@@ -67,8 +71,8 @@ async function hydrate(preserve) {
   }
 }
 
-test('Svelte 5 hydrates and adopts server shadow DOM with and without the annotation helper', async () => {
-  assert.deepEqual(await hydrate(false), { slots: 1, unclaimed: 0 });
+test('Svelte 5 claims dynamic slotted text and Stencil adopts the same server root', async () => {
+  await assert.rejects(hydrate(false), /hydration_failed/);
   assert.deepEqual(await hydrate(true), { slots: 1, unclaimed: 0 });
 });
 

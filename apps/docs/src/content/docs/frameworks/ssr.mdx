@@ -49,6 +49,35 @@ SSR-capable `@awc-ui/core/components/*` entries register the used elements and
 allow the bundler to resolve their dependencies. Do not use `components-csr/*`
 to hydrate DSD.
 
+## Preserve component classes during hydration
+
+Nuxt, Angular and Svelte can replace a host's `class` attribute while claiming
+server markup. This can remove both its appearance and its `hydrated` class,
+briefly hiding already-rendered content. For raw-element integrations, start
+class protection before framework hydration:
+
+```ts
+import { preserveSsrClasses } from "@awc-ui/core/ssr/classes";
+
+const finishFrameworkClaim = preserveSsrClasses();
+// Call from the framework's mounted/bootstrap hook:
+finishFrameworkClaim();
+```
+
+The helper preserves component-owned classes while keeping application classes
+and later state changes authoritative. Call it from an `enforce: 'pre'` Nuxt
+client plugin and finish in `app:mounted`; in Angular, use an application
+initializer and finish after `ApplicationRef.whenStable()` outside `NgZone`.
+Register that bootstrap listener after `provideRouter()` so it waits for initial
+route hydration, not only root component bootstrap. The
+[Nuxt starter](https://github.com/awc-ui/core/tree/main/starters/nuxt) and
+[Angular reference](https://github.com/awc-ui/core/tree/main/apps/example-angular-ssr)
+show the complete integration. The Angular example also removes only Stencil's
+light-DOM position comments before Angular claims the tree, preserving Angular's
+comments and the shadow-root annotations.
+
+The SvelteKit helper below includes class protection automatically.
+
 ## SvelteKit lifecycle
 
 `@awc-ui/core/ssr/sveltekit` contains two helpers with no framework dependencies:
@@ -59,8 +88,9 @@ to hydrate DSD.
 - `createSvelteHydration()` returns `capture()` and `restore()`. Share one instance
   in an app module. Use SvelteKit 2.70.3 or later. Call `capture()` from `hooks.client.ts`'s `init`, then call
   `restore()` in the root layout's `onMount` **before** dynamically importing
-  component entries. Restore only attributes removed by Svelte; application
-  attribute changes take precedence.
+  component entries. The helper temporarily detaches Stencil render comments so
+  Svelte can claim dynamic slotted children. It restores the comments and any
+  missing host attributes. Application attribute changes take precedence.
 
 The [SvelteKit starter](https://github.com/awc-ui/core/tree/main/starters/sveltekit)
 and [reference app](https://github.com/awc-ui/core/tree/main/apps/example-sveltekit)

@@ -4,7 +4,8 @@
   "private": true,
   "description": "Angular 20 SSR/prerender reference app for AWC UI (DSD via a postbuild inject step)",
   "scripts": {
-    "build": "ng build && node scripts/inject-dsd.mjs"
+    "build": "ng build && node scripts/inject-dsd.mjs",
+    "verify:startup": "node scripts/verify-startup.mjs"
   },
   "dependencies": {
     "@angular/animations": "~20.3.33",

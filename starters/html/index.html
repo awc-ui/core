@@ -5,16 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>AWC UI Starter — HTML</title>
 
-    <!-- Global MD3 design tokens (--md-sys-*) that the components' shadow styles
-         reference via var(). Served from jsDelivr (real file path in the package). -->
+    <!-- Core's token sheet also hides unhydrated lazy components. Load it in
+         the head so raw labels and closed overlays never paint before upgrade. -->
     <link
       rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@awc-ui/tokens@1.0.0-beta.9/src/tokens.css"
+      href="https://cdn.jsdelivr.net/npm/@awc-ui/core@1.0.1/dist/md3/md3.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@awc-ui/core@1.0.1/dist/md3/pre-upgrade.css"
     />
 
     <!-- The browser entry registers md-* elements and loads sibling chunks
          directly from the package, preserving their relative asset URLs. -->
-    <script type="module" src="https://cdn.jsdelivr.net/npm/@awc-ui/core@1.0.0-beta.9/dist/md3/md3.esm.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@awc-ui/core@1.0.1/dist/md3/md3.esm.js"></script>
   </head>
   <body style="margin:0;background:var(--md-sys-color-background);color:var(--md-sys-color-on-background)">
     <md-app-bar headline="Acme Analytics" subtitle="Overview">

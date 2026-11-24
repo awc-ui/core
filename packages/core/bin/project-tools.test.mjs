@@ -51,9 +51,47 @@ test('bundled HTML CDN URLs and starter dependencies use the running release',as
   const pkg=JSON.parse(await readFile(new URL('../package.json',import.meta.url),'utf8'));
   const html=await readFile(new URL('./templates/html/index.html',import.meta.url),'utf8');
   const versions=[...html.matchAll(/@awc-ui\/(?:core|tokens)@([^/\s'"]+)\//g)].map(m=>m[1]);
-  assert.equal(versions.length,2);assert.deepEqual(versions,[pkg.version,pkg.version]);
+  assert.equal(versions.length,3);assert.deepEqual(versions,[pkg.version,pkg.version,pkg.version]);
   for(const framework of ['html','next','nuxt','sveltekit','astro']) {
     const starter=JSON.parse(await readFile(new URL(`./templates/${framework}/package.json`,import.meta.url),'utf8'));
     for(const field of ['dependencies','devDependencies'])for(const [name,version] of Object.entries(starter[field]??{}))if(name.startsWith('@awc-ui/'))assert.equal(version,pkg.version,`${framework}: ${name}`);
+  }
+});
+
+test('HTML starters load core pre-hydration CSS in the head before the lazy runtime', async () => {
+  for (const path of ['./templates/html/index.html', '../../../starters/html/index.html']) {
+    const html = await readFile(new URL(path, import.meta.url), 'utf8');
+    const head = html.match(/<head\b[^>]*>([\s\S]*?)<\/head>/i)?.[1] ?? '';
+    const links = [...head.matchAll(/<link\b[^>]*>/gi)]
+      .filter(([tag]) => /rel=["']stylesheet["']/.test(tag));
+    for (const filename of ['md3.css', 'pre-upgrade.css']) {
+      const link = links.find(([tag]) => tag.includes(`/dist/md3/${filename}`));
+      assert(link, `${path}: missing early core ${filename}`);
+      assert.match(link[0], /@awc-ui\/core@/);
+      assert(link.index < head.indexOf('<script'), `${path}: ${filename} must precede the runtime`);
+    }
+    assert.doesNotMatch(head, /@awc-ui\/tokens@/, `${path}: raw tokens omit the lazy pre-hydration guard`);
+  }
+});
+
+test('SSR starters load core pre-hydration CSS from their global style entry', async () => {
+  const entries = {
+    next: 'app/layout.tsx',
+    nuxt: 'nuxt.config.ts',
+    sveltekit: 'src/routes/+layout.svelte',
+    astro: 'src/pages/index.astro',
+  };
+  for (const [framework, entry] of Object.entries(entries)) {
+    for (const root of ['./templates', '../../../starters']) {
+      const path = `${root}/${framework}/${entry}`;
+      const source = await readFile(new URL(path, import.meta.url), 'utf8');
+      assert.match(source, /['"]@awc-ui\/core\/css\/tokens\.css['"]/, `${path}: missing core pre-hydration CSS`);
+      assert.doesNotMatch(source, /@awc-ui\/tokens\/tokens\.css/, `${path}: raw tokens omit the pre-hydration guard`);
+      if (framework === 'nuxt') {
+        assert.match(source, /css:\s*\[\s*['"]@awc-ui\/core\/css\/tokens\.css['"]/, `${path}: CSS must be in Nuxt's global css entry`);
+      } else {
+        assert.match(source, /import\s+['"]@awc-ui\/core\/css\/tokens\.css['"]/, `${path}: CSS must be a static global import`);
+      }
+    }
   }
 });

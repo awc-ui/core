@@ -225,7 +225,8 @@ export default defineConfig({
         SocialIcons: './src/components/ReleaseLinks.astro',
       },
       customCss: [
-        '@awc-ui/tokens/tokens.css',
+        '@awc-ui/core/css/tokens.css',
+        '@awc-ui/core/css/pre-upgrade.css',
         './src/styles/custom.css',
       ],
       head: [

@@ -20,8 +20,10 @@ release; the repository's packed-candidate checks verify them before publication
 - `src/lib/components.ts` imports the used SSR-capable component entries. Vite
   bundles their dependencies, so registration does not depend on lazy-loader URLs.
   Add new component imports there when extending the page.
-- The root layout imports global tokens. The page waits for chart registration
-  before assigning object-valued data. Canvas chart plots appear after JavaScript
+- The root layout imports `@awc-ui/core/css/tokens.css` for global tokens and
+  pre-hydration visibility rules. Server-rendered components remain visible;
+  client-only components become visible when their styles are ready. The page
+  waits for chart registration before assigning object-valued data. Canvas chart plots appear after JavaScript
   runs; SSR provides their surrounding structure.
 - The app-bar switch changes `data-theme` on `<html>`.
 

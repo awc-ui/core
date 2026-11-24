@@ -1,6 +1,7 @@
 import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { createId } from '../../utils/id';
 import { Component, Host, h, Prop, Event, EventEmitter, Element, Watch, State, Method, Listen } from '@stencil/core';
+import { getTablistTabs, isTabDisabled, resolveTabIndex } from './tablist-selection';
 
 /**
  * @slot - Tab items (`md-tab` elements)
@@ -120,9 +121,9 @@ export class MdTabs {
         // resize — the fades went stale on the wrong edge.
         this.dirObserver = new MutationObserver(() => this.updateOverflow());
       }
-      this.hasLoaded = true;
       this.attachObservers();
       this.syncTabs();
+      this.hasLoaded = true;
 } finally {
       completeInitialInteractionMotion(this);
     }
@@ -171,7 +172,11 @@ export class MdTabs {
     // list doesn't have yet — remember the INTENT and honor it when the tab
     // registers, instead of permanently rewriting the consumer's value.
     this.pendingRequestedIndex = sanitized > this.tabs.length - 1 ? sanitized : null;
-    const clamped = this.clampIndex(sanitized);
+    const clamped = resolveTabIndex(this.tabs, sanitized);
+    if (clamped < 0) {
+      this.applyIndex(-1, { scroll: false });
+      return;
+    }
     if (clamped !== newIndex) {
       this.setIndexInternal(clamped); // guarded — the watch will NOT re-fire
     }
@@ -180,7 +185,7 @@ export class MdTabs {
 
   @Watch('variant')
   onVariantChange() {
-    this.tabs.forEach(tab => tab.setAttribute('variant', this.variant));
+    this.tabs.forEach(tab => this.applyVariant(tab));
   }
 
   // ─── Public Methods ──────────────────────────────────────
@@ -188,7 +193,8 @@ export class MdTabs {
   /** Programmatically select a tab by index */
   @Method()
   async selectTab(index: number) {
-    if (index < 0 || index >= this.tabs.length) return;
+    const tab = this.tabs[index];
+    if (!tab || isTabDisabled(tab)) return;
     this.activateTab(index);
   }
 
@@ -236,10 +242,10 @@ export class MdTabs {
     }
   }
 
-  /** A disabled state change re-roves so exactly one tab stays focusable. */
+  /** Keep selection and focus synchronized as managed tabs become available. */
   @Listen('mdTabDisabledChange')
-  handleTabDisabledChange() {
-    this.updateRovingTabindex();
+  handleTabDisabledChange(event: Event) {
+    if (this.tabs.includes(event.target as HTMLElement)) this.reconcileActiveTab(true);
   }
 
   private deepActiveElement(): Element | null {
@@ -265,21 +271,21 @@ export class MdTabs {
     let idx = from;
     for (let i = 0; i < len; i++) {
       idx = (idx + direction + len) % len;
-      if (!this.isDisabledTab(this.tabs[idx])) return idx;
+      if (!isTabDisabled(this.tabs[idx])) return idx;
     }
     return null;
   }
 
   private findFirstEnabled(): number | null {
     for (let i = 0; i < this.tabs.length; i++) {
-      if (!this.isDisabledTab(this.tabs[i])) return i;
+      if (!isTabDisabled(this.tabs[i])) return i;
     }
     return null;
   }
 
   private findLastEnabled(): number | null {
     for (let i = this.tabs.length - 1; i >= 0; i--) {
-      if (!this.isDisabledTab(this.tabs[i])) return i;
+      if (!isTabDisabled(this.tabs[i])) return i;
     }
     return null;
   }
@@ -289,25 +295,13 @@ export class MdTabs {
   private syncTabs() {
     this.removeTabListeners();
 
-    const slot = this.el.shadowRoot?.querySelector('slot') as HTMLSlotElement | null;
-    if (!slot) return;
-
-    // flatten:true — tabs forwarded through a wrapper's <slot> must be
-    // managed too (without it, assignedElements() returns the nested SLOT
-    // element and zero tabs register).
-    this.tabs = slot.assignedElements({ flatten: true }).filter(
-      el => el.tagName === 'MD-TAB',
-    ) as HTMLElement[];
+    this.tabs = getTablistTabs(this.el);
 
     this.tabCount = this.tabs.length;
 
     this.tabs.forEach((tab, index) => {
-      tab.setAttribute('variant', this.variant);
+      this.prepareTab(tab, index);
       tab.addEventListener('mdTabClick', this.createTabClickHandler(index));
-
-      if (!tab.id) {
-        tab.id = `${this.uniquePrefix}-tab-${index}`;
-      }
     });
 
     this.listenersBound = true;
@@ -322,25 +316,39 @@ export class MdTabs {
     this.updateOverflow();
   }
 
+  private prepareTab(tab: HTMLElement, index: number) {
+    this.applyVariant(tab);
+    if (!tab.id) tab.id = `${this.uniquePrefix}-tab-${index}`;
+  }
+
+  private applyVariant(tab: HTMLElement) {
+    if ('variant' in tab) (tab as HTMLMdTabElement).variant = this.variant;
+    tab.setAttribute('variant', this.variant);
+  }
+
   /**
    * Selection integrity across mutations: follow the active ELEMENT if it
    * still exists; if it was removed (or the index is out of range), clamp to
    * the nearest valid enabled tab and tell consumers. Never leave the
    * tablist without a focusable tab.
    */
-  private reconcileActiveTab() {
+  private reconcileActiveTab(announceAvailability = false) {
     // Tabs that LEFT the managed set must not keep selected-looking state
     // (a moved-out active tab kept active + aria-selected + tabindex=0).
     this.prevTabs.forEach((t) => {
       if (!this.tabs.includes(t)) {
-        t.removeAttribute('active');
+        this.setTabActive(t, false);
         t.removeAttribute('tabindex'); // its own reconnect stamps standalone
       }
     });
     this.prevTabs = this.tabs;
 
-    if (this.tabs.length === 0) {
-      this.activeTabEl = null;
+    const previousTab = this.activeTabEl;
+    const previousIndex = this.activeTabIndex;
+    // Leave the requested index intact until at least one tab is enabled.
+    if (this.findFirstEnabled() === null) {
+      this.applyIndex(-1, { scroll: false });
+      if (this.hasLoaded && previousTab) this.mdTabChange.emit({ index: -1, previousIndex });
       return;
     }
 
@@ -350,40 +358,23 @@ export class MdTabs {
       const pending = this.pendingRequestedIndex;
       this.pendingRequestedIndex = null; // single-shot: first reconcile only
       if (pending <= this.tabs.length - 1) {
-        const idx = this.clampIndex(pending);
+        const idx = resolveTabIndex(this.tabs, pending);
         this.setIndexInternal(idx);
         this.applyIndex(idx);
         return;
       }
     }
 
-    // No enabled tab at all: nothing may claim aria-selected or the tab
-    // stop (previously a DISABLED tab ended active with zero focusable tabs).
-    if (this.findFirstEnabled() === null) {
-      const hadSelection = this.activeTabEl !== null;
-      const previousIndex = this.activeTabIndex;
-      this.tabs.forEach((t) => t.removeAttribute('active'));
-      this.activeTabEl = null;
-      this.updateRovingTabindex();
-      if (hadSelection) this.mdTabChange.emit({ index: -1, previousIndex });
-      return;
-    }
-
-    const prevEl = this.activeTabEl;
-    let index: number;
-    if (prevEl && this.tabs.includes(prevEl)) {
-      index = this.tabs.indexOf(prevEl);
-    } else {
-      index = this.clampIndex(this.activeTabIndex);
-    }
-    const previousIndex = this.activeTabIndex;
+    const index = previousTab && this.tabs.includes(previousTab) && !isTabDisabled(previousTab)
+      ? this.tabs.indexOf(previousTab)
+      : resolveTabIndex(this.tabs, previousIndex);
     this.setIndexInternal(index);
     this.applyIndex(index, { scroll: false });
     // Emit on ELEMENT-identity change, not index change: removing a mid-list
     // active tab keeps the same NUMBER while selecting a different tab —
     // the old numeric guard made that emit dead code.
-    if (prevEl !== null && this.activeTabEl !== prevEl) {
-      this.mdTabChange.emit({ index, previousIndex });
+    if (this.hasLoaded && (previousTab || announceAvailability) && this.activeTabEl !== previousTab) {
+      this.mdTabChange.emit({ index, previousIndex: previousTab ? previousIndex : -1 });
     }
   }
 
@@ -391,24 +382,6 @@ export class MdTabs {
   private sanitizeIndex(index: unknown): number {
     const num = Math.round(Number(index));
     return Number.isFinite(num) ? num : 0;
-  }
-
-  /** Property writes reflect to the attribute ASYNC — read the prop first
-   *  so a just-disabled tab is never left holding the tab stop. */
-  private isDisabledTab(tab: HTMLElement): boolean {
-    return (tab as HTMLElement & { disabled?: boolean }).disabled === true || tab.hasAttribute('disabled');
-  }
-
-  /** Clamp into range, preferring an enabled tab (falls back to nearest). */
-  private clampIndex(index: number): number {
-    const len = this.tabs.length;
-    if (len === 0) return 0;
-    let idx = Math.max(0, Math.min(this.sanitizeIndex(index), len - 1));
-    if (this.tabs[idx] && this.isDisabledTab(this.tabs[idx])) {
-      const enabled = this.findNextEnabledWrapping(idx, 1) ?? this.findFirstEnabled();
-      if (enabled !== null) idx = enabled;
-    }
-    return idx;
   }
 
   private setIndexInternal(index: number) {
@@ -458,13 +431,14 @@ export class MdTabs {
   }
 
   private applyActiveState(activeIndex: number) {
-    this.tabs.forEach((tab, i) => {
-      if (i === activeIndex) {
-        tab.setAttribute('active', '');
-      } else {
-        tab.removeAttribute('active');
-      }
-    });
+    this.tabs.forEach((tab, i) => this.setTabActive(tab, i === activeIndex));
+  }
+
+  private setTabActive(tab: HTMLElement, active: boolean) {
+    if ('active' in tab) (tab as HTMLMdTabElement).active = active;
+    if (active) tab.setAttribute('active', '');
+    else tab.removeAttribute('active');
+    tab.setAttribute('aria-selected', String(active));
   }
 
   /** md-tabs is the ONLY tabindex writer (md-tab renders none inside a
@@ -472,11 +446,11 @@ export class MdTabs {
    *  or the first enabled tab when the active one is disabled/invalid. */
   private updateRovingTabindex() {
     let holder = this.activeTabIndex;
-    if (this.tabs[holder] && this.isDisabledTab(this.tabs[holder])) {
+    if (this.tabs[holder] && isTabDisabled(this.tabs[holder])) {
       holder = this.findFirstEnabled() ?? holder;
     }
     this.tabs.forEach((tab, i) => {
-      if (this.isDisabledTab(tab)) {
+      if (isTabDisabled(tab)) {
         tab.setAttribute('tabindex', '-1');
       } else {
         tab.setAttribute('tabindex', i === holder ? '0' : '-1');
@@ -607,6 +581,15 @@ export class MdTabs {
 
   componentWillLoad() {
     beginInitialInteractionMotion(this);
+    // Direct children are known before the slot exists. Apply selection before
+    // their first render. A forwarded slot can add tabs to this list, so wait
+    // for its flattened assignment before clamping the requested index.
+    const children = Array.from(this.el.children).filter(child => !child.getAttribute('slot'));
+    if (children.some(child => child.tagName === 'SLOT')) return;
+    this.tabs = children.filter((child): child is HTMLElement => child.tagName === 'MD-TAB');
+    this.tabCount = this.tabs.length;
+    this.tabs.forEach((tab, index) => this.prepareTab(tab, index));
+    this.reconcileActiveTab();
   }
 
   componentDidRender() {

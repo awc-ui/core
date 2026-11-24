@@ -14,6 +14,11 @@ pnpm --filter @awc-ui/showcase-credit-risk-angular-ssr verify  # checks in a rea
 `build` runs `sync-runtime` first, which needs `packages/core/dist` to exist
 (`pnpm --filter @awc-ui/core build`).
 
+The SSR engine allows localhost and the configured production hostnames. For
+another deployment hostname, set `NG_ALLOWED_HOSTS` to a comma-separated list
+of hostnames (without protocols or ports); Angular validates the render URL
+before bootstrapping the page.
+
 ## Screens
 
 | Route | Screen |

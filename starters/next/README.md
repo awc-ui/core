@@ -12,8 +12,11 @@ dark-mode switch.
 
 ## How it's wired
 
-- **Tokens** — `app/layout.tsx` imports `@awc-ui/tokens/tokens.css` so the
-  `--md-sys-*` custom properties are available document-wide.
+- **Tokens** — `app/layout.tsx` imports `@awc-ui/core/css/tokens.css` so the
+  `--md-sys-*` custom properties and pre-hydration visibility rules are
+  available document-wide. Server-rendered components remain visible; client-only
+  components become visible when their styles are ready. The chart and switch
+  reserve their layout space while their client code loads.
 - **SSR** — the static components in `app/page.tsx` (a Server Component) come
   from `@awc-ui/react/server`, which server-renders each component's
   Declarative Shadow DOM via `@awc-ui/core/hydrate` and hydrates on the client,

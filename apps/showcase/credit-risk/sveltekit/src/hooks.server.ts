@@ -44,15 +44,8 @@
  * `src/lib/adopt.ts`. `<link rel="modulepreload">` fetches and compiles the
  * module with the document but does not EXECUTE it; executing it is what calls
  * `customElements.define`, and that has to happen after Svelte has finished
- * hydrating. Svelte 4 hydrates by claiming the server's nodes, and a claimed
- * element loses every attribute its `.svelte` template does not declare —
- * including `s-id`, the marker Stencil's runtime reads in `connectedCallback`
- * to decide between adopting the server's shadow root and rendering a second
- * copy into it. When the runtime went in as `<script type="module">` here,
- * which of the two happened first was a race between two dynamic imports, and
- * the losing outcome was every component on every screen drawn twice inside its
- * own shadow root. The root layout's `onMount` runs the import now. Read
- * `src/lib/adopt.ts` for the measurements.
+ * hydrating. The root layout restores the Stencil annotations before it imports
+ * the preloaded module.
  *
  * ── 2. THE RENDER STAMP (`%awc.render%`) ─────────────────────────────────────
  *
@@ -86,27 +79,9 @@
  * rendering and overstating it would be the easiest thing in the world to do in
  * a file like this.
  *
- * AND ONE MORE THING WORTH KNOWING, WHICH IS SVELTE-SPECIFIC. Alongside the
- * shadow roots, the hydrate app annotates the LIGHT DOM — an `s-id` attribute
- * and an `<!--r.N-->` marker on each host — which is how its client runtime
- * recognises a server-rendered tree and adopts it instead of re-rendering it.
- * Svelte 4 hydrates by CLAIMING existing nodes, and `claim_element` removes
- * every attribute the component's own template does not declare (see
- * `claim_element_base` in svelte/internal). So on the elements this app writes
- * itself, those annotations are stripped a moment after they arrive.
- *
- * THIS COMMENT USED TO SAY THAT THE END STATE WAS IDENTICAL AND THE COST WAS
- * ONE WASTED RE-RENDER. IT WAS WRONG, AND EXPENSIVELY SO. Stripped of `s-id`
- * the runtime does not re-render the component, it renders an ADDITIONAL copy
- * into the shadow root the parser has already filled from the server's
- * `<template shadowrootmode>` — it never clears a shadow root it does not think
- * it owns. The overview carried 239 shadow-hosting elements against 207 in the
- * `next` and `nuxt` builds; every nav item drew its icon twice and the
- * watchlist badge read "77" where the figure is 7. `src/lib/adopt.ts` is the
- * fix and the write-up: the annotations are photographed before hydration,
- * restored after it, and the runtime is not started until both have happened.
- * The first paint, which is the point of all this, was never affected either
- * way: it happens before any of that JavaScript runs.
+ * Each host carries an s-id attribute and a Stencil render comment. The shared
+ * SvelteKit helper temporarily detaches these comments while Svelte claims its
+ * light DOM, then returns them before the runtime adopts the shadow roots.
  *
  * ── WHY THE BUFFER ───────────────────────────────────────────────────────────
  *

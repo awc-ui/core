@@ -1,5 +1,5 @@
 export interface SvelteHydration {
-  /** Capture SSR host annotations in SvelteKit's client init hook. */
+  /** Capture host attributes and detach Stencil render comments in SvelteKit's client init hook. */
   capture(root?: ParentNode): void;
   /** Restore missing annotations in onMount before registering components. */
   restore(): void;

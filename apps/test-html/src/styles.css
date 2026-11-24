@@ -1,0 +1,43 @@
+/* Load from the document head: lazy elements need Core's pre-hydration rules
+   before JavaScript runs, including closed dialogs and menu content. */
+@import '@awc-ui/core/css/tokens.css';
+@import '@awc-ui/core/css/pre-upgrade.css';
+@import 'material-icons/iconfont/material-icons.css';
+@import 'material-symbols/outlined.css';
+
+/* The static catalogue reserves its sample layout before lazy chunks arrive.
+   These are demo grid slots, not a second copy of the components' CSS. Keeping
+   the slots after hydration also makes narrow-screen wrapping deterministic. */
+.theme-sample {
+  display: flex;
+  min-block-size: 40px;
+}
+.app .button-samples {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 120px);
+  grid-auto-rows: 40px;
+  align-items: stretch;
+}
+.button-samples > md-button {
+  inline-size: 100%;
+}
+.app .icon-samples {
+  display: grid;
+  grid-template-columns: repeat(4, 40px);
+  grid-auto-rows: 40px;
+}
+.fab-sample {
+  display: flex;
+  align-items: end;
+  flex: none;
+}
+.fab-sample--small { inline-size: 56px; block-size: 56px; }
+.fab-sample--medium { inline-size: 80px; block-size: 80px; }
+.fab-sample--extended { inline-size: 128px; block-size: 56px; }
+.field-samples > .field,
+.select-samples > .field--small {
+  min-block-size: 56px;
+}
+.field-samples > .field--supporting {
+  min-block-size: 76px;
+}

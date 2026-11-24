@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
+import { awcLazyRuntime } from '../../scripts/vite-awc-runtime.mjs';
 
 // Pin a stable, distinct port so this playground can run in parallel with
 // the other framework playgrounds (HTML=5170, React=5171, Vue=5172,
@@ -7,6 +8,7 @@ import vue from '@vitejs/plugin-vue';
 // the rationale; `strictPort: true` here for the same reason.
 export default defineConfig({
   plugins: [
+    awcLazyRuntime(),
     vue({
       template: {
         compilerOptions: {

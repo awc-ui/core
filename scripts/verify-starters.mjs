@@ -8,6 +8,7 @@ import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { inspectStarterFirstPaint } from './lib/starter-first-paint.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
@@ -208,7 +209,10 @@ try {
       const html = await response.text();
       assert.match(html, /Revenue/, 'initial document must contain meaningful dashboard content');
       if (name !== 'html') assert.match(html, /<template\b[^>]*shadowrootmode=["']open["']/, 'server must emit DSD');
-      if (browser) await inspectBrowser(server.url);
+      if (browser) {
+        if (name !== 'html') await inspectStarterFirstPaint(browser, server.url, { framework: name, artifactDir: join(scratch, 'evidence') });
+        await inspectBrowser(server.url);
+      }
       console.log(`[verify-starters] PASS ${name}: install${name === 'html' ? ', CDN document' : '/build, server DSD'}${browser ? ', browser upgrade/adoption, chart and switch' : '; browser checks SKIPPED'}`);
     } finally { await server.stop(); }
   }

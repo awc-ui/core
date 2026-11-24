@@ -7,9 +7,6 @@
  * for the interactive bits (theme toggle, dialog/menu open state, etc.).
  */
 import { defineCustomElements } from '@awc-ui/core/loader';
-import '@awc-ui/tokens/tokens.css';
-import 'material-icons/iconfont/material-icons.css';
-import 'material-symbols/outlined.css';
 
 defineCustomElements(window);
 
@@ -18,6 +15,7 @@ defineCustomElements(window);
 // ---------------------------------------------------------------------------
 const themeToggle = document.getElementById('theme-toggle');
 themeToggle?.addEventListener('click', () => {
+  document.documentElement.classList.add('theme-transitions');
   const next = document.documentElement.getAttribute('data-theme') === 'dark'
     ? ''
     : 'dark';

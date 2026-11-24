@@ -100,10 +100,11 @@ export class MdNavigationBar {
     // componentDidLoad would briefly select an invalid/disabled destination and
     // require a second render just to reflect the normalized index.
     this.tabs = Array.from(this.el.children).filter(
-      (element): element is HTMLElement => element.tagName === 'MD-NAVIGATION-TAB',
+      (element): element is HTMLElement => element.tagName === 'MD-NAVIGATION-TAB' && !element.getAttribute('slot'),
     );
     if (this.tabs.length > 0) {
       this.hasInitializedSelection = true;
+      this.tabs.forEach(tab => this.propagateLabelBehavior(tab));
       this.updateSelection(this.activeIndex, /* announce */ false);
     }
   }
@@ -261,7 +262,9 @@ export class MdNavigationBar {
 
   private applyActiveState(activeIndex: number, announce: boolean) {
     this.tabs.forEach((tab, i) => {
-      if (i === activeIndex) {
+      const active = i === activeIndex;
+      if ('active' in tab) (tab as HTMLMdNavigationTabElement).active = active;
+      if (active) {
         if (!tab.hasAttribute('active')) tab.setAttribute('active', '');
         tab.setAttribute('tabindex', '0');
         tab.setAttribute('aria-selected', 'true');

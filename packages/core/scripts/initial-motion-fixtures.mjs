@@ -107,21 +107,21 @@ export const catalogFixture = `
     </md-stepper>
     <md-navigation-bar active-index="1">
       <md-navigation-tab label="Home" icon="home"></md-navigation-tab>
-      <md-navigation-tab label="Files" icon="folder" active></md-navigation-tab>
+      <md-navigation-tab label="Files" icon="folder"></md-navigation-tab>
     </md-navigation-bar>
     <md-navigation-rail active-index="1">
       <md-navigation-rail-tab label="Home" icon="home" value="home"></md-navigation-rail-tab>
-      <md-navigation-rail-tab label="Files" icon="folder" value="files" active></md-navigation-rail-tab>
+      <md-navigation-rail-tab label="Files" icon="folder" value="files"></md-navigation-rail-tab>
     </md-navigation-rail>
     <md-segmented-button-set aria-label="File view">
       <md-segmented-button value="list" selected>List</md-segmented-button>
       <md-segmented-button value="grid">Grid</md-segmented-button>
     </md-segmented-button-set>
     <md-tabs id="workspace-tabs" active-tab-index="1" aria-label="Project views">
-      <md-tab label="Overview"></md-tab><md-tab label="Activity" active></md-tab>
+      <md-tab label="Overview"></md-tab><md-tab label="Activity"></md-tab>
     </md-tabs>
     <md-tab-panels for="workspace-tabs" sizing="active">
-      <md-tab-panel>Overview details</md-tab-panel><md-tab-panel active>Activity details</md-tab-panel>
+      <md-tab-panel>Overview details</md-tab-panel><md-tab-panel>Activity details</md-tab-panel>
     </md-tab-panels>
   </section>
   <section>

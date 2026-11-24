@@ -1,5 +1,5 @@
 <script>
-  import '@awc-ui/tokens/tokens.css';
+  import '@awc-ui/core/css/tokens.css';
   import { onMount } from 'svelte';
   import { awcHydration } from '$lib/awc';
 
