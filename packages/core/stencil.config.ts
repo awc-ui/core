@@ -3,6 +3,7 @@ import { angularOutputTarget } from '@stencil/angular-output-target';
 import { reactOutputTarget } from '@stencil/react-output-target';
 import { vueOutputTarget } from '@stencil/vue-output-target';
 import { withVueRuntime } from '../vue/stencil-output-target';
+import { withAngularSsrAccessors } from '../angular/stencil-output-target';
 
 export const config: Config = {
   namespace: 'md3',
@@ -47,7 +48,7 @@ export const config: Config = {
       hydrateModule: '@awc-ui/core/hydrate',
       clientModule: '@awc-ui/react',
     }),
-    angularOutputTarget({
+    withAngularSsrAccessors(angularOutputTarget({
       componentCorePackage: '@awc-ui/core',
       // `standalone`: each generated component is standalone and statically
       // imports + registers its own custom element from the tree-shakable
@@ -108,7 +109,7 @@ export const config: Config = {
           type: 'number',
         },
       ],
-    }),
+    })),
     withVueRuntime(vueOutputTarget({
       componentCorePackage: '@awc-ui/core',
       proxiesFile: '../vue/lib/components.ts',

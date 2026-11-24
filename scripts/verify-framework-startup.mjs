@@ -7,17 +7,20 @@
  *
  * Override output directories with name=directory arguments, for example
  * html=apps/test-html/dist. All six cases always run; no dev server is used.
- * External fonts are blocked so this checks local startup, not font delivery.
+ * External fonts are blocked; the mobile pass also holds local CSS and the
+ * bundled icon font to check their arrival independently of component loading.
  */
 import assert from 'node:assert/strict';
 import { createReadStream } from 'node:fs';
-import { stat } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { extname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
 
 const repository = fileURLToPath(new URL('../', import.meta.url));
+const iconCoverage = JSON.parse(await readFile(resolve(repository, 'apps/shared/fonts/coverage.json'), 'utf8'));
+assert(iconCoverage.subsetBytes < 400_000, 'Playground icon subset exceeds its transfer budget');
 const outputs = {
   html: 'apps/test-html/dist',
   react: 'apps/test-react/dist',
@@ -95,7 +98,25 @@ async function preview(root, mount, missingAssets) {
 // This runs in the browser before application JavaScript. Traverse shadow roots
 // too: waiting only for outer hosts misses nested buttons, ripples and menus.
 function installStartupProbe() {
-  const probe = window.awcStartupProbe = { visibleUnhydrated: [], samples: 0, stopped: false };
+  const probe = window.awcStartupProbe = { visibleUnhydrated: [], samples: 0, stopped: false,
+    layoutStopped: false, cls: 0, shifts: [], headingFrames: [] };
+  const recordShifts = entries => {
+    if (probe.layoutStopped) return;
+    for (const entry of entries) if (!entry.hadRecentInput) {
+      probe.cls += entry.value;
+      if (probe.shifts.length < 8) probe.shifts.push({ value: entry.value,
+        sources: entry.sources.map(source => ({ tag: source.node?.localName,
+          class: source.node?.className, previous: source.previousRect.toJSON(), current: source.currentRect.toJSON() })) });
+    }
+  };
+  const layoutObserver = new PerformanceObserver(list => recordShifts(list.getEntries()));
+  layoutObserver.observe({ type: 'layout-shift', buffered: true });
+  probe.finishLayout = () => {
+    recordShifts(layoutObserver.takeRecords());
+    layoutObserver.disconnect();
+    probe.layoutStopped = true;
+    return { cls: probe.cls, shifts: probe.shifts, frames: probe.headingFrames };
+  };
   probe.hosts = () => {
     const hosts = [];
     const visit = root => {
@@ -111,6 +132,10 @@ function installStartupProbe() {
     if (probe.stopped) return;
     if (performance.getEntriesByName('first-contentful-paint', 'paint').length) {
       probe.samples++;
+      if (!probe.layoutStopped) {
+        const headings = [...document.querySelectorAll('.app section > h2')].slice(0, 6);
+        if (headings.length === 6) probe.headingFrames.push(headings.map(heading => heading.getBoundingClientRect().top));
+      }
       for (const host of probe.hosts()) {
         if (host.classList.contains('hydrated')) continue;
         const style = getComputedStyle(host);
@@ -133,19 +158,23 @@ async function awaitHydration(page) {
   }, { timeout: 15_000, polling: 'raf' });
 }
 
-async function verify(browser, name, root) {
+async function verify(browser, name, root, slowAssets = false) {
   const mount = name === 'html-relative' ? '/preview/nested/' : '/';
   const missingAssets = new Set();
   const runtimeErrors = new Set();
   const localFailures = new Set();
   const runtimeGate = latch();
+  const stylesheetRequested = latch();
+  const stylesheetGate = latch();
+  const fontGate = latch();
   const server = await preview(root, mount, missingAssets);
   const context = await browser.createBrowserContext();
   let heldRuntime = false;
+  let heldFont = false;
   try {
     const page = await context.newPage();
     page.setDefaultTimeout(15_000);
-    await page.setViewport({ width: 1440, height: 1050 });
+    await page.setViewport(slowAssets ? { width: 390, height: 844 } : { width: 1440, height: 1050 });
     await page.evaluateOnNewDocument(installStartupProbe);
     page.on('pageerror', error => runtimeErrors.add(error.message));
     page.on('console', message => {
@@ -167,13 +196,39 @@ async function verify(browser, name, root) {
         heldRuntime = true;
         await runtimeGate.promise;
       }
+      if (slowAssets && request.resourceType() === 'stylesheet') {
+        stylesheetRequested.release();
+        await stylesheetGate.promise;
+      }
+      if (slowAssets && request.resourceType() === 'font') {
+        heldFont = true;
+        await fontGate.promise;
+      }
       if (!request.isInterceptResolutionHandled()) await request.continue();
     };
     page.on('request', request => {
       void routeRequest(request).catch(error => runtimeErrors.add(error.message));
     });
 
-    await page.goto(`${server.origin}${mount}`, { waitUntil: 'domcontentloaded', timeout: 15_000 });
+    const navigation = page.goto(`${server.origin}${mount}`, { waitUntil: 'domcontentloaded', timeout: 15_000 });
+    // Attach immediately while the deliberate stylesheet hold is inspected.
+    void navigation.catch(() => {});
+    if (slowAssets) {
+      let timer;
+      try {
+        await Promise.race([stylesheetRequested.promise, new Promise((_, reject) => {
+          timer = setTimeout(() => reject(new Error('No render-blocking local stylesheet requested')), 10_000);
+        })]);
+      } finally { clearTimeout(timer); }
+      // Render-blocking CSS can suspend rAF itself; a timer checks that no
+      // content was painted during the hold without waiting for that paint.
+      const paints = await page.evaluate(() => new Promise(resolve => setTimeout(() => {
+        resolve(performance.getEntriesByName('first-contentful-paint', 'paint').length);
+      }, 150)));
+      assert.equal(paints, 0, `${name}: content painted before its stylesheet arrived`);
+      stylesheetGate.release();
+    }
+    await navigation;
     if (name !== 'angular') {
       await page.waitForFunction(() => document.querySelector('md-button') &&
         performance.getEntriesByName('first-contentful-paint', 'paint').length > 0);
@@ -192,12 +247,44 @@ async function verify(browser, name, root) {
     }
     runtimeGate.release();
     await awaitHydration(page);
+    if (slowAssets) {
+      // Icons reserve their footprint even while their font request is pending.
+      // Compare actual visible controls before and after the font arrives.
+      const rectangles = () => [...document.querySelectorAll('md-button,md-checkbox,md-text-field')]
+        .filter(host => { const r = host.getBoundingClientRect(); return r.top < innerHeight && r.bottom > 0; })
+        .map(host => { const r = host.getBoundingClientRect(); return [r.x, r.y, r.width, r.height]; });
+      const beforeFont = await page.evaluate(rectangles);
+      assert(heldFont, `${name}: the slow-font pass must request the local icon font`);
+      fontGate.release();
+      await page.evaluate(async () => {
+        await document.fonts.ready;
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      });
+      const afterFont = await page.evaluate(rectangles);
+      const fontBytes = await page.evaluate(() => performance.getEntriesByType('resource')
+        .filter(entry => entry.name.startsWith(location.origin) && /\.(?:woff2?|ttf)(?:$|\?)/.test(entry.name))
+        .map(entry => entry.encodedBodySize));
+      assert.deepEqual(fontBytes, [iconCoverage.subsetBytes], `${name}: expected the compact local icon font, not the original full font`);
+      assert.equal(afterFont.length, beforeFont.length, `${name}: font arrival changed visible control count`);
+      beforeFont.forEach((box, index) => box.forEach((value, axis) => {
+        assert(Math.abs(value - afterFont[index][axis]) <= 1, `${name}: font arrival shifted control ${index} by more than 1px`);
+      }));
+    }
     await page.waitForNetworkIdle({ idleTime: 250, timeout: 10_000 });
     await awaitHydration(page);
     for (const selector of ['md-button', 'md-checkbox', 'md-text-field']) {
       assert(await page.$eval(selector, host => host.shadowRoot && getComputedStyle(host).visibility === 'visible'),
         `${name}: ${selector} must render visibly`);
     }
+
+    const layout = await page.evaluate(() => window.awcStartupProbe.finishLayout());
+    assert(layout.frames.length >= 2, `${name}: must observe the first six sections across actual painted frames`);
+    const first = layout.frames[0];
+    layout.frames.forEach(frame => frame.forEach((position, index) => {
+      assert(Math.abs(position - first[index]) <= 1,
+        `${name}: initial section ${index + 1} shifted ${position - first[index]}px`);
+    }));
+    assert(layout.cls <= 0.001, `${name}: initial layout shift ${layout.cls}: ${JSON.stringify(layout.shifts)}`);
 
     await page.click('md-button[variant="tonal"]');
     await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark' &&
@@ -216,11 +303,13 @@ async function verify(browser, name, root) {
     assert.deepEqual([...missingAssets], [], `${name}: missing production assets`);
     assert.deepEqual([...localFailures], [], `${name}: failed local requests`);
     assert.deepEqual([...runtimeErrors], [], `${name}: browser runtime errors`);
-    console.log(`PASS ${name}: ${result.hydrated} nested hosts hydrated; no raw-control flash; theme and checkbox respond; no asset/runtime errors`);
+    console.log(`PASS ${name}${slowAssets ? ' mobile/delayed CSS+font' : ' desktop'}: ${result.hydrated} nested hosts hydrated; stable layout (CLS ${layout.cls}); no raw-control flash; first input responds; no asset/runtime errors`);
   } catch (error) {
     throw new Error(`${name}: ${error.message}\nMissing assets: ${JSON.stringify([...missingAssets])}\nRuntime errors: ${JSON.stringify([...runtimeErrors])}`, { cause: error });
   } finally {
     runtimeGate.release();
+    stylesheetGate.release();
+    fontGate.release();
     await context.close();
     await server.close();
   }
@@ -231,7 +320,10 @@ const browser = await puppeteer.launch({
   executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || process.env.CHROME_PATH,
 });
 try {
-  for (const [name, root] of Object.entries(outputs)) await verify(browser, name, root);
+  for (const [name, root] of Object.entries(outputs)) {
+    await verify(browser, name, root);
+    await verify(browser, name, root, true);
+  }
 } finally {
   await browser.close();
 }

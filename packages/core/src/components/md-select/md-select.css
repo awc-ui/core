@@ -168,6 +168,27 @@
   -webkit-font-smoothing: antialiased;
 }
 
+/* Reserve font glyphs before the ligature font arrives, without constraining
+   a consumer's slotted SVG or the public caret font/size overrides. */
+.md-select__caret.material-symbols-outlined {
+  display: inline-flex;
+  align-items: center;
+}
+
+slot[name='dropdown-icon']::slotted(*) {
+  flex-shrink: 0;
+}
+
+.material-symbols-outlined:not(.md-select__caret),
+.md-select__caret-glyph {
+  display: block;
+  inline-size: 1em;
+  block-size: 1em;
+  flex: none;
+  overflow: hidden;
+  text-align: center;
+}
+
 /* ── Virtualized list ──────────────────────────────────── */
 
 /* Spacers reserve the full scroll height above/below the rendered window so

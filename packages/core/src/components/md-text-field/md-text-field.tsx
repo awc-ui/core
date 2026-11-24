@@ -386,6 +386,10 @@ export class MdTextField {
         this.internals?.setValidity({ customError: true }, this.customValidityMessage, input);
         return;
       }
+      // The server's input mock may not implement native constraint validity.
+      // Skip the raw-value probe before it can overwrite the formatted display.
+      const v = input.validity;
+      if (!v) return;
       // Validity must describe the SUBMITTED value (this.value), not the
       // formatted display: pattern="[0-9]+" + a grouping formatter flagged
       // valid data as patternMismatch after blur. Probe raw synchronously
@@ -409,7 +413,6 @@ export class MdTextField {
       }
       // SNAPSHOT immediately: input.validity is LIVE — restoring the display
       // value below would re-flip every flag before we read it.
-      const v = input.validity;
       const flags = {
         valueMissing: v.valueMissing,
         typeMismatch: v.typeMismatch,

@@ -1136,6 +1136,11 @@
   /* Shadow-internal copy of the Material Symbols base — the global stylesheet
      can't reach in here, so this needs no `!important`, only the same lever. */
   font-size: var(--_icon-size);
+  inline-size: 1em;
+  block-size: 1em;
+  flex: none;
+  overflow: hidden;
+  text-align: center;
   line-height: 1;
   letter-spacing: normal;
   text-transform: none;

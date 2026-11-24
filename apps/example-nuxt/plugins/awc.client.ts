@@ -1,8 +1,8 @@
-// Client-only: register the custom elements so the server-rendered Declarative
-// Shadow DOM hydrates. (defineCustomElements self-guards `window`.)
 import { defineNuxtPlugin } from '#app';
-import { defineCustomElements } from '@awc-ui/core/loader';
+import '@awc-ui/core/components/md-badge';
+import '@awc-ui/core/components/md-button';
+import '@awc-ui/core/components/md-card';
+import '@awc-ui/core/components/md-checkbox';
 
-export default defineNuxtPlugin(() => {
-  defineCustomElements(window);
-});
+// Explicit entries let Vite bundle the components and their dependencies.
+export default defineNuxtPlugin(() => {});

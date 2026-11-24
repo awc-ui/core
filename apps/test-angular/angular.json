@@ -25,13 +25,17 @@
               "../../packages/core/dist/md3/md3.css",
               "../../packages/core/dist/md3/pre-upgrade.css",
               "node_modules/material-icons/iconfont/material-icons.css",
-              "node_modules/material-symbols/outlined.css"
+              "../shared/fonts/material-symbols.css"
             ],
             "scripts": []
           },
           "configurations": {
             "production": {
-              "optimization": true,
+              "optimization": {
+                "scripts": true,
+                "styles": { "minify": true, "inlineCritical": false },
+                "fonts": true
+              },
               "outputHashing": "all",
               "sourceMap": false,
               "namedChunks": false,

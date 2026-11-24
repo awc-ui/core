@@ -34,6 +34,7 @@ export class MdTabPanels {
 
   private tabsEl: (HTMLElement & { activeTabIndex?: number }) | null = null;
   private hasLoaded = false;
+  private connectionGeneration = 0;
   private uid = createId('md-tab-panels');
 
   private onTabChange = (e: Event) => {
@@ -60,12 +61,16 @@ export class MdTabPanels {
 
   connectedCallback() {
     reconnectInteractionMotion(this);
+    const generation = ++this.connectionGeneration;
     // house rule: reconnects must rebind (disconnect tears the listener down)
-    if (this.hasLoaded) queueMicrotask(() => this.wire());
+    if (this.hasLoaded) queueMicrotask(() => {
+      if (this.el.isConnected && generation === this.connectionGeneration) this.wire();
+    });
   }
 
   disconnectedCallback() {
     disconnectInteractionMotion(this);
+    ++this.connectionGeneration;
     this.unwire();
   }
 

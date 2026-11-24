@@ -115,6 +115,30 @@ describe('initial interaction motion', () => {
     expect(canAnimate(child)).toBe(true);
   });
 
+  it('quiets an upgraded destination forwarded through a slot during owner adoption', async () => {
+    const owner = fixtureDocument.createElement('div');
+    fixtureDocument.body.appendChild(owner);
+    elements.push(owner);
+    const slot = fixtureDocument.createElement('slot');
+    owner.appendChild(slot);
+    const child = control();
+    Object.defineProperty(slot, 'assignedElements', { value: () => [child] });
+    Object.defineProperty(child, 'assignedSlot', { value: slot });
+    loaded(child);
+    await frame(); await frame();
+    expect(canAnimate(child)).toBe(true);
+
+    begin(owner);
+    rendered(owner);
+    expect(child.hasAttribute('data-awc-motion-ready')).toBe(false);
+    await frame(); await frame();
+    expect(canAnimate(child)).toBe(false);
+
+    loaded(owner);
+    await frame(); await frame();
+    expect(canAnimate(child)).toBe(true);
+  });
+
   it('arms the first real input without arming an unrelated pending sibling', async () => {
     const first = control(); const sibling = control(); loaded(first); loaded(sibling);
     first.addEventListener('click', () => expect(canAnimate(first)).toBe(true));
@@ -131,6 +155,21 @@ describe('initial interaction motion', () => {
     click(opener);
     expect(destination.hasAttribute('data-awc-motion-ready')).toBe(true);
     expect(other.hasAttribute('data-awc-motion-ready')).toBe(false);
+  });
+
+  it('retains the outer dispatch after a nested click returns', () => {
+    const destination = control(); loaded(destination);
+    const opener = fixtureDocument.createElement('button');
+    const relay = fixtureDocument.createElement('span');
+    fixtureDocument.body.append(opener, relay);
+    elements.push(opener, relay);
+    opener.addEventListener('click', () => {
+      click(relay);
+      prepareInteractionUpdate(destination);
+    });
+
+    click(opener);
+    expect(destination.hasAttribute('data-awc-motion-ready')).toBe(true);
   });
 
   it('resumes a pending baseline after disconnect and reconnect', async () => {

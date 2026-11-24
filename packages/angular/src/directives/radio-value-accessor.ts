@@ -1,6 +1,6 @@
 import { Directive, ElementRef, Injectable, Injector, Input, OnDestroy, OnInit } from '@angular/core';
 import { NG_VALUE_ACCESSOR, NgControl } from '@angular/forms';
-import { ValueAccessor } from './value-accessor';
+import { ValueAccessor } from './ssr-value-accessor';
 
 /** Coordinates radios that share an Angular control or a named form group. */
 @Injectable({ providedIn: 'root' })
@@ -42,7 +42,7 @@ export class RadioValueAccessor extends ValueAccessor implements OnInit, OnDestr
   get value(): unknown { return this.optionValue ?? this.el.nativeElement.value; }
   set value(value: unknown) {
     this.optionValue = value;
-    this.el.nativeElement.value = value;
+    this.writeHostProperty('value', value);
     if (this.hasModelValue) this.updateChecked();
   }
 
@@ -50,7 +50,7 @@ export class RadioValueAccessor extends ValueAccessor implements OnInit, OnDestr
   get name(): string { return this.optionName ?? this.el.nativeElement.name ?? ''; }
   set name(name: string) {
     this.optionName = name;
-    this.el.nativeElement.name = name;
+    this.writeHostProperty('name', name);
   }
 
   ngOnInit() {
@@ -69,7 +69,7 @@ export class RadioValueAccessor extends ValueAccessor implements OnInit, OnDestr
   }
 
   private updateChecked() {
-    this.el.nativeElement.checked = this.lastValue != null && Object.is(this.lastValue, this.value);
+    this.writeHostProperty('checked', this.lastValue != null && Object.is(this.lastValue, this.value));
   }
 
   handleRadioChange(event: Event) {
@@ -80,7 +80,7 @@ export class RadioValueAccessor extends ValueAccessor implements OnInit, OnDestr
 
   uncheck(selectedValue: unknown) {
     this.lastValue = selectedValue;
-    this.el.nativeElement.checked = false;
+    this.writeHostProperty('checked', false);
   }
 
   isSameGroup(other: RadioValueAccessor): boolean {

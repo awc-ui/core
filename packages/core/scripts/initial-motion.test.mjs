@@ -429,6 +429,24 @@ test('elements inserted after registration have a quiet initial state', async (t
   await assertStableFrames(page);
 });
 
+test('a late tabs owner quietly adopts ready destinations forwarded through a wrapper', async (t) => {
+  const page = await fixturePage(t, `<div id="forwarding-wrapper">
+    <md-tab label="Overview"></md-tab><md-tab id="forwarded-selected" label="Activity"></md-tab>
+  </div>`);
+  await page.$eval('#forwarding-wrapper', wrapper => {
+    wrapper.attachShadow({ mode: 'open' }).innerHTML = '<md-tabs active-tab-index="1"><slot></slot></md-tabs>';
+  });
+  await boot(page, 'custom elements', ['md-tab']);
+  await page.waitForFunction(ready => document.querySelector('#forwarded-selected').hasAttribute(ready), {}, readyAttribute);
+  await boot(page, 'custom elements', ['md-tabs']);
+  await observeInitialFrames(page);
+
+  assert.equal(await page.$eval('#forwarded-selected', tab =>
+    getComputedStyle(tab.shadowRoot.querySelector('[part="indicator"]')).opacity), '1');
+  assert.deepEqual((await effects(page, 'initial')).filter(({ id, target }) =>
+    id === 'forwarded-selected' && target === 'indicator'), []);
+});
+
 test('an early trusted click animates its target while a sibling stays quiet', async (t) => {
   const html = `<md-card>
     <md-checkbox id="early-check" aria-label="Apply changes"></md-checkbox>
@@ -453,7 +471,7 @@ test('an early trusted click animates its target while a sibling stays quiet', a
   await assertEarlyCheckboxFeedback(page);
 });
 
-test('an early native click can synchronously animate a separate checkbox', async (t) => {
+test('an early native click can animate a separate checkbox after a nested dispatch', async (t) => {
   const html = `
     <button id="apply-external" type="button">Apply changes</button>
     <md-card>
@@ -468,6 +486,7 @@ test('an early native click can synchronously animate a separate checkbox', asyn
     const checkbox = document.querySelector('#early-check');
     document.querySelector('#apply-external').addEventListener('click', (event) => {
       window.motionProbe.trustedExternalClick = event.isTrusted;
+      document.body.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true }));
       checkbox.checked = true;
     });
     window.motionProbe.phase = 'interaction';

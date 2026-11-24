@@ -1,6 +1,6 @@
 import { Directive, ElementRef } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
-import { ValueAccessor } from './value-accessor';
+import { ValueAccessor } from './ssr-value-accessor';
 
 /** Angular reset() writes null; a multi-select's empty value must remain an array. */
 @Directive({
@@ -13,6 +13,6 @@ export class MultiSelectValueAccessor extends ValueAccessor {
   constructor(el: ElementRef) { super(el); }
 
   override writeValue(value: string[] | null | undefined) {
-    this.el.nativeElement.value = this.lastValue = value ?? [];
+    this.writeHostProperty('value', this.lastValue = value ?? []);
   }
 }

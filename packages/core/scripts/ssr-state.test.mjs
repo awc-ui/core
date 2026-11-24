@@ -7,14 +7,24 @@ const { JSDOM } = createRequire(import.meta.url)('jsdom');
 
 // Inspect the delivered HTML without registering custom elements or adopting
 // DSD. A later client render must not be able to repair a failing assertion.
-async function render(html) {
+async function render(html, beforeHydrate) {
   const result = await renderToString(html, {
     serializeShadowRoot: 'declarative-shadow-dom',
     fullDocument: false,
+    beforeHydrate,
   });
   assert.deepEqual(result.diagnostics.filter(d => d.level === 'error'), []);
   return new JSDOM(result.html).window.document;
 }
+
+test('a server formatter leaves the display formatted and the host value raw', async () => {
+  const doc = await render('<md-text-field value="12"></md-text-field>', (document) => {
+    document.querySelector('md-text-field').formatter = value => `[${value}]`;
+  });
+  const field = doc.querySelector('md-text-field');
+  assert.equal(field.getAttribute('value'), '12');
+  assert.equal(shadow(field).querySelector('input').value, '[12]');
+});
 
 function shadow(host) {
   assert(host, 'missing component host');

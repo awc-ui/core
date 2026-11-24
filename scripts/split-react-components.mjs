@@ -19,8 +19,8 @@
  *   import { MdButton } from '@awc-ui/react/components/MdButton'   (never bloats)
  *
  * Idempotent: if components.ts is already the generated barrel (marker below),
- * the split is skipped. components.server.ts is left untouched — the SSR wrappers
- * run in Node where bundle size is not a concern.
+ * the split is skipped. The SSR factory import is redirected to our bounded
+ * serializer fix on every run, including an already-split client barrel.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -32,6 +32,15 @@ const repoRoot = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), 
 const srcDir = path.join(repoRoot, 'packages/react/src');
 const componentsFile = path.join(srcDir, 'components.ts');
 const outDir = path.join(srcDir, 'components');
+
+// Keep the published SSR serializer fix after every Stencil regeneration.
+const serverFile = path.join(srcDir, 'components.server.ts');
+const serverSource = fs.readFileSync(serverFile, 'utf8');
+const serverImport = "from '@stencil/react-output-target/ssr'";
+if (!serverSource.includes("from './ssr-runtime.js'") && !serverSource.includes(serverImport)) {
+  throw new Error('split-react-components: generated SSR factory import changed');
+}
+fs.writeFileSync(serverFile, serverSource.replace(serverImport, "from './ssr-runtime.js'"));
 
 const source = fs.readFileSync(componentsFile, 'utf8');
 if (source.includes(BARREL_MARKER)) {

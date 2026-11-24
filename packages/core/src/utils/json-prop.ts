@@ -1,3 +1,5 @@
+import { Build } from '@stencil/core';
+
 /**
  * Array/object props that can also arrive as a JSON string.
  *
@@ -53,5 +55,20 @@ export function parseJsonArrayProp<T>(
   } catch {
     console.warn(`[${tag}] \`${prop}\` is not valid JSON. Ignoring:`, text);
     return [];
+  }
+}
+
+/** Restore the string-array selection emitted by a server-rendered wrapper. */
+export function readSsrInitialValues(element: HTMLElement): string[] | undefined {
+  const attribute = 'data-awc-initial-values';
+  const raw = element.getAttribute(attribute);
+  if (raw === null) return;
+  // Keep the server's seed for native DSD adoption. A client uses it once.
+  if (Build.isBrowser) element.removeAttribute(attribute);
+  try {
+    const values = JSON.parse(raw);
+    if (Array.isArray(values) && values.every(value => typeof value === 'string')) return values;
+  } catch {
+    // A malformed selection is not an authored value.
   }
 }

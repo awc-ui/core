@@ -13,7 +13,7 @@ import { setFormValue, checkValidityOf, reportValidityOf, getValidityOf, InlineV
 import { VirtualSelectController } from '../../utils/virtual-select-controller';
 import { isWasmSupported, FilterMode } from '../../utils/wasm-option-store';
 import { VirtualMenuProvider } from '../../utils/types';
-import { parseJsonArrayProp } from '../../utils/json-prop';
+import { parseJsonArrayProp, readSsrInitialValues } from '../../utils/json-prop';
 
 let multiSelectIdCounter = 0;
 
@@ -173,8 +173,13 @@ export class MdMultiSelect {
   /** Fixed virtualized row height (px). Auto-measured from the first row if unset. */
   @Prop({ attribute: 'row-height' }) rowHeight?: number;
 
-  /** Currently selected values. */
-  @Prop({ mutable: true }) value: string[] = [];
+  private readonly unsetValue: string[] = [];
+
+  /**
+   * Currently selected values.
+   * @default []
+   */
+  @Prop({ mutable: true }) value: string[] = this.unsetValue;
 
   /** Maximum number of selected items. `0` = unlimited. */
   @Prop({ attribute: 'max-selected' }) maxSelected: number = 0;
@@ -496,8 +501,10 @@ export class MdMultiSelect {
 
   componentWillLoad() {
     beginInitialInteractionMotion(this);
+    const seed = readSsrInitialValues(this.el);
+    if (seed && this.value === this.unsetValue) this.value = seed;
     this.refreshOptions();
-    if (this.value.length === 0) {
+    if (!seed && this.value.length === 0) {
       const preselected = this.optionsData
         .filter((o) => o.selected && !o.disabled)
         .map((o) => o.value);
@@ -1132,7 +1139,7 @@ export class MdMultiSelect {
               aria-hidden="true"
             >
               <span class="md-multi-select__caret material-symbols-outlined" part="caret">
-                <slot name="dropdown-icon">{this.dropdownIcon}</slot>
+                <slot name="dropdown-icon"><span class="md-multi-select__caret-glyph">{this.dropdownIcon}</span></slot>
               </span>
             </span>,
           ]

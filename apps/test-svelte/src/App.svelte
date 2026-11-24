@@ -20,7 +20,7 @@
     <h1>AWC UI Svelte Integration</h1>
     <p class="subtitle">All 34 Material Design 3 components</p>
 
-    <section>
+    <section class="catalog-theme-sample">
       <md-button variant="tonal" role="button" tabindex="0" on:click={toggleTheme} on:keydown={(e) => e.key === "Enter" && toggleTheme()}>
         {dark ? '☀️ Light Mode' : '🌙 Dark Mode'}
       </md-button>
@@ -28,7 +28,7 @@
 
     <section>
       <h2>Buttons</h2>
-      <div class="row">
+      <div class="catalog-button-samples">
         <md-button variant="filled">Filled</md-button>
         <md-button variant="outlined">Outlined</md-button>
         <md-button variant="text">Text</md-button>
@@ -42,7 +42,7 @@
 
     <section>
       <h2>Icon Buttons</h2>
-      <div class="row">
+      <div class="catalog-icon-samples">
         <md-icon-button variant="standard" icon="favorite"></md-icon-button>
         <md-icon-button variant="filled" icon="favorite"></md-icon-button>
         <md-icon-button variant="outlined" icon="favorite"></md-icon-button>
@@ -52,33 +52,33 @@
 
     <section>
       <h2>FABs</h2>
-      <div class="row" style="align-items:flex-end">
-        <md-fab variant="primary" size="small" icon="add"></md-fab>
-        <md-fab variant="primary" icon="add"></md-fab>
-        <md-fab variant="secondary" icon="favorite"></md-fab>
-        <md-fab variant="primary" size="extended" icon="add" label="Create"></md-fab>
+      <div class="catalog-fab-samples">
+        <div class="catalog-fab-sample"><md-fab variant="primary" icon="add"></md-fab></div>
+        <div class="catalog-fab-sample catalog-fab-sample--medium"><md-fab variant="primary" icon="add"></md-fab></div>
+        <div class="catalog-fab-sample"><md-fab variant="secondary" icon="favorite"></md-fab></div>
+        <div class="catalog-fab-sample catalog-fab-sample--extended"><md-fab variant="primary" icon="add" label="Create"></md-fab></div>
       </div>
     </section>
 
     <section>
       <h2>Text Fields</h2>
-      <div class="row">
-        <div style="width:240px"><md-text-field variant="filled" label="Filled"></md-text-field></div>
-        <div style="width:240px"><md-text-field variant="outlined" label="Outlined"></md-text-field></div>
+      <div class="catalog-field-samples">
+        <div class="catalog-field-sample"><md-text-field variant="filled" label="Filled"></md-text-field></div>
+        <div class="catalog-field-sample"><md-text-field variant="outlined" label="Outlined"></md-text-field></div>
       </div>
     </section>
 
     <section>
       <h2>Select</h2>
-      <div class="row">
-        <div style="width:200px">
+      <div class="catalog-field-samples">
+        <div class="catalog-field-sample catalog-field-sample--select">
           <md-select label="Color" variant="filled">
             <md-select-option value="red">Red</md-select-option>
             <md-select-option value="green">Green</md-select-option>
             <md-select-option value="blue">Blue</md-select-option>
           </md-select>
         </div>
-        <div style="width:200px">
+        <div class="catalog-field-sample catalog-field-sample--select">
           <md-select label="Size" variant="outlined">
             <md-select-option value="s">Small</md-select-option>
             <md-select-option value="m">Medium</md-select-option>
@@ -91,16 +91,24 @@
     <section>
       <h2>Checkboxes, Radio & Switch</h2>
       <div class="row">
-        <md-checkbox
-          checked={checked}
-          on:mdChange={(e) => (checked = e.detail.checked)}
-        ></md-checkbox>
-        <md-radio name="r" value="a"></md-radio>
-        <md-radio name="r" value="b"></md-radio>
-        <md-switch
-          selected={switched}
-          on:mdChange={(e) => (switched = e.detail)}
-        ></md-switch>
+        <div class="catalog-choice-sample">
+          <md-checkbox
+            checked={checked}
+            on:mdChange={(e) => (checked = e.detail.checked)}
+          ></md-checkbox>
+        </div>
+        <div class="catalog-choice-sample">
+          <md-radio name="r" value="a"></md-radio>
+        </div>
+        <div class="catalog-choice-sample">
+          <md-radio name="r" value="b"></md-radio>
+        </div>
+        <div class="catalog-choice-sample catalog-choice-sample--switch">
+          <md-switch
+            selected={switched}
+            on:mdChange={(e) => (switched = e.detail)}
+          ></md-switch>
+        </div>
       </div>
     </section>
 

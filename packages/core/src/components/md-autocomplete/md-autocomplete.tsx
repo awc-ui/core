@@ -1,4 +1,5 @@
 import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
+import { readSsrInitialValues } from '../../utils/json-prop';
 import { AttachInternals, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, Watch, forceUpdate, h } from '@stencil/core';
 import { LazyLoadingIndicator } from '../../utils/lazy-loading-indicator';
 import { setFormValue, checkValidityOf, reportValidityOf, getValidityOf, InlineValidationPresenter } from '../../utils/form';
@@ -541,6 +542,8 @@ export class MdAutocomplete {
 
   componentWillLoad() {
     beginInitialInteractionMotion(this);
+    const seed = readSsrInitialValues(this.el);
+    if (seed && this.multiple && this.value === '') this.value = seed;
     this.refreshOptions();
     this.defaultValue = Array.isArray(this.value) ? [...this.value] : this.value;
     this.defaultInputValue = this.inputValue;
@@ -1205,7 +1208,7 @@ export class MdAutocomplete {
             >
               {/* Static glyph + CSS rotation on open — same caret as the selects
                   (a glyph swap would double-flip with the rotate rule). */}
-              <slot name="dropdown-icon">{this.dropdownIcon}</slot>
+              <slot name="dropdown-icon"><span class="md-autocomplete__caret-glyph">{this.dropdownIcon}</span></slot>
             </span>,
           ]
         )}

@@ -24,12 +24,12 @@ export default function App() {
   };
 
   return (
-    <div style={{ padding: '24px', fontFamily: 'Roboto, sans-serif', backgroundColor: 'var(--md-sys-color-background)', color: 'var(--md-sys-color-on-background)', minHeight: '100vh' }}>
+    <div className="app" style={{ padding: '24px', fontFamily: 'Roboto, sans-serif', backgroundColor: 'var(--md-sys-color-background)', color: 'var(--md-sys-color-on-background)', minHeight: '100vh' }}>
       <h1 style={{ fontSize: '32px', fontWeight: 400, marginBottom: '8px' }}>AWC UI React Integration</h1>
       <p style={{ color: 'var(--md-sys-color-on-surface-variant)', marginBottom: '32px' }}>All 34 Material Design 3 components</p>
 
       {/* Theme Toggle */}
-      <section style={{ marginBottom: '32px' }}>
+      <section className="catalog-theme-sample" style={{ marginBottom: '32px' }}>
         <md-button variant="tonal" onClick={toggleTheme}>
           {dark ? '☀️ Light Mode' : '🌙 Dark Mode'}
         </md-button>
@@ -38,7 +38,7 @@ export default function App() {
       {/* Buttons */}
       <section style={{ marginBottom: '32px' }}>
         <h2 style={{ fontSize: '22px', marginBottom: '16px' }}>Buttons</h2>
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div className="catalog-button-samples">
           <md-button variant="filled">Filled</md-button>
           <md-button variant="outlined">Outlined</md-button>
           <md-button variant="text">Text</md-button>
@@ -53,7 +53,7 @@ export default function App() {
       {/* Icon Buttons */}
       <section style={{ marginBottom: '32px' }}>
         <h2 style={{ fontSize: '22px', marginBottom: '16px' }}>Icon Buttons</h2>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <div className="catalog-icon-samples">
           <md-icon-button variant="standard" icon="favorite"></md-icon-button>
           <md-icon-button variant="filled" icon="favorite"></md-icon-button>
           <md-icon-button variant="outlined" icon="favorite"></md-icon-button>
@@ -64,37 +64,37 @@ export default function App() {
       {/* FABs */}
       <section style={{ marginBottom: '32px' }}>
         <h2 style={{ fontSize: '22px', marginBottom: '16px' }}>FABs</h2>
-        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-          <md-fab variant="primary" size="small" icon="add"></md-fab>
-          <md-fab variant="primary" size="medium" icon="add"></md-fab>
-          <md-fab variant="secondary" size="medium" icon="favorite"></md-fab>
-          <md-fab variant="primary" size="extended" icon="add" label="Create"></md-fab>
+        <div className="catalog-fab-samples" style={{ gap: '16px' }}>
+          <div className="catalog-fab-sample"><md-fab variant="primary" icon="add"></md-fab></div>
+          <div className="catalog-fab-sample catalog-fab-sample--medium"><md-fab variant="primary" size="medium" icon="add"></md-fab></div>
+          <div className="catalog-fab-sample catalog-fab-sample--medium"><md-fab variant="secondary" size="medium" icon="favorite"></md-fab></div>
+          <div className="catalog-fab-sample catalog-fab-sample--extended"><md-fab variant="primary" icon="add" label="Create"></md-fab></div>
         </div>
       </section>
 
       {/* Text Fields */}
       <section style={{ marginBottom: '32px' }}>
         <h2 style={{ fontSize: '22px', marginBottom: '16px' }}>Text Fields</h2>
-        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-          <div style={{ width: '240px' }}><md-text-field variant="filled" label="Filled"></md-text-field></div>
-          <div style={{ width: '240px' }}><md-text-field variant="outlined" label="Outlined"></md-text-field></div>
-          <div style={{ width: '240px' }}><md-text-field variant="filled" label="Error" error error-text="Required"></md-text-field></div>
-          <div style={{ width: '240px' }}><md-text-field variant="filled" label="Disabled" disabled></md-text-field></div>
+        <div className="catalog-field-samples" style={{ gap: '16px' }}>
+          <div className="catalog-field-sample"><md-text-field variant="filled" label="Filled"></md-text-field></div>
+          <div className="catalog-field-sample"><md-text-field variant="outlined" label="Outlined"></md-text-field></div>
+          <div className="catalog-field-sample catalog-field-sample--supporting"><md-text-field variant="filled" label="Error" error error-text="Required"></md-text-field></div>
+          <div className="catalog-field-sample"><md-text-field variant="filled" label="Disabled" disabled></md-text-field></div>
         </div>
       </section>
 
       {/* Select */}
       <section style={{ marginBottom: '32px' }}>
         <h2 style={{ fontSize: '22px', marginBottom: '16px' }}>Select</h2>
-        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-          <div style={{ width: '200px' }}>
+        <div className="catalog-field-samples" style={{ gap: '16px' }}>
+          <div className="catalog-field-sample catalog-field-sample--select">
             <md-select label="Color" variant="filled">
               <md-select-option value="red">Red</md-select-option>
               <md-select-option value="green">Green</md-select-option>
               <md-select-option value="blue">Blue</md-select-option>
             </md-select>
           </div>
-          <div style={{ width: '200px' }}>
+          <div className="catalog-field-sample catalog-field-sample--select">
             <md-select label="Size" variant="outlined">
               <md-select-option value="s">Small</md-select-option>
               <md-select-option value="m">Medium</md-select-option>
@@ -109,15 +109,23 @@ export default function App() {
         <h2 style={{ fontSize: '22px', marginBottom: '16px' }}>Checkboxes & Radio</h2>
         <div style={{ display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <md-checkbox
-              checked={checked}
-              onMdChange={(e: CustomEvent) => setChecked(e.detail.checked)}
-            ></md-checkbox>
+            <div className="catalog-choice-sample">
+              <md-checkbox
+                checked={checked}
+                onMdChange={(e: CustomEvent) => setChecked(e.detail.checked)}
+              ></md-checkbox>
+            </div>
             <span>Checkbox {checked ? '(checked)' : '(unchecked)'}</span>
           </div>
-          <md-radio name="r" value="a"></md-radio>
-          <md-radio name="r" value="b"></md-radio>
-          <md-radio name="r" value="c" disabled></md-radio>
+          <div className="catalog-choice-sample">
+            <md-radio name="r" value="a"></md-radio>
+          </div>
+          <div className="catalog-choice-sample">
+            <md-radio name="r" value="b"></md-radio>
+          </div>
+          <div className="catalog-choice-sample">
+            <md-radio name="r" value="c" disabled></md-radio>
+          </div>
         </div>
       </section>
 
@@ -125,13 +133,19 @@ export default function App() {
       <section style={{ marginBottom: '32px' }}>
         <h2 style={{ fontSize: '22px', marginBottom: '16px' }}>Switch</h2>
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-          <md-switch
-            selected={switched}
-            onMdChange={(e: CustomEvent) => setSwitched(e.detail)}
-          ></md-switch>
+          <div className="catalog-choice-sample catalog-choice-sample--switch">
+            <md-switch
+              selected={switched}
+              onMdChange={(e: CustomEvent) => setSwitched(e.detail)}
+            ></md-switch>
+          </div>
           <span>{switched ? 'On' : 'Off'}</span>
-          <md-switch selected icons></md-switch>
-          <md-switch disabled></md-switch>
+          <div className="catalog-choice-sample catalog-choice-sample--switch">
+            <md-switch selected icons></md-switch>
+          </div>
+          <div className="catalog-choice-sample catalog-choice-sample--switch">
+            <md-switch disabled></md-switch>
+          </div>
         </div>
       </section>
 

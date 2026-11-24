@@ -6,7 +6,7 @@ export * from './directives/proxies';
 // visible to consumers through AwcUiModule, and Angular's partial compiler
 // rejects a declared-but-unexported directive (NG3001).
 export { VALUE_ACCESSORS } from './awc-ui.module';
-export { ValueAccessor } from './directives/value-accessor';
+export { ValueAccessor } from './directives/ssr-value-accessor';
 export { TextValueAccessor } from './directives/text-value-accessor';
 export { SelectValueAccessor } from './directives/select-value-accessor';
 export { BooleanValueAccessor } from './directives/boolean-value-accessor';

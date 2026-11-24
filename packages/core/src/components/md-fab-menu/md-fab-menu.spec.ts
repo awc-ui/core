@@ -374,6 +374,7 @@ describe('md-fab-menu', () => {
       expect(define).toHaveBeenCalledWith('md-fab');
       expect(oldFab.getAttribute('data-shape')).toBe('circle');
       if (replaceAnchor) menu.anchor = newFab.id;
+      expect(define).toHaveBeenCalledTimes(1);
 
       oldFab.setMenuIcon = jest.fn(async () => {});
       newFab.setMenuIcon = jest.fn(async () => {});

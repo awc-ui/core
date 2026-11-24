@@ -3,7 +3,7 @@
 @import '@awc-ui/core/css/tokens.css';
 @import '@awc-ui/core/css/pre-upgrade.css';
 @import 'material-icons/iconfont/material-icons.css';
-@import 'material-symbols/outlined.css';
+@import '../../shared/fonts/material-symbols.css';
 
 /* The static catalogue reserves its sample layout before lazy chunks arrive.
    These are demo grid slots, not a second copy of the components' CSS. Keeping
@@ -40,4 +40,16 @@
 }
 .field-samples > .field--supporting {
   min-block-size: 76px;
+}
+
+.choice-samples md-checkbox,
+.choice-samples md-radio {
+  flex: none;
+  inline-size: 48px;
+  block-size: 48px;
+}
+.choice-samples md-switch {
+  flex: none;
+  inline-size: 52px;
+  block-size: 48px;
 }

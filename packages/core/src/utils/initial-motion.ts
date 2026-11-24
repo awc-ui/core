@@ -8,6 +8,7 @@ interface MotionState {
   loaded: boolean;
   rendered: boolean;
   ready: boolean;
+  counted: boolean;
   frames: number;
   registry: MotionRegistry;
 }
@@ -16,8 +17,9 @@ interface MotionRegistry {
   pending: Set<MotionState>;
   frame: number | undefined;
   timer: number | undefined;
+  readyCount: number;
   inputEpoch: number;
-  inputEvent?: Event;
+  inputEvents: Event[];
   flushedEpoch: number;
 }
 const states = new WeakMap<HTMLElement, MotionState>();
@@ -28,27 +30,40 @@ function host(ref: ComponentRef): HTMLElement {
 }
 
 function parent(element: Element): HTMLElement | null {
+  if (element.assignedSlot) return element.assignedSlot;
   if (element.parentElement) return element.parentElement;
   const root = element.getRootNode() as ShadowRoot;
   return (root.host as HTMLElement | undefined) ?? null;
 }
 
-function ancestors(element: HTMLElement): HTMLElement[] {
-  const result: HTMLElement[] = [];
-  for (let current = parent(element); current; current = parent(current)) result.push(current);
-  return result;
+function hasPendingOwner(element: HTMLElement, minimumFrames = Infinity): boolean {
+  for (let current = parent(element); current; current = parent(current)) {
+    const owner = states.get(current);
+    if (owner && !owner.ready && (!owner.loaded || owner.frames < minimumFrames)) return true;
+  }
+  return false;
 }
 
-/** Walk both trees: a late-defined owner can adopt already-rendered children. */
-function descendants(element: HTMLElement, visit: (element: HTMLElement) => void): void {
-  for (const child of Array.from(element.children)) {
-    visit(child as HTMLElement);
-    descendants(child as HTMLElement, visit);
-  }
-  if (element.shadowRoot) {
-    for (const child of Array.from(element.shadowRoot.children)) {
-      visit(child as HTMLElement);
-      descendants(child as HTMLElement, visit);
+/** A late-defined owner can adopt controls in light DOM, shadow DOM or slots. */
+function quietDescendants(owner: MotionState): void {
+  // Without an armed control there is no enabled descendant to quiet.
+  // Pending children already wait on their owner via the composed ancestry.
+  if (!owner.registry.readyCount) return;
+  const queue: Element[] = [owner.element];
+  const visited = new Set<Element>();
+  while (queue.length) {
+    const node = queue.pop()!;
+    if (visited.has(node)) continue;
+    visited.add(node);
+    if (node !== owner.element) {
+      const child = states.get(node as HTMLElement);
+      if (child?.ready) quiet(child);
+      if (!owner.registry.readyCount) return;
+    }
+    for (const child of Array.from(node.children)) queue.push(child);
+    if (node.shadowRoot) for (const child of Array.from(node.shadowRoot.children)) queue.push(child);
+    if (node.localName === 'slot') {
+      for (const child of (node as HTMLSlotElement).assignedElements?.() ?? []) queue.push(child);
     }
   }
 }
@@ -87,8 +102,15 @@ function schedule(registry: MotionRegistry): void {
 
 function arm(state: MotionState): void {
   state.ready = true;
+  countReady(state, true);
   state.registry.pending.delete(state);
   state.element.setAttribute(READY, '');
+}
+
+function countReady(state: MotionState, counted: boolean): void {
+  if (state.counted === counted) return;
+  state.counted = counted;
+  state.registry.readyCount += counted ? 1 : -1;
 }
 
 function tick(registry: MotionRegistry): void {
@@ -101,37 +123,38 @@ function tick(registry: MotionRegistry): void {
   }
   for (const state of registry.pending) {
     if (!state.loaded || state.frames < 2) continue;
-    const ownerPending = ancestors(state.element).some(element => {
-      const owner = states.get(element);
-      return owner && !owner.ready && (!owner.loaded || owner.frames < 2);
-    });
-    if (!ownerPending) arm(state);
+    if (!hasPendingOwner(state.element, 2)) arm(state);
   }
   // A not-yet-loaded owner will schedule us when its lifecycle completes.
-  if ([...registry.pending].some(state => state.loaded && state.element.isConnected &&
-    !ancestors(state.element).some(element => {
-      const owner = states.get(element);
-      return owner && !owner.ready && !owner.loaded;
-    }))) schedule(registry);
+  for (const state of registry.pending) {
+    if (state.loaded && state.element.isConnected && !hasPendingOwner(state.element, 0)) {
+      schedule(registry);
+      break;
+    }
+  }
 }
 
 function registryFor(document: Document): MotionRegistry {
   let registry = registries.get(document);
   if (registry) return registry;
-  registry = { document, pending: new Set(), frame: undefined, timer: undefined, inputEpoch: 0, flushedEpoch: -1 };
+  registry = {
+    document, pending: new Set(), frame: undefined, timer: undefined, readyCount: 0,
+    inputEpoch: 0, inputEvents: [], flushedEpoch: -1,
+  };
   registries.set(document, registry);
   // Capture precedes component handlers. A first genuine action must not lose
   // feedback merely because it arrived before the normal paint boundary.
   const onInput = (event: Event) => {
     if (!registry.pending.size) return;
-    const epoch = ++registry.inputEpoch;
-    registry.inputEvent = event;
-    // Native dispatch may checkpoint microtasks between capture and target.
-    // eventPhase tracks the actual dispatch lifetime; clear the bounded event
-    // reference after the task instead of dropping provenance before handlers.
-    setTimeout(() => {
-      if (registry.inputEpoch === epoch) registry.inputEvent = undefined;
-    }, 0);
+    if (!inputInProgress(registry)) {
+      const epoch = ++registry.inputEpoch;
+      // Native dispatch may checkpoint microtasks between capture and target.
+      // Keep the dispatch stack until the task ends, regardless of nesting.
+      setTimeout(() => {
+        if (registry.inputEpoch === epoch) registry.inputEvents.length = 0;
+      }, 0);
+    }
+    registry.inputEvents.push(event);
     const path = event.composedPath();
     const target = path.find(node => states.has(node as HTMLElement)) as HTMLElement | undefined;
     if (target) activateInteractionMotion(target);
@@ -141,11 +164,15 @@ function registryFor(document: Document): MotionRegistry {
 }
 
 function inputInProgress(registry?: MotionRegistry): boolean {
-  return !!registry?.inputEvent && registry.inputEvent.eventPhase !== 0;
+  if (!registry) return false;
+  const { inputEvents } = registry;
+  while (inputEvents.at(-1)?.eventPhase === 0) inputEvents.pop();
+  return inputEvents.length > 0;
 }
 
 function quiet(state: MotionState): void {
   state.ready = false;
+  countReady(state, false);
   state.frames = 0;
   state.element.removeAttribute(READY);
   if (state.element.isConnected) state.registry.pending.add(state);
@@ -157,15 +184,12 @@ export function beginInitialInteractionMotion(ref: ComponentRef): void {
   const element = host(ref);
   if (states.has(element)) return;
   const registry = registryFor(element.ownerDocument);
-  const state: MotionState = { element, loaded: false, rendered: false, ready: false, frames: 0, registry };
+  const state: MotionState = { element, loaded: false, rendered: false, ready: false, counted: false, frames: 0, registry };
   states.set(element, state);
   quiet(state);
   // A parent module can land after its independently imported children.
   // Its first ownership assignment is still initialization for those children.
-  descendants(element, child => {
-    const nested = states.get(child);
-    if (nested) quiet(nested);
-  });
+  quietDescendants(state);
 }
 
 /** Called after the component's complete componentDidLoad work. */
@@ -201,6 +225,7 @@ export function reconnectInteractionMotion(ref: ComponentRef): void {
   if (!state) return;
   if (state.registry.document !== state.element.ownerDocument) {
     const previous = state.registry;
+    countReady(state, false);
     previous.pending.delete(state);
     cancelIdleRegistry(previous);
     state.registry = registryFor(state.element.ownerDocument);
@@ -211,7 +236,11 @@ export function reconnectInteractionMotion(ref: ComponentRef): void {
       arm(state);
     }
   }
-  if (state.ready || !state.loaded) return;
+  if (state.ready) {
+    countReady(state, true);
+    return;
+  }
+  if (!state.loaded) return;
   state.frames = 0;
   state.registry.pending.add(state);
   schedule(state.registry);
@@ -221,6 +250,7 @@ export function disconnectInteractionMotion(ref: ComponentRef): void {
   if (!Build.isBrowser) return;
   const state = states.get(host(ref));
   if (!state) return;
+  countReady(state, false);
   state.registry.pending.delete(state);
   cancelIdleRegistry(state.registry);
 }
@@ -243,10 +273,7 @@ export function suppressInteractionMotion(element: HTMLElement): void {
   const state = states.get(element);
   if (!state) return;
   quiet(state);
-  descendants(element, child => {
-    const nested = states.get(child);
-    if (nested) quiet(nested);
-  });
+  quietDescendants(state);
   schedule(state.registry);
 }
 
@@ -255,10 +282,15 @@ export function activateInteractionMotion(element: HTMLElement): void {
   if (!Build.isBrowser) return;
   const registry = registries.get(element.ownerDocument);
   if (!registry?.pending.size) return;
-  const scope = [element, ...ancestors(element)].filter(owner => states.has(owner));
-  const root = scope.at(-1) ?? element;
-  const pending = scope.map(candidate => states.get(candidate)!).filter(state =>
-    !state.ready && state.rendered && state.element.isConnected);
+  // Walk once without allocating arrays for every ancestor at cold startup.
+  const pending: MotionState[] = [];
+  let root = element;
+  for (let current: HTMLElement | null = element; current; current = parent(current)) {
+    const state = states.get(current);
+    if (!state) continue;
+    root = current;
+    if (!state.ready && state.rendered && current.isConnected) pending.push(state);
+  }
   if (!pending.length) return;
   // Only the exceptional early-action path needs a synchronous layout flush.
   // The normal path uses shared paint scheduling, with no per-component reads.
@@ -284,8 +316,5 @@ export function canAnimateInteraction(element: HTMLElement): boolean {
   if (inputInProgress(registries.get(element.ownerDocument))) activateInteractionMotion(element);
   if (!element.hasAttribute(READY)) return false;
   if (element.ownerDocument.defaultView?.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return false;
-  return !ancestors(element).some(owner => {
-    const state = states.get(owner);
-    return state && !state.ready;
-  });
+  return !hasPendingOwner(element);
 }

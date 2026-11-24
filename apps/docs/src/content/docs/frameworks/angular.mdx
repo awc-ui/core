@@ -72,6 +72,20 @@ Declarative Shadow DOM, preserving styles and content in the server response.
 On the client, the imported Angular proxies register their custom elements and
 hydrate that server-rendered output.
 
+Ordinary input bindings such as `[label]`, `[value]` and `[selected]` also
+serialize their server state using Core's declared attribute names, including
+custom aliases. Supported option/item/node arrays use JSON attributes, and
+selection arrays use the same initial-value seed as forms. Callback and other
+property-only inputs stay out of the HTML. On the client, bindings continue to
+update properties without adding synthetic events or reflecting extra attributes.
+
+Angular form accessors serialize their initial values on the server before the
+Core HTML transform runs. Text, numeric, checked, selected and disabled values
+therefore reach the first paint; radio options keep their own identity. Array
+selections use the shared `data-awc-initial-values` seed, including an explicit
+empty array. Browser accessors continue to write properties and emit no synthetic
+change events during hydration.
+
 Forward the request's `BootstrapContext` when bootstrapping on the server. Angular
 uses it to keep the platform injector scoped to that request:
 

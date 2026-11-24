@@ -72,9 +72,9 @@ Register that bootstrap listener after `provideRouter()` so it waits for initial
 route hydration, not only root component bootstrap. The
 [Nuxt starter](https://github.com/awc-ui/core/tree/main/starters/nuxt) and
 [Angular reference](https://github.com/awc-ui/core/tree/main/apps/example-angular-ssr)
-show the complete integration. The Angular example also removes only Stencil's
-light-DOM position comments before Angular claims the tree, preserving Angular's
-comments and the shadow-root annotations.
+show the complete integration. These integrations remove Stencil's position
+comments from the light DOM before the framework claims it. Framework comments
+and shadow-root annotations are preserved.
 
 The SvelteKit helper below includes class protection automatically.
 

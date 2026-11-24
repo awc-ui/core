@@ -1,7 +1,7 @@
 import { Directive, ElementRef } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 
-import { ValueAccessor } from './value-accessor';
+import { ValueAccessor } from './ssr-value-accessor';
 
 /**
  * ControlValueAccessor for `md-switch`.
@@ -38,6 +38,6 @@ export class SwitchValueAccessor extends ValueAccessor {
   }
 
   override writeValue(value: any) {
-    this.el.nativeElement.selected = this.lastValue = value == null ? false : value;
+    this.writeHostProperty('selected', this.lastValue = value == null ? false : value);
   }
 }

@@ -1,7 +1,7 @@
 import { Directive, ElementRef } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 
-import { ValueAccessor } from './value-accessor';
+import { ValueAccessor } from './ssr-value-accessor';
 
 @Directive({
   /* tslint:disable-next-line:directive-selector */

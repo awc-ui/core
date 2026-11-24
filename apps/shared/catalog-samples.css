@@ -1,0 +1,83 @@
+/* Reserve catalog sample positions before the custom elements are upgraded.
+   These slots describe the demo rows and keep wrapping consistent during load. */
+.catalog-theme-sample {
+  display: flex;
+  align-items: center;
+  min-block-size: 40px;
+}
+
+.catalog-button-samples,
+.catalog-icon-samples {
+  display: grid;
+  grid-auto-rows: 40px;
+  align-items: center;
+  gap: 12px;
+}
+
+.catalog-button-samples {
+  grid-template-columns: repeat(auto-fit, min(120px, 100%));
+}
+
+.catalog-button-samples > md-button {
+  --md-button-width: 100%;
+}
+
+.catalog-icon-samples {
+  grid-template-columns: repeat(auto-fit, 40px);
+}
+
+.catalog-fab-samples,
+.catalog-field-samples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.catalog-fab-samples {
+  align-items: flex-end;
+}
+
+.catalog-fab-sample {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  flex: none;
+  inline-size: 56px;
+  block-size: 56px;
+}
+
+.catalog-fab-sample--medium {
+  inline-size: 80px;
+  block-size: 80px;
+}
+
+.catalog-fab-sample--extended {
+  inline-size: 128px;
+}
+
+.catalog-field-sample {
+  flex: 0 1 240px;
+  min-block-size: 56px;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+}
+
+.catalog-field-sample--select {
+  flex-basis: 200px;
+}
+
+.catalog-field-sample--supporting {
+  min-block-size: 76px;
+}
+
+.catalog-choice-sample {
+  display: grid;
+  place-items: center;
+  flex: none;
+  inline-size: 48px;
+  block-size: 48px;
+}
+
+.catalog-choice-sample--switch {
+  inline-size: 52px;
+}

@@ -37,6 +37,26 @@ describe('md-tab-panels', () => {
     expect(panels.map((p) => p.hasAttribute('active'))).toEqual([false, false, true]);
   });
 
+  it('does not rebind when a move is followed by removal in the same task', async () => {
+    const page = await newSpecPage({
+      components: COMPONENTS,
+      html: FIXTURE.replace('<md-tabs ', '<md-tabs id="tablist" ').replace('<md-tab-panels>', '<md-tab-panels for="tablist">'),
+    });
+    const tablist = page.body.querySelector('md-tabs')!;
+    const region = page.body.querySelector('md-tab-panels')!;
+    const panels = Array.from(region.querySelectorAll('md-tab-panel'));
+    const listen = jest.spyOn(tablist, 'addEventListener');
+
+    page.body.appendChild(region);
+    region.remove();
+    await Promise.resolve();
+    expect(listen).not.toHaveBeenCalledWith('mdTabChange', expect.any(Function));
+
+    await tablist.selectTab(2);
+    expect(panels.map(panel => panel.hasAttribute('active'))).toEqual([false, true, false]);
+    listen.mockRestore();
+  });
+
   it('keeps panels inert while all tabs are disabled and resumes the requested tab when enabled', async () => {
     const page = await newSpecPage({
       components: COMPONENTS,

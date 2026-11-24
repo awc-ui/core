@@ -1,8 +1,397 @@
+diff --git a/internal/client/index.js b/internal/client/index.js
+index 426c936a34ec6347332acbff81409a77215c455f..d6982430a0b7e40580df25d8cf1d61cd236ce1d4 100644
+--- a/internal/client/index.js
++++ b/internal/client/index.js
+@@ -1364,6 +1364,29 @@ var initializeClientHydrate = (hostElm, tagName, hostId, hostRef) => {
+   const shadowRootNodes = BUILD14.shadowDom && shadowRoot ? [] : null;
+   const vnode = newVNode(tagName, null);
+   vnode.$elm$ = hostElm;
++  // AWC: retain only render-owned SSR presentation as the old host VDOM.
++  // Consumer classes/attributes remain outside the component's ownership.
++  const hostAttrs = hostElm.getAttribute("s-attrs");
++  hostElm.removeAttribute("s-attrs");
++  if (hostAttrs) {
++    try {
++      const snapshot = JSON.parse(hostAttrs);
++      const entries = (list) => Array.isArray(list) && list.every((entry) => Array.isArray(entry) && entry.length === 2 && typeof entry[0] === "string" && typeof entry[1] === "string");
++      if (Array.isArray(snapshot) && (snapshot.length === 2 || snapshot.length === 3) && typeof snapshot[0] === "string" && entries(snapshot[1]) && (snapshot.length === 2 || entries(snapshot[2]))) {
++        vnode.$attrs$ = { class: snapshot[0].split(/\s+/).filter((token) => token && hostElm.classList.contains(token)).join(" ") };
++        hostRef.$ssrHostAttrs$ = new Map(snapshot[1]);
++        for (const [name, value] of snapshot[1]) {
++          if (hostElm.getAttribute(name) === value) vnode.$attrs$[name] = value;
++        }
++        for (const [name, value] of snapshot[2] || []) {
++          if (hostElm.style.getPropertyValue(name) === value) (vnode.$attrs$.style ||= {})[name] = value;
++        }
++        hostElm.classList.add(getScopeId(hostRef.$cmpMeta$, hostElm.getAttribute("s-mode")));
++      }
++    } catch (_) {
++      // Older/malformed annotations keep Stencil's existing adoption behavior.
++    }
++  }
+   let scopeId2;
+   if (BUILD14.scoped) {
+     const cmpMeta = hostRef.$cmpMeta$;
+@@ -2348,7 +2371,7 @@ var parsePropertyValue = (propValue, propType, isFormAssociated) => {
+   if (propValue != null && !isComplexType(propValue)) {
+     if (BUILD15.propBoolean && propType & 4 /* Boolean */) {
+       if (BUILD15.formAssociated && isFormAssociated && typeof propValue === "string") {
+-        return propValue === "" || !!propValue;
++        return propValue === "false" ? false : propValue === "" || !!propValue;
+       } else {
+         return propValue === "false" ? false : propValue === "" || !!propValue;
+       }
+@@ -2418,7 +2441,7 @@ var setAccessor = (elm, memberName, oldValue, newValue, isSvg, flags, initialRen
+     const classList = elm.classList;
+     const oldClasses = parseClassList(oldValue);
+     let newClasses = parseClassList(newValue);
+-    if (BUILD18.hydrateClientSide && (elm["s-si"] || elm["s-sc"]) && initialRender) {
++    if (BUILD18.hydrateClientSide && (elm["s-si"] || elm["s-sc"]) && initialRender && !(flags & 4 /* isHost */ && getHostRef(elm)?.$ssrHostAttrs$)) {
+       const scopeId2 = elm["s-sc"] || elm["s-si"];
+       newClasses.push(scopeId2);
+       oldClasses.forEach((c) => {
+@@ -2533,7 +2556,7 @@ var setAccessor = (elm, memberName, oldValue, newValue, isSvg, flags, initialRen
+       }
+     }
+     if (newValue == null || newValue === false) {
+-      if (newValue !== false || elm.getAttribute(memberName) === "") {
++      if (newValue !== false || elm.getAttribute(memberName) === "" || memberName === "disabled") {
+         if (BUILD18.vdomXlink && xlink) {
+           elm.removeAttributeNS(XLINK_NS, memberName);
+         } else {
+@@ -3071,6 +3094,15 @@ var renderVdom = (hostRef, renderFnResults, isInitialLoad = false) => {
+   const oldVNode = hostRef.$vnode$ || newVNode(null, null);
+   const isHostElement = isHost(renderFnResults);
+   const rootVnode = isHostElement ? renderFnResults : h(null, null, renderFnResults);
++  if (BUILD20.hydrateServerSide && !hostRef.$consumerHostAttrs$) {
++    hostRef.$consumerHostAttrs$ = new Set(Array.from(hostElm.attributes, (attr) => attr.name));
++    hostRef.$consumerHostClasses$ = new Set(parseClassList(hostElm.className));
++    if (hostElm.hasAttribute("style")) {
++      const original = hostElm.ownerDocument.createElement("div");
++      original.setAttribute("style", hostElm.getAttribute("style"));
++      hostRef.$consumerHostStyles$ = original.style;
++    }
++  }
+   hostTagName = hostElm.tagName;
+   if (BUILD20.isDev && Array.isArray(renderFnResults) && renderFnResults.some(isHost)) {
+     throw new Error(`The <Host> must be the single root component.
+@@ -3099,7 +3131,8 @@ render() {
+   if (isInitialLoad && rootVnode.$attrs$) {
+     for (const key of Object.keys(rootVnode.$attrs$)) {
+       if (hostElm.hasAttribute(key) && !["key", "ref", "style", "class"].includes(key)) {
+-        rootVnode.$attrs$[key] = hostElm[key];
++        const ssrOwned = hostRef.$ssrHostAttrs$ && hostRef.$ssrHostAttrs$.has(key) && hostRef.$ssrHostAttrs$.get(key) === hostElm.getAttribute(key);
++        if (!ssrOwned) rootVnode.$attrs$[key] = hostElm[key];
+       }
+     }
+   }
+@@ -3116,6 +3149,15 @@ render() {
+     checkSlotFallbackVisibility = false;
+   }
+   patch(oldVNode, rootVnode, isInitialLoad);
++  if (BUILD20.hydrateServerSide) {
++    const attrs = rootVnode.$attrs$ || {};
++    hostRef.$ssrHostSnapshot$ = [
++      parseClassList(attrs.class).filter((token) => token && !hostRef.$consumerHostClasses$.has(token)).join(" "),
++      Object.keys(attrs).filter((key) => !["class", "style", "key", "ref"].includes(key) && !hostRef.$consumerHostAttrs$.has(key) && hostElm.hasAttribute(key)).map((key) => [key, hostElm.getAttribute(key)]),
++      Object.keys(attrs.style || {}).map((name) => name.startsWith("--") ? name : name.replace(/[A-Z]/g, (letter) => "-" + letter.toLowerCase())).filter((name) => !hostRef.$consumerHostStyles$?.getPropertyValue(name) && hostElm.style.getPropertyValue(name)).map((name) => [name, hostElm.style.getPropertyValue(name)])
++    ];
++  }
++  if (isInitialLoad) delete hostRef.$ssrHostAttrs$;
+   if (BUILD20.slotRelocation) {
+     plt.$flags$ |= 1 /* isTmpDisconnected */;
+     if (checkSlotRelocate) {
+@@ -3785,6 +3827,13 @@ More information: https://stenciljs.com/docs/properties#prop-mutability`
+           var _a2;
+           const propName = attrNameToPropName.get(attrName);
+           const hostRef = getHostRef(this);
++          const initialAttrs = hostRef?.$preUpgradeAttrs$;
++          if (initialAttrs?.has(attrName)) {
++            const initial = initialAttrs.get(attrName);
++            initialAttrs.delete(attrName);
++            if (!initialAttrs.size) delete hostRef.$preUpgradeAttrs$;
++            if (oldValue === null && newValue === initial) return;
++          }
+           if (BUILD23.serializer && hostRef.$serializerValues$.has(propName) && hostRef.$serializerValues$.get(propName) === newValue) {
+             return;
+           }
+@@ -3994,6 +4043,7 @@ var connectedCallback = (elm) => {
+     }
+     if (!(hostRef.$flags$ & 1 /* hasConnected */)) {
+       hostRef.$flags$ |= 1 /* hasConnected */;
++      delete hostRef.$preUpgradeAttrs$;
+       let hostId;
+       if (BUILD25.hydrateClientSide) {
+         hostId = elm.getAttribute(HYDRATE_ID);
+@@ -4151,7 +4201,17 @@ var proxyCustomElement = (Cstr, compactMeta) => {
+     Object.assign(Cstr.prototype, {
+       __hasHostListenerAttached: false,
+       __registerHost() {
+-        registerHost(this, cmpMeta);
++        let values, attrs;
++        for (const [name, [flags, attribute = name]] of Object.entries(cmpMeta.$members$ || {})) {
++          if (flags & 31 /* Prop */ && Object.getOwnPropertyDescriptor(this, name)?.configurable) {
++            (values ||= new Map()).set(name, this[name]);
++            if (this.hasAttribute(attribute)) (attrs ||= new Map()).set(attribute, this.getAttribute(attribute));
++            delete this[name];
++          }
++        }
++        const ref = registerHost(this, cmpMeta);
++        if (values) ref.$preUpgradeValues$ = values;
++        if (attrs) ref.$preUpgradeAttrs$ = attrs;
+       },
+       connectedCallback() {
+         if (!this.__hasHostListenerAttached) {
+@@ -4193,7 +4253,18 @@ var proxyCustomElement = (Cstr, compactMeta) => {
+       value: cmpMeta.$tagName$,
+       configurable: true
+     });
+-    return proxyComponent(Cstr, cmpMeta, 1 /* isElementConstructor */ | 2 /* proxyState */);
++    const Proxied = proxyComponent(Cstr, cmpMeta, 1 /* isElementConstructor */ | 2 /* proxyState */);
++    return class extends Proxied {
++      constructor(...args) {
++        super(...args);
++        const ref = getHostRef(this);
++        const values = ref?.$preUpgradeValues$;
++        if (values) {
++          delete ref.$preUpgradeValues$;
++          for (const [name, value] of values) this[name] = value;
++        }
++      }
++    };
+   } catch (e) {
+     consoleError(e);
+     return Cstr;
+@@ -4672,6 +4743,10 @@ var insertVNodeAnnotations = (doc, hostElm, vnode, docData, cmpData) => {
+   if (vnode != null) {
+     const hostId = ++docData.hostIds;
+     hostElm.setAttribute(HYDRATE_ID, hostId);
++    const hostSnapshot = getHostRef(hostElm)?.$ssrHostSnapshot$;
++    if (hostSnapshot && (hostSnapshot[0] || hostSnapshot[1].length || hostSnapshot[2].length)) {
++      hostElm.setAttribute("s-attrs", JSON.stringify(hostSnapshot));
++    }
+     if (hostElm["s-cr"] != null) {
+       hostElm["s-cr"].nodeValue = `${CONTENT_REF_ID}.${hostId}`;
+     }
+diff --git a/internal/hydrate/index.js b/internal/hydrate/index.js
+index ee52175e0f2d245d10eca073cd188bdcdf2ece4e..9eb6293ad5cbef9863dfb5ee5967f6df2e61aa47 100644
+--- a/internal/hydrate/index.js
++++ b/internal/hydrate/index.js
+@@ -1355,6 +1355,29 @@ var initializeClientHydrate = (hostElm, tagName, hostId, hostRef) => {
+   const shadowRootNodes = BUILD8.shadowDom && shadowRoot ? [] : null;
+   const vnode = newVNode(tagName, null);
+   vnode.$elm$ = hostElm;
++  // AWC: retain only render-owned SSR presentation as the old host VDOM.
++  // Consumer classes/attributes remain outside the component's ownership.
++  const hostAttrs = hostElm.getAttribute("s-attrs");
++  hostElm.removeAttribute("s-attrs");
++  if (hostAttrs) {
++    try {
++      const snapshot = JSON.parse(hostAttrs);
++      const entries = (list) => Array.isArray(list) && list.every((entry) => Array.isArray(entry) && entry.length === 2 && typeof entry[0] === "string" && typeof entry[1] === "string");
++      if (Array.isArray(snapshot) && (snapshot.length === 2 || snapshot.length === 3) && typeof snapshot[0] === "string" && entries(snapshot[1]) && (snapshot.length === 2 || entries(snapshot[2]))) {
++        vnode.$attrs$ = { class: snapshot[0].split(/\s+/).filter((token) => token && hostElm.classList.contains(token)).join(" ") };
++        hostRef.$ssrHostAttrs$ = new Map(snapshot[1]);
++        for (const [name, value] of snapshot[1]) {
++          if (hostElm.getAttribute(name) === value) vnode.$attrs$[name] = value;
++        }
++        for (const [name, value] of snapshot[2] || []) {
++          if (hostElm.style.getPropertyValue(name) === value) (vnode.$attrs$.style ||= {})[name] = value;
++        }
++        hostElm.classList.add(getScopeId(hostRef.$cmpMeta$, hostElm.getAttribute("s-mode")));
++      }
++    } catch (_) {
++      // Older/malformed annotations keep Stencil's existing adoption behavior.
++    }
++  }
+   let scopeId2;
+   if (BUILD8.scoped) {
+     const cmpMeta = hostRef.$cmpMeta$;
+@@ -2339,7 +2362,7 @@ var parsePropertyValue = (propValue, propType, isFormAssociated) => {
+   if (propValue != null && !isComplexType(propValue)) {
+     if (BUILD9.propBoolean && propType & 4 /* Boolean */) {
+       if (BUILD9.formAssociated && isFormAssociated && typeof propValue === "string") {
+-        return propValue === "" || !!propValue;
++        return propValue === "false" ? false : propValue === "" || !!propValue;
+       } else {
+         return propValue === "false" ? false : propValue === "" || !!propValue;
+       }
+@@ -2409,7 +2432,7 @@ var setAccessor = (elm, memberName, oldValue, newValue, isSvg, flags, initialRen
+     const classList = elm.classList;
+     const oldClasses = parseClassList(oldValue);
+     let newClasses = parseClassList(newValue);
+-    if (BUILD12.hydrateClientSide && (elm["s-si"] || elm["s-sc"]) && initialRender) {
++    if (BUILD12.hydrateClientSide && (elm["s-si"] || elm["s-sc"]) && initialRender && !(flags & 4 /* isHost */ && getHostRef(elm)?.$ssrHostAttrs$)) {
+       const scopeId2 = elm["s-sc"] || elm["s-si"];
+       newClasses.push(scopeId2);
+       oldClasses.forEach((c) => {
+@@ -2524,7 +2547,7 @@ var setAccessor = (elm, memberName, oldValue, newValue, isSvg, flags, initialRen
+       }
+     }
+     if (newValue == null || newValue === false) {
+-      if (newValue !== false || elm.getAttribute(memberName) === "") {
++      if (newValue !== false || elm.getAttribute(memberName) === "" || memberName === "disabled") {
+         if (BUILD12.vdomXlink && xlink) {
+           elm.removeAttributeNS(XLINK_NS, memberName);
+         } else {
+@@ -3062,6 +3085,15 @@ var renderVdom = (hostRef, renderFnResults, isInitialLoad = false) => {
+   const oldVNode = hostRef.$vnode$ || newVNode(null, null);
+   const isHostElement = isHost(renderFnResults);
+   const rootVnode = isHostElement ? renderFnResults : h(null, null, renderFnResults);
++  if (BUILD14.hydrateServerSide && !hostRef.$consumerHostAttrs$) {
++    hostRef.$consumerHostAttrs$ = new Set(Array.from(hostElm.attributes, (attr) => attr.name));
++    hostRef.$consumerHostClasses$ = new Set(parseClassList(hostElm.className));
++    if (hostElm.hasAttribute("style")) {
++      const original = hostElm.ownerDocument.createElement("div");
++      original.setAttribute("style", hostElm.getAttribute("style"));
++      hostRef.$consumerHostStyles$ = original.style;
++    }
++  }
+   hostTagName = hostElm.tagName;
+   if (BUILD14.isDev && Array.isArray(renderFnResults) && renderFnResults.some(isHost)) {
+     throw new Error(`The <Host> must be the single root component.
+@@ -3090,7 +3122,8 @@ render() {
+   if (isInitialLoad && rootVnode.$attrs$) {
+     for (const key of Object.keys(rootVnode.$attrs$)) {
+       if (hostElm.hasAttribute(key) && !["key", "ref", "style", "class"].includes(key)) {
+-        rootVnode.$attrs$[key] = hostElm[key];
++        const ssrOwned = hostRef.$ssrHostAttrs$ && hostRef.$ssrHostAttrs$.has(key) && hostRef.$ssrHostAttrs$.get(key) === hostElm.getAttribute(key);
++        if (!ssrOwned) rootVnode.$attrs$[key] = hostElm[key];
+       }
+     }
+   }
+@@ -3107,6 +3140,15 @@ render() {
+     checkSlotFallbackVisibility = false;
+   }
+   patch(oldVNode, rootVnode, isInitialLoad);
++  if (BUILD14.hydrateServerSide) {
++    const attrs = rootVnode.$attrs$ || {};
++    hostRef.$ssrHostSnapshot$ = [
++      parseClassList(attrs.class).filter((token) => token && !hostRef.$consumerHostClasses$.has(token)).join(" "),
++      Object.keys(attrs).filter((key) => !["class", "style", "key", "ref"].includes(key) && !hostRef.$consumerHostAttrs$.has(key) && hostElm.hasAttribute(key)).map((key) => [key, hostElm.getAttribute(key)]),
++      Object.keys(attrs.style || {}).map((name) => name.startsWith("--") ? name : name.replace(/[A-Z]/g, (letter) => "-" + letter.toLowerCase())).filter((name) => !hostRef.$consumerHostStyles$?.getPropertyValue(name) && hostElm.style.getPropertyValue(name)).map((name) => [name, hostElm.style.getPropertyValue(name)])
++    ];
++  }
++  if (isInitialLoad) delete hostRef.$ssrHostAttrs$;
+   if (BUILD14.slotRelocation) {
+     plt.$flags$ |= 1 /* isTmpDisconnected */;
+     if (checkSlotRelocate) {
+@@ -3776,6 +3818,13 @@ More information: https://stenciljs.com/docs/properties#prop-mutability`
+           var _a3;
+           const propName = attrNameToPropName.get(attrName);
+           const hostRef = getHostRef(this);
++          const initialAttrs = hostRef?.$preUpgradeAttrs$;
++          if (initialAttrs?.has(attrName)) {
++            const initial = initialAttrs.get(attrName);
++            initialAttrs.delete(attrName);
++            if (!initialAttrs.size) delete hostRef.$preUpgradeAttrs$;
++            if (oldValue === null && newValue === initial) return;
++          }
+           if (BUILD17.serializer && hostRef.$serializerValues$.has(propName) && hostRef.$serializerValues$.get(propName) === newValue) {
+             return;
+           }
+@@ -3985,6 +4034,7 @@ var connectedCallback = (elm) => {
+     }
+     if (!(hostRef.$flags$ & 1 /* hasConnected */)) {
+       hostRef.$flags$ |= 1 /* hasConnected */;
++      delete hostRef.$preUpgradeAttrs$;
+       let hostId;
+       if (BUILD19.hydrateClientSide) {
+         hostId = elm.getAttribute(HYDRATE_ID);
+@@ -4142,7 +4192,17 @@ var proxyCustomElement = (Cstr, compactMeta) => {
+     Object.assign(Cstr.prototype, {
+       __hasHostListenerAttached: false,
+       __registerHost() {
+-        registerHost(this, cmpMeta);
++        let values, attrs;
++        for (const [name, [flags, attribute = name]] of Object.entries(cmpMeta.$members$ || {})) {
++          if (flags & 31 /* Prop */ && Object.getOwnPropertyDescriptor(this, name)?.configurable) {
++            (values ||= new Map()).set(name, this[name]);
++            if (this.hasAttribute(attribute)) (attrs ||= new Map()).set(attribute, this.getAttribute(attribute));
++            delete this[name];
++          }
++        }
++        const ref = registerHost(this, cmpMeta);
++        if (values) ref.$preUpgradeValues$ = values;
++        if (attrs) ref.$preUpgradeAttrs$ = attrs;
+       },
+       connectedCallback() {
+         if (!this.__hasHostListenerAttached) {
+@@ -4184,7 +4244,18 @@ var proxyCustomElement = (Cstr, compactMeta) => {
+       value: cmpMeta.$tagName$,
+       configurable: true
+     });
+-    return proxyComponent(Cstr, cmpMeta, 1 /* isElementConstructor */ | 2 /* proxyState */);
++    const Proxied = proxyComponent(Cstr, cmpMeta, 1 /* isElementConstructor */ | 2 /* proxyState */);
++    return class extends Proxied {
++      constructor(...args) {
++        super(...args);
++        const ref = getHostRef(this);
++        const values = ref?.$preUpgradeValues$;
++        if (values) {
++          delete ref.$preUpgradeValues$;
++          for (const [name, value] of values) this[name] = value;
++        }
++      }
++    };
+   } catch (e) {
+     consoleError(e);
+     return Cstr;
+@@ -4641,6 +4712,10 @@ var insertVNodeAnnotations = (doc, hostElm, vnode, docData, cmpData) => {
+   if (vnode != null) {
+     const hostId = ++docData.hostIds;
+     hostElm.setAttribute(HYDRATE_ID, hostId);
++    const hostSnapshot = getHostRef(hostElm)?.$ssrHostSnapshot$;
++    if (hostSnapshot && (hostSnapshot[0] || hostSnapshot[1].length || hostSnapshot[2].length)) {
++      hostElm.setAttribute("s-attrs", JSON.stringify(hostSnapshot));
++    }
+     if (hostElm["s-cr"] != null) {
+       hostElm["s-cr"].nodeValue = `${CONTENT_REF_ID}.${hostId}`;
+     }
+diff --git a/internal/hydrate/runner.js b/internal/hydrate/runner.js
+index 103c760ffee5e123cb20b7a5a85b9dc6b9cb1b29..34fedca69ba45b44746de46a2f26744083d6b3b6 100644
+--- a/internal/hydrate/runner.js
++++ b/internal/hydrate/runner.js
+@@ -10624,7 +10624,7 @@ function* streamToHtml(node, opts, output) {
+         }
+       }
+       if (node.hasAttribute("style")) {
+-        const cssText = node.style.cssText;
++        const cssText = escapeString(node.style.cssText, true);
+         if (opts.approximateLineWidth && opts.approximateLineWidth > 0 && output.currentLineWidth + cssText.length + 10 > opts.approximateLineWidth) {
+           yield `
+ style="${cssText}">`;
+diff --git a/mock-doc/index.cjs b/mock-doc/index.cjs
+index 6a21c43882852e66368f838a768d7628c6d26a67..418f3e8538af854aa79b6b14726fe99d06dca7c2 100644
+--- a/mock-doc/index.cjs
++++ b/mock-doc/index.cjs
+@@ -6267,7 +6267,7 @@ function* streamToHtml(node, opts, output) {
+         }
+       }
+       if (node.hasAttribute("style")) {
+-        const cssText = node.style.cssText;
++        const cssText = escapeString(node.style.cssText, true);
+         if (opts.approximateLineWidth && opts.approximateLineWidth > 0 && output.currentLineWidth + cssText.length + 10 > opts.approximateLineWidth) {
+           yield `
+ style="${cssText}">`;
+diff --git a/mock-doc/index.js b/mock-doc/index.js
+index d76587dad44082b32e54c152d18e5798f81eeac4..63c8cdd7f8d34f4c8c424722f39542c2154d0595 100644
+--- a/mock-doc/index.js
++++ b/mock-doc/index.js
+@@ -6215,7 +6215,7 @@ function* streamToHtml(node, opts, output) {
+         }
+       }
+       if (node.hasAttribute("style")) {
+-        const cssText = node.style.cssText;
++        const cssText = escapeString(node.style.cssText, true);
+         if (opts.approximateLineWidth && opts.approximateLineWidth > 0 && output.currentLineWidth + cssText.length + 10 > opts.approximateLineWidth) {
+           yield `
+ style="${cssText}">`;
 diff --git a/testing/index.js b/testing/index.js
-index 690a277..ab07841 100644
+index 65f4a03fbbd7a86560a310468c3f3d17ac0a53df..534e82f583f05db5e45a425fe631af1ac4264f7a 100644
 --- a/testing/index.js
 +++ b/testing/index.js
-@@ -1995,9 +1995,9 @@ async function startPuppeteerBrowser(config) {
+@@ -1995,9 +1995,9 @@ ${e}`);
        ...connectOpts
      };
      try {

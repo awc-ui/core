@@ -827,7 +827,7 @@ export class MdSelect {
                 ></md-icon-button>
               ),
               <span class="md-select__caret material-symbols-outlined" part="caret">
-                <slot name="dropdown-icon">{this.dropdownIcon}</slot>
+                <slot name="dropdown-icon"><span class="md-select__caret-glyph">{this.dropdownIcon}</span></slot>
               </span>,
             ]
           )}

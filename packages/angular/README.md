@@ -62,4 +62,18 @@ selection. Multi-select accessors normalize a form reset to an empty array.
 
 ## Server rendering
 
+Ordinary input bindings such as `[label]`, `[value]` and `[selected]` also
+serialize their server state using Core's declared attribute names, including
+custom aliases. Supported option/item/node arrays use JSON attributes, and
+selection arrays use the same initial-value seed as forms. Callback and other
+property-only inputs stay out of the HTML. On the client, bindings continue to
+update properties without adding synthetic events or reflecting extra attributes.
+
+Angular form accessors serialize their initial values on the server before the
+Core HTML transform runs. Text, numeric, checked, selected and disabled values
+therefore reach the first paint; radio options keep their own identity. Array
+selections use the shared `data-awc-initial-values` seed, including an explicit
+empty array. Browser accessors continue to write properties and emit no synthetic
+change events during hydration.
+
 See the [Angular SSR guide](https://awc-ui.dev/frameworks/angular/) for the shared hydration lifecycle and reference application.
