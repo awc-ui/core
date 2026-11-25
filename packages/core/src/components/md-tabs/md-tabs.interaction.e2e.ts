@@ -6,6 +6,7 @@
  * survival, wrapper-slot flattening, wheel overflow access, indicator glide.
  */
 import { newE2EPage } from '@stencil/core/testing';
+import type { Page } from 'puppeteer';
 
 const TABS = `
   <md-tabs aria-label="Sections">
@@ -372,7 +373,7 @@ describe('md-tabs interaction e2e', () => {
       </div>
     `);
     // setContent installs its own request handler for the fixture navigation.
-    page.removeAllListeners('request');
+    (page as unknown as Page).removeAllListeners('request');
     page.on('request', request => {
       if (new URL(request.url()).pathname.endsWith('/md-tabs.entry.js')) {
         void tabsGate.then(() => request.continue());
