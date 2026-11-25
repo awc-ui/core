@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Host, h, Prop, Element, Watch, State, Event, EventEmitter } from '@stencil/core';
 
 /* ============================================================================
@@ -74,7 +75,7 @@ const EASE_STANDARD = bezierEasing([0.2, 0, 0, 1]);
 
 @Component({
   tag: 'md-progress-indicator',
-  styleUrl: 'md-progress-indicator.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-progress-indicator.css'],
   shadow: true,
 })
 export class MdProgressIndicator {
@@ -311,6 +312,7 @@ export class MdProgressIndicator {
 
   // ── lifecycle ─────────────────────────────────────────────────────────────
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     this.amp = this.amplitudeTarget;
     this.ampTo = this.amp;
     this.renderFraction = this.fraction;
@@ -324,27 +326,32 @@ export class MdProgressIndicator {
   }
 
   componentDidLoad() {
-    if (typeof IntersectionObserver !== 'undefined') {
-      this.io = new IntersectionObserver((entries) => {
-        this.visible = entries.some((e) => e.isIntersecting);
-        this.ensureLoop();
-      });
-      this.io.observe(this.el);
+    try {
+      if (typeof IntersectionObserver !== 'undefined') {
+        this.io = new IntersectionObserver((entries) => {
+          this.visible = entries.some((e) => e.isIntersecting);
+          this.ensureLoop();
+        });
+        this.io.observe(this.el);
+      }
+      // Refresh the cached width (and repaint) only on actual resizes — so the
+      // per-frame loop never has to call getBoundingClientRect (which would force
+      // a synchronous layout every frame).
+      if (typeof ResizeObserver !== 'undefined') {
+        this.ro = new ResizeObserver(() => {
+          this.measureLinearWidth();
+          this.updateLinearPath();
+        });
+        this.ro.observe(this.el);
+      }
+      this.ensureLoop();
+} finally {
+      completeInitialInteractionMotion(this);
     }
-    // Refresh the cached width (and repaint) only on actual resizes — so the
-    // per-frame loop never has to call getBoundingClientRect (which would force
-    // a synchronous layout every frame).
-    if (typeof ResizeObserver !== 'undefined') {
-      this.ro = new ResizeObserver(() => {
-        this.measureLinearWidth();
-        this.updateLinearPath();
-      });
-      this.ro.observe(this.el);
-    }
-    this.ensureLoop();
   }
 
   componentDidRender() {
+    initialInteractionMotionRendered(this);
     this.ensureLoop();
     // Refresh the cached layout direction (inherited from ancestors via dir=rtl).
     this.rtl = this.computeRtl();
@@ -399,6 +406,7 @@ export class MdProgressIndicator {
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.stopLoop();
     this.mql?.removeEventListener?.('change', this.onReducedMotionChange);
     this.io?.disconnect();
@@ -1761,6 +1769,15 @@ export class MdProgressIndicator {
         {this.variant === 'circular' ? this.renderCircular() : this.renderLinear()}
       </Host>
     );
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }
 

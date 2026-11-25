@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import {
   Component,
   Host,
@@ -70,7 +71,7 @@ interface SelectableRow extends HTMLElement {
  */
 @Component({
   tag: 'md-table',
-  styleUrl: 'md-table.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-table.css'],
   shadow: true,
 })
 export class MdTable {
@@ -485,31 +486,36 @@ export class MdTable {
   };
 
   componentDidLoad() {
-    this.syncRows();
-    this.syncSortLabels();
-    this.recomputeSelection(false);
-    this.setupFrozenHeader();
-    // Frozen tables floor their header tracks to the header CONTENT (sort
-    // arrows are wider than short body values — without this they cram into
-    // the next column).
-    requestAnimationFrame(() => this.scheduleHeaderFloors());
-    // Height ratchet: after the first laid-out frame, floor the table at its
-    // initial height so it never shrinks (see keepHeight). In frozen mode the
-    // floor goes on the BODY SCROLL AREA, not the host: flooring the host
-    // would leave the extra space BELOW the frozen flex column, stranding the
-    // custom horizontal scrollbar mid-table — flooring the body keeps rows /
-    // empty state absorbing the height and the bar pinned at the bottom.
-    requestAnimationFrame(() =>
-      requestAnimationFrame(() => {
-        if (!this.keepHeight) return;
-        const target = this.frozenHeader && this.bodyScrollEl ? this.bodyScrollEl : this.el;
-        const h = target.getBoundingClientRect().height;
-        if (h > 1) target.style.minBlockSize = `${Math.round(h)}px`;
-      }),
-    );
+    try {
+      this.syncRows();
+      this.syncSortLabels();
+      this.recomputeSelection(false);
+      this.setupFrozenHeader();
+      // Frozen tables floor their header tracks to the header CONTENT (sort
+      // arrows are wider than short body values — without this they cram into
+      // the next column).
+      requestAnimationFrame(() => this.scheduleHeaderFloors());
+      // Height ratchet: after the first laid-out frame, floor the table at its
+      // initial height so it never shrinks (see keepHeight). In frozen mode the
+      // floor goes on the BODY SCROLL AREA, not the host: flooring the host
+      // would leave the extra space BELOW the frozen flex column, stranding the
+      // custom horizontal scrollbar mid-table — flooring the body keeps rows /
+      // empty state absorbing the height and the bar pinned at the bottom.
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          if (!this.keepHeight) return;
+          const target = this.frozenHeader && this.bodyScrollEl ? this.bodyScrollEl : this.el;
+          const h = target.getBoundingClientRect().height;
+          if (h > 1) target.style.minBlockSize = `${Math.round(h)}px`;
+        }),
+      );
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
 
   componentDidRender() {
+    initialInteractionMotionRendered(this);
     // Keep the frozen header's tracks aligned after every render (data/columns
     // can change). Cheap: a single getComputedStyle read + string compare.
     this.syncFrozenColumns();
@@ -519,6 +525,7 @@ export class MdTable {
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.frozenObserver?.disconnect();
     this.frozenObserver = undefined;
   }
@@ -1607,5 +1614,18 @@ export class MdTable {
         {this.empty && !this.loading && !this.frozenHeader && this.renderEmpty()}
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

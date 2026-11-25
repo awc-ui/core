@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { createId } from '../../utils/id';
 import {
   Component,
@@ -51,7 +52,7 @@ import {
  */
 @Component({
   tag: 'md-bottom-sheet',
-  styleUrl: 'md-bottom-sheet.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-bottom-sheet.css'],
   shadow: true,
 })
 export class MdBottomSheet {
@@ -153,10 +154,12 @@ export class MdBottomSheet {
   // ── Lifecycle ───────────────────────────────────────────
 
   connectedCallback() {
+    reconnectInteractionMotion(this);
     this.hasActions = !!this.el.querySelector('[slot="actions"]');
   }
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     // Seed from the light DOM. The slotchange listener below cannot do this on
     // its own: the `close` slot only renders once this flag (or `closeable`) is
     // set, so waiting for slotchange means it never fires and a slotted close
@@ -167,29 +170,34 @@ export class MdBottomSheet {
   }
 
   componentDidLoad() {
-    const shadow = this.el.shadowRoot;
-    if (!shadow) return;
+    try {
+      const shadow = this.el.shadowRoot;
+      if (!shadow) return;
 
-    const closeSlot = shadow.querySelector(
-      'slot[name="close"]',
-    ) as HTMLSlotElement | null;
-    const actionsSlot = shadow.querySelector(
-      'slot[name="actions"]',
-    ) as HTMLSlotElement | null;
+      const closeSlot = shadow.querySelector(
+        'slot[name="close"]',
+      ) as HTMLSlotElement | null;
+      const actionsSlot = shadow.querySelector(
+        'slot[name="actions"]',
+      ) as HTMLSlotElement | null;
 
-    closeSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedClose = closeSlot.assignedElements().length > 0;
-    });
-    actionsSlot?.addEventListener('slotchange', () => {
-      this.hasActions = actionsSlot.assignedElements().length > 0;
-    });
+      closeSlot?.addEventListener('slotchange', () => {
+        this.hasSlottedClose = closeSlot.assignedElements().length > 0;
+      });
+      actionsSlot?.addEventListener('slotchange', () => {
+        this.hasActions = actionsSlot.assignedElements().length > 0;
+      });
 
-    if (this.open) {
-      this.onOpenChange(true);
+      if (this.open) {
+        this.onOpenChange(true);
+      }
+} finally {
+      completeInitialInteractionMotion(this);
     }
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.removeGlobalListeners();
     document.body.style.overflow = '';
   }
@@ -533,5 +541,14 @@ export class MdBottomSheet {
         </div>
       </Host>
     );
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { createId } from '../../utils/id';
 import { Component, Host, h, Prop, State, Event, EventEmitter, Element, Method, Watch } from '@stencil/core';
 
@@ -24,7 +25,7 @@ const TOOLTIP_VIEWPORT_MARGIN = 8;
  */
 @Component({
   tag: 'md-tooltip',
-  styleUrl: 'md-tooltip.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-tooltip.css'],
   shadow: true,
 })
 export class MdTooltip {
@@ -102,6 +103,7 @@ export class MdTooltip {
   // ─── Lifecycle ───────────────────────────────────────────
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     // Seed slot flags + visible state BEFORE the first render so the didLoad setup()
     // re-computes them to the same values — a no-op write rather than a state change
     // during componentDidLoad (which triggers Stencil's extra-re-render warning).
@@ -112,12 +114,17 @@ export class MdTooltip {
   }
 
   componentDidLoad() {
-    this.hasLoaded = true;
-    this.setup();
-    if (this.open) this.showTooltip();
+    try {
+      this.hasLoaded = true;
+      this.setup();
+      if (this.open) this.showTooltip();
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
 
   connectedCallback() {
+    reconnectInteractionMotion(this);
     // On a REPARENT (disconnect→connect after first load), re-establish bindings —
     // componentDidLoad runs only once, so without this a moved tooltip goes dead.
     if (!this.hasLoaded) return;
@@ -178,6 +185,7 @@ export class MdTooltip {
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.clearTimers();
     this.stopPositionWatchdog();
     this.unbindTrigger();
@@ -851,5 +859,14 @@ export class MdTooltip {
         </div>
       </Host>
     );
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

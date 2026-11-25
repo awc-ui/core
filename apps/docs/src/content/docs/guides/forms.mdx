@@ -430,11 +430,14 @@ export class ProfileComponent {
 }
 ```
 
-For smaller bundles import each proxy and its accessor, for example
-`MdTextField` with `TextValueAccessor`. Checkbox models use `checked`, switch
-models use `selected`, and radio models contain the selected option's `value`.
-Radio options retain their values when the form resets; multi-select resets to
-an empty array. See the [Angular guide](/frameworks/angular/).
+For raw `md-*` tags, register the Core elements used by the template, import
+the accessors from `@awc-ui/angular/forms`, and add `CUSTOM_ELEMENTS_SCHEMA` to
+the component.
+
+Checkbox models use `checked`, switch models use `selected`, and radio models
+contain the selected option's `value`. Radio options retain their values when
+the form resets, and multi-select resets to an empty array. See the
+[Angular guide](/frameworks/angular/).
 
 ### Vue
 

@@ -1,6 +1,58 @@
 import { newE2EPage } from '@stencil/core/testing';
 
 describe('md-checkbox (e2e)', () => {
+  it('shows prechecked and mixed glyphs immediately and animates a real check', async () => {
+    const page = await newE2EPage();
+    await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
+    await page.setContent(`
+      <md-checkbox id="checked" checked aria-label="Checked"></md-checkbox>
+      <md-checkbox id="mixed" indeterminate aria-label="Mixed"></md-checkbox>
+      <md-checkbox id="off" aria-label="Unchecked" style="--md-sys-motion-duration-short2: 10s"></md-checkbox>
+    `);
+
+    const initial = await page.evaluate(() => ['checked', 'mixed'].map((id) => {
+      const icon = document.getElementById(id)!.shadowRoot!.querySelector('[part="icon"]')!;
+      const glyph = icon.firstElementChild!;
+      return [glyph.textContent!.trim(), getComputedStyle(icon).opacity, getComputedStyle(glyph).animationName];
+    }));
+    expect(initial).toEqual([['check', '1', 'none'], ['remove', '1', 'none']]);
+
+    await (await page.find('#off')).click();
+    await page.waitForChanges();
+    expect(await page.evaluate(() => {
+      const glyph = document.getElementById('off')!.shadowRoot!.querySelector('[part="icon"] > span')!;
+      const animationName = getComputedStyle(glyph).animationName;
+      const motion = glyph.getAnimations().find((animation) =>
+        (animation as CSSAnimation).animationName === 'md-checkbox-glyph-in');
+      motion?.cancel();
+      return { animationName, running: !!motion };
+    })).toEqual({ animationName: 'md-checkbox-glyph-in', running: true });
+    await page.waitForFunction(() => {
+      const glyph = document.getElementById('off')!.shadowRoot!.querySelector('[part="icon"] > span')!;
+      return getComputedStyle(glyph).animationName === 'none' && getComputedStyle(glyph).opacity === '1';
+    });
+  });
+
+  it('does not replay the checked glyph after a batch that returns to checked', async () => {
+    const page = await newE2EPage();
+    await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
+    await page.setContent('<md-checkbox checked aria-label="Checked" style="--md-sys-motion-duration-short2: 10s"></md-checkbox>');
+    await page.waitForFunction(() => document.querySelector('md-checkbox')!.hasAttribute('data-awc-motion-ready'));
+
+    await page.evaluate(() => {
+      const checkbox = document.querySelector('md-checkbox')!;
+      checkbox.indeterminate = true;
+      checkbox.indeterminate = false;
+    });
+    await page.waitForChanges();
+
+    expect(await page.evaluate(() => {
+      const checkbox = document.querySelector('md-checkbox')!;
+      const glyph = checkbox.shadowRoot!.querySelector('[part="icon"] > span')!;
+      return [checkbox.getAttribute('aria-checked'), glyph.textContent!.trim(), getComputedStyle(glyph).animationName];
+    })).toEqual(['true', 'check', 'none']);
+  });
+
   // ─── Form participation (ElementInternals, real browser) ───
 
   it('submits its value under name only when checked', async () => {

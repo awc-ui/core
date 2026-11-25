@@ -104,6 +104,10 @@ export default defineNuxtConfig({
 
 A client-only Nuxt plugin registers the elements. A Nitro render hook uses
 `@awc-ui/core/hydrate` to inject Declarative Shadow DOM into the server HTML.
+In the hook's `afterHydrate` callback, remove Stencil's position comments from
+the light DOM that Vue will claim. Preserve Vue's fragment comments and the
+annotations inside templates and shadow roots so both runtimes can adopt their
+existing nodes in either loading order.
 The complete pattern is implemented in the validated
 [Nuxt SSR reference app](https://github.com/awc-ui/core/tree/main/apps/example-nuxt)
 and the production-shaped

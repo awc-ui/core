@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate, activateInteractionMotion } from '../../utils/initial-motion';
 import {
   Component,
   Host,
@@ -84,7 +85,7 @@ export interface MdSearchTrailingIconClickDetail {
  */
 @Component({
   tag: 'md-search',
-  styleUrl: 'md-search.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-search.css'],
   shadow: true,
 })
 export class MdSearch {
@@ -504,6 +505,7 @@ export class MdSearch {
   // ────────────────────────────────────────────────────────────────────────
 
   connectedCallback() {
+    reconnectInteractionMotion(this);
     this.overlayLifecycle.connected();
     if (this.hasLoaded) {
       this.wireExternalTrigger();
@@ -524,6 +526,7 @@ export class MdSearch {
   }
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     this.barExpanded = this.open;
     this.panelVisible = this.open;
     // Seed the loading morph so an initial `loading` renders without a flash.
@@ -539,44 +542,48 @@ export class MdSearch {
   }
 
   componentDidLoad() {
-    this.hasLoaded = true;
-    this.overlayLifecycle.loaded();
-    this.wireExternalTrigger();
-    const shadow = this.el.shadowRoot;
-    if (!shadow) return;
+    try {
+      this.hasLoaded = true;
+      this.overlayLifecycle.loaded();
+      this.wireExternalTrigger();
+      const shadow = this.el.shadowRoot;
+      if (!shadow) return;
 
-    const leadingSlot = shadow.querySelector('slot[name="leading"]') as HTMLSlotElement | null;
-    const trailingSlot = shadow.querySelector('slot[name="trailing"]') as HTMLSlotElement | null;
-    // Kept for mdTrailingIconClick hit-testing against assigned (slotted) nodes.
-    this.trailingSlotEl = trailingSlot ?? undefined;
+      const leadingSlot = shadow.querySelector('slot[name="leading"]') as HTMLSlotElement | null;
+      const trailingSlot = shadow.querySelector('slot[name="trailing"]') as HTMLSlotElement | null;
+      // Kept for mdTrailingIconClick hit-testing against assigned (slotted) nodes.
+      this.trailingSlotEl = trailingSlot ?? undefined;
 
-    leadingSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedLeading = leadingSlot.assignedElements().length > 0;
-    });
-    trailingSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedTrailing = trailingSlot.assignedElements().length > 0;
-    });
+      leadingSlot?.addEventListener('slotchange', () => {
+        this.hasSlottedLeading = leadingSlot.assignedElements().length > 0;
+      });
+      trailingSlot?.addEventListener('slotchange', () => {
+        this.hasSlottedTrailing = trailingSlot.assignedElements().length > 0;
+      });
 
-    // Recompute the announcement when the slotted results change in a real
-    // browser. The count itself is read from the host's light DOM (see
-    // countResults) so it also works in environments without slotchange.
-    const resultsSlot = shadow.querySelector(
-      'slot[name="results"]',
-    ) as HTMLSlotElement | null;
-    resultsSlot?.addEventListener('slotchange', () => this.updateResultsStatus());
+      // Recompute the announcement when the slotted results change in a real
+      // browser. The count itself is read from the host's light DOM (see
+      // countResults) so it also works in environments without slotchange.
+      const resultsSlot = shadow.querySelector(
+        'slot[name="results"]',
+      ) as HTMLSlotElement | null;
+      resultsSlot?.addEventListener('slotchange', () => this.updateResultsStatus());
 
-    const triggerSlot = shadow.querySelector(
-      'slot[name="trigger"]',
-    ) as HTMLSlotElement | null;
-    triggerSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedTrigger = triggerSlot.assignedElements().length > 0;
-    });
-    this.hasSlottedTrigger = (triggerSlot?.assignedElements().length ?? 0) > 0;
+      const triggerSlot = shadow.querySelector(
+        'slot[name="trigger"]',
+      ) as HTMLSlotElement | null;
+      triggerSlot?.addEventListener('slotchange', () => {
+        this.hasSlottedTrigger = triggerSlot.assignedElements().length > 0;
+      });
+      this.hasSlottedTrigger = (triggerSlot?.assignedElements().length ?? 0) > 0;
 
-    this.measureRippleExtend();
-    this.observeHostResize();
+      this.measureRippleExtend();
+      this.observeHostResize();
 
-    if (this.open) this.applyOpenSideEffects();
+      if (this.open) this.applyOpenSideEffects();
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
 
   @Watch('triggerFor')
@@ -586,6 +593,7 @@ export class MdSearch {
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     ++this.closeRevision;
     this.cancelOpenFocus();
     this.cancelReveal();
@@ -690,6 +698,7 @@ export class MdSearch {
     // the trigger is outside this element — without this the same click would
     // close an open panel and then reopen it, or open and immediately close.
     e.stopPropagation();
+    activateInteractionMotion(this.el);
     this.open = !this.open;
   };
 
@@ -857,6 +866,7 @@ export class MdSearch {
   }
 
   componentDidRender() {
+    initialInteractionMotionRendered(this);
     if (!this.pendingFullScreenReveal) return;
     // The host's position:fixed overlay layout (floating bar + the
     // full-viewport panel surface) is now committed to the DOM and will
@@ -1900,5 +1910,10 @@ export class MdSearch {
         </div>
       </Host>
     );
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

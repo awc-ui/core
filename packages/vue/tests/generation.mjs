@@ -21,13 +21,23 @@ try {
     customElementsDir: 'dist/components', componentModels: [{ elements: ['md-text-field'], targetAttr: 'value', event: 'mdInput' }],
   }));
   const config = { rootDir: join(dependencies, 'packages/core'), sys: { async copy() {}, glob() {} } };
-  const context = { components: [{ tagName: 'md-text-field', properties: [{ name: 'value' }], events: [{ name: 'mdInput' }] }], createTimeSpan() { return { finish() {} }; } };
+  const context = {
+    components: [
+      { tagName: 'md-text-field', properties: [{ name: 'value', attribute: 'value' }], events: [{ name: 'mdInput' }] },
+      { tagName: 'md-side-sheet', properties: [{ name: 'sheetAriaLabel', attribute: 'aria-label' }] },
+      { tagName: 'md-multi-select', properties: [{ name: 'value' }, { name: 'options', attribute: 'options' }, { name: 'countFormatter' }] },
+    ],
+    createTimeSpan() { return { finish() {} }; },
+  };
   for (let i = 0; i < 2; i++) {
     await target.generator(config, { fs }, context);
     const generated = files.get('../vue/lib/components.ts');
     assert.match(generated, /from '\.\/runtime\.js'/, 'actual upstream writes must use the hand-owned runtime');
     assert.doesNotMatch(generated, /vue-component-lib\/utils/);
     assert.match(generated, /'value', 'mdInput'/, 'model metadata survives generation');
+    assert.match(generated, /'md-text-field', \{"value":"value"\}, defineMdTextField/);
+    assert.match(generated, /'md-side-sheet', \{"sheetAriaLabel":"aria-label"\}, defineMdSideSheet/);
+    assert.match(generated, /'md-multi-select', \{"value":\[null,"values"\],"options":\["options","json"\]\}, defineMdMultiSelect/);
   }
   console.log('Vue generation: actual upstream target preserves runtime and model metadata across repeated asynchronous writes.');
 } finally { await rm(out, { recursive: true, force: true }); }

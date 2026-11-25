@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { AttachInternals, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, Watch, h } from '@stencil/core';
 import { setFormValue, checkValidityOf, reportValidityOf, getValidityOf, InlineValidationPresenter } from '../../utils/form';
 
@@ -169,7 +170,7 @@ function cleanFloat(n: number): number {
  */
 @Component({
   tag: 'md-number-field',
-  styleUrl: 'md-number-field.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-number-field.css'],
   shadow: true,
   formAssociated: true,
 })
@@ -523,6 +524,7 @@ export class MdNumberField {
   // ── Lifecycle + form callbacks ───────────────────────────
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     this.normalizeValueProp();
     this.defaultValue = this.value;
     this.lastCommitted = this.value;
@@ -531,15 +533,20 @@ export class MdNumberField {
   }
 
   componentDidLoad() {
-    // Re-publish validity now that the field ref exists: reportValidity()
-    // needs a FOCUSABLE anchor, and the pre-render publish anchored the host.
-    this.updateValidity();
-    if (typeof window === 'undefined') return;
-    // Non-passive: a scrub must preventDefault the page scroll.
-    this.el.addEventListener('wheel', this.handleWheel, { passive: false });
+    try {
+      // Re-publish validity now that the field ref exists: reportValidity()
+      // needs a FOCUSABLE anchor, and the pre-render publish anchored the host.
+      this.updateValidity();
+      if (typeof window === 'undefined') return;
+      // Non-passive: a scrub must preventDefault the page scroll.
+      this.el.addEventListener('wheel', this.handleWheel, { passive: false });
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     if (typeof window !== 'undefined') {
       this.el.removeEventListener('wheel', this.handleWheel);
     }
@@ -1072,5 +1079,18 @@ export class MdNumberField {
         {split && this.renderStepper('increment')}
       </Host>
     );
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

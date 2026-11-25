@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Host, h, Prop, Event, EventEmitter, Element, State, Method } from '@stencil/core';
 import { MenuElement } from '../../utils/types';
 import { triggerRipple } from '../../utils/ripple';
@@ -85,7 +86,7 @@ function now(): number {
   return typeof performance !== 'undefined' ? performance.now() : Date.now();
 }
 
-@Component({ tag: 'md-sub-menu-item', styleUrl: 'md-sub-menu-item.css', shadow: true })
+@Component({ tag: 'md-sub-menu-item', styleUrls: ['../../utils/initial-motion.css', 'md-sub-menu-item.css'], shadow: true })
 export class MdSubMenuItem {
   @Element() el!: HTMLElement;
 
@@ -155,22 +156,27 @@ export class MdSubMenuItem {
   private corridorRect?: { nearX: number; top: number; bottom: number };
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     this.hasLeadingIcon = !!this.el.querySelector('[slot="leading-icon"]');
   }
 
   componentDidLoad() {
-    const nestedMenu = this.getNestedMenu() as MenuElement | null;
-    if (nestedMenu?.open) {
-      nestedMenu.style.position = 'relative';
-      // A flyout that is open in the initial markup never goes through
-      // openSubmenu, and the container is `position: fixed` — with no placement
-      // it would sit at its static position for good. Gate the reveal on the
-      // same measure-first pass, then track it.
-      this.beginPlacement();
-      this.submenuOpen = true;
-      this.schedulePlacement();
-      this.startPositionWatch();
-      this.startCorridorWatch();
+    try {
+      const nestedMenu = this.getNestedMenu() as MenuElement | null;
+      if (nestedMenu?.open) {
+        nestedMenu.style.position = 'relative';
+        // A flyout that is open in the initial markup never goes through
+        // openSubmenu, and the container is `position: fixed` — with no placement
+        // it would sit at its static position for good. Gate the reveal on the
+        // same measure-first pass, then track it.
+        this.beginPlacement();
+        this.submenuOpen = true;
+        this.schedulePlacement();
+        this.startPositionWatch();
+        this.startCorridorWatch();
+      }
+} finally {
+      completeInitialInteractionMotion(this);
     }
   }
 
@@ -187,6 +193,7 @@ export class MdSubMenuItem {
    * used to paint at x=1207 and jump to 1213.1 one frame later.
    */
   componentDidRender() {
+    initialInteractionMotionRendered(this);
     if (this.placing) this.finishPlacement();
   }
 
@@ -729,6 +736,7 @@ export class MdSubMenuItem {
   };
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.cancelHoverIntent();
     clearTimeout(this.closeTimer);
     this.stopPositionWatch();
@@ -788,5 +796,14 @@ export class MdSubMenuItem {
         </div>
       </Host>
     );
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

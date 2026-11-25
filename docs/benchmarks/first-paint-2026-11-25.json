@@ -1,0 +1,770 @@
+{
+  "date": "2026-11-25",
+  "baselineCommit": "53c006bc4",
+  "implementationCommit": "10175655e",
+  "profile": {
+    "browser": "Chromium headless",
+    "viewport": "390×844",
+    "runsPerBuild": 5,
+    "statistic": "median",
+    "network": "4 Mbps download, 80 ms latency",
+    "cpu": "4× slowdown",
+    "compression": "Brotli quality 5",
+    "cache": "Fresh browser contexts with browser cache disabled; only server compression cache warmed",
+    "externalFonts": "Blocked equally in both builds",
+    "comparison": "Immutable copies of the preceding production builds versus the optimized production builds; serial app before/after pairs, without concurrent builds or tests; identical strengthened measurement harness",
+    "fcpMs": "Browser first contentful paint; catalogHeadingMs independently records paint of the actual existing catalog title",
+    "controlsReadyMs": "First sampled animation frame with exact expected nested host count, all hosts hydrated with shadow roots, and visible semantic title/theme/checkbox/text-field controls. This is a readiness checkpoint, not proof that the entire catalog has painted or a measured click latency.",
+    "allReadyMs": "All catalog controls ready plus document fonts ready; distinct from first contentful paint"
+  },
+  "changes": [
+    "Start the Vite bootstrap preloads from the application entry, so runtime bytes do not compete with the app entry before first content. Warm the initially rendered loading indicator dependency graph to remove its late request waterfall.",
+    "Expose the SSR-aware Angular value accessors through @awc-ui/angular/forms without importing the full proxy registry. The catalog registers only its 33 authored Core tags and their shadow dependencies; the original Angular entry keeps the same accessor identities and behavior.",
+    "Skip declared-property metadata enumeration for freshly constructed custom elements with no own properties. Preserve the complete configurable pre-upgrade property path, including non-enumerable values."
+  ],
+  "catalogs": {
+    "html": {
+      "before": {
+        "summary": {
+          "controlsReadyMs": 1354.3999999761581,
+          "fontsReadyMs": 1792.9000000059605,
+          "allReadyMs": 1793,
+          "fcpMs": 268,
+          "lcpMs": 268,
+          "cls": 0,
+          "totalLayoutShift": 0,
+          "longTasks": 0,
+          "longTaskMs": 0,
+          "scriptMs": 183.196,
+          "taskMs": 671.8960000000001,
+          "heapBytes": 6890692,
+          "catalogHeadingMs": 268,
+          "jsRequests": 44,
+          "jsEncodedBytes": 199166,
+          "cssRequests": 1,
+          "cssEncodedBytes": 3428,
+          "fontRequests": 1,
+          "fontEncodedBytes": 349324
+        },
+        "runs": [
+          {
+            "fcpMs": 268,
+            "catalogHeadingMs": 268,
+            "controlsReadyMs": 1354.3999999761581,
+            "fontsReadyMs": 1834,
+            "allReadyMs": 1834.7999999821186,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 276,
+            "catalogHeadingMs": 276,
+            "controlsReadyMs": 1386.8999999761581,
+            "fontsReadyMs": 1800.0999999940395,
+            "allReadyMs": 1800.199999988079,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 264,
+            "catalogHeadingMs": 264,
+            "controlsReadyMs": 1352,
+            "fontsReadyMs": 1779.300000011921,
+            "allReadyMs": 1779.300000011921,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 264,
+            "catalogHeadingMs": 264,
+            "controlsReadyMs": 1349.9000000059605,
+            "fontsReadyMs": 1792.9000000059605,
+            "allReadyMs": 1793,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 268,
+            "catalogHeadingMs": 268,
+            "controlsReadyMs": 1365.7000000178814,
+            "fontsReadyMs": 1779.5,
+            "allReadyMs": 1779.5,
+            "cls": 0,
+            "hydratedHosts": 180
+          }
+        ]
+      },
+      "after": {
+        "summary": {
+          "controlsReadyMs": 1329.300000011921,
+          "fontsReadyMs": 1848.1000000238419,
+          "allReadyMs": 1848.5,
+          "fcpMs": 256,
+          "lcpMs": 256,
+          "cls": 0,
+          "totalLayoutShift": 0,
+          "longTasks": 0,
+          "longTaskMs": 0,
+          "scriptMs": 179.42600000000002,
+          "taskMs": 684.819,
+          "heapBytes": 8467396,
+          "catalogHeadingMs": 256,
+          "jsRequests": 44,
+          "jsEncodedBytes": 199320,
+          "cssRequests": 1,
+          "cssEncodedBytes": 3428,
+          "fontRequests": 1,
+          "fontEncodedBytes": 349324
+        },
+        "runs": [
+          {
+            "fcpMs": 252,
+            "catalogHeadingMs": 252,
+            "controlsReadyMs": 1357.2999999821186,
+            "fontsReadyMs": 1892.9000000059605,
+            "allReadyMs": 1893,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 256,
+            "catalogHeadingMs": 256,
+            "controlsReadyMs": 1329.300000011921,
+            "fontsReadyMs": 1846.4000000059605,
+            "allReadyMs": 1846.4000000059605,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 252,
+            "catalogHeadingMs": 252,
+            "controlsReadyMs": 1360,
+            "fontsReadyMs": 1883.800000011921,
+            "allReadyMs": 1884.7000000178814,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 256,
+            "catalogHeadingMs": 256,
+            "controlsReadyMs": 1313.699999988079,
+            "fontsReadyMs": 1845.199999988079,
+            "allReadyMs": 1845.199999988079,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 256,
+            "catalogHeadingMs": 256,
+            "controlsReadyMs": 1312,
+            "fontsReadyMs": 1848.1000000238419,
+            "allReadyMs": 1848.5,
+            "cls": 0,
+            "hydratedHosts": 180
+          }
+        ]
+      }
+    },
+    "react": {
+      "before": {
+        "summary": {
+          "controlsReadyMs": 1497.7999999821186,
+          "fontsReadyMs": 1929.800000011921,
+          "allReadyMs": 1929.800000011921,
+          "fcpMs": 448,
+          "lcpMs": 448,
+          "cls": 0,
+          "totalLayoutShift": 0,
+          "longTasks": 0,
+          "longTaskMs": 0,
+          "scriptMs": 204.30200000000002,
+          "taskMs": 677.8530000000001,
+          "heapBytes": 7460912,
+          "catalogHeadingMs": 448,
+          "jsRequests": 44,
+          "jsEncodedBytes": 245090,
+          "cssRequests": 1,
+          "cssEncodedBytes": 3501,
+          "fontRequests": 1,
+          "fontEncodedBytes": 349324
+        },
+        "runs": [
+          {
+            "fcpMs": 448,
+            "catalogHeadingMs": 448,
+            "controlsReadyMs": 1497.7999999821186,
+            "fontsReadyMs": 1926.699999988079,
+            "allReadyMs": 1927.199999988079,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 448,
+            "catalogHeadingMs": 448,
+            "controlsReadyMs": 1482.300000011921,
+            "fontsReadyMs": 1930.2000000178814,
+            "allReadyMs": 1930.2000000178814,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 448,
+            "catalogHeadingMs": 448,
+            "controlsReadyMs": 1485.9000000059605,
+            "fontsReadyMs": 1931.800000011921,
+            "allReadyMs": 1931.9000000059605,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 444,
+            "catalogHeadingMs": 444,
+            "controlsReadyMs": 1500.199999988079,
+            "fontsReadyMs": 1920.7999999821186,
+            "allReadyMs": 1921.2999999821186,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 456,
+            "catalogHeadingMs": 456,
+            "controlsReadyMs": 1501.300000011921,
+            "fontsReadyMs": 1929.800000011921,
+            "allReadyMs": 1929.800000011921,
+            "cls": 0,
+            "hydratedHosts": 180
+          }
+        ]
+      },
+      "after": {
+        "summary": {
+          "controlsReadyMs": 1405.5,
+          "fontsReadyMs": 1946.5,
+          "allReadyMs": 1946.6000000238419,
+          "fcpMs": 356,
+          "lcpMs": 356,
+          "cls": 0,
+          "totalLayoutShift": 0,
+          "longTasks": 0,
+          "longTaskMs": 0,
+          "scriptMs": 198.221,
+          "taskMs": 684.47,
+          "heapBytes": 9010800,
+          "catalogHeadingMs": 356,
+          "jsRequests": 44,
+          "jsEncodedBytes": 245257,
+          "cssRequests": 1,
+          "cssEncodedBytes": 3501,
+          "fontRequests": 1,
+          "fontEncodedBytes": 349324
+        },
+        "runs": [
+          {
+            "fcpMs": 356,
+            "catalogHeadingMs": 356,
+            "controlsReadyMs": 1405.5,
+            "fontsReadyMs": 1937.9000000059605,
+            "allReadyMs": 1937.9000000059605,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 360,
+            "catalogHeadingMs": 360,
+            "controlsReadyMs": 1413.5,
+            "fontsReadyMs": 1948.699999988079,
+            "allReadyMs": 1948.699999988079,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 356,
+            "catalogHeadingMs": 356,
+            "controlsReadyMs": 1410.300000011921,
+            "fontsReadyMs": 1946.5,
+            "allReadyMs": 1946.6000000238419,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 356,
+            "catalogHeadingMs": 356,
+            "controlsReadyMs": 1404,
+            "fontsReadyMs": 1931.5999999940395,
+            "allReadyMs": 1932.5,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 360,
+            "catalogHeadingMs": 360,
+            "controlsReadyMs": 1396.7999999821186,
+            "fontsReadyMs": 1962,
+            "allReadyMs": 1962,
+            "cls": 0,
+            "hydratedHosts": 180
+          }
+        ]
+      }
+    },
+    "vue": {
+      "before": {
+        "summary": {
+          "controlsReadyMs": 1449,
+          "fontsReadyMs": 1896.5,
+          "allReadyMs": 1896.5,
+          "fcpMs": 364,
+          "lcpMs": 364,
+          "cls": 0,
+          "totalLayoutShift": 0,
+          "longTasks": 0,
+          "longTaskMs": 0,
+          "scriptMs": 186.194,
+          "taskMs": 628.239,
+          "heapBytes": 7301768,
+          "catalogHeadingMs": 364,
+          "jsRequests": 45,
+          "jsEncodedBytes": 232964,
+          "cssRequests": 1,
+          "cssEncodedBytes": 3663,
+          "fontRequests": 1,
+          "fontEncodedBytes": 349324
+        },
+        "runs": [
+          {
+            "fcpMs": 364,
+            "catalogHeadingMs": 364,
+            "controlsReadyMs": 1449.9000000059605,
+            "fontsReadyMs": 1940.5,
+            "allReadyMs": 1940.5999999940395,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 364,
+            "catalogHeadingMs": 364,
+            "controlsReadyMs": 1449,
+            "fontsReadyMs": 1892.5,
+            "allReadyMs": 1892.9000000059605,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 364,
+            "catalogHeadingMs": 364,
+            "controlsReadyMs": 1453.4000000059605,
+            "fontsReadyMs": 1897.5,
+            "allReadyMs": 1898.1000000238419,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 360,
+            "catalogHeadingMs": 360,
+            "controlsReadyMs": 1448,
+            "fontsReadyMs": 1890.800000011921,
+            "allReadyMs": 1891.2000000178814,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 364,
+            "catalogHeadingMs": 364,
+            "controlsReadyMs": 1448.4000000059605,
+            "fontsReadyMs": 1896.5,
+            "allReadyMs": 1896.5,
+            "cls": 0,
+            "hydratedHosts": 171
+          }
+        ]
+      },
+      "after": {
+        "summary": {
+          "controlsReadyMs": 1366.9000000059605,
+          "fontsReadyMs": 1963.7999999821186,
+          "allReadyMs": 1964.2000000178814,
+          "fcpMs": 308,
+          "lcpMs": 308,
+          "cls": 0,
+          "totalLayoutShift": 0,
+          "longTasks": 0,
+          "longTaskMs": 0,
+          "scriptMs": 179.87,
+          "taskMs": 624.298,
+          "heapBytes": 8804140,
+          "catalogHeadingMs": 308,
+          "jsRequests": 45,
+          "jsEncodedBytes": 233166,
+          "cssRequests": 1,
+          "cssEncodedBytes": 3663,
+          "fontRequests": 1,
+          "fontEncodedBytes": 349324
+        },
+        "runs": [
+          {
+            "fcpMs": 308,
+            "catalogHeadingMs": 308,
+            "controlsReadyMs": 1360.300000011921,
+            "fontsReadyMs": 1962.9000000059605,
+            "allReadyMs": 1963.5999999940395,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 304,
+            "catalogHeadingMs": 304,
+            "controlsReadyMs": 1366.9000000059605,
+            "fontsReadyMs": 1963.4000000059605,
+            "allReadyMs": 1964.2000000178814,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 308,
+            "catalogHeadingMs": 308,
+            "controlsReadyMs": 1387.9000000059605,
+            "fontsReadyMs": 1981.2000000178814,
+            "allReadyMs": 1981.5999999940395,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 308,
+            "catalogHeadingMs": 308,
+            "controlsReadyMs": 1380.199999988079,
+            "fontsReadyMs": 1973.800000011921,
+            "allReadyMs": 1973.800000011921,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 308,
+            "catalogHeadingMs": 308,
+            "controlsReadyMs": 1363.8999999761581,
+            "fontsReadyMs": 1963.7999999821186,
+            "allReadyMs": 1964,
+            "cls": 0,
+            "hydratedHosts": 171
+          }
+        ]
+      }
+    },
+    "svelte": {
+      "before": {
+        "summary": {
+          "controlsReadyMs": 1435.199999988079,
+          "fontsReadyMs": 1879,
+          "allReadyMs": 1879.0999999940395,
+          "fcpMs": 340,
+          "lcpMs": 340,
+          "cls": 0,
+          "totalLayoutShift": 0,
+          "longTasks": 0,
+          "longTaskMs": 0,
+          "scriptMs": 191.625,
+          "taskMs": 628.4119999999999,
+          "heapBytes": 7178948,
+          "catalogHeadingMs": 340,
+          "jsRequests": 45,
+          "jsEncodedBytes": 222818,
+          "cssRequests": 1,
+          "cssEncodedBytes": 3684,
+          "fontRequests": 1,
+          "fontEncodedBytes": 349324
+        },
+        "runs": [
+          {
+            "fcpMs": 344,
+            "catalogHeadingMs": 344,
+            "controlsReadyMs": 1471,
+            "fontsReadyMs": 1880.300000011921,
+            "allReadyMs": 1881,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 340,
+            "catalogHeadingMs": 340,
+            "controlsReadyMs": 1433.2000000178814,
+            "fontsReadyMs": 1874.7000000178814,
+            "allReadyMs": 1875.0999999940395,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 344,
+            "catalogHeadingMs": 344,
+            "controlsReadyMs": 1450.5,
+            "fontsReadyMs": 1879,
+            "allReadyMs": 1879.0999999940395,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 340,
+            "catalogHeadingMs": 340,
+            "controlsReadyMs": 1435.199999988079,
+            "fontsReadyMs": 1864.5,
+            "allReadyMs": 1864.699999988079,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 340,
+            "catalogHeadingMs": 340,
+            "controlsReadyMs": 1433.5,
+            "fontsReadyMs": 1903.0999999940395,
+            "allReadyMs": 1903.300000011921,
+            "cls": 0,
+            "hydratedHosts": 171
+          }
+        ]
+      },
+      "after": {
+        "summary": {
+          "controlsReadyMs": 1354.5,
+          "fontsReadyMs": 1926.5,
+          "allReadyMs": 1926.5999999940395,
+          "fcpMs": 284,
+          "lcpMs": 284,
+          "cls": 0,
+          "totalLayoutShift": 0,
+          "longTasks": 0,
+          "longTaskMs": 0,
+          "scriptMs": 185.04899999999998,
+          "taskMs": 624.0790000000001,
+          "heapBytes": 8703580,
+          "catalogHeadingMs": 284,
+          "jsRequests": 45,
+          "jsEncodedBytes": 222985,
+          "cssRequests": 1,
+          "cssEncodedBytes": 3684,
+          "fontRequests": 1,
+          "fontEncodedBytes": 349324
+        },
+        "runs": [
+          {
+            "fcpMs": 288,
+            "catalogHeadingMs": 288,
+            "controlsReadyMs": 1360,
+            "fontsReadyMs": 1934,
+            "allReadyMs": 1934.199999988079,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 288,
+            "catalogHeadingMs": 288,
+            "controlsReadyMs": 1354.300000011921,
+            "fontsReadyMs": 1926.5,
+            "allReadyMs": 1926.5999999940395,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 284,
+            "catalogHeadingMs": 284,
+            "controlsReadyMs": 1371.300000011921,
+            "fontsReadyMs": 1924.199999988079,
+            "allReadyMs": 1924.5999999940395,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 284,
+            "catalogHeadingMs": 284,
+            "controlsReadyMs": 1328.9000000059605,
+            "fontsReadyMs": 1916,
+            "allReadyMs": 1916.2000000178814,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 284,
+            "catalogHeadingMs": 284,
+            "controlsReadyMs": 1354.5,
+            "fontsReadyMs": 1958.5,
+            "allReadyMs": 1958.6000000238419,
+            "cls": 0,
+            "hydratedHosts": 171
+          }
+        ]
+      }
+    },
+    "angular": {
+      "before": {
+        "summary": {
+          "controlsReadyMs": 1452.5,
+          "fontsReadyMs": 2158.300000011921,
+          "allReadyMs": 2158.5,
+          "fcpMs": 1476,
+          "lcpMs": 1476,
+          "cls": 0,
+          "totalLayoutShift": 0,
+          "longTasks": 2,
+          "longTaskMs": 532,
+          "scriptMs": 300.058,
+          "taskMs": 779.8620000000001,
+          "heapBytes": 11905684,
+          "catalogHeadingMs": 1476,
+          "jsRequests": 3,
+          "jsEncodedBytes": 380171,
+          "cssRequests": 1,
+          "cssEncodedBytes": 3236,
+          "fontRequests": 1,
+          "fontEncodedBytes": 349324
+        },
+        "runs": [
+          {
+            "fcpMs": 1472,
+            "catalogHeadingMs": 1472,
+            "controlsReadyMs": 1449.9000000059605,
+            "fontsReadyMs": 2158.0999999940395,
+            "allReadyMs": 2158.199999988079,
+            "cls": 0,
+            "hydratedHosts": 183
+          },
+          {
+            "fcpMs": 1476,
+            "catalogHeadingMs": 1476,
+            "controlsReadyMs": 1452.5,
+            "fontsReadyMs": 2158.300000011921,
+            "allReadyMs": 2158.4000000059605,
+            "cls": 0,
+            "hydratedHosts": 183
+          },
+          {
+            "fcpMs": 1472,
+            "catalogHeadingMs": 1472,
+            "controlsReadyMs": 1448.6000000238419,
+            "fontsReadyMs": 2158.2000000178814,
+            "allReadyMs": 2158.5,
+            "cls": 0,
+            "hydratedHosts": 183
+          },
+          {
+            "fcpMs": 1492,
+            "catalogHeadingMs": 1492,
+            "controlsReadyMs": 1467.5999999940395,
+            "fontsReadyMs": 2177.4000000059605,
+            "allReadyMs": 2177.4000000059605,
+            "cls": 0,
+            "hydratedHosts": 183
+          },
+          {
+            "fcpMs": 1484,
+            "catalogHeadingMs": 1484,
+            "controlsReadyMs": 1459.5,
+            "fontsReadyMs": 2168.5999999940395,
+            "allReadyMs": 2169,
+            "cls": 0,
+            "hydratedHosts": 183
+          }
+        ]
+      },
+      "after": {
+        "summary": {
+          "controlsReadyMs": 1104.9000000059605,
+          "fontsReadyMs": 1767,
+          "allReadyMs": 1767.6000000238419,
+          "fcpMs": 1068,
+          "lcpMs": 1068,
+          "cls": 0,
+          "totalLayoutShift": 0,
+          "longTasks": 1,
+          "longTaskMs": 415,
+          "scriptMs": 229.576,
+          "taskMs": 715.241,
+          "heapBytes": 11698964,
+          "catalogHeadingMs": 1068,
+          "jsRequests": 4,
+          "jsEncodedBytes": 215726,
+          "cssRequests": 1,
+          "cssEncodedBytes": 3236,
+          "fontRequests": 1,
+          "fontEncodedBytes": 349324
+        },
+        "runs": [
+          {
+            "fcpMs": 1072,
+            "catalogHeadingMs": 1072,
+            "controlsReadyMs": 1110.199999988079,
+            "fontsReadyMs": 1769.199999988079,
+            "allReadyMs": 1769.9000000059605,
+            "cls": 0,
+            "hydratedHosts": 183
+          },
+          {
+            "fcpMs": 1060,
+            "catalogHeadingMs": 1060,
+            "controlsReadyMs": 1101.4000000059605,
+            "fontsReadyMs": 1760.2999999821186,
+            "allReadyMs": 1760.5,
+            "cls": 0,
+            "hydratedHosts": 183
+          },
+          {
+            "fcpMs": 1072,
+            "catalogHeadingMs": 1072,
+            "controlsReadyMs": 1109.5,
+            "fontsReadyMs": 1770.3999999761581,
+            "allReadyMs": 1770.5,
+            "cls": 0,
+            "hydratedHosts": 183
+          },
+          {
+            "fcpMs": 1064,
+            "catalogHeadingMs": 1064,
+            "controlsReadyMs": 1101.2000000178814,
+            "fontsReadyMs": 1767,
+            "allReadyMs": 1767.6000000238419,
+            "cls": 0,
+            "hydratedHosts": 183
+          },
+          {
+            "fcpMs": 1068,
+            "catalogHeadingMs": 1068,
+            "controlsReadyMs": 1104.9000000059605,
+            "fontsReadyMs": 1762,
+            "allReadyMs": 1762,
+            "cls": 0,
+            "hydratedHosts": 183
+          }
+        ]
+      }
+    }
+  },
+  "validation": {
+    "csrProductionCases": 18,
+    "csrCoverage": "Five catalogs and nested relative deployment; desktop, delayed CSS/font and a separate first click before font release. Zero initial layout shift, no visible unhydrated controls, no runtime or asset errors. Angular model-to-view and view-to-model production forms verified.",
+    "initialMotionBrowserCases": 32,
+    "ssrContracts": 54,
+    "ssrAndCsrPropertyCases": 6,
+    "fieldFontGeometry": {
+      "boxes": 37,
+      "maxShiftPx": 0
+    },
+    "angularPackedConsumerTypes": [
+      "Bundler",
+      "NodeNext",
+      "Node10"
+    ],
+    "angularPublicPackage": "Actual package tarball; forms-only dependency graph contains no Core runtime; both public entries and VALUE_ACCESSORS share the same directive classes",
+    "angularRegression": "SSR hydration and exactly-once first events, patch/reset/disable/remount, legacy form contracts, repeated generator checks and source type checking passed",
+    "viteBuildCases": "Absolute base, relative base and source maps; emitted asset URLs resolve inside the deployment; native lazy filenames retained",
+    "independentAdversarialReview": "PASS: implementation, public package compatibility and URL handling; final measurements repeat both builds with the same harness",
+    "bundleBudgets": "PASS without increasing limits: SSR button 19.19 kB / 19.3 kB; CSR button 15.91 kB / 16 kB; React wrapper 1.19 kB / 2 kB",
+    "packageBudget": {
+      "packedBytes": 9477524,
+      "packedLimit": 9600000,
+      "unpackedBytes": 44576309,
+      "unpackedLimit": 45000000
+    }
+  },
+  "limits": [
+    "Results are local Chromium catalog measurements under a simulated connection, not guarantees for every application, browser or device.",
+    "The Angular bundle improvement is demonstrated by opting into the new forms-only entry with explicit Core registrations. Existing applications retaining the primary proxy entry or AwcUiModule do not automatically receive that reduction.",
+    "FCP and the control readiness checkpoint improved in every catalog. In the four Vite catalogs, controls-plus-font completion was 17–68 ms later in these median runs; Angular improved that completion time by about 391 ms. Do not describe every loading metric as faster.",
+    "The icon font, pre-upgrade CSS and initial interaction-motion gates are unchanged. Early font-independent input is verified separately from the no-input layout measurements."
+  ]
+}

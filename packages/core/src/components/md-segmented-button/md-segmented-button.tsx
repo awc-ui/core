@@ -1,9 +1,10 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Host, h, Prop, Event, EventEmitter, Element, State } from '@stencil/core';
 import { triggerRipple } from '../../utils/ripple';
 
 @Component({
   tag: 'md-segmented-button',
-  styleUrl: 'md-segmented-button.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-segmented-button.css'],
   shadow: true,
 })
 export class MdSegmentedButton {
@@ -60,22 +61,26 @@ export class MdSegmentedButton {
   }
 
   componentDidLoad() {
-    if (
-      typeof window !== 'undefined' &&
-      window.__STENCIL_DEV_MODE__ !== false
-    ) {
-      // Slotted text (e.g. `<md-segmented-button>Day</md-segmented-button>`)
-      // is a valid accessible name once we render `<slot/>` inside the label
-      // wrapper below. Read textContent on the host to detect it — slot
-      // assignment is already resolved by the time componentDidLoad runs.
-      const hasSlottedText = !!this.el.textContent?.trim();
-      if (!this.label && !hasSlottedText && !this.el.hasAttribute('aria-label')) {
-        console.warn(
-          `[md-segmented-button] WCAG 1.1.1: Segment is missing an accessible name. ` +
-          `Provide a label prop, slotted text content, or aria-label attribute.`,
-          this.el,
-        );
+    try {
+      if (
+        typeof window !== 'undefined' &&
+        window.__STENCIL_DEV_MODE__ !== false
+      ) {
+        // Slotted text (e.g. `<md-segmented-button>Day</md-segmented-button>`)
+        // is a valid accessible name once we render `<slot/>` inside the label
+        // wrapper below. Read textContent on the host to detect it — slot
+        // assignment is already resolved by the time componentDidLoad runs.
+        const hasSlottedText = !!this.el.textContent?.trim();
+        if (!this.label && !hasSlottedText && !this.el.hasAttribute('aria-label')) {
+          console.warn(
+            `[md-segmented-button] WCAG 1.1.1: Segment is missing an accessible name. ` +
+            `Provide a label prop, slotted text content, or aria-label attribute.`,
+            this.el,
+          );
+        }
       }
+} finally {
+      completeInitialInteractionMotion(this);
     }
   }
 
@@ -128,6 +133,7 @@ export class MdSegmentedButton {
   @State() private hasSlottedLabel = false;
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     this.hasSlottedLabel = (this.el.textContent || '').trim().length > 0;
   }
 
@@ -209,5 +215,22 @@ export class MdSegmentedButton {
         </span>
       </Host>
     );
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

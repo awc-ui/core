@@ -115,6 +115,36 @@ runtime). Import from there directly, or alias
 `@awc-ui/core/dist/components` → `@awc-ui/core/dist/components-csr` in the
 bundler to switch a whole app (framework wrappers included) in one line.
 
+Choose one runtime family for each application. Keep `components/*` when
+hydrating server-rendered or prerendered HTML; the client-only family cannot
+adopt Declarative Shadow DOM.
+
+### Initial rendering and layout
+
+Controls render their initial checked, selected, open, or populated state
+without replaying interaction animations during registration or hydration.
+The first real action and later updates retain their feedback. Intentional
+loading activity still runs, subject to reduced-motion and static options.
+
+For client-rendered applications, the optional stylesheet below reserves
+minimum space for layout controls while their implementation loads:
+
+```js
+import "@awc-ui/core/css/pre-upgrade.css";
+```
+
+Load it with `tokens.css` before the page paints. Its `.hydrated`-gated size
+floors do not measure application content or guarantee zero layout shift.
+See the [installation guide](https://awc-ui.dev/getting-started/installation/)
+for import choices, font geometry, and the scope of startup benchmarks.
+
+For SSR, build the server renderer and client assets from the same Core
+version, regenerate prerendered HTML after upgrading, and preserve hydration
+metadata. Core keeps nested component classes separate from their parent's
+classes, preserving field labels, padding, and fills through adoption.
+Frameworks that rewrite host classes also need the integration described in
+the [SSR guide](https://awc-ui.dev/frameworks/ssr/).
+
 ## Framework wrappers
 
 The elements work untouched anywhere, but typed wrappers give you props, events

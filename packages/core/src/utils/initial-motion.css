@@ -1,0 +1,11 @@
+/* Initial state is a snapshot. Interaction transitions become available only
+   after owner/child initialization has produced a painted baseline.
+   This intentionally does not suppress loading or functional CSS animations. */
+:host(:not([data-awc-motion-ready])),
+:host(:not([data-awc-motion-ready]))::before,
+:host(:not([data-awc-motion-ready]))::after,
+:host(:not([data-awc-motion-ready])) *,
+:host(:not([data-awc-motion-ready])) *::before,
+:host(:not([data-awc-motion-ready])) *::after {
+  transition-property: none !important;
+}

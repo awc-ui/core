@@ -1,5 +1,5 @@
 export interface SvelteHydration {
-  /** Capture SSR host annotations in SvelteKit's client init hook. */
+  /** Capture a root and its descendants before claim. Repeated or distinct roots share one handoff per document. */
   capture(root?: ParentNode): void;
   /** Restore missing annotations in onMount before registering components. */
   restore(): void;

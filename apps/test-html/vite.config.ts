@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import { awcLazyRuntime } from '../../scripts/vite-awc-runtime.mjs';
 
 // Pin a stable, distinct port so this playground can run in parallel with
 // the framework playgrounds (HTML=5170, React=5171, Vue=5172, Svelte=5173,
@@ -7,6 +8,7 @@ import { defineConfig } from 'vite';
 // more here than dev convenience, because the whole point of these apps
 // is to inspect each framework on a known address side-by-side.
 export default defineConfig({
+  plugins: [awcLazyRuntime({ initialTags: ['md-button', 'md-checkbox', 'md-text-field', 'md-select', 'md-loading-indicator'] })],
   server: {
     port: 5170,
     strictPort: true,

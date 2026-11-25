@@ -32,18 +32,23 @@ let requested = false;
 
 export function ensureLoadingIndicator(): void {
   if (requested) return;
+  // The hydrate runner provides its own registry and exposes customElements
+  // as null. Server renders must neither import browser definitions nor latch
+  // the request flag before a browser registry exists.
+  const registry = typeof customElements === 'undefined' ? null : customElements;
+  if (!registry) return;
   requested = true;
-  if (typeof customElements === 'undefined' || customElements.get(TAG)) return;
+  if (registry.get(TAG)) return;
   import('../components/md-loading-indicator/md-loading-indicator').then(
     (m: Record<string, unknown>) => {
-      if (customElements.get(TAG)) return;
+      if (registry.get(TAG)) return;
       const define = m.defineCustomElement;
       if (typeof define === 'function') {
         define();
       } else if (typeof m.MdLoadingIndicator === 'function') {
         // Fallback for a Stencil that stops exporting the per-module helper:
         // the transformed class itself is a valid custom-element constructor.
-        customElements.define(TAG, m.MdLoadingIndicator as CustomElementConstructor);
+        registry.define(TAG, m.MdLoadingIndicator as CustomElementConstructor);
       }
     },
     () => {

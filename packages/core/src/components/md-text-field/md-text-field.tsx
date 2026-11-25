@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { createId } from '../../utils/id';
 import { getValidityOf, submitFormOnEnter, InlineValidationPresenter, withValidationCheck, withValidationReport } from '../../utils/form';
 import { AttachInternals, Build, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, Watch, h } from '@stencil/core';
@@ -12,7 +13,7 @@ const RESTRICT_PATTERNS: Record<string, RegExp> = {
 
 @Component({
   tag: 'md-text-field',
-  styleUrl: 'md-text-field.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-text-field.css'],
   // delegatesFocus makes host.focus() (and click-anywhere) land in the inner
   // input — previously host.focus() was a literal no-op.
   shadow: { delegatesFocus: true },
@@ -331,6 +332,7 @@ export class MdTextField {
   }
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     this.bridgeFormatterProps();
     // bare attribute forms (`clearable`, `password-toggle`, `speech-to-text`)
     // parse as '' — treat as the internal mode instead of silently off
@@ -384,6 +386,10 @@ export class MdTextField {
         this.internals?.setValidity({ customError: true }, this.customValidityMessage, input);
         return;
       }
+      // The server's input mock may not implement native constraint validity.
+      // Skip the raw-value probe before it can overwrite the formatted display.
+      const v = input.validity;
+      if (!v) return;
       // Validity must describe the SUBMITTED value (this.value), not the
       // formatted display: pattern="[0-9]+" + a grouping formatter flagged
       // valid data as patternMismatch after blur. Probe raw synchronously
@@ -407,7 +413,6 @@ export class MdTextField {
       }
       // SNAPSHOT immediately: input.validity is LIVE — restoring the display
       // value below would re-flip every flag before we read it.
-      const v = input.validity;
       const flags = {
         valueMissing: v.valueMissing,
         typeMismatch: v.typeMismatch,
@@ -603,33 +608,37 @@ export class MdTextField {
   }
 
   componentDidLoad() {
-    const root = this.el.shadowRoot;
-    const leadingSlot = root?.querySelector('slot[name="leading-icon"]') as HTMLSlotElement | null;
-    leadingSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedLeading = leadingSlot.assignedNodes().length > 0;
-    });
-    const trailingSlot = root?.querySelector('slot[name="trailing-icon"]') as HTMLSlotElement | null;
-    trailingSlot?.addEventListener('slotchange', () => {
+    try {
+      const root = this.el.shadowRoot;
+      const leadingSlot = root?.querySelector('slot[name="leading-icon"]') as HTMLSlotElement | null;
+      leadingSlot?.addEventListener('slotchange', () => {
+        this.hasSlottedLeading = leadingSlot.assignedNodes().length > 0;
+      });
+      const trailingSlot = root?.querySelector('slot[name="trailing-icon"]') as HTMLSlotElement | null;
+      trailingSlot?.addEventListener('slotchange', () => {
+        this.syncTrailingSlotState(trailingSlot);
+      });
+      const chipsSlot = root?.querySelector('slot[name="chips"]') as HTMLSlotElement | null;
+      chipsSlot?.addEventListener('slotchange', () => {
+        this.hasSlottedChips = chipsSlot.assignedNodes().length > 0;
+      });
+      // Detect statically-slotted icons present at first render: the initial
+      // `slotchange` can fire before the listeners above are attached, so sync
+      // once on load (matches md-icon-button's behaviour).
+      this.hasSlottedLeading = (leadingSlot?.assignedNodes().length ?? 0) > 0;
+      this.hasSlottedChips = (chipsSlot?.assignedNodes().length ?? 0) > 0;
       this.syncTrailingSlotState(trailingSlot);
-    });
-    const chipsSlot = root?.querySelector('slot[name="chips"]') as HTMLSlotElement | null;
-    chipsSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedChips = chipsSlot.assignedNodes().length > 0;
-    });
-    // Detect statically-slotted icons present at first render: the initial
-    // `slotchange` can fire before the listeners above are attached, so sync
-    // once on load (matches md-icon-button's behaviour).
-    this.hasSlottedLeading = (leadingSlot?.assignedNodes().length ?? 0) > 0;
-    this.hasSlottedChips = (chipsSlot?.assignedNodes().length ?? 0) > 0;
-    this.syncTrailingSlotState(trailingSlot);
 
-    if (this.multiline === 'auto-grow') {
-      this.autoGrow();
+      if (this.multiline === 'auto-grow') {
+        this.autoGrow();
+      }
+
+      // Initialize display value with formatted version if not focused
+      this.syncDisplayValue();
+      this.updateValidity();
+} finally {
+      completeInitialInteractionMotion(this);
     }
-
-    // Initialize display value with formatted version if not focused
-    this.syncDisplayValue();
-    this.updateValidity();
   }
 
   @Watch('value')
@@ -688,6 +697,7 @@ export class MdTextField {
   }
 
   componentDidRender() {
+    initialInteractionMotionRendered(this);
     if (this.pendingTypeResync) {
       this.pendingTypeResync = false;
       const el = this.inputEl;
@@ -1078,6 +1088,7 @@ export class MdTextField {
   };
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.recognition?.abort();
     this.recognition = undefined;
     clearTimeout(this.debounceTimer);
@@ -1421,5 +1432,14 @@ export class MdTextField {
         )}
       </Host>
     );
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

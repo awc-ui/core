@@ -18,6 +18,25 @@ Or from the repo root:
 pnpm dev:html
 ```
 
+To compare the production client render with per-request server rendering:
+
+```bash
+pnpm --filter @awc-ui/core build
+pnpm --filter @awc-ui/test-html build
+pnpm --filter @awc-ui/test-html preview --port 5176 --strictPort
+# In a second terminal:
+pnpm --filter @awc-ui/test-html preview:ssr
+# → http://127.0.0.1:5177/
+```
+
+The SSR page delivers declarative shadow DOM and then loads the same client
+application. Use `http://127.0.0.1:5177/?client=off` to inspect the delivered
+markup without running application JavaScript. Run
+`pnpm --filter @awc-ui/test-html test:ssr-preview` after building to check
+server-only rendering, hydration layout, node reuse, and interactions.
+Restart the SSR preview after rebuilding: each server instance serves an
+allowlist of the built asset bytes and does not resolve request URLs as paths.
+
 ## Why it exists
 
 The React / Vue / Svelte / Angular playgrounds (`apps/test-*`) prove

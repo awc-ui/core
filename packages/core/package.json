@@ -1,6 +1,6 @@
 {
   "name": "@awc-ui/core",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Accessible Material Design 3 Web Components for React, Angular, Vue, and Svelte, with SSR, theming, RTL, forms, and custom elements",
   "keywords": [
     "material-design",
@@ -58,7 +58,7 @@
     {
       "name": "custom element md-button (SSR-capable default, min+br)",
       "path": "dist/components/md-button.js",
-      "limit": "19 kB"
+      "limit": "19.3 kB"
     },
     {
       "name": "custom element md-button (CSR build, min+br)",
@@ -137,6 +137,10 @@
     "./ssr/sveltekit": {
       "types": "./ssr/sveltekit.d.mts",
       "import": "./ssr/sveltekit.mjs"
+    },
+    "./ssr/classes": {
+      "types": "./ssr/classes.d.mts",
+      "import": "./ssr/classes.mjs"
     }
   },
   "customElements": "./custom-elements.json",
@@ -172,6 +176,8 @@
     "test:spec:coverage:html": "node scripts/coverage-html.mjs",
     "test:ssr:coverage": "node scripts/ssr-coverage.mjs",
     "test:ssr": "node scripts/ssr-smoke.mjs",
+    "test:motion": "node --test scripts/initial-motion.test.mjs",
+    "test:font-layout": "node --test scripts/font-geometry.test.mjs",
     "test:csr": "node --test scripts/overlay-csr.test.mjs scripts/tables-csr.test.mjs",
     "lint": "tsc --noEmit",
     "dev": "stencil build --dev --watch --serve",

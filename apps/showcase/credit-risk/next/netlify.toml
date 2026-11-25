@@ -41,7 +41,7 @@
   # `@awc-ui/core/hydrate` pass. Without it the deploy succeeds, the pages look
   # right in a browser, and every response body ships bare custom elements.
   AWC_TARGET = "netlify"
-  NODE_VERSION = "20"
+  NODE_VERSION = "22"
 
 [[plugins]]
   # Pinned through the devDependency in this app's package.json.

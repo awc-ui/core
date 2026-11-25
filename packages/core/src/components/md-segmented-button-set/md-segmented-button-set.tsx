@@ -1,9 +1,10 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Host, h, Prop, Element, Event, EventEmitter, Listen, Watch } from '@stencil/core';
 import { SegmentElement } from '../../utils/types';
 
 @Component({
   tag: 'md-segmented-button-set',
-  styleUrl: 'md-segmented-button-set.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-segmented-button-set.css'],
   shadow: true,
 })
 export class MdSegmentedButtonSet {
@@ -25,7 +26,11 @@ export class MdSegmentedButtonSet {
   }
 
   componentDidLoad() {
-    this.syncSegments();
+    try {
+      this.syncSegments();
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
 
   @Listen('mdSegmentClick')
@@ -105,5 +110,26 @@ export class MdSegmentedButtonSet {
         <slot onSlotchange={this.handleSlotChange}></slot>
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

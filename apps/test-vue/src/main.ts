@@ -1,10 +1,9 @@
 import { createApp } from 'vue';
 import { defineCustomElements } from '@awc-ui/core/loader';
-import '@awc-ui/tokens/tokens.css';
-import 'material-icons/iconfont/material-icons.css';
-import 'material-symbols/outlined.css';
+import { activateDeferredFontStylesheet } from '../../shared/deferred-fonts';
 import App from './App.vue';
 
+activateDeferredFontStylesheet();
 defineCustomElements(window);
 
 const app = createApp(App);

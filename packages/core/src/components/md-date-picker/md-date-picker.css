@@ -319,6 +319,9 @@
   position: absolute;
   inset: 0;
   background: color-mix(in srgb, var(--_scrim-color) 32%, transparent);
+}
+
+.md-date-picker__modal--entering .md-date-picker__scrim {
   animation: md-date-picker-fade-in var(--md-sys-motion-duration-short3, 150ms)
     var(--md-sys-motion-easing-standard, ease);
 }
@@ -367,14 +370,14 @@
 }
 
 /* Modal / range — scale entrance (non-docked). */
-.md-date-picker__panel:not(.md-date-picker__panel--docked):not(.md-date-picker__panel--bloom-out) {
+.md-date-picker__panel--bloom-in:not(.md-date-picker__panel--docked) {
   animation: md-date-picker-scale var(--md-sys-motion-duration-medium2, 300ms)
     var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1));
   transform-origin: center top;
 }
 
 /* Docked popup — expressive bloom entrance (matches month/year menus). */
-.md-date-picker__panel--docked.md-date-picker__panel--bloom-in:not(.md-date-picker__panel--bloom-out) {
+.md-date-picker__panel--docked.md-date-picker__panel--bloom-in {
   animation: md-date-picker-selection-bloom-in
     var(--_selection-bloom-duration)
     var(--_selection-bloom-easing)
@@ -1454,7 +1457,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .md-date-picker__scrim,
+  .md-date-picker__modal--entering .md-date-picker__scrim,
   .md-date-picker__modal--closing .md-date-picker__scrim,
   .md-date-picker__panel:not(.md-date-picker__panel--docked),
   .md-date-picker__panel--docked.md-date-picker__panel--bloom-in,

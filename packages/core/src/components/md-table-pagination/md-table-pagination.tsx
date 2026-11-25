@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import {
   Component,
   Host,
@@ -28,7 +29,7 @@ import {
  */
 @Component({
   tag: 'md-table-pagination',
-  styleUrl: 'md-table-pagination.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-table-pagination.css'],
   shadow: true,
 })
 export class MdTablePagination {
@@ -276,5 +277,30 @@ export class MdTablePagination {
         </div>
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidLoad() {
+    completeInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

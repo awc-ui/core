@@ -157,6 +157,9 @@
   font-size: max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px));
   font-weight: 500;
   line-height: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
+}
+
+.md-table-toolbar__selection-caption--entering {
   animation: md-table-toolbar-fade var(--_motion-duration) var(--_motion-easing);
 }
 
@@ -167,7 +170,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   :host { transition: none; }
-  .md-table-toolbar__selection-caption { animation: none; }
+  .md-table-toolbar__selection-caption--entering { animation: none; }
 }
 
 /* ==========================================================

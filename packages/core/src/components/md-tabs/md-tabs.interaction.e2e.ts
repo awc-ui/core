@@ -6,6 +6,7 @@
  * survival, wrapper-slot flattening, wheel overflow access, indicator glide.
  */
 import { newE2EPage } from '@stencil/core/testing';
+import type { Page } from 'puppeteer';
 
 const TABS = `
   <md-tabs aria-label="Sections">
@@ -359,27 +360,71 @@ describe('md-tabs interaction e2e', () => {
     expect((await state(page)).active).toBe(1);
   });
 
-  it('tabs forwarded through a wrapper <slot> are managed (flatten:true)', async () => {
+  it('links forwarded tabs and panels through the wrapper slots', async () => {
     const page = await newE2EPage();
+    let releaseTabs!: () => void;
+    const tabsGate = new Promise<void>(resolve => { releaseTabs = resolve; });
     await page.setContent(`
       <div id="w">
-        <md-tab label="A" active></md-tab>
-        <md-tab label="B"></md-tab>
+        <md-tab label="A" slot="tabs"></md-tab>
+        <md-tab label="B" slot="tabs"></md-tab>
+        <md-tab-panel id="panel-a" slot="panels">A content</md-tab-panel>
+        <md-tab-panel id="panel-b" slot="panels">B content</md-tab-panel>
       </div>
     `);
+    // setContent installs its own request handler for the fixture navigation.
+    (page as unknown as Page).removeAllListeners('request');
+    page.on('request', request => {
+      if (new URL(request.url()).pathname.endsWith('/md-tabs.entry.js')) {
+        void tabsGate.then(() => request.continue());
+      } else {
+        void request.continue();
+      }
+    });
     await page.evaluate(() => {
       const w = document.getElementById('w')!;
       const shadow = w.attachShadow({ mode: 'open' });
-      shadow.innerHTML = '<md-tabs aria-label="wrapped"><slot></slot></md-tabs>';
+      shadow.innerHTML = `
+        <md-tabs id="wrapped-tabs" active-tab-index="1" aria-label="wrapped"><slot name="tabs"></slot></md-tabs>
+        <md-tab-panels for="wrapped-tabs"><slot name="panels"></slot></md-tab-panels>`;
     });
+    let beforeTabsLoad!: { controls: (string | null)[]; hydrated: boolean };
+    try {
+      await page.waitForFunction(() => document.querySelector('#panel-b')!.hasAttribute('active'));
+      // The panel region may load before its forwarded tablist. It must wire
+      // the existing tabs immediately, not wait for a future selection event.
+      beforeTabsLoad = await page.evaluate(() => ({
+        controls: Array.from(document.querySelectorAll('md-tab')).map(tab => tab.getAttribute('aria-controls')),
+        hydrated: document.getElementById('w')!.shadowRoot!.querySelector('md-tabs')!.classList.contains('hydrated'),
+      }));
+    } finally {
+      releaseTabs();
+    }
     await page.waitForChanges();
-    await new Promise((r) => setTimeout(r, 100));
+    await page.waitForFunction(() => document.getElementById('w')!.shadowRoot!
+      .querySelector('md-tabs')!.classList.contains('hydrated'));
+    expect(beforeTabsLoad.hydrated).toBe(false);
+    expect(beforeTabsLoad.controls).toEqual(['panel-a', 'panel-b']);
     const s = await page.evaluate(() => {
       const tabs = Array.from(document.querySelectorAll('md-tab'));
-      return { ids: tabs.map((t) => t.id), tabindexes: tabs.map((t) => t.getAttribute('tabindex')) };
+      const panels = Array.from(document.querySelectorAll('md-tab-panel'));
+      return {
+        ids: tabs.map(t => t.id),
+        tabindexes: tabs.map(t => t.getAttribute('tabindex')),
+        controls: tabs.map(t => t.getAttribute('aria-controls')),
+        labelledBy: panels.map(p => p.getAttribute('aria-labelledby')),
+        inert: panels.map(p => p.hasAttribute('inert')),
+      };
     });
-    expect(s.ids.every((id) => id.length > 0)).toBe(true); // registered
-    expect(s.tabindexes).toEqual(['0', '-1']); // roving managed
+    expect(s.ids.every(id => id.length > 0)).toBe(true);
+    expect(s.tabindexes).toEqual(['-1', '0']);
+    expect(s.controls).toEqual(['panel-a', 'panel-b']);
+    expect(s.labelledBy).toEqual(s.ids);
+    expect(s.inert).toEqual([true, false]);
+
+    await page.evaluate(() => (document.querySelector('md-tab') as HTMLElement).click());
+    await page.waitForFunction(() => !document.querySelector('#panel-a')!.hasAttribute('inert') &&
+      document.querySelector('#panel-b')!.hasAttribute('inert'));
   });
 
   it('mdTabChange payload carries index AND previousIndex', async () => {

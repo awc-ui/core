@@ -87,6 +87,22 @@ jobs:
         # build step above.
         run: pnpm --filter @awc-ui/core test:ssr
 
+      - name: Install browser for initial interaction motion checks
+        run: pnpm --filter @awc-ui/core exec puppeteer browsers install chrome-headless-shell
+
+      - name: Initial interaction motion gate (all components, CSR and SSR)
+        run: pnpm --filter @awc-ui/core test:motion
+
+      - name: Field layout with delayed icon fonts and custom SVG slots
+        run: pnpm --filter @awc-ui/core test:font-layout
+
+      - name: First paint and lazy component loading (desktop and mobile)
+        run: |
+          node --test scripts/vite-awc-runtime.test.mjs
+          pnpm --filter @awc-ui/test-html build
+          AWC_FIRST_PAINT_BUILD=1 pnpm --filter @awc-ui/test-html test:first-paint
+          pnpm --filter @awc-ui/test-html test:ssr-preview
+
       - name: Spec tests (with coverage)
         # Runs jest directly via jest.coverage.config.cjs — that file's header
         # documents that `stencil test --spec --coverage` wedges and ignores
@@ -241,6 +257,51 @@ jobs:
       - run: pnpm --filter @awc-ui/react build
       - run: pnpm exec puppeteer browsers install chrome
       - run: pnpm verify:starters --starter=${{ matrix.starter }}
+
+  framework-startup:
+    name: Production startup (CSR, SSR and Astro SSG)
+    runs-on: ubuntu-latest
+    needs: core
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with:
+          name: core-dist
+          path: packages/core/
+      - run: pnpm exec puppeteer browsers install chrome-headless-shell
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: scripts/playground-icons-requirements.txt
+      - name: Verify compact icon source coverage
+        run: |
+          python -m pip install -r scripts/playground-icons-requirements.txt
+          node --test scripts/playground-icon-literals.test.mjs
+          python scripts/generate-playground-icons.py --check
+      - name: Build framework dependencies and production applications
+        run: |
+          pnpm --workspace-concurrency=2 --filter @awc-ui/angular --filter @awc-ui/react --filter @awc-ui/vue --filter @awc-ui/showcase-kit build
+          pnpm --workspace-concurrency=2 --filter @awc-ui/test-html --filter @awc-ui/test-react --filter @awc-ui/test-vue --filter @awc-ui/test-svelte --filter @awc-ui/test-angular build
+          pnpm --filter @awc-ui/test-html exec vite build --base ./ --outDir dist/relative-base
+          pnpm --workspace-concurrency=2 --filter @awc-ui/showcase-credit-risk-next --filter @awc-ui/showcase-credit-risk-nuxt --filter @awc-ui/showcase-credit-risk-sveltekit --filter @awc-ui/showcase-credit-risk-angular-ssr --filter @awc-ui/showcase-credit-risk-astro build
+          pnpm --filter @awc-ui/example-angular-ssr build
+      - name: Verify cold loading, first input and rendered icons
+        run: |
+          pnpm verify:framework-startup
+          node scripts/verify-playground-icons.mjs --catalogs
+      - name: Verify public wrappers and compiled framework updates
+        run: pnpm verify:wrapper-startup
+      - name: Verify server content and delayed hydration on every route
+        run: pnpm verify:ssr-startup
+      - name: Verify Angular prerender adoption and first interaction
+        run: pnpm --filter @awc-ui/example-angular-ssr verify:startup
 
   test-ct:
     name: Component Tests (Playwright CT + coverage)

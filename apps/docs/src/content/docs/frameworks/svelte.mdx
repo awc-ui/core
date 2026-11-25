@@ -46,6 +46,19 @@ property spelling `onmdInput`. Use `value` plus the component's `mdInput` or
 `mdChange` event to synchronize forms; the custom elements do not expose a
 Svelte `bind:value` contract.
 
+Use Svelte `class:` directives for dynamic classes on an `md-*` host:
+
+```svelte
+<md-switch selected={enabled} class:highlighted={highlighted}></md-switch>
+```
+
+Changing a whole `class={...}` value replaces the component's own classes too.
+After hydration, this can erase visual state such as a switch's selected thumb
+position while its `selected` property remains true. Class directives update
+only the named application class. Keep any static `class="..."` value stable,
+or put a changing whole class value on an outer wrapper. The SSR helper protects
+the initial framework handoff; it does not observe class replacements forever.
+
 `defineCustomElements` remains available from `@awc-ui/svelte` for applications
 that deliberately deploy the lazy loader and its runtime chunks. Static component
 imports work with Vite's module graph and keep registration limited to the

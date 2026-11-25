@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { AttachInternals, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, Watch, forceUpdate, h } from '@stencil/core';
 import { LazyLoadingIndicator } from '../../utils/lazy-loading-indicator';
 import {
@@ -12,7 +13,7 @@ import { setFormValue, checkValidityOf, reportValidityOf, getValidityOf, InlineV
 import { VirtualSelectController } from '../../utils/virtual-select-controller';
 import { isWasmSupported, FilterMode } from '../../utils/wasm-option-store';
 import { VirtualMenuProvider } from '../../utils/types';
-import { parseJsonArrayProp } from '../../utils/json-prop';
+import { parseJsonArrayProp, readSsrInitialValues } from '../../utils/json-prop';
 
 let multiSelectIdCounter = 0;
 
@@ -56,7 +57,7 @@ export interface MdMultiSelectOption {
  */
 @Component({
   tag: 'md-multi-select',
-  styleUrl: 'md-multi-select.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-multi-select.css'],
   shadow: true,
   formAssociated: true,
 })
@@ -172,8 +173,13 @@ export class MdMultiSelect {
   /** Fixed virtualized row height (px). Auto-measured from the first row if unset. */
   @Prop({ attribute: 'row-height' }) rowHeight?: number;
 
-  /** Currently selected values. */
-  @Prop({ mutable: true }) value: string[] = [];
+  private readonly unsetValue: string[] = [];
+
+  /**
+   * Currently selected values.
+   * @default []
+   */
+  @Prop({ mutable: true }) value: string[] = this.unsetValue;
 
   /** Maximum number of selected items. `0` = unlimited. */
   @Prop({ attribute: 'max-selected' }) maxSelected: number = 0;
@@ -468,30 +474,37 @@ export class MdMultiSelect {
   private defaultValue: string[] = [];
 
   componentDidLoad() {
-    this.wireSlottedTrigger();
-    // @Watch('open') does not fire for the initial value, so a declaratively-open
-    // menu (`open` set at load) would render the expanded chrome (caret up,
-    // aria-expanded="true") with no actual menu surface. Show it now — without
-    // autoFocus, so an initially-open select doesn't steal focus on page load.
-    if (this.open && !this.isDisabled) {
-      this.menuEl?.show?.({ autoFocus: false });
-    }
+    try {
+      this.wireSlottedTrigger();
+      // @Watch('open') does not fire for the initial value, so a declaratively-open
+      // menu (`open` set at load) would render the expanded chrome (caret up,
+      // aria-expanded="true") with no actual menu surface. Show it now — without
+      // autoFocus, so an initially-open select doesn't steal focus on page load.
+      if (this.open && !this.isDisabled) {
+        this.menuEl?.show?.({ autoFocus: false });
+      }
 
-    // The trigger can MOVE while the menu is open without any scroll/resize —
-    // e.g. selecting a value adds a chip beside the button trigger, reflowing the
-    // frame and shifting the trigger. md-menu only re-anchors on scroll/resize, so
-    // watch the frame and nudge the open menu to follow its anchor.
-    if (typeof ResizeObserver !== 'undefined' && this.frameEl) {
-      this._frameRO = new ResizeObserver(() => {
-        if (this.open) void this.menuEl?.reposition?.();
-      });
-      this._frameRO.observe(this.frameEl);
+      // The trigger can MOVE while the menu is open without any scroll/resize —
+      // e.g. selecting a value adds a chip beside the button trigger, reflowing the
+      // frame and shifting the trigger. md-menu only re-anchors on scroll/resize, so
+      // watch the frame and nudge the open menu to follow its anchor.
+      if (typeof ResizeObserver !== 'undefined' && this.frameEl) {
+        this._frameRO = new ResizeObserver(() => {
+          if (this.open) void this.menuEl?.reposition?.();
+        });
+        this._frameRO.observe(this.frameEl);
+      }
+} finally {
+      completeInitialInteractionMotion(this);
     }
   }
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
+    const seed = readSsrInitialValues(this.el);
+    if (seed && this.value === this.unsetValue) this.value = seed;
     this.refreshOptions();
-    if (this.value.length === 0) {
+    if (!seed && this.value.length === 0) {
       const preselected = this.optionsData
         .filter((o) => o.selected && !o.disabled)
         .map((o) => o.value);
@@ -914,6 +927,7 @@ export class MdMultiSelect {
 
   /** Register/clear the virtual provider on the menu once it's rendered. */
   componentDidRender() {
+    initialInteractionMotionRendered(this);
     this.syncSearchField();
     if (!this.menuEl) return;
     if (this.vc.active && !this.providerSet) {
@@ -980,6 +994,7 @@ export class MdMultiSelect {
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.wiredTrigger?.removeEventListener('click', this.toggleOpen);
     this.wiredTrigger = null;
     clearTimeout(this.searchDebounce);
@@ -1124,7 +1139,7 @@ export class MdMultiSelect {
               aria-hidden="true"
             >
               <span class="md-multi-select__caret material-symbols-outlined" part="caret">
-                <slot name="dropdown-icon">{this.dropdownIcon}</slot>
+                <slot name="dropdown-icon"><span class="md-multi-select__caret-glyph">{this.dropdownIcon}</span></slot>
               </span>
             </span>,
           ]
@@ -1675,5 +1690,14 @@ export class MdMultiSelect {
         </div>
       </Host>
     );
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

@@ -17,3 +17,8 @@ them. The root layout restores missing annotations before dynamically importing
 For a standalone npm installation, use `starters/sveltekit`. Its source requires
 the package release containing `@awc-ui/core/ssr/sveltekit`; the packed-candidate
 starter harness verifies that integration before the release is published.
+
+Use `class:highlighted={highlighted}` for dynamic classes on AWC hosts. Replacing
+an entire `class={...}` after hydration also removes AWC's selected/variant
+classes. Keep whole-class updates on a wrapper instead. The real compiled Svelte
+regression is `node scripts/verify-svelte-updates.mjs` from the repository root.

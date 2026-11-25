@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { createId } from '../../utils/id';
 import { AttachInternals, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, VNode, Watch, h } from '@stencil/core';
 import {
@@ -51,7 +52,7 @@ export interface MdOtpFieldValidityDetail {
  */
 @Component({
   tag: 'md-otp-field',
-  styleUrl: 'md-otp-field.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-otp-field.css'],
   shadow: true,
   formAssociated: true,
 })
@@ -220,6 +221,7 @@ export class MdOtpField {
   }
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     // Normalize any authored initial value through the same pipeline as user
     // input. @Watch is inert before load, so sync explicitly.
     const { clean } = this.sanitize(this.value ?? '');
@@ -229,11 +231,15 @@ export class MdOtpField {
   }
 
   componentDidLoad() {
-    // Re-publish validity now that the cell refs exist: the willLoad publish
-    // had no anchor, and reportValidity() needs a FOCUSABLE anchor (the first
-    // cell) or the browser silently shows no bubble. Same validity state, so
-    // emitValidityChange stays silent.
-    this.syncValidity();
+    try {
+      // Re-publish validity now that the cell refs exist: the willLoad publish
+      // had no anchor, and reportValidity() needs a FOCUSABLE anchor (the first
+      // cell) or the browser silently shows no bubble. Same validity state, so
+      // emitValidityChange stays silent.
+      this.syncValidity();
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
 
   @Watch('value')
@@ -691,5 +697,22 @@ export class MdOtpField {
         )}
       </Host>
     );
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

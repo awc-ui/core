@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import {
   Component,
   Host,
@@ -25,7 +26,7 @@ export interface MdBreadcrumbsExpandDetail {
 
 @Component({
   tag: 'md-breadcrumbs',
-  styleUrl: 'md-breadcrumbs.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-breadcrumbs.css'],
   shadow: true,
 })
 export class MdBreadcrumbs {
@@ -91,6 +92,7 @@ export class MdBreadcrumbs {
   @State() private itemCount = 0;
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     // Seed itemCount + collapsed/index/total props on items BEFORE the
     // first render so we don't trigger Stencil's "state changed during
     // componentDidLoad" warning. Light-DOM children are accessible at
@@ -99,10 +101,14 @@ export class MdBreadcrumbs {
   }
 
   componentDidLoad() {
-    const main = this.el.shadowRoot?.querySelector(
-      'slot:not([name])',
-    ) as HTMLSlotElement | null;
-    main?.addEventListener('slotchange', () => this.refreshItems());
+    try {
+      const main = this.el.shadowRoot?.querySelector(
+        'slot:not([name])',
+      ) as HTMLSlotElement | null;
+      main?.addEventListener('slotchange', () => this.refreshItems());
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
 
   @Watch('maxItems')
@@ -276,5 +282,22 @@ export class MdBreadcrumbs {
         </ol>
       </Host>
     );
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

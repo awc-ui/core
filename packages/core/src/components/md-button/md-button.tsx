@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Fragment, Host, h, Prop, State, Event, EventEmitter, Element, AttachInternals } from '@stencil/core';
 import { LazyLoadingIndicator } from '../../utils/lazy-loading-indicator';
 import { triggerRipple } from '../../utils/ripple';
@@ -45,7 +46,7 @@ export interface MdButtonChangeDetail {
 
 @Component({
   tag: 'md-button',
-  styleUrl: 'md-button.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-button.css'],
   shadow: true,
   formAssociated: true,
 })
@@ -197,18 +198,22 @@ export class MdButton {
   }
 
   componentDidLoad() {
-    const shadow = this.el.shadowRoot;
-    if (!shadow) return;
+    try {
+      const shadow = this.el.shadowRoot;
+      if (!shadow) return;
 
-    const leadingSlot = shadow.querySelector('slot[name="leading-icon"]') as HTMLSlotElement | null;
-    const trailingSlot = shadow.querySelector('slot[name="trailing-icon"]') as HTMLSlotElement | null;
+      const leadingSlot = shadow.querySelector('slot[name="leading-icon"]') as HTMLSlotElement | null;
+      const trailingSlot = shadow.querySelector('slot[name="trailing-icon"]') as HTMLSlotElement | null;
 
-    leadingSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedLeadingIcon = leadingSlot.assignedElements().length > 0;
-    });
-    trailingSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedTrailingIcon = trailingSlot.assignedElements().length > 0;
-    });
+      leadingSlot?.addEventListener('slotchange', () => {
+        this.hasSlottedLeadingIcon = leadingSlot.assignedElements().length > 0;
+      });
+      trailingSlot?.addEventListener('slotchange', () => {
+        this.hasSlottedTrailingIcon = trailingSlot.assignedElements().length > 0;
+      });
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
 
   private handleClick = (e: MouseEvent) => {
@@ -421,5 +426,26 @@ export class MdButton {
         )}
       </Fragment>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

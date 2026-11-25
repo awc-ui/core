@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { createId } from '../../utils/id';
 import { AttachInternals, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, Watch, h } from '@stencil/core';
 import {
@@ -30,7 +31,7 @@ import {
  */
 @Component({
   tag: 'md-switch',
-  styleUrl: 'md-switch.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-switch.css'],
   shadow: true,
   formAssociated: true,
 })
@@ -75,6 +76,7 @@ export class MdSwitch {
   }
 
   componentDidRender() {
+    initialInteractionMotionRendered(this);
     // The interactive host and its supporting text are in different roots.
     // Element references keep the description associated across that boundary.
     if (this.internals && 'ariaDescribedByElements' in this.internals) {
@@ -178,6 +180,7 @@ export class MdSwitch {
   // non-form-associated md-checkbox which must hand-roll it).
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     this.initialSelected = this.selected;
     this.syncFormValue();
   }
@@ -403,5 +406,22 @@ export class MdSwitch {
         )}
       </Host>
     );
+  }
+
+  componentDidLoad() {
+    completeInitialInteractionMotion(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

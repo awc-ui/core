@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import {
   Component,
   Host,
@@ -16,7 +17,7 @@ const nextUid = () => `md-acc-item-${++_uid}`;
 
 @Component({
   tag: 'md-accordion-item',
-  styleUrl: 'md-accordion-item.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-accordion-item.css'],
   shadow: true,
 })
 export class MdAccordionItem {
@@ -137,15 +138,20 @@ export class MdAccordionItem {
   }
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     this.hasSlottedHeadline = this.hasDirectSlottedChild('headline');
     this.hasSlottedLeadingIcon = this.hasDirectSlottedChild('leading-icon');
     this.hasSlottedTrailingIcon = this.hasDirectSlottedChild('trailing-icon');
   }
 
   componentDidLoad() {
-    this.bindSlotListener('headline', (v) => (this.hasSlottedHeadline = v));
-    this.bindSlotListener('leading-icon', (v) => (this.hasSlottedLeadingIcon = v));
-    this.bindSlotListener('trailing-icon', (v) => (this.hasSlottedTrailingIcon = v));
+    try {
+      this.bindSlotListener('headline', (v) => (this.hasSlottedHeadline = v));
+      this.bindSlotListener('leading-icon', (v) => (this.hasSlottedLeadingIcon = v));
+      this.bindSlotListener('trailing-icon', (v) => (this.hasSlottedTrailingIcon = v));
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
 
   private hasDirectSlottedChild(slotName: string): boolean {
@@ -412,5 +418,22 @@ export class MdAccordionItem {
         </div>
       </Host>
     );
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

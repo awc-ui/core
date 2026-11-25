@@ -1,5 +1,7 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { createId } from '../../utils/id';
 import { Component, Element, Host, h, Prop, Watch } from '@stencil/core';
+import { getTablistTabs, resolveTabIndex } from '../md-tabs/tablist-selection';
 
 /**
  * Panel region for `md-tabs`: place directly AFTER the tablist (or point
@@ -18,7 +20,7 @@ import { Component, Element, Host, h, Prop, Watch } from '@stencil/core';
  */
 @Component({
   tag: 'md-tab-panels',
-  styleUrl: 'md-tab-panels.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-tab-panels.css'],
   shadow: true,
 })
 export class MdTabPanels {
@@ -32,6 +34,7 @@ export class MdTabPanels {
 
   private tabsEl: (HTMLElement & { activeTabIndex?: number }) | null = null;
   private hasLoaded = false;
+  private connectionGeneration = 0;
   private uid = createId('md-tab-panels');
 
   private onTabChange = (e: Event) => {
@@ -46,24 +49,34 @@ export class MdTabPanels {
   }
 
   componentDidLoad() {
-    this.hasLoaded = true;
-    const slot = this.el.shadowRoot?.querySelector('slot');
-    slot?.addEventListener('slotchange', () => this.sync());
-    this.wire();
+    try {
+      this.hasLoaded = true;
+      const slot = this.el.shadowRoot?.querySelector('slot');
+      slot?.addEventListener('slotchange', () => this.sync());
+      this.wire();
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
 
   connectedCallback() {
+    reconnectInteractionMotion(this);
+    const generation = ++this.connectionGeneration;
     // house rule: reconnects must rebind (disconnect tears the listener down)
-    if (this.hasLoaded) queueMicrotask(() => this.wire());
+    if (this.hasLoaded) queueMicrotask(() => {
+      if (this.el.isConnected && generation === this.connectionGeneration) this.wire();
+    });
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
+    ++this.connectionGeneration;
     this.unwire();
   }
 
   private findTabs(): (HTMLElement & { activeTabIndex?: number }) | null {
     if (this.for) {
-      return (this.el.getRootNode() as Document | ShadowRoot).getElementById?.(this.for) ?? document.getElementById(this.for);
+      return (this.el.getRootNode() as Document | ShadowRoot).getElementById?.(this.for) ?? this.el.ownerDocument.getElementById(this.for);
     }
     let n: Element | null = this.el.previousElementSibling;
     while (n) {
@@ -95,29 +108,32 @@ export class MdTabPanels {
   }
 
   /** Current index + ARIA wiring (tabs aria-controls ↔ panels aria-labelledby). */
-  private sync() {
-    const tabs = this.tabsEl;
-    const tabEls = tabs ? (Array.from(tabs.querySelectorAll('md-tab')) as HTMLElement[]) : [];
-    this.panels().forEach((panel, i) => {
+  private sync(panels = this.panels(), tabs = this.tabsEl) {
+    const tabEls = tabs ? getTablistTabs(tabs) : [];
+    panels.forEach((panel, i) => {
       if (!panel.id) panel.id = `${this.uid}-panel-${i}`;
       const tab = tabEls[i];
       if (tab) {
         if (!tab.id) tab.id = `${this.uid}-tab-${i}`;
         panel.setAttribute('aria-labelledby', tab.id);
-        if (!tab.hasAttribute('controls') && !tab.hasAttribute('aria-controls')) {
-          tab.setAttribute('controls', panel.id);
-        }
+        const tabElement = tab as HTMLMdTabElement;
+        const authoredControls = tab.getAttribute('controls') ?? tab.getAttribute('aria-controls');
+        const controls = tabElement.controls || (authoredControls ?? panel.id);
+        if ('controls' in tab && tabElement.controls !== controls) tabElement.controls = controls;
+        if (authoredControls === null) tab.setAttribute('controls', controls);
+        if (controls) tab.setAttribute('aria-controls', controls);
       }
     });
     const index = typeof tabs?.activeTabIndex === 'number'
       ? tabs.activeTabIndex
-      : parseInt(tabs?.getAttribute('active-tab-index') ?? '0', 10) || 0;
-    this.show(index);
+      : Number(tabs?.getAttribute('active-tab-index') ?? 0);
+    this.show(tabEls.length ? resolveTabIndex(tabEls, index) : index, panels);
   }
 
-  private show(index: number) {
-    this.panels().forEach((panel, i) => {
+  private show(index: number, panels = this.panels()) {
+    panels.forEach((panel, i) => {
       const active = i === index;
+      if ('active' in panel) (panel as HTMLMdTabPanelElement).active = active;
       // mock-doc has no toggleAttribute — set/remove explicitly
       if (active) {
         panel.setAttribute('active', '');
@@ -131,15 +147,9 @@ export class MdTabPanels {
      * Only now may the stylesheet hide the inactive panels.
      *
      * `sizing="active"` hides every panel without `active`, and nothing carries
-     * `active` until the loop above runs — which is first reached from
-     * componentDidLoad, one frame AFTER the region has been painted and
-     * measured. For that frame the rule matched ALL of them, the host collapsed
-     * to zero, and the document below it jumped by the whole height of the
-     * panel region. This attribute is the signal that "which panel is active"
-     * finally has an answer; until it is set, the region falls back to the
-     * size-stable grid and keeps a real height. Setting it here rather than in
-     * componentDidLoad also covers the `for`-rebinding path, which calls show()
-     * without going through load again.
+     * `active` until the loop above resolves the selection. While children
+     * are still being assigned, the region falls back to the size-stable
+     * grid and keeps a real height.
      */
     this.el.setAttribute('data-active-resolved', '');
   }
@@ -150,5 +160,22 @@ export class MdTabPanels {
         <slot />
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+    const children = Array.from(this.el.children).filter(child => !child.getAttribute('slot'));
+    if (children.some(child => child.tagName === 'SLOT')) return;
+    const panels = children.filter((child): child is HTMLElement => child.tagName === 'MD-TAB-PANEL');
+    if (panels.length) this.sync(panels, this.findTabs());
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

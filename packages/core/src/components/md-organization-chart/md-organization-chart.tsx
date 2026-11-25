@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import {
   Component,
   Host,
@@ -79,7 +80,7 @@ export interface OrgChartToggleDetail {
  */
 @Component({
   tag: 'md-organization-chart',
-  styleUrl: 'md-organization-chart.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-organization-chart.css'],
   shadow: true,
 })
 export class MdOrganizationChart {
@@ -157,6 +158,7 @@ export class MdOrganizationChart {
   private nodeMap = new Map<string, OrgChartNode>();
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     this.syncFromNodes(this.nodes);
     this.selection = new Set(this.selectedIds ?? []);
   }
@@ -684,63 +686,69 @@ export class MdOrganizationChart {
   }
 
   componentDidRender() {
+    initialInteractionMotionRendered(this);
     this.measureTrail();
   }
 
   componentDidLoad() {
-    /*
-     * Re-measure when the tree changes shape for a reason no render caused — a
-     * font finishing loading, the container narrowing, a density change
-     * reflowing every node.
-     *
-     * BOTH boxes are watched, because neither catches the other's case. The
-     * viewport is the scroll container: it tracks the space available and is
-     * unmoved by anything happening inside it. The tree is `max-content`, so it
-     * tracks the CONTENT — which is the one that changes when a webfont lands
-     * and every node grows by a few pixels. Watching only the viewport left the
-     * run measured against fallback-font widths and ending ~9px short of the
-     * drop, which is exactly the gap this whole approach exists to close.
-     */
-    if (typeof ResizeObserver === 'undefined') return;
-    this.resizeObserver = new ResizeObserver(() => this.measureTrail());
-    for (const sel of ['.md-org-chart__viewport', '.md-org-chart__tree']) {
-      const box = this.el.shadowRoot?.querySelector(sel);
-      if (box) this.resizeObserver.observe(box);
+    try {
+      /*
+       * Re-measure when the tree changes shape for a reason no render caused — a
+       * font finishing loading, the container narrowing, a density change
+       * reflowing every node.
+       *
+       * BOTH boxes are watched, because neither catches the other's case. The
+       * viewport is the scroll container: it tracks the space available and is
+       * unmoved by anything happening inside it. The tree is `max-content`, so it
+       * tracks the CONTENT — which is the one that changes when a webfont lands
+       * and every node grows by a few pixels. Watching only the viewport left the
+       * run measured against fallback-font widths and ending ~9px short of the
+       * drop, which is exactly the gap this whole approach exists to close.
+       */
+      if (typeof ResizeObserver === 'undefined') return;
+      this.resizeObserver = new ResizeObserver(() => this.measureTrail());
+      for (const sel of ['.md-org-chart__viewport', '.md-org-chart__tree']) {
+        const box = this.el.shadowRoot?.querySelector(sel);
+        if (box) this.resizeObserver.observe(box);
+      }
+
+      /*
+       * A webfont swap resizes the tree, so the observer above already covers it —
+       * but only if the tree is in the document when it lands. A chart rendered
+       * into a hidden tab has no box to resize and gets its first real geometry on
+       * reveal, by which time `fonts.ready` has long resolved. Cheap insurance,
+       * once per instance.
+       */
+      void (document as Document & { fonts?: FontFaceSet }).fonts?.ready.then(() =>
+        this.measureTrail(),
+      );
+
+      /*
+       * RE-MEASURE WHEN THE ENTER ANIMATION ENDS.
+       *
+       * Expanding a collapsed subtree runs `md-org-chart-grow`, which animates a
+       * `scale()`. A transform does not change layout size, so the ResizeObserver
+       * above never fires — but `getBoundingClientRect()` reports the SCALED box
+       * while it runs, so a measurement taken then is against a geometry the tree
+       * never settles at. Collapsing the root and reopening it left the run short
+       * of the drop by exactly that error.
+       *
+       * The listener is on the viewport and catches the animation as it bubbles,
+       * so it covers every group without one listener per group.
+       */
+      this.el.shadowRoot
+        ?.querySelector('.md-org-chart__viewport')
+        ?.addEventListener('animationend', this.remeasure);
+} finally {
+      completeInitialInteractionMotion(this);
     }
-
-    /*
-     * A webfont swap resizes the tree, so the observer above already covers it —
-     * but only if the tree is in the document when it lands. A chart rendered
-     * into a hidden tab has no box to resize and gets its first real geometry on
-     * reveal, by which time `fonts.ready` has long resolved. Cheap insurance,
-     * once per instance.
-     */
-    void (document as Document & { fonts?: FontFaceSet }).fonts?.ready.then(() =>
-      this.measureTrail(),
-    );
-
-    /*
-     * RE-MEASURE WHEN THE ENTER ANIMATION ENDS.
-     *
-     * Expanding a collapsed subtree runs `md-org-chart-grow`, which animates a
-     * `scale()`. A transform does not change layout size, so the ResizeObserver
-     * above never fires — but `getBoundingClientRect()` reports the SCALED box
-     * while it runs, so a measurement taken then is against a geometry the tree
-     * never settles at. Collapsing the root and reopening it left the run short
-     * of the drop by exactly that error.
-     *
-     * The listener is on the viewport and catches the animation as it bubbles,
-     * so it covers every group without one listener per group.
-     */
-    this.el.shadowRoot
-      ?.querySelector('.md-org-chart__viewport')
-      ?.addEventListener('animationend', this.remeasure);
   }
 
   /** Bound so the same reference can be removed on disconnect. */
   private remeasure = () => this.measureTrail();
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.resizeObserver?.disconnect();
     this.resizeObserver = undefined;
     this.el.shadowRoot
@@ -781,6 +789,15 @@ export class MdOrganizationChart {
         </div>
       </Host>
     );
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }
 

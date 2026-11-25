@@ -13,12 +13,13 @@ small table, and a dark-mode switch.
 
 - **Components** — the browser-ready `@awc-ui/core` entry loads directly from
   **jsDelivr**:
-  `https://cdn.jsdelivr.net/npm/@awc-ui/core@1.0.0-beta.9/dist/md3/md3.esm.js`.
+  `https://cdn.jsdelivr.net/npm/@awc-ui/core@1.0.1/dist/md3/md3.esm.js`.
   Its module script registers every `md-*` element and lazy-loads sibling
   chunks from the same package directory. No import rewriting is required.
-- **Tokens CSS** — `@awc-ui/tokens` is loaded from **jsDelivr** by its real
-  file path inside the package:
-  `https://cdn.jsdelivr.net/npm/@awc-ui/tokens@1.0.0-beta.9/src/tokens.css`.
+- **Core CSS** — head stylesheets load `@awc-ui/core`'s
+  `dist/md3/md3.css` and `dist/md3/pre-upgrade.css` from the same CDN release.
+  The first contains the MD3 tokens and hides unhydrated components; the second
+  reserves space for persistent controls such as the app bar while they load.
 - **Chart data** — objects and arrays have no attribute form; the second
   module script sets the line chart's `xAxis` / `series` / `yAxis` as JS
   properties.

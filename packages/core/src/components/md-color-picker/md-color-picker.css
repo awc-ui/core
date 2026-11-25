@@ -106,6 +106,9 @@
   padding: max(4px, calc(20px + var(--md-sys-density-scale, 0) * 2px));
   box-sizing: border-box;
   transform-origin: top left;
+}
+
+.md-color-picker__popover--entering {
   animation: md-color-picker-pop-in var(--_popover-in-duration) var(--_emphasized-decelerate) both;
 }
 

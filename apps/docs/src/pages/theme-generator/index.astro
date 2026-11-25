@@ -22,7 +22,8 @@
 // preview components have access to shape/elevation/typography/motion
 // tokens AND a default color set. The worker then overrides color tokens
 // per-panel via inline element styles, which beat :root via specificity.
-import "@awc-ui/tokens/tokens.css";
+import "@awc-ui/core/css/tokens.css";
+import "@awc-ui/core/css/pre-upgrade.css";
 import GoogleTag from "../../components/GoogleTag.astro";
 
 const DEFAULT_PRIMARY = "#6750A4";

@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate, activateInteractionMotion } from '../../utils/initial-motion';
 import { createId } from '../../utils/id';
 import {
   Component,
@@ -29,7 +30,7 @@ import { prepareRailTabTransition } from '../../utils/navigation-rail-motion';
  */
 @Component({
   tag: 'md-navigation-rail',
-  styleUrl: 'md-navigation-rail.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-navigation-rail.css'],
   shadow: true,
 })
 export class MdNavigationRail {
@@ -152,6 +153,7 @@ export class MdNavigationRail {
   /** Programmatically expand the rail (shows labels inline with icons). */
   @Method()
   async expand(): Promise<void> {
+    activateInteractionMotion(this.el);
     if (this.variant !== 'expanded') {
       this.variant = 'expanded';
     }
@@ -160,6 +162,7 @@ export class MdNavigationRail {
   /** Programmatically collapse the rail (standard 80px width). */
   @Method()
   async collapse(): Promise<void> {
+    activateInteractionMotion(this.el);
     if (this.variant !== 'standard') {
       this.variant = 'standard';
     }
@@ -168,6 +171,7 @@ export class MdNavigationRail {
   /** Toggle between expanded and standard. */
   @Method()
   async toggle(): Promise<void> {
+    activateInteractionMotion(this.el);
     this.variant = this.variant === 'expanded' ? 'standard' : 'expanded';
   }
 
@@ -183,6 +187,7 @@ export class MdNavigationRail {
   }
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     this.tabsExpanded = this.variant === 'expanded';
     /*
      * Seed the slot-presence flags from the light DOM BEFORE the first render —
@@ -223,9 +228,13 @@ export class MdNavigationRail {
   }
 
   componentDidLoad() {
-    this.syncTabs();
-    this.syncFab();
-    this.wireSlottedMenus();
+    try {
+      this.syncTabs();
+      this.syncFab();
+      this.wireSlottedMenus();
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
 
   @Watch('variant')
@@ -766,5 +775,22 @@ export class MdNavigationRail {
         </div>
       </Host>
     );
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

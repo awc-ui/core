@@ -1,0 +1,348 @@
+{
+  "date": "2026-11-24",
+  "baselineCommit": "9e8157c31",
+  "implementationCommit": "027d78117",
+  "profile": {
+    "browser": "Chromium headless",
+    "viewport": "390×844",
+    "runsPerBuild": 3,
+    "statistic": "median",
+    "network": "4 Mbps download, 80 ms latency",
+    "cpu": "4× slowdown",
+    "compression": "Brotli quality 5",
+    "cache": "fresh browser contexts; browser cache disabled; only server compression cache warmed",
+    "externalFonts": "blocked equally in both builds",
+    "allReadyMs": "all nested controls hydrated and document fonts ready; separate from first contentful paint",
+    "cls": "largest layout-shift session; no user interaction",
+    "comparison": "immutable baseline build directories versus final production builds; serial runs without concurrent builds/tests"
+  },
+  "catalogs": {
+    "html": {
+      "before": {
+        "controlsReadyMs": 1783.6000000089407,
+        "fontsReadyMs": 9200.300000011921,
+        "allReadyMs": 9200.40000000596,
+        "fcpMs": 268,
+        "lcpMs": 268,
+        "cls": 0,
+        "totalLayoutShift": 0,
+        "longTasks": 1,
+        "longTaskMs": 55,
+        "scriptMs": 249.887,
+        "taskMs": 1840.914,
+        "heapBytes": 8405864,
+        "jsRequests": 44,
+        "jsEncodedBytes": 352271,
+        "cssRequests": 1,
+        "cssEncodedBytes": 3384,
+        "fontRequests": 1,
+        "fontEncodedBytes": 3829152,
+        "hydratedHosts": 180
+      },
+      "after": {
+        "controlsReadyMs": 1483.1000000089407,
+        "fontsReadyMs": 1825.1000000089407,
+        "allReadyMs": 1825.7000000029802,
+        "fcpMs": 276,
+        "lcpMs": 276,
+        "cls": 0,
+        "totalLayoutShift": 0,
+        "longTasks": 1,
+        "longTaskMs": 56,
+        "scriptMs": 242.62800000000001,
+        "taskMs": 836.693,
+        "heapBytes": 8644480,
+        "jsRequests": 44,
+        "jsEncodedBytes": 199166,
+        "cssRequests": 1,
+        "cssEncodedBytes": 3428,
+        "fontRequests": 1,
+        "fontEncodedBytes": 349324,
+        "hydratedHosts": 180
+      }
+    },
+    "react": {
+      "before": {
+        "controlsReadyMs": 1848.800000011921,
+        "fontsReadyMs": 9289.39999999106,
+        "allReadyMs": 9289.5,
+        "fcpMs": 380,
+        "lcpMs": 380,
+        "cls": 0.47044820824975137,
+        "totalLayoutShift": 0.47044820824975137,
+        "longTasks": 0,
+        "longTaskMs": 0,
+        "scriptMs": 251.025,
+        "taskMs": 1669.174,
+        "heapBytes": 9073132,
+        "jsRequests": 44,
+        "jsEncodedBytes": 398107,
+        "cssRequests": 1,
+        "cssEncodedBytes": 3191,
+        "fontRequests": 1,
+        "fontEncodedBytes": 3829152,
+        "hydratedHosts": 180
+      },
+      "after": {
+        "controlsReadyMs": 1645.2999999970198,
+        "fontsReadyMs": 1986,
+        "allReadyMs": 1986.4000000059605,
+        "fcpMs": 484,
+        "lcpMs": 484,
+        "cls": 0,
+        "totalLayoutShift": 0,
+        "longTasks": 1,
+        "longTaskMs": 51,
+        "scriptMs": 281.085,
+        "taskMs": 877.383,
+        "heapBytes": 7503292,
+        "jsRequests": 44,
+        "jsEncodedBytes": 245090,
+        "cssRequests": 1,
+        "cssEncodedBytes": 3501,
+        "fontRequests": 1,
+        "fontEncodedBytes": 349324,
+        "hydratedHosts": 180
+      }
+    },
+    "vue": {
+      "before": {
+        "controlsReadyMs": 1833.7999999970198,
+        "fontsReadyMs": 9295.70000000298,
+        "allReadyMs": 9296.39999999106,
+        "fcpMs": 324,
+        "lcpMs": 324,
+        "cls": 0.5254538289317084,
+        "totalLayoutShift": 0.5254538289317084,
+        "longTasks": 1,
+        "longTaskMs": 63,
+        "scriptMs": 258.73600000000005,
+        "taskMs": 1608.065,
+        "heapBytes": 8794316,
+        "jsRequests": 45,
+        "jsEncodedBytes": 388628,
+        "cssRequests": 1,
+        "cssEncodedBytes": 3379,
+        "fontRequests": 1,
+        "fontEncodedBytes": 3829152,
+        "hydratedHosts": 171
+      },
+      "after": {
+        "controlsReadyMs": 1585.1000000089407,
+        "fontsReadyMs": 1957.9000000059605,
+        "allReadyMs": 1957.9000000059605,
+        "fcpMs": 384,
+        "lcpMs": 384,
+        "cls": 0,
+        "totalLayoutShift": 0,
+        "longTasks": 1,
+        "longTaskMs": 64,
+        "scriptMs": 255.288,
+        "taskMs": 810.8290000000001,
+        "heapBytes": 8873052,
+        "jsRequests": 45,
+        "jsEncodedBytes": 232964,
+        "cssRequests": 1,
+        "cssEncodedBytes": 3663,
+        "fontRequests": 1,
+        "fontEncodedBytes": 349324,
+        "hydratedHosts": 171
+      }
+    },
+    "svelte": {
+      "before": {
+        "controlsReadyMs": 1746.2999999970198,
+        "fontsReadyMs": 9271.70000000298,
+        "allReadyMs": 9271.70000000298,
+        "fcpMs": 288,
+        "lcpMs": 288,
+        "cls": 0.3757892126965149,
+        "totalLayoutShift": 0.3757892126965149,
+        "longTasks": 1,
+        "longTaskMs": 52,
+        "scriptMs": 220.751,
+        "taskMs": 1577.922,
+        "heapBytes": 8226916,
+        "jsRequests": 45,
+        "jsEncodedBytes": 378471,
+        "cssRequests": 1,
+        "cssEncodedBytes": 3397,
+        "fontRequests": 1,
+        "fontEncodedBytes": 3829152,
+        "hydratedHosts": 171
+      },
+      "after": {
+        "controlsReadyMs": 1564,
+        "fontsReadyMs": 1914.5,
+        "allReadyMs": 1914.7999999970198,
+        "fcpMs": 360,
+        "lcpMs": 360,
+        "cls": 0,
+        "totalLayoutShift": 0,
+        "longTasks": 1,
+        "longTaskMs": 60,
+        "scriptMs": 268.326,
+        "taskMs": 806.614,
+        "heapBytes": 7170144,
+        "jsRequests": 45,
+        "jsEncodedBytes": 222818,
+        "cssRequests": 1,
+        "cssEncodedBytes": 3684,
+        "fontRequests": 1,
+        "fontEncodedBytes": 349324,
+        "hydratedHosts": 171
+      }
+    },
+    "angular": {
+      "before": {
+        "controlsReadyMs": 1491.6000000089407,
+        "fontsReadyMs": 9237.40000000596,
+        "allReadyMs": 9238,
+        "fcpMs": 1516,
+        "lcpMs": 1516,
+        "cls": 0.0027634277961019835,
+        "totalLayoutShift": 0.0027634277961019835,
+        "longTasks": 3,
+        "longTaskMs": 630,
+        "scriptMs": 314.167,
+        "taskMs": 1640.9750000000001,
+        "heapBytes": 16238768,
+        "jsRequests": 3,
+        "jsEncodedBytes": 378662,
+        "cssRequests": 1,
+        "cssEncodedBytes": 3229,
+        "fontRequests": 1,
+        "fontEncodedBytes": 3829152,
+        "hydratedHosts": 183
+      },
+      "after": {
+        "controlsReadyMs": 1633.7999999970198,
+        "fontsReadyMs": 2311.4000000059605,
+        "allReadyMs": 2311.5,
+        "fcpMs": 1660,
+        "lcpMs": 1660,
+        "cls": 0,
+        "totalLayoutShift": 0,
+        "longTasks": 2,
+        "longTaskMs": 728,
+        "scriptMs": 390.14500000000004,
+        "taskMs": 1021.992,
+        "heapBytes": 11849292,
+        "jsRequests": 3,
+        "jsEncodedBytes": 380171,
+        "cssRequests": 1,
+        "cssEncodedBytes": 3236,
+        "fontRequests": 1,
+        "fontEncodedBytes": 349324,
+        "hydratedHosts": 183
+      }
+    }
+  },
+  "reviews": [
+    {
+      "pass": 1,
+      "scope": "Core lifecycle, composed ownership, nested input, reconnect, 500-host cost",
+      "result": "PASS"
+    },
+    {
+      "pass": 2,
+      "scope": "SSR partial roots, class and marker handoff, cleanup",
+      "result": "PASS"
+    },
+    {
+      "pass": 3,
+      "scope": "Production bootstrap/resource cost and stylesheet ordering",
+      "result": "PASS"
+    },
+    {
+      "pass": 4,
+      "scope": "React/Next public wrappers and hydration",
+      "result": "PASS"
+    },
+    {
+      "pass": 5,
+      "scope": "Vue/Nuxt public wrappers and hydration",
+      "result": "PASS"
+    },
+    {
+      "pass": 6,
+      "scope": "Svelte and SvelteKit lifecycle",
+      "result": "PASS"
+    },
+    {
+      "pass": 7,
+      "scope": "Angular reactive forms and SSR lifecycle",
+      "result": "PASS"
+    },
+    {
+      "pass": 8,
+      "scope": "Slow network, styles/fonts, nested deployment and accessibility",
+      "result": "PASS"
+    },
+    {
+      "pass": 9,
+      "scope": "Performance measurements, repeated loading and resource budgets",
+      "result": "PASS"
+    },
+    {
+      "pass": 10,
+      "scope": "Independent final diff and full regression matrix",
+      "result": "PASS"
+    }
+  ],
+  "validation": {
+    "coreSpecs": {
+      "suites": 185,
+      "tests": 5779,
+      "snapshots": 25
+    },
+    "finalFieldSpecs": {
+      "suites": 17,
+      "tests": 429
+    },
+    "finalMotionSchedulerSpecs": 15,
+    "initialMotionBrowserCases": 32,
+    "componentCatalog": 81,
+    "ssrContracts": 54,
+    "ssrAndSsgStartupCases": 66,
+    "csrStartupCases": 12,
+    "packedSsrStarters": [
+      "Next.js",
+      "Nuxt",
+      "SvelteKit",
+      "Astro"
+    ],
+    "reactBrowserVersions": [
+      18,
+      19
+    ],
+    "fieldFontGeometry": {
+      "boxes": 37,
+      "maxShiftPx": 0,
+      "customSvgDimensions": "40×20 in select, autocomplete and multi-select"
+    },
+    "font": {
+      "sourceBytes": 3829152,
+      "subsetBytes": 349324,
+      "ligatures": 409,
+      "shapeAndOutlineComparisons": 22086,
+      "pixelComparisons": "409 icons × 6 variable-font configurations"
+    },
+    "memory": "500 detached FAB menus: zero retained before or after the awaited anchor definition"
+  },
+  "budgets": {
+    "ssrButtonBrotliBytes": 19208,
+    "ssrButtonBudgetBytes": 19300,
+    "priorSsrButtonBudgetBytes": 19000,
+    "csrButtonBudgetBytes": 16000,
+    "reactWrapperBudgetBytes": 2000,
+    "npmPackedBytes": 9479586,
+    "npmUnpackedBytes": 44575707
+  },
+  "limits": [
+    "These are local Chromium measurements of the production catalogues, not guarantees for every browser, machine, application or supported framework version.",
+    "First contentful paint increased in these runs; Angular controlsReadyMs also increased. Do not describe every startup metric as faster.",
+    "Svelte whole-class replacement after hydration requires cooperative class directives or an outer wrapper, as documented; startup preservation deliberately does not install a permanent observer.",
+    "A separate existing issue outside startup scope was observed: unnamed multi-select/multiple-autocomplete controls can contribute empty-name FormData entries. It was not changed in this work."
+  ]
+}

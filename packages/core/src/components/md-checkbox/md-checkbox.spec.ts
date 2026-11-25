@@ -1,3 +1,4 @@
+import { Build } from '@stencil/core';
 import { newSpecPage } from '@stencil/core/testing';
 import { MdCheckbox } from './md-checkbox';
 
@@ -78,6 +79,28 @@ describe('md-checkbox', () => {
     it('renders the remove glyph when indeterminate', async () => {
       const page = await create('<md-checkbox indeterminate></md-checkbox>');
       expect(glyphOf(page)).toBe('remove');
+    });
+
+    it('keeps the committed glyph still when an update batch returns to checked', async () => {
+      const browser = jest.replaceProperty(Build, 'isBrowser', true);
+      try {
+        const page = await create('<md-checkbox checked></md-checkbox>');
+        const checkbox = page.root as HTMLMdCheckboxElement;
+        const glyph = checkbox.shadowRoot!.querySelector('[part="icon"] > span');
+        const getAnimations = jest.fn(() => []);
+        Object.defineProperty(glyph, 'getAnimations', { value: getAnimations });
+        checkbox.setAttribute('data-awc-motion-ready', '');
+
+        checkbox.indeterminate = true;
+        checkbox.indeterminate = false;
+        await page.waitForChanges();
+
+        expect(glyphOf(page)).toBe('check');
+        expect(checkbox.getAttribute('aria-checked')).toBe('true');
+        expect(getAnimations).not.toHaveBeenCalled();
+      } finally {
+        browser.restore();
+      }
     });
 
     it('renders NO nested native input (form participation is via ElementInternals)', async () => {

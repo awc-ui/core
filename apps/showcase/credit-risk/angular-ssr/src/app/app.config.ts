@@ -1,5 +1,9 @@
+import { preserveSsrClasses } from '@awc-ui/core/ssr/classes';
 import {
   APP_INITIALIZER,
+  APP_BOOTSTRAP_LISTENER,
+  ApplicationRef,
+  NgZone,
   type ApplicationConfig,
   provideZoneChangeDetection,
 } from '@angular/core';
@@ -34,9 +38,24 @@ import { routes } from './app.routes';
  * from memory and never goes through `server.ts` — and the dock import below,
  * which is a browser concern in every case.
  */
+let finishSsrClasses = () => {};
+
+
+// Root bootstrap can precede initial route hydration. Wait for Angular's real
+// stability boundary outside its zone so this completion does not schedule CD.
+function finishClassesAfterStability(app: ApplicationRef, zone: NgZone) {
+  return () => {
+    if (typeof window === 'undefined') return;
+    zone.runOutsideAngular(() => {
+      void app.whenStable().then(() => finishSsrClasses());
+    });
+  };
+}
+
 function bootScripts() {
   return () => {
     if (typeof document === 'undefined') return;
+    finishSsrClasses = preserveSsrClasses();
     const base = document.querySelector('base')?.getAttribute('href') ?? '/';
 
     if (!document.querySelector('[data-awc-preboot]')) {
@@ -89,13 +108,12 @@ function bootScripts() {
  * repeating it. Zero hosts kept it. The server render was real for one paint
  * and then thrown away.
  *
- * WITH IT, Angular locates the existing elements instead of creating them. It
- * never enumerates and clears attributes it does not know about — unlike
- * Svelte 4's `claim_element`, which is what breaks the sibling build — so
- * `s-id` and the rest survive untouched, the declarative shadow roots stay
- * attached to the elements that own them, and Stencil adopts all 174 hosts.
- * That is the same outcome the `next` and `nuxt` builds reach, by the same
- * route: leave the server-rendered custom element alone.
+ * WITH IT, Angular retains the existing hosts and their declarative shadow
+ * roots. Unknown adoption annotations such as `s-id` survive, but a template's
+ * explicit class binding can still replace the entire class attribute. That
+ * removes Stencil's `hydrated` and appearance classes even though the shadow
+ * root remains styled. The class-preservation handoff above protects those
+ * classes until both initial route hydration and component adoption finish.
  *
  * THE ONE THING THAT HAD TO CHANGE FOR THIS TO BE SAFE is in `src/server.ts`,
  * not here. Stencil's hydrate pass writes positional marker comments, and one
@@ -108,16 +126,18 @@ function bootScripts() {
  * those markers from the light DOM only, leaving every annotation inside the
  * shadow roots exactly as written. See `stripLightDomAnnotations` there.
  *
- * The third-party mutation the old comment feared is real but lands elsewhere:
- * Stencil mutates the SHADOW roots, which Angular never walks, and sets
- * attributes on the hosts, which Angular ignores. Neither is a structural
- * change to Angular's tree.
+ * Stencil adopts the shadow roots, which Angular does not walk. Host
+ * attributes are shared: Angular owns its bindings and Stencil owns its
+ * component state, so the initial class handoff preserves that boundary.
  */
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideClientHydration(),
     provideRouter(routes, withInMemoryScrolling({ scrollPositionRestoration: 'top' })),
+    // Router's bootstrap listener must start initial navigation before this
+    // listener subscribes to application stability.
+    { provide: APP_BOOTSTRAP_LISTENER, useFactory: finishClassesAfterStability, deps: [ApplicationRef, NgZone], multi: true },
     { provide: APP_INITIALIZER, useFactory: bootScripts, multi: true },
   ],
 };

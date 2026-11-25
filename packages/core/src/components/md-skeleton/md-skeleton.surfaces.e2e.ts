@@ -5,6 +5,24 @@ import { newE2EPage } from '@stencil/core/testing';
 const tokens = readFileSync(resolve(__dirname, '../../../../tokens/src/tokens.css'), 'utf8');
 
 describe('md-skeleton surface visibility', () => {
+  it('keeps the static preset visible immediately and retains the animated loading preset', async () => {
+    const page = await newE2EPage();
+    await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
+    await page.setContent(`
+      <md-skeleton id="static" animation="none"></md-skeleton>
+      <md-skeleton id="pulse"></md-skeleton>
+    `);
+
+    const motion = await page.evaluate(() => {
+      const still = document.getElementById('static')!;
+      const pulse = document.getElementById('pulse')!;
+      const shape = pulse.shadowRoot!.querySelector('[part~="shape"], [part~="line"]')!;
+      return [getComputedStyle(still).animationName, getComputedStyle(still).opacity,
+        getComputedStyle(pulse).animationName, getComputedStyle(shape).animationName];
+    });
+    expect(motion).toEqual(['none', '1', 'md-skeleton-bloom', 'md-skeleton-pulse']);
+  });
+
   it.each(['light', 'dark'])('remains visible on Core surfaces in the %s theme', async (theme) => {
     const page = await newE2EPage();
     await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);

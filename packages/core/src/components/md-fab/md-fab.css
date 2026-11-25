@@ -67,13 +67,6 @@
   vertical-align: middle;
 }
 
-/* Suppress transitions until the first paint so the initial extended/collapsed
-   state set by a parent (e.g. the navigation rail) applies without a morph. */
-:host(:not([data-ready])),
-:host(:not([data-ready])) .md-fab__label {
-  transition: none;
-}
-
 /* Shape morph to circle (controlled by md-fab-menu) */
 :host([data-shape="circle"]) {
   border-radius: 50%;
@@ -367,7 +360,7 @@ slot[name="icon"] {
   max-inline-size: var(--_fab-label-w, 240px);
   opacity: 1;
   transition:
-    max-inline-size var(--_morph-spatial-duration) var(--_morph-spatial-easing),
+    max-inline-size var(--_fab-label-width-duration, var(--_morph-spatial-duration)) var(--_morph-spatial-easing),
     margin-inline-start var(--_morph-spatial-duration) var(--_morph-spatial-easing),
     opacity var(--_morph-effects-duration) var(--_morph-effects-easing);
 }

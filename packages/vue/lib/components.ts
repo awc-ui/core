@@ -88,7 +88,7 @@ import { defineCustomElement as defineMdTooltip } from '@awc-ui/core/dist/compon
 import { defineCustomElement as defineMdTransferList } from '@awc-ui/core/dist/components/md-transfer-list.js';
 
 
-export const MdAccordion = /*@__PURE__*/ defineContainer<JSX.MdAccordion>('md-accordion', defineMdAccordion, [
+export const MdAccordion = /*@__PURE__*/ defineContainer<JSX.MdAccordion>('md-accordion', {"variant":"variant","density":"density","elevation":"elevation","reorderable":"reorderable","floating":"floating","initialX":"initial-x","initialY":"initial-y","bringToFront":"bring-to-front","exclusive":"exclusive","keepOneExpanded":"keep-one-expanded","headingLevel":"heading-level","region":"region","regionThreshold":"region-threshold","transition":"transition","defaultExpanded":"default-expanded"}, defineMdAccordion, [
   'variant',
   'density',
   'elevation',
@@ -112,7 +112,7 @@ export const MdAccordion = /*@__PURE__*/ defineContainer<JSX.MdAccordion>('md-ac
 ]);
 
 
-export const MdAccordionItem = /*@__PURE__*/ defineContainer<JSX.MdAccordionItem>('md-accordion-item', defineMdAccordionItem, [
+export const MdAccordionItem = /*@__PURE__*/ defineContainer<JSX.MdAccordionItem>('md-accordion-item', {"headline":"headline","supportingText":"supporting-text","icon":"icon","expanded":"expanded","disabled":"disabled","headingLevel":"heading-level","collapsible":"collapsible","regionRole":"region-role","contentMaxHeight":"content-max-height","density":"density"}, defineMdAccordionItem, [
   'headline',
   'supportingText',
   'icon',
@@ -129,7 +129,7 @@ export const MdAccordionItem = /*@__PURE__*/ defineContainer<JSX.MdAccordionItem
 ]);
 
 
-export const MdAppBar = /*@__PURE__*/ defineContainer<JSX.MdAppBar>('md-app-bar', defineMdAppBar, [
+export const MdAppBar = /*@__PURE__*/ defineContainer<JSX.MdAppBar>('md-app-bar', {"variant":"variant","titleAlignment":"title-alignment","searchPlaceholder":"search-placeholder","searchValue":"search-value","searchAriaLabel":"search-aria-label","searchDisabled":"search-disabled","headline":"headline","subtitle":"subtitle","scrolled":"scrolled","density":"density","leadingIcon":"leading-icon","leadingIconLabel":"leading-icon-label"}, defineMdAppBar, [
   'variant',
   'titleAlignment',
   'searchPlaceholder',
@@ -148,7 +148,7 @@ export const MdAppBar = /*@__PURE__*/ defineContainer<JSX.MdAppBar>('md-app-bar'
 ]);
 
 
-export const MdAreaChart = /*@__PURE__*/ defineContainer<JSX.MdAreaChart>('md-area-chart', defineMdAreaChart, [
+export const MdAreaChart = /*@__PURE__*/ defineContainer<JSX.MdAreaChart>('md-area-chart', {"label":"label","subtitle":"subtitle","titleAlign":"title-align","curve":"curve","stack":"stack","connectNulls":"connect-nulls","showMarks":"show-marks","lineWidth":"line-width","markSize":"mark-size","legend":"legend","tooltip":"tooltip","zoom":"zoom","locale":"locale","heightProp":"height","noAnimation":"no-animation","animation":"animation","animationDuration":"animation-duration","fillOpacity":"fill-opacity","showLine":"show-line","grid":"grid","inverted":"inverted","seriesLabels":"series-labels","summary":"summary","labelEmpty":"label-empty","loading":"loading","loadingLabel":"loading-label","labelZoomStart":"label-zoom-start","labelZoomEnd":"label-zoom-end","axisTicks":"axis-ticks","showLabels":"show-labels","labelPlot":"label-plot","labelPoint":"label-point","density":"density"}, defineMdAreaChart, [
   'label',
   'subtitle',
   'titleAlign',
@@ -199,7 +199,7 @@ export const MdAreaChart = /*@__PURE__*/ defineContainer<JSX.MdAreaChart>('md-ar
 ]);
 
 
-export const MdAutocomplete = /*@__PURE__*/ defineContainer<JSX.MdAutocomplete, JSX.MdAutocomplete["value"]>('md-autocomplete', defineMdAutocomplete, [
+export const MdAutocomplete = /*@__PURE__*/ defineContainer<JSX.MdAutocomplete, JSX.MdAutocomplete["value"]>('md-autocomplete', {"valueMissingLabel":"value-missing-label","reserveSupportingSpace":"reserve-supporting-space","variant":"variant","label":"label","placeholder":"placeholder","supportingText":"supporting-text","error":"error","errorText":"error-text","disabled":"disabled","softDisabled":"soft-disabled","required":"required","density":"density","options":["options","json"],"multiple":"multiple","chipPosition":"chip-position","value":["value","values"],"inputValue":"input-value","freeSolo":"free-solo","maxSelected":"max-selected","loading":"loading","noOptionsText":"no-options-text","noResultsText":"no-results-text","loadingText":"loading-text","statusTemplate":"status-template","disableCloseOnSelect":"disable-close-on-select","clearOnBlur":"clear-on-blur","clearable":"clearable","clearIcon":"clear-icon","dropdownIcon":"dropdown-icon","limitResults":"limit-results","open":"open","virtualize":"virtualize","filterMode":"filter-mode","rowHeight":"row-height","placement":"placement","matchTriggerWidth":"match-trigger-width","maxHeight":"max-height","name":"name"}, defineMdAutocomplete, [
   'valueMissingLabel',
   'reserveSupportingSpace',
   'variant',
@@ -249,7 +249,7 @@ export const MdAutocomplete = /*@__PURE__*/ defineContainer<JSX.MdAutocomplete, 
 'value', 'mdInput');
 
 
-export const MdAvatar = /*@__PURE__*/ defineContainer<JSX.MdAvatar>('md-avatar', defineMdAvatar, [
+export const MdAvatar = /*@__PURE__*/ defineContainer<JSX.MdAvatar>('md-avatar', {"src":"src","alt":"alt","name":"name","initials":"initials","size":"size","shape":"shape","label":"label","colorFromName":"color-from-name","loading":"loading","crossorigin":"crossorigin","density":"density"}, defineMdAvatar, [
   'src',
   'alt',
   'name',
@@ -266,7 +266,7 @@ export const MdAvatar = /*@__PURE__*/ defineContainer<JSX.MdAvatar>('md-avatar',
 ]);
 
 
-export const MdBadge = /*@__PURE__*/ defineContainer<JSX.MdBadge>('md-badge', defineMdBadge, [
+export const MdBadge = /*@__PURE__*/ defineContainer<JSX.MdBadge>('md-badge', {"variant":"variant","value":"value","max":"max","icon":"icon","shape":"shape","density":"density"}, defineMdBadge, [
   'variant',
   'value',
   'max',
@@ -276,7 +276,7 @@ export const MdBadge = /*@__PURE__*/ defineContainer<JSX.MdBadge>('md-badge', de
 ]);
 
 
-export const MdBarChart = /*@__PURE__*/ defineContainer<JSX.MdBarChart>('md-bar-chart', defineMdBarChart, [
+export const MdBarChart = /*@__PURE__*/ defineContainer<JSX.MdBarChart>('md-bar-chart', {"label":"label","subtitle":"subtitle","titleAlign":"title-align","layout":"layout","stack":"stack","categoryGap":"category-gap","barGap":"bar-gap","barWidth":"bar-width","cornerRadius":"corner-radius","legend":"legend","tooltip":"tooltip","zoom":"zoom","locale":"locale","heightProp":"height","noAnimation":"no-animation","animation":"animation","animationDuration":"animation-duration","showLabels":"show-labels","showTotals":"show-totals","chevron":"chevron","polar":"polar","polarHole":"polar-hole","polarSweep":"polar-sweep","axisTicks":"axis-ticks","clickable":"clickable","labelZoomStart":"label-zoom-start","labelZoomEnd":"label-zoom-end","labelPlot":"label-plot","labelPoint":"label-point","loading":"loading","loadingLabel":"loading-label","density":"density"}, defineMdBarChart, [
   'label',
   'subtitle',
   'titleAlign',
@@ -323,7 +323,7 @@ export const MdBarChart = /*@__PURE__*/ defineContainer<JSX.MdBarChart>('md-bar-
 ]);
 
 
-export const MdBottomSheet = /*@__PURE__*/ defineContainer<JSX.MdBottomSheet>('md-bottom-sheet', defineMdBottomSheet, [
+export const MdBottomSheet = /*@__PURE__*/ defineContainer<JSX.MdBottomSheet>('md-bottom-sheet', {"open":"open","variant":"variant","headline":"headline","showDragHandle":"show-drag-handle","closeable":"closeable","scrimDismissible":"scrim-dismissible","topDivider":"top-divider","bottomDivider":"bottom-divider","sheetAriaLabel":"aria-label","scrollShadow":"scroll-shadow","headlineAlign":"headline-align","contentAlign":"content-align","density":"density"}, defineMdBottomSheet, [
   'open',
   'variant',
   'headline',
@@ -343,7 +343,7 @@ export const MdBottomSheet = /*@__PURE__*/ defineContainer<JSX.MdBottomSheet>('m
 ]);
 
 
-export const MdBreadcrumbItem = /*@__PURE__*/ defineContainer<JSX.MdBreadcrumbItem>('md-breadcrumb-item', defineMdBreadcrumbItem, [
+export const MdBreadcrumbItem = /*@__PURE__*/ defineContainer<JSX.MdBreadcrumbItem>('md-breadcrumb-item', {"href":"href","target":"target","rel":"rel","current":"current","icon":"icon","disabled":"disabled","collapsed":"collapsed","itemIndex":"item-index","itemTotal":"item-total","density":"density"}, defineMdBreadcrumbItem, [
   'href',
   'target',
   'rel',
@@ -358,7 +358,7 @@ export const MdBreadcrumbItem = /*@__PURE__*/ defineContainer<JSX.MdBreadcrumbIt
 ]);
 
 
-export const MdBreadcrumbs = /*@__PURE__*/ defineContainer<JSX.MdBreadcrumbs>('md-breadcrumbs', defineMdBreadcrumbs, [
+export const MdBreadcrumbs = /*@__PURE__*/ defineContainer<JSX.MdBreadcrumbs>('md-breadcrumbs', {"label":"label","expandLabel":"expand-label","separator":"separator","maxItems":"max-items","itemsBeforeCollapse":"items-before-collapse","itemsAfterCollapse":"items-after-collapse","density":"density"}, defineMdBreadcrumbs, [
   'label',
   'expandLabel',
   'separator',
@@ -370,7 +370,7 @@ export const MdBreadcrumbs = /*@__PURE__*/ defineContainer<JSX.MdBreadcrumbs>('m
 ]);
 
 
-export const MdButton = /*@__PURE__*/ defineContainer<JSX.MdButton>('md-button', defineMdButton, [
+export const MdButton = /*@__PURE__*/ defineContainer<JSX.MdButton>('md-button', {"type":"type","variant":"variant","size":"size","shape":"shape","disabled":"disabled","softDisabled":"soft-disabled","ripple":"ripple","loading":"loading","icon":"icon","trailingIcon":"trailing-icon","href":"href","target":"target","toggle":"toggle","selected":"selected","shapeMorph":"shape-morph","mirrorIcon":"mirror-icon","suppressExpandIconFlip":"suppress-expand-icon-flip","fullWidth":"full-width","connectedLeft":"connected-left","connectedRight":"connected-right","value":"value","groupTabindex":"group-tabindex","roleOverride":"role-override","density":"density"}, defineMdButton, [
   'type',
   'variant',
   'size',
@@ -400,7 +400,7 @@ export const MdButton = /*@__PURE__*/ defineContainer<JSX.MdButton>('md-button',
 ]);
 
 
-export const MdButtonGroup = /*@__PURE__*/ defineContainer<JSX.MdButtonGroup>('md-button-group', defineMdButtonGroup, [
+export const MdButtonGroup = /*@__PURE__*/ defineContainer<JSX.MdButtonGroup>('md-button-group', {"variant":"variant","size":"size","shape":"shape","selectionMode":"selection-mode","required":"required","fullWidth":"full-width","density":"density"}, defineMdButtonGroup, [
   'variant',
   'size',
   'shape',
@@ -412,7 +412,7 @@ export const MdButtonGroup = /*@__PURE__*/ defineContainer<JSX.MdButtonGroup>('m
 ]);
 
 
-export const MdCard = /*@__PURE__*/ defineContainer<JSX.MdCard>('md-card', defineMdCard, [
+export const MdCard = /*@__PURE__*/ defineContainer<JSX.MdCard>('md-card', {"variant":"variant","interactive":"interactive","dragEnabled":"drag-enabled","disabled":"disabled","softDisabled":"soft-disabled","ripple":"ripple","fullWidth":"full-width","fullHeight":"full-height","density":"density"}, defineMdCard, [
   'variant',
   'interactive',
   'dragEnabled',
@@ -429,7 +429,7 @@ export const MdCard = /*@__PURE__*/ defineContainer<JSX.MdCard>('md-card', defin
 ]);
 
 
-export const MdCheckbox = /*@__PURE__*/ defineContainer<JSX.MdCheckbox, JSX.MdCheckbox["checked"]>('md-checkbox', defineMdCheckbox, [
+export const MdCheckbox = /*@__PURE__*/ defineContainer<JSX.MdCheckbox, JSX.MdCheckbox["checked"]>('md-checkbox', {"valueMissingLabel":"value-missing-label","error":"error","errorText":"error-text","supportingText":"supporting-text","checked":"checked","indeterminate":"indeterminate","disabled":"disabled","softDisabled":"soft-disabled","required":"required","name":"name","value":"value","density":"density"}, defineMdCheckbox, [
   'valueMissingLabel',
   'error',
   'errorText',
@@ -448,7 +448,7 @@ export const MdCheckbox = /*@__PURE__*/ defineContainer<JSX.MdCheckbox, JSX.MdCh
 'checked', 'mdChange');
 
 
-export const MdChip = /*@__PURE__*/ defineContainer<JSX.MdChip>('md-chip', defineMdChip, [
+export const MdChip = /*@__PURE__*/ defineContainer<JSX.MdChip>('md-chip', {"variant":"variant","icon":"icon","trailingIcon":"trailing-icon","selected":"selected","selectable":"selectable","appearance":"appearance","color":"color","elevated":"elevated","disabled":"disabled","softDisabled":"soft-disabled","removable":"removable","label":"label","contentAlign":"content-align","density":"density"}, defineMdChip, [
   'variant',
   'icon',
   'trailingIcon',
@@ -469,7 +469,7 @@ export const MdChip = /*@__PURE__*/ defineContainer<JSX.MdChip>('md-chip', defin
 ]);
 
 
-export const MdColorPicker = /*@__PURE__*/ defineContainer<JSX.MdColorPicker>('md-color-picker', defineMdColorPicker, [
+export const MdColorPicker = /*@__PURE__*/ defineContainer<JSX.MdColorPicker>('md-color-picker', {"locale":"locale","variant":"variant","value":"value","format":"format","alpha":"alpha","showHex":"show-hex","showInputs":"show-inputs","disabled":"disabled","presets":"presets","ariaLabelProp":"aria-label","open":"open","dismissOnOutsideClick":"dismiss-on-outside-click","density":"density"}, defineMdColorPicker, [
   'locale',
   'variant',
   'value',
@@ -489,7 +489,7 @@ export const MdColorPicker = /*@__PURE__*/ defineContainer<JSX.MdColorPicker>('m
 ]);
 
 
-export const MdDatePicker = /*@__PURE__*/ defineContainer<JSX.MdDatePicker, JSX.MdDatePicker["value"]>('md-date-picker', defineMdDatePicker, [
+export const MdDatePicker = /*@__PURE__*/ defineContainer<JSX.MdDatePicker, JSX.MdDatePicker["value"]>('md-date-picker', {"valueMissingLabel":"value-missing-label","reserveSupportingSpace":"reserve-supporting-space","variant":"variant","value":"value","label":"label","placeholder":"placeholder","min":"min","max":"max","open":"open","disabled":"disabled","required":"required","clearable":"clearable","clearLabel":"clear-label","error":"error","errorText":"error-text","supportingText":"supporting-text","locale":"locale","dateSeparator":"date-separator","fieldVariant":"field-variant","firstDayOfWeek":"first-day-of-week","headline":"headline","cancelLabel":"cancel-label","okLabel":"ok-label","selectDateLabel":"select-date-label","enterDatesLabel":"enter-dates-label","invalidDateLabel":"invalid-date-label","previousMonthLabel":"previous-month-label","nextMonthLabel":"next-month-label","previousYearLabel":"previous-year-label","nextYearLabel":"next-year-label","chooseMonthLabel":"choose-month-label","chooseYearLabel":"choose-year-label","chooseMonthYearLabel":"choose-month-year-label","chooseMonthAndYearLabel":"choose-month-and-year-label","toggleCalendarLabel":"toggle-calendar-label","toggleTextLabel":"toggle-text-label","openCalendarLabel":"open-calendar-label","closeCalendarLabel":"close-calendar-label","calendarIcon":"calendar-icon","yearGridLabel":"year-grid-label","scrimDismissible":"scrim-dismissible","outsideClickDismissible":"outside-click-dismissible","commitOnSelect":"commit-on-select","name":"name","density":"density"}, defineMdDatePicker, [
   'valueMissingLabel',
   'reserveSupportingSpace',
   'variant',
@@ -551,7 +551,7 @@ export const MdDatePicker = /*@__PURE__*/ defineContainer<JSX.MdDatePicker, JSX.
 'value', 'mdChange');
 
 
-export const MdDialog = /*@__PURE__*/ defineContainer<JSX.MdDialog>('md-dialog', defineMdDialog, [
+export const MdDialog = /*@__PURE__*/ defineContainer<JSX.MdDialog>('md-dialog', {"open":"open","headline":"headline","icon":"icon","fullscreen":"fullscreen","scrimDismissible":"scrim-dismissible","locale":"locale","closeLabel":"close-label","cancelLabel":"cancel-label","okLabel":"ok-label","divider":"divider","headerDivider":"header-divider","density":"density"}, defineMdDialog, [
   'open',
   'headline',
   'icon',
@@ -570,7 +570,7 @@ export const MdDialog = /*@__PURE__*/ defineContainer<JSX.MdDialog>('md-dialog',
 ]);
 
 
-export const MdDivider = /*@__PURE__*/ defineContainer<JSX.MdDivider>('md-divider', defineMdDivider, [
+export const MdDivider = /*@__PURE__*/ defineContainer<JSX.MdDivider>('md-divider', {"inset":"inset","insetStart":"inset-start","insetEnd":"inset-end","vertical":"vertical"}, defineMdDivider, [
   'inset',
   'insetStart',
   'insetEnd',
@@ -578,7 +578,7 @@ export const MdDivider = /*@__PURE__*/ defineContainer<JSX.MdDivider>('md-divide
 ]);
 
 
-export const MdFab = /*@__PURE__*/ defineContainer<JSX.MdFab>('md-fab', defineMdFab, [
+export const MdFab = /*@__PURE__*/ defineContainer<JSX.MdFab>('md-fab', {"variant":"variant","size":"size","disabled":"disabled","softDisabled":"soft-disabled","lowered":"lowered","ripple":"ripple","icon":"icon","label":"label","extended":"extended","density":"density"}, defineMdFab, [
   'variant',
   'size',
   'disabled',
@@ -593,7 +593,7 @@ export const MdFab = /*@__PURE__*/ defineContainer<JSX.MdFab>('md-fab', defineMd
 ]);
 
 
-export const MdFabMenu = /*@__PURE__*/ defineContainer<JSX.MdFabMenu>('md-fab-menu', defineMdFabMenu, [
+export const MdFabMenu = /*@__PURE__*/ defineContainer<JSX.MdFabMenu>('md-fab-menu', {"open":"open","anchor":"anchor","variant":"variant","placement":"placement","quick":"quick","menuLabel":"menu-label","density":"density"}, defineMdFabMenu, [
   'open',
   'anchor',
   'variant',
@@ -606,7 +606,7 @@ export const MdFabMenu = /*@__PURE__*/ defineContainer<JSX.MdFabMenu>('md-fab-me
 ]);
 
 
-export const MdFabMenuItem = /*@__PURE__*/ defineContainer<JSX.MdFabMenuItem>('md-fab-menu-item', defineMdFabMenuItem, [
+export const MdFabMenuItem = /*@__PURE__*/ defineContainer<JSX.MdFabMenuItem>('md-fab-menu-item', {"icon":"icon","label":"label","disabled":"disabled","softDisabled":"soft-disabled","rovingFocusVisible":"roving-focus-visible","density":"density"}, defineMdFabMenuItem, [
   'icon',
   'label',
   'disabled',
@@ -617,7 +617,7 @@ export const MdFabMenuItem = /*@__PURE__*/ defineContainer<JSX.MdFabMenuItem>('m
 ]);
 
 
-export const MdIconButton = /*@__PURE__*/ defineContainer<JSX.MdIconButton>('md-icon-button', defineMdIconButton, [
+export const MdIconButton = /*@__PURE__*/ defineContainer<JSX.MdIconButton>('md-icon-button', {"variant":"variant","size":"size","shape":"shape","buttonWidth":"button-width","disabled":"disabled","softDisabled":"soft-disabled","toggle":"toggle","selected":"selected","shapeMorph":"shape-morph","ripple":"ripple","icon":"icon","selectedIcon":"selected-icon","href":"href","target":"target","connectedLeft":"connected-left","connectedRight":"connected-right","value":"value","groupTabindex":"group-tabindex","density":"density"}, defineMdIconButton, [
   'variant',
   'size',
   'shape',
@@ -641,7 +641,7 @@ export const MdIconButton = /*@__PURE__*/ defineContainer<JSX.MdIconButton>('md-
 ]);
 
 
-export const MdLineChart = /*@__PURE__*/ defineContainer<JSX.MdLineChart>('md-line-chart', defineMdLineChart, [
+export const MdLineChart = /*@__PURE__*/ defineContainer<JSX.MdLineChart>('md-line-chart', {"label":"label","subtitle":"subtitle","titleAlign":"title-align","curve":"curve","stack":"stack","connectNulls":"connect-nulls","showMarks":"show-marks","lineWidth":"line-width","markSize":"mark-size","area":"area","showLine":"show-line","legend":"legend","tooltip":"tooltip","grid":"grid","axisTicks":"axis-ticks","inverted":"inverted","showLabels":"show-labels","seriesLabels":"series-labels","zoom":"zoom","locale":"locale","labelEmpty":"label-empty","labelPlot":"label-plot","labelPoint":"label-point","labelZoomStart":"label-zoom-start","labelZoomEnd":"label-zoom-end","summary":"summary","heightProp":"height","noAnimation":"no-animation","animation":"animation","animationDuration":"animation-duration","loading":"loading","loadingLabel":"loading-label","density":"density"}, defineMdLineChart, [
   'label',
   'subtitle',
   'markLines',
@@ -694,7 +694,7 @@ export const MdLineChart = /*@__PURE__*/ defineContainer<JSX.MdLineChart>('md-li
 ]);
 
 
-export const MdList = /*@__PURE__*/ defineContainer<JSX.MdList>('md-list', defineMdList, [
+export const MdList = /*@__PURE__*/ defineContainer<JSX.MdList>('md-list', {"listStyle":"list-style","selectionMode":"selection-mode","interactionMode":"interaction-mode","reorderable":"reorderable","label":"label","labelledby":"labelledby","roleOverride":"role-override","density":"density"}, defineMdList, [
   'listStyle',
   'selectionMode',
   'interactionMode',
@@ -709,7 +709,7 @@ export const MdList = /*@__PURE__*/ defineContainer<JSX.MdList>('md-list', defin
 ]);
 
 
-export const MdListItem = /*@__PURE__*/ defineContainer<JSX.MdListItem>('md-list-item', defineMdListItem, [
+export const MdListItem = /*@__PURE__*/ defineContainer<JSX.MdListItem>('md-list-item', {"type":"type","headline":"headline","overline":"overline","supportingText":"supporting-text","trailingSupportingText":"trailing-supporting-text","leadingIcon":"leading-icon","trailingIcon":"trailing-icon","leadingAvatar":"leading-avatar","leadingAvatarAlt":"leading-avatar-alt","leadingAvatarName":"leading-avatar-name","leadingAvatarLabel":"leading-avatar-label","leadingImage":"leading-image","leadingImageAlt":"leading-image-alt","lines":"lines","href":"href","target":"target","disabled":"disabled","softDisabled":"soft-disabled","selected":"selected","expandable":"expandable","expanded":"expanded","tabbable":"tabbable","rovingFocusVisible":"roving-focus-visible","selectionMode":"selection-mode","interactionMode":"interaction-mode","containerRole":"container-role","reorderable":"reorderable","density":"density"}, defineMdListItem, [
   'type',
   'headline',
   'overline',
@@ -747,14 +747,14 @@ export const MdListItem = /*@__PURE__*/ defineContainer<JSX.MdListItem>('md-list
 ]);
 
 
-export const MdLoadingIndicator = /*@__PURE__*/ defineContainer<JSX.MdLoadingIndicator>('md-loading-indicator', defineMdLoadingIndicator, [
+export const MdLoadingIndicator = /*@__PURE__*/ defineContainer<JSX.MdLoadingIndicator>('md-loading-indicator', {"variant":"variant","label":"label","density":"density"}, defineMdLoadingIndicator, [
   'variant',
   'label',
   'density'
 ]);
 
 
-export const MdMenu = /*@__PURE__*/ defineContainer<JSX.MdMenu>('md-menu', defineMdMenu, [
+export const MdMenu = /*@__PURE__*/ defineContainer<JSX.MdMenu>('md-menu', {"open":"open","anchor":"anchor","placement":"placement","quick":"quick","variant":"variant","layout":"layout","useGap":"use-gap","emptyText":"empty-text","matchAnchorWidth":"match-anchor-width","responsive":"responsive","persistent":"persistent","autoFocus":"auto-focus","maxHeight":"max-height","listLabel":"list-label","listbox":"listbox","density":"density"}, defineMdMenu, [
   'open',
   'anchor',
   'placement',
@@ -776,7 +776,7 @@ export const MdMenu = /*@__PURE__*/ defineContainer<JSX.MdMenu>('md-menu', defin
 ]);
 
 
-export const MdMenuItem = /*@__PURE__*/ defineContainer<JSX.MdMenuItem>('md-menu-item', defineMdMenuItem, [
+export const MdMenuItem = /*@__PURE__*/ defineContainer<JSX.MdMenuItem>('md-menu-item', {"headline":"headline","supportingText":"supporting-text","trailingText":"trailing-text","disabled":"disabled","selected":"selected","indeterminate":"indeterminate","keepOpen":"keep-open","divider":"divider","gap":"gap","badge":"badge","type":"type","checkPosition":"check-position","presentation":"presentation","roleOverride":"role-override","density":"density"}, defineMdMenuItem, [
   'headline',
   'supportingText',
   'trailingText',
@@ -796,13 +796,13 @@ export const MdMenuItem = /*@__PURE__*/ defineContainer<JSX.MdMenuItem>('md-menu
 ]);
 
 
-export const MdMenuItemGroup = /*@__PURE__*/ defineContainer<JSX.MdMenuItemGroup>('md-menu-item-group', defineMdMenuItemGroup, [
+export const MdMenuItemGroup = /*@__PURE__*/ defineContainer<JSX.MdMenuItemGroup>('md-menu-item-group', {"label":"label","density":"density"}, defineMdMenuItemGroup, [
   'label',
   'density'
 ]);
 
 
-export const MdMeter = /*@__PURE__*/ defineContainer<JSX.MdMeter>('md-meter', defineMdMeter, [
+export const MdMeter = /*@__PURE__*/ defineContainer<JSX.MdMeter>('md-meter', {"value":"value","min":"min","max":"max","label":"label","showLabel":"show-label","showValue":"show-value","valueText":"value-text","locale":"locale","color":"color","variant":"variant","size":"size","thickness":"thickness","density":"density"}, defineMdMeter, [
   'value',
   'min',
   'max',
@@ -820,7 +820,7 @@ export const MdMeter = /*@__PURE__*/ defineContainer<JSX.MdMeter>('md-meter', de
 ]);
 
 
-export const MdMultiSelect = /*@__PURE__*/ defineContainer<JSX.MdMultiSelect, JSX.MdMultiSelect["value"]>('md-multi-select', defineMdMultiSelect, [
+export const MdMultiSelect = /*@__PURE__*/ defineContainer<JSX.MdMultiSelect, JSX.MdMultiSelect["value"]>('md-multi-select', {"valueMissingLabel":"value-missing-label","reserveSupportingSpace":"reserve-supporting-space","variant":"variant","label":"label","placeholder":"placeholder","supportingText":"supporting-text","error":"error","errorText":"error-text","disabled":"disabled","softDisabled":"soft-disabled","required":"required","density":"density","options":["options","json"],"virtualize":"virtualize","filterable":"filterable","filterMode":"filter-mode","rowHeight":"row-height","value":[null,"values"],"maxSelected":"max-selected","showSelectAll":"show-select-all","selectAllLabel":"select-all-label","placement":"placement","maxHeight":"max-height","matchTriggerWidth":"match-trigger-width","displayMode":"display-mode","chipOverflow":"chip-overflow","chipPosition":"chip-position","trigger":"trigger","triggerIcon":"trigger-icon","triggerLabel":"trigger-label","searchPlaceholder":"search-placeholder","filterLabel":"filter-label","noResultsText":"no-results-text","noOptionsText":"no-options-text","searchingLabel":"searching-label","loadingText":"loading-text","loading":"loading","clearable":"clearable","clearIcon":"clear-icon","clearLabel":"clear-label","dropdownIcon":"dropdown-icon","name":"name","open":"open"}, defineMdMultiSelect, [
   'valueMissingLabel',
   'reserveSupportingSpace',
   'variant',
@@ -875,7 +875,7 @@ export const MdMultiSelect = /*@__PURE__*/ defineContainer<JSX.MdMultiSelect, JS
 'value', 'mdChange');
 
 
-export const MdNavigationBar = /*@__PURE__*/ defineContainer<JSX.MdNavigationBar>('md-navigation-bar', defineMdNavigationBar, [
+export const MdNavigationBar = /*@__PURE__*/ defineContainer<JSX.MdNavigationBar>('md-navigation-bar', {"activeIndex":"active-index","labelBehavior":"label-behavior","manualActivation":"manual-activation","density":"density"}, defineMdNavigationBar, [
   'activeIndex',
   'labelBehavior',
   'manualActivation',
@@ -884,7 +884,7 @@ export const MdNavigationBar = /*@__PURE__*/ defineContainer<JSX.MdNavigationBar
 ]);
 
 
-export const MdNavigationRail = /*@__PURE__*/ defineContainer<JSX.MdNavigationRail>('md-navigation-rail', defineMdNavigationRail, [
+export const MdNavigationRail = /*@__PURE__*/ defineContainer<JSX.MdNavigationRail>('md-navigation-rail', {"variant":"variant","modal":"modal","fullHeight":"full-height","alignment":"alignment","expandable":"expandable","toggleLabel":"toggle-label","labelVisibility":"label-visibility","activeIndex":"active-index","label":"label","disableFocusManagement":"disable-focus-management","density":"density","orientation":"orientation","maxVisible":"max-visible","overflowLabel":"overflow-label","overflowIcon":"overflow-icon"}, defineMdNavigationRail, [
   'variant',
   'modal',
   'fullHeight',
@@ -906,7 +906,7 @@ export const MdNavigationRail = /*@__PURE__*/ defineContainer<JSX.MdNavigationRa
 ]);
 
 
-export const MdNavigationRailTab = /*@__PURE__*/ defineContainer<JSX.MdNavigationRailTab>('md-navigation-rail-tab', defineMdNavigationRailTab, [
+export const MdNavigationRailTab = /*@__PURE__*/ defineContainer<JSX.MdNavigationRailTab>('md-navigation-rail-tab', {"icon":"icon","label":"label","active":"active","disabled":"disabled","badge":"badge","badgeValue":"badge-value","href":"href","target":"target","value":"value","labelVisibility":"label-visibility","expanded":"expanded","density":"density"}, defineMdNavigationRailTab, [
   'icon',
   'label',
   'active',
@@ -924,7 +924,7 @@ export const MdNavigationRailTab = /*@__PURE__*/ defineContainer<JSX.MdNavigatio
 ]);
 
 
-export const MdNavigationTab = /*@__PURE__*/ defineContainer<JSX.MdNavigationTab>('md-navigation-tab', defineMdNavigationTab, [
+export const MdNavigationTab = /*@__PURE__*/ defineContainer<JSX.MdNavigationTab>('md-navigation-tab', {"active":"active","disabled":"disabled","softDisabled":"soft-disabled","label":"label","icon":"icon","activeIcon":"active-icon","badge":"badge","badgeValue":"badge-value","badgeMax":"badge-max","href":"href","target":"target","labelBehavior":"label-behavior","density":"density"}, defineMdNavigationTab, [
   'active',
   'disabled',
   'softDisabled',
@@ -942,7 +942,7 @@ export const MdNavigationTab = /*@__PURE__*/ defineContainer<JSX.MdNavigationTab
 ]);
 
 
-export const MdNumberField = /*@__PURE__*/ defineContainer<JSX.MdNumberField, JSX.MdNumberField["value"]>('md-number-field', defineMdNumberField, [
+export const MdNumberField = /*@__PURE__*/ defineContainer<JSX.MdNumberField, JSX.MdNumberField["value"]>('md-number-field', {"variant":"variant","label":"label","placeholder":"placeholder","supportingText":"supporting-text","error":"error","errorText":"error-text","disabled":"disabled","readOnly":"readonly","required":"required","name":"name","density":"density","value":"value","locale":"locale","formatOptions":"format-options","min":"min","max":"max","step":"step","smallStep":"small-step","largeStep":"large-step","snapOnStep":"snap-on-step","allowOutOfRange":"allow-out-of-range","allowWheelScrub":"allow-wheel-scrub","steppers":"steppers","incrementLabel":"increment-label","decrementLabel":"decrement-label","valueMissingLabel":"value-missing-label","reserveSupportingSpace":"reserve-supporting-space"}, defineMdNumberField, [
   'variant',
   'label',
   'placeholder',
@@ -977,7 +977,7 @@ export const MdNumberField = /*@__PURE__*/ defineContainer<JSX.MdNumberField, JS
 'value', 'mdChange');
 
 
-export const MdOrganizationChart = /*@__PURE__*/ defineContainer<JSX.MdOrganizationChart>('md-organization-chart', defineMdOrganizationChart, [
+export const MdOrganizationChart = /*@__PURE__*/ defineContainer<JSX.MdOrganizationChart>('md-organization-chart', {"nodes":["nodes","json"],"selectionMode":"selection-mode","collapsible":"collapsible","orientation":"orientation","label":"label","expandLabel":"expand-label","collapseLabel":"collapse-label","density":"density"}, defineMdOrganizationChart, [
   'nodes',
   'selectionMode',
   'selectedIds',
@@ -992,7 +992,7 @@ export const MdOrganizationChart = /*@__PURE__*/ defineContainer<JSX.MdOrganizat
 ]);
 
 
-export const MdOtpField = /*@__PURE__*/ defineContainer<JSX.MdOtpField, JSX.MdOtpField["value"]>('md-otp-field', defineMdOtpField, [
+export const MdOtpField = /*@__PURE__*/ defineContainer<JSX.MdOtpField, JSX.MdOtpField["value"]>('md-otp-field', {"length":"length","value":"value","validationType":"validation-type","transform":"transform","mask":"mask","autoSubmit":"auto-submit","groupSize":"group-size","inputMode":"inputmode","name":"name","disabled":"disabled","readOnly":"readonly","required":"required","error":"error","errorText":"error-text","supportingText":"supporting-text","label":"label","cellLabelTemplate":"cell-label-template","valueMissingLabel":"value-missing-label","incompleteLabel":"incomplete-label","density":"density","reserveSupportingSpace":"reserve-supporting-space"}, defineMdOtpField, [
   'length',
   'value',
   'validationType',
@@ -1023,7 +1023,7 @@ export const MdOtpField = /*@__PURE__*/ defineContainer<JSX.MdOtpField, JSX.MdOt
 'value', 'mdInput');
 
 
-export const MdPieChart = /*@__PURE__*/ defineContainer<JSX.MdPieChart>('md-pie-chart', defineMdPieChart, [
+export const MdPieChart = /*@__PURE__*/ defineContainer<JSX.MdPieChart>('md-pie-chart', {"label":"label","titleAlign":"title-align","innerRadius":"inner-radius","outerRadius":"outer-radius","startAngle":"start-angle","endAngle":"end-angle","paddingAngle":"padding-angle","cornerRadius":"corner-radius","showLabels":"show-labels","labelMode":"label-mode","monochrome":"monochrome","gradient":"gradient","highlight":"highlight","legend":"legend","tooltip":"tooltip","locale":"locale","subtitle":"subtitle","summary":"summary","labelEmpty":"label-empty","loading":"loading","loadingLabel":"loading-label","labelPlot":"label-plot","labelPoint":"label-point","heightProp":"height","noAnimation":"no-animation","animation":"animation","animationDuration":"animation-duration","density":"density"}, defineMdPieChart, [
   'label',
   'titleAlign',
   'data',
@@ -1063,7 +1063,7 @@ export const MdPieChart = /*@__PURE__*/ defineContainer<JSX.MdPieChart>('md-pie-
 ]);
 
 
-export const MdProgressIndicator = /*@__PURE__*/ defineContainer<JSX.MdProgressIndicator>('md-progress-indicator', defineMdProgressIndicator, [
+export const MdProgressIndicator = /*@__PURE__*/ defineContainer<JSX.MdProgressIndicator>('md-progress-indicator', {"variant":"variant","value":"value","max":"max","indeterminate":"indeterminate","thickness":"thickness","wave":"wave","waveAmplitude":"wave-amplitude","waveLength":"wave-length","waveSpeed":"wave-speed","size":"size","fourColor":"four-color","label":"label","complete":"complete","density":"density"}, defineMdProgressIndicator, [
   'variant',
   'value',
   'max',
@@ -1082,7 +1082,7 @@ export const MdProgressIndicator = /*@__PURE__*/ defineContainer<JSX.MdProgressI
 ]);
 
 
-export const MdRadio = /*@__PURE__*/ defineContainer<JSX.MdRadio, JSX.MdRadio["value"]>('md-radio', defineMdRadio, [
+export const MdRadio = /*@__PURE__*/ defineContainer<JSX.MdRadio, JSX.MdRadio["value"]>('md-radio', {"valueMissingLabel":"value-missing-label","checked":"checked","disabled":"disabled","softDisabled":"soft-disabled","required":"required","name":"name","value":"value","density":"density"}, defineMdRadio, [
   'valueMissingLabel',
   'checked',
   'disabled',
@@ -1099,7 +1099,7 @@ export const MdRadio = /*@__PURE__*/ defineContainer<JSX.MdRadio, JSX.MdRadio["v
 'value', 'mdChange');
 
 
-export const MdRating = /*@__PURE__*/ defineContainer<JSX.MdRating, JSX.MdRating["value"]>('md-rating', defineMdRating, [
+export const MdRating = /*@__PURE__*/ defineContainer<JSX.MdRating, JSX.MdRating["value"]>('md-rating', {"value":"value","defaultValue":"default-value","max":"max","precision":"precision","size":"size","readonly":"readonly","disabled":"disabled","softDisabled":"soft-disabled","icon":"icon","emptyIcon":"empty-icon","outlineEmpty":"outline-empty","showValueLabel":"show-value-label","ratingLabel":"rating-label","name":"name","hover":"hover","density":"density"}, defineMdRating, [
   'value',
   'defaultValue',
   'max',
@@ -1123,12 +1123,12 @@ export const MdRating = /*@__PURE__*/ defineContainer<JSX.MdRating, JSX.MdRating
 'value', 'mdChange');
 
 
-export const MdRipple = /*@__PURE__*/ defineContainer<JSX.MdRipple>('md-ripple', defineMdRipple, [
+export const MdRipple = /*@__PURE__*/ defineContainer<JSX.MdRipple>('md-ripple', {"disabled":"disabled"}, defineMdRipple, [
   'disabled'
 ]);
 
 
-export const MdSearch = /*@__PURE__*/ defineContainer<JSX.MdSearch>('md-search', defineMdSearch, [
+export const MdSearch = /*@__PURE__*/ defineContainer<JSX.MdSearch>('md-search', {"variant":"variant","layout":"layout","trigger":"trigger","triggerIcon":"trigger-icon","triggerFor":"trigger-for","fullWidth":"full-width","value":"value","placeholder":"placeholder","open":"open","disabled":"disabled","elevation":"elevation","leadingIcon":"leading-icon","openLeadingIcon":"open-leading-icon","showClearButton":"show-clear-button","voiceSearch":"voice-search","escapeCloses":"escape-closes","dismissOnOutsideClick":"dismiss-on-outside-click","scrollShadow":"scroll-shadow","maxBlockSize":"max-block-size","inputAriaLabel":"input-aria-label","initialFocus":"initial-focus","announceResults":"announce-results","resultsLabel":"results-label","noResultsLabel":"no-results-label","loading":"loading","debounce":"debounce","throttle":"throttle","loadingLabel":"loading-label","density":"density"}, defineMdSearch, [
   'variant',
   'layout',
   'trigger',
@@ -1172,7 +1172,7 @@ export const MdSearch = /*@__PURE__*/ defineContainer<JSX.MdSearch>('md-search',
 ]);
 
 
-export const MdSegmentedButton = /*@__PURE__*/ defineContainer<JSX.MdSegmentedButton>('md-segmented-button', defineMdSegmentedButton, [
+export const MdSegmentedButton = /*@__PURE__*/ defineContainer<JSX.MdSegmentedButton>('md-segmented-button', {"value":"value","selected":"selected","disabled":"disabled","softDisabled":"soft-disabled","icon":"icon","label":"label","noCheckmark":"no-checkmark","ripple":"ripple","segmentIndex":"segment-index","segmentTotal":"segment-total","segmentDensity":"segment-density","segmentMultiselect":"segment-multiselect","density":"density"}, defineMdSegmentedButton, [
   'value',
   'selected',
   'disabled',
@@ -1190,14 +1190,14 @@ export const MdSegmentedButton = /*@__PURE__*/ defineContainer<JSX.MdSegmentedBu
 ]);
 
 
-export const MdSegmentedButtonSet = /*@__PURE__*/ defineContainer<JSX.MdSegmentedButtonSet>('md-segmented-button-set', defineMdSegmentedButtonSet, [
+export const MdSegmentedButtonSet = /*@__PURE__*/ defineContainer<JSX.MdSegmentedButtonSet>('md-segmented-button-set', {"multiselect":"multiselect","density":"density"}, defineMdSegmentedButtonSet, [
   'multiselect',
   'density',
   'mdChange'
 ]);
 
 
-export const MdSelect = /*@__PURE__*/ defineContainer<JSX.MdSelect, JSX.MdSelect["value"]>('md-select', defineMdSelect, [
+export const MdSelect = /*@__PURE__*/ defineContainer<JSX.MdSelect, JSX.MdSelect["value"]>('md-select', {"valueMissingLabel":"value-missing-label","reserveSupportingSpace":"reserve-supporting-space","variant":"variant","label":"label","placeholder":"placeholder","value":"value","disabled":"disabled","required":"required","error":"error","errorText":"error-text","supportingText":"supporting-text","density":"density","clearable":"clearable","matchTriggerWidth":"match-trigger-width","placement":"placement","maxHeight":"max-height","options":["options","json"],"virtualize":"virtualize","filterable":"filterable","filterMode":"filter-mode","rowHeight":"row-height","name":"name","searchPlaceholder":"search-placeholder","filterLabel":"filter-label","noResultsText":"no-results-text","noOptionsText":"no-options-text","clearLabel":"clear-label","searchingLabel":"searching-label","loadingText":"loading-text","clearIcon":"clear-icon","dropdownIcon":"dropdown-icon","loading":"loading","fullWidth":"full-width","open":"open"}, defineMdSelect, [
   'valueMissingLabel',
   'reserveSupportingSpace',
   'variant',
@@ -1240,7 +1240,7 @@ export const MdSelect = /*@__PURE__*/ defineContainer<JSX.MdSelect, JSX.MdSelect
 'value', 'mdChange');
 
 
-export const MdSelectOption = /*@__PURE__*/ defineContainer<JSX.MdSelectOption>('md-select-option', defineMdSelectOption, [
+export const MdSelectOption = /*@__PURE__*/ defineContainer<JSX.MdSelectOption>('md-select-option', {"value":"value","label":"label","disabled":"disabled","selected":"selected","icon":"icon","iconColor":"icon-color","supportingText":"supporting-text"}, defineMdSelectOption, [
   'value',
   'label',
   'disabled',
@@ -1252,7 +1252,7 @@ export const MdSelectOption = /*@__PURE__*/ defineContainer<JSX.MdSelectOption>(
 ]);
 
 
-export const MdSideSheet = /*@__PURE__*/ defineContainer<JSX.MdSideSheet>('md-side-sheet', defineMdSideSheet, [
+export const MdSideSheet = /*@__PURE__*/ defineContainer<JSX.MdSideSheet>('md-side-sheet', {"open":"open","variant":"variant","side":"side","headline":"headline","closeable":"closeable","showBack":"show-back","scrimDismissible":"scrim-dismissible","topDivider":"top-divider","bottomDivider":"bottom-divider","detached":"detached","sheetAriaLabel":"aria-label","density":"density"}, defineMdSideSheet, [
   'open',
   'variant',
   'side',
@@ -1272,7 +1272,7 @@ export const MdSideSheet = /*@__PURE__*/ defineContainer<JSX.MdSideSheet>('md-si
 ]);
 
 
-export const MdSkeleton = /*@__PURE__*/ defineContainer<JSX.MdSkeleton>('md-skeleton', defineMdSkeleton, [
+export const MdSkeleton = /*@__PURE__*/ defineContainer<JSX.MdSkeleton>('md-skeleton', {"variant":"variant","animation":"animation","lines":"lines","width":"width","height":"height","fullWidth":"full-width","fullHeight":"full-height","ariaLabelProp":"aria-label","announce":"announce","density":"density"}, defineMdSkeleton, [
   'variant',
   'animation',
   'lines',
@@ -1286,7 +1286,7 @@ export const MdSkeleton = /*@__PURE__*/ defineContainer<JSX.MdSkeleton>('md-skel
 ]);
 
 
-export const MdSlider = /*@__PURE__*/ defineContainer<JSX.MdSlider, JSX.MdSlider["value"]>('md-slider', defineMdSlider, [
+export const MdSlider = /*@__PURE__*/ defineContainer<JSX.MdSlider, JSX.MdSlider["value"]>('md-slider', {"min":"min","max":"max","value":"value","step":"step","disabled":"disabled","name":"name","nameStart":"name-start","nameEnd":"name-end","variant":"variant","range":"range","stops":"stops","valueStart":"value-start","valueEnd":"value-end","size":"size","orientation":"orientation","fullHeight":"full-height","valueIndicator":"value-indicator","labeled":"labeled","insetIcon":"inset-icon","icon":"icon","sliderAriaLabel":"aria-label","ariaLabelStart":"label-start","ariaLabelEnd":"label-end","valueText":"value-text","valueStartText":"value-start-text","valueEndText":"value-end-text","controlled":"controlled","density":"density"}, defineMdSlider, [
   'min',
   'max',
   'value',
@@ -1325,7 +1325,7 @@ export const MdSlider = /*@__PURE__*/ defineContainer<JSX.MdSlider, JSX.MdSlider
 'value', 'mdChange');
 
 
-export const MdSnackbar = /*@__PURE__*/ defineContainer<JSX.MdSnackbar>('md-snackbar', defineMdSnackbar, [
+export const MdSnackbar = /*@__PURE__*/ defineContainer<JSX.MdSnackbar>('md-snackbar', {"open":"open","message":"message","action":"action","closeable":"closeable","autoHide":"auto-hide","autoHideDuration":"auto-hide-duration","position":"position","stacked":"stacked","politeness":"politeness","dismissLabel":"dismiss-label","density":"density"}, defineMdSnackbar, [
   'open',
   'message',
   'action',
@@ -1343,7 +1343,7 @@ export const MdSnackbar = /*@__PURE__*/ defineContainer<JSX.MdSnackbar>('md-snac
 ]);
 
 
-export const MdSparkline = /*@__PURE__*/ defineContainer<JSX.MdSparkline>('md-sparkline', defineMdSparkline, [
+export const MdSparkline = /*@__PURE__*/ defineContainer<JSX.MdSparkline>('md-sparkline', {"variant":"variant","color":"color","curve":"curve","showTooltip":"show-tooltip","showMarks":"show-marks","heightProp":"height","noAnimation":"no-animation","cornerRadius":"corner-radius","min":"min","max":"max","lineWidth":"line-width","markSize":"mark-size","barWidth":"bar-width"}, defineMdSparkline, [
   'data',
   'labels',
   'variant',
@@ -1366,7 +1366,7 @@ export const MdSparkline = /*@__PURE__*/ defineContainer<JSX.MdSparkline>('md-sp
 ]);
 
 
-export const MdSplitButton = /*@__PURE__*/ defineContainer<JSX.MdSplitButton>('md-split-button', defineMdSplitButton, [
+export const MdSplitButton = /*@__PURE__*/ defineContainer<JSX.MdSplitButton>('md-split-button', {"variant":"variant","size":"size","disabled":"disabled","softDisabled":"soft-disabled","icon":"icon","label":"label","trailingIcon":"trailing-icon","trailingChecked":"trailing-checked","menuLabel":"menu-label","haspopup":"haspopup","controls":"controls","fullWidth":"full-width","ripple":"ripple","density":"density"}, defineMdSplitButton, [
   'variant',
   'size',
   'disabled',
@@ -1386,7 +1386,7 @@ export const MdSplitButton = /*@__PURE__*/ defineContainer<JSX.MdSplitButton>('m
 ]);
 
 
-export const MdStatusDot = /*@__PURE__*/ defineContainer<JSX.MdStatusDot>('md-status-dot', defineMdStatusDot, [
+export const MdStatusDot = /*@__PURE__*/ defineContainer<JSX.MdStatusDot>('md-status-dot', {"state":"state","size":"size","inline":"inline","shape":"shape","live":"live","label":"label","density":"density"}, defineMdStatusDot, [
   'state',
   'size',
   'inline',
@@ -1397,7 +1397,7 @@ export const MdStatusDot = /*@__PURE__*/ defineContainer<JSX.MdStatusDot>('md-st
 ]);
 
 
-export const MdStep = /*@__PURE__*/ defineContainer<JSX.MdStep>('md-step', defineMdStep, [
+export const MdStep = /*@__PURE__*/ defineContainer<JSX.MdStep>('md-step', {"label":"label","description":"description","completed":"completed","active":"active","error":"error","errorText":"error-text","disabled":"disabled","optional":"optional","editable":"editable","icon":"icon","completedIcon":"completed-icon","errorIcon":"error-icon","accessibleName":"accessible-name","hideActions":"hide-actions","density":"density"}, defineMdStep, [
   'label',
   'description',
   'completed',
@@ -1419,7 +1419,7 @@ export const MdStep = /*@__PURE__*/ defineContainer<JSX.MdStep>('md-step', defin
 ]);
 
 
-export const MdStepper = /*@__PURE__*/ defineContainer<JSX.MdStepper>('md-stepper', defineMdStepper, [
+export const MdStepper = /*@__PURE__*/ defineContainer<JSX.MdStepper>('md-stepper', {"orientation":"orientation","indicator":"indicator","variant":"variant","mode":"mode","active":"active","autoComplete":"auto-complete","nav":"nav","readonly":"readonly","nextDisabled":"next-disabled","loading":"loading","lazy":"lazy","label":"label","stepWord":"step-word","ofWord":"of-word","completedWord":"completed-word","currentWord":"current-word","errorWord":"error-word","optionalWord":"optional-word","nextLabel":"next-label","backLabel":"back-label","finishLabel":"finish-label","density":"density"}, defineMdStepper, [
   'orientation',
   'indicator',
   'variant',
@@ -1448,7 +1448,7 @@ export const MdStepper = /*@__PURE__*/ defineContainer<JSX.MdStepper>('md-steppe
 ]);
 
 
-export const MdSubMenuItem = /*@__PURE__*/ defineContainer<JSX.MdSubMenuItem>('md-sub-menu-item', defineMdSubMenuItem, [
+export const MdSubMenuItem = /*@__PURE__*/ defineContainer<JSX.MdSubMenuItem>('md-sub-menu-item', {"headline":"headline","supportingText":"supporting-text","disabled":"disabled","divider":"divider","gap":"gap","badge":"badge","openDelay":"open-delay","closeDelay":"close-delay","density":"density"}, defineMdSubMenuItem, [
   'headline',
   'supportingText',
   'disabled',
@@ -1462,7 +1462,7 @@ export const MdSubMenuItem = /*@__PURE__*/ defineContainer<JSX.MdSubMenuItem>('m
 ]);
 
 
-export const MdSwitch = /*@__PURE__*/ defineContainer<JSX.MdSwitch, JSX.MdSwitch["selected"]>('md-switch', defineMdSwitch, [
+export const MdSwitch = /*@__PURE__*/ defineContainer<JSX.MdSwitch, JSX.MdSwitch["selected"]>('md-switch', {"valueMissingLabel":"value-missing-label","selected":"selected","disabled":"disabled","softDisabled":"soft-disabled","required":"required","name":"name","value":"value","icons":"icons","showOnlySelectedIcon":"show-only-selected-icon","selectedIcon":"selected-icon","unselectedIcon":"unselected-icon","density":"density"}, defineMdSwitch, [
   'valueMissingLabel',
   'selected',
   'disabled',
@@ -1482,7 +1482,7 @@ export const MdSwitch = /*@__PURE__*/ defineContainer<JSX.MdSwitch, JSX.MdSwitch
 'selected', 'mdChange');
 
 
-export const MdTab = /*@__PURE__*/ defineContainer<JSX.MdTab>('md-tab', defineMdTab, [
+export const MdTab = /*@__PURE__*/ defineContainer<JSX.MdTab>('md-tab', {"label":"label","icon":"icon","active":"active","disabled":"disabled","inlineIcon":"inline-icon","variant":"variant","badge":"badge","controls":"controls","density":"density"}, defineMdTab, [
   'label',
   'icon',
   'active',
@@ -1496,18 +1496,18 @@ export const MdTab = /*@__PURE__*/ defineContainer<JSX.MdTab>('md-tab', defineMd
 ]);
 
 
-export const MdTabPanel = /*@__PURE__*/ defineContainer<JSX.MdTabPanel>('md-tab-panel', defineMdTabPanel, [
+export const MdTabPanel = /*@__PURE__*/ defineContainer<JSX.MdTabPanel>('md-tab-panel', {"active":"active"}, defineMdTabPanel, [
   'active'
 ]);
 
 
-export const MdTabPanels = /*@__PURE__*/ defineContainer<JSX.MdTabPanels>('md-tab-panels', defineMdTabPanels, [
+export const MdTabPanels = /*@__PURE__*/ defineContainer<JSX.MdTabPanels>('md-tab-panels', {"for":"for","sizing":"sizing"}, defineMdTabPanels, [
   'for',
   'sizing'
 ]);
 
 
-export const MdTable = /*@__PURE__*/ defineContainer<JSX.MdTable>('md-table', defineMdTable, [
+export const MdTable = /*@__PURE__*/ defineContainer<JSX.MdTable>('md-table', {"density":"density","columnTemplate":"column-template","columns":"columns","minWidth":"min-width","stickyHeader":"sticky-header","frozenHeader":"frozen-header","keepHeight":"keep-height","scrollbar":"scrollbar","pinMode":"pin-mode","pinIcon":"pin-icon","stickyFooter":"sticky-footer","striped":"striped","noDividers":"no-dividers","hoverable":"hoverable","motion":"motion","selection":"selection","sortBy":"sort-by","sortOrder":"sort-order","loading":"loading","loadingMode":"loading-mode","loadingRows":"loading-rows","empty":"empty","label":"label","caption":"caption","summary":"summary","rowOffset":"row-offset","rowCount":"row-count"}, defineMdTable, [
   'density',
   'columnTemplate',
   'columns',
@@ -1543,12 +1543,12 @@ export const MdTable = /*@__PURE__*/ defineContainer<JSX.MdTable>('md-table', de
 ]);
 
 
-export const MdTableBody = /*@__PURE__*/ defineContainer<JSX.MdTableBody>('md-table-body', defineMdTableBody, [
+export const MdTableBody = /*@__PURE__*/ defineContainer<JSX.MdTableBody>('md-table-body', {"presentational":"presentational"}, defineMdTableBody, [
   'presentational'
 ]);
 
 
-export const MdTableCell = /*@__PURE__*/ defineContainer<JSX.MdTableCell>('md-table-cell', defineMdTableCell, [
+export const MdTableCell = /*@__PURE__*/ defineContainer<JSX.MdTableCell>('md-table-cell', {"align":"align","numeric":"numeric","padding":"padding","head":"head","scope":"scope","sticky":"sticky","colSpan":"colspan","rowSpan":"rowspan","ellipsis":"ellipsis","variant":"variant","noPinIndicator":"no-pin-indicator","pinIcon":"pin-icon","density":"density"}, defineMdTableCell, [
   'align',
   'numeric',
   'padding',
@@ -1565,7 +1565,7 @@ export const MdTableCell = /*@__PURE__*/ defineContainer<JSX.MdTableCell>('md-ta
 ]);
 
 
-export const MdTableContainer = /*@__PURE__*/ defineContainer<JSX.MdTableContainer>('md-table-container', defineMdTableContainer, [
+export const MdTableContainer = /*@__PURE__*/ defineContainer<JSX.MdTableContainer>('md-table-container', {"variant":"variant","shape":"shape","maxHeight":"max-height","minHeight":"min-height","vibrant":"vibrant","elevation":"elevation"}, defineMdTableContainer, [
   'variant',
   'shape',
   'maxHeight',
@@ -1575,21 +1575,21 @@ export const MdTableContainer = /*@__PURE__*/ defineContainer<JSX.MdTableContain
 ]);
 
 
-export const MdTableExpandToggle = /*@__PURE__*/ defineContainer<JSX.MdTableExpandToggle>('md-table-expand-toggle', defineMdTableExpandToggle, [
+export const MdTableExpandToggle = /*@__PURE__*/ defineContainer<JSX.MdTableExpandToggle>('md-table-expand-toggle', {"buttonLabel":"button-label","icon":"icon"}, defineMdTableExpandToggle, [
   'buttonLabel',
   'icon'
 ]);
 
 
-export const MdTableFoot = /*@__PURE__*/ defineContainer<JSX.MdTableFoot>('md-table-foot', defineMdTableFoot, [
+export const MdTableFoot = /*@__PURE__*/ defineContainer<JSX.MdTableFoot>('md-table-foot', {"presentational":"presentational"}, defineMdTableFoot, [
   'presentational'
 ]);
 
 
-export const MdTableHead = /*@__PURE__*/ defineContainer<JSX.MdTableHead>('md-table-head', defineMdTableHead);
+export const MdTableHead = /*@__PURE__*/ defineContainer<JSX.MdTableHead>('md-table-head', {}, defineMdTableHead);
 
 
-export const MdTablePagination = /*@__PURE__*/ defineContainer<JSX.MdTablePagination>('md-table-pagination', defineMdTablePagination, [
+export const MdTablePagination = /*@__PURE__*/ defineContainer<JSX.MdTablePagination>('md-table-pagination', {"count":"count","page":"page","rowsPerPage":"rows-per-page","rowsPerPageOptions":"rows-per-page-options","showFirstLast":"show-first-last","labelDisplayedRows":"label-displayed-rows","labelRowsPerPage":"label-rows-per-page","labelFirstPage":"label-first-page","labelPreviousPage":"label-previous-page","labelNextPage":"label-next-page","labelLastPage":"label-last-page","labelAll":"label-all","compact":"compact","disabled":"disabled","density":"density"}, defineMdTablePagination, [
   'count',
   'page',
   'rowsPerPage',
@@ -1610,7 +1610,7 @@ export const MdTablePagination = /*@__PURE__*/ defineContainer<JSX.MdTablePagina
 ]);
 
 
-export const MdTableRow = /*@__PURE__*/ defineContainer<JSX.MdTableRow>('md-table-row', defineMdTableRow, [
+export const MdTableRow = /*@__PURE__*/ defineContainer<JSX.MdTableRow>('md-table-row', {"rowgroup":"rowgroup","selected":"selected","disabled":"disabled","selectable":"selectable","clickable":"clickable","value":"value","expandable":"expandable","expanded":"expanded","highlight":"highlight"}, defineMdTableRow, [
   'rowgroup',
   'selected',
   'disabled',
@@ -1626,7 +1626,7 @@ export const MdTableRow = /*@__PURE__*/ defineContainer<JSX.MdTableRow>('md-tabl
 ]);
 
 
-export const MdTableSortLabel = /*@__PURE__*/ defineContainer<JSX.MdTableSortLabel>('md-table-sort-label', defineMdTableSortLabel, [
+export const MdTableSortLabel = /*@__PURE__*/ defineContainer<JSX.MdTableSortLabel>('md-table-sort-label', {"column":"column","disabled":"disabled","defaultOrder":"default-order","iconPosition":"icon-position","icon":"icon","inactiveIcon":"inactive-icon","active":"active","order":"order","sortedAscendingLabel":"sorted-ascending-label","sortedDescendingLabel":"sorted-descending-label","density":"density"}, defineMdTableSortLabel, [
   'column',
   'disabled',
   'defaultOrder',
@@ -1642,7 +1642,7 @@ export const MdTableSortLabel = /*@__PURE__*/ defineContainer<JSX.MdTableSortLab
 ]);
 
 
-export const MdTableToolbar = /*@__PURE__*/ defineContainer<JSX.MdTableToolbar>('md-table-toolbar', defineMdTableToolbar, [
+export const MdTableToolbar = /*@__PURE__*/ defineContainer<JSX.MdTableToolbar>('md-table-toolbar', {"headline":"headline","supportingText":"supporting-text","numSelected":"num-selected","autoBind":"auto-bind","labelSelected":"label-selected","compact":"compact","density":"density"}, defineMdTableToolbar, [
   'headline',
   'supportingText',
   'numSelected',
@@ -1653,7 +1653,7 @@ export const MdTableToolbar = /*@__PURE__*/ defineContainer<JSX.MdTableToolbar>(
 ]);
 
 
-export const MdTabs = /*@__PURE__*/ defineContainer<JSX.MdTabs>('md-tabs', defineMdTabs, [
+export const MdTabs = /*@__PURE__*/ defineContainer<JSX.MdTabs>('md-tabs', {"activeTabIndex":"active-tab-index","variant":"variant","divider":"divider","ariaLabelProp":"aria-label","tabWidth":"tab-width","width":"width"}, defineMdTabs, [
   'activeTabIndex',
   'variant',
   'divider',
@@ -1664,7 +1664,7 @@ export const MdTabs = /*@__PURE__*/ defineContainer<JSX.MdTabs>('md-tabs', defin
 ]);
 
 
-export const MdTextField = /*@__PURE__*/ defineContainer<JSX.MdTextField, JSX.MdTextField["value"]>('md-text-field', defineMdTextField, [
+export const MdTextField = /*@__PURE__*/ defineContainer<JSX.MdTextField, JSX.MdTextField["value"]>('md-text-field', {"reserveSupportingSpace":"reserve-supporting-space","variant":"variant","label":"label","value":"value","placeholder":"placeholder","type":"type","name":"name","pattern":"pattern","minLength":"min-length","min":"min","max":"max","step":"step","autocomplete":"autocomplete","inputMode":"inputmode","enterKeyHint":"enterkeyhint","autoCapitalize":"autocapitalize","spellcheck":"spellcheck","disabled":"disabled","readOnly":"readonly","required":"required","error":"error","errorText":"error-text","supportingText":"supporting-text","prefixText":"prefix-text","suffixText":"suffix-text","maxLength":"max-length","clearable":"clearable","passwordToggle":"password-toggle","showPasswordLabel":"show-password-label","hidePasswordLabel":"hide-password-label","density":"density","multiline":"multiline","rows":"rows","speechToText":"speech-to-text","speechLang":"speech-lang","restrict":"restrict","formatOn":"format-on","focusBorderWidth":"focus-border-width","appearFocused":"appear-focused","chipsWrap":"chips-wrap","debounce":"debounce","throttle":"throttle","inputRole":"input-role","inputExpanded":"input-expanded","inputAriaAutocomplete":"input-aria-autocomplete"}, defineMdTextField, [
   'reserveSupportingSpace',
   'variant',
   'label',
@@ -1723,7 +1723,7 @@ export const MdTextField = /*@__PURE__*/ defineContainer<JSX.MdTextField, JSX.Md
 'value', 'mdInput');
 
 
-export const MdTimePicker = /*@__PURE__*/ defineContainer<JSX.MdTimePicker, JSX.MdTimePicker["value"]>('md-time-picker', defineMdTimePicker, [
+export const MdTimePicker = /*@__PURE__*/ defineContainer<JSX.MdTimePicker, JSX.MdTimePicker["value"]>('md-time-picker', {"variant":"variant","format":"format","value":"value","name":"name","min":"min","max":"max","required":"required","label":"label","supportingText":"supporting-text","error":"error","errorText":"error-text","reserveSupportingSpace":"reserve-supporting-space","headline":"headline","headlineInputLabel":"headline-input-label","headlineDialLabel":"headline-dial-label","valueMissingLabel":"value-missing-label","rangeUnderflowLabel":"range-underflow-label","rangeOverflowLabel":"range-overflow-label","rangeOutsideLabel":"range-outside-label","disabled":"disabled","open":"open","minuteStep":"minute-step","cancelLabel":"cancel-label","okLabel":"ok-label","hideTrigger":"hide-trigger","amLabel":"am-label","pmLabel":"pm-label","hourLabel":"hour-label","minuteLabel":"minute-label","toggleDialLabel":"toggle-dial-label","toggleInputLabel":"toggle-input-label","periodLabel":"period-label","periodLayout":"period-layout","orientation":"orientation","responsive":"responsive","density":"density"}, defineMdTimePicker, [
   'variant',
   'format',
   'value',
@@ -1771,7 +1771,7 @@ export const MdTimePicker = /*@__PURE__*/ defineContainer<JSX.MdTimePicker, JSX.
 'value', 'mdChange');
 
 
-export const MdToolbar = /*@__PURE__*/ defineContainer<JSX.MdToolbar>('md-toolbar', defineMdToolbar, [
+export const MdToolbar = /*@__PURE__*/ defineContainer<JSX.MdToolbar>('md-toolbar', {"variant":"variant","color":"color","layout":"layout","alignment":"alignment","containerSemantics":"container-semantics","ariaLabelProp":"aria-label","ariaLabelledby":"aria-labelledby","density":"density"}, defineMdToolbar, [
   'variant',
   'color',
   'layout',
@@ -1783,7 +1783,7 @@ export const MdToolbar = /*@__PURE__*/ defineContainer<JSX.MdToolbar>('md-toolba
 ]);
 
 
-export const MdTooltip = /*@__PURE__*/ defineContainer<JSX.MdTooltip>('md-tooltip', defineMdTooltip, [
+export const MdTooltip = /*@__PURE__*/ defineContainer<JSX.MdTooltip>('md-tooltip', {"text":"text","subhead":"subhead","variant":"variant","position":"position","autoPosition":"auto-position","offset":"offset","crossOffset":"cross-offset","open":"open","showDelay":"show-delay","hideDelay":"hide-delay","disabled":"disabled","density":"density"}, defineMdTooltip, [
   'text',
   'subhead',
   'variant',
@@ -1801,7 +1801,7 @@ export const MdTooltip = /*@__PURE__*/ defineContainer<JSX.MdTooltip>('md-toolti
 ]);
 
 
-export const MdTransferList = /*@__PURE__*/ defineContainer<JSX.MdTransferList>('md-transfer-list', defineMdTransferList, [
+export const MdTransferList = /*@__PURE__*/ defineContainer<JSX.MdTransferList>('md-transfer-list', {"items":["items","json"],"sourceTitle":"source-title","targetTitle":"target-title","searchable":"searchable","sourceSearchPlaceholder":"source-search-placeholder","targetSearchPlaceholder":"target-search-placeholder","showSelectAll":"show-select-all","searchIcon":"search-icon","moveRightIcon":"move-right-icon","moveLeftIcon":"move-left-icon","moveAllRightIcon":"move-all-right-icon","moveAllLeftIcon":"move-all-left-icon","emptyIcon":"empty-icon","emptyText":"empty-text","countTemplate":"count-template","density":"density","disabled":"disabled","singleStepOnly":"single-step-only","moveRightLabel":"move-right-label","moveLeftLabel":"move-left-label","moveAllRightLabel":"move-all-right-label","moveAllLeftLabel":"move-all-left-label"}, defineMdTransferList, [
   'items',
   'value',
   'sourceTitle',

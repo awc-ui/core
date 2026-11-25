@@ -258,10 +258,10 @@ describe('md-navigation-rail e2e', () => {
           const indicator = tab.shadowRoot!.querySelector('[part="indicator"]') as HTMLElement;
           const toggle = rail.shadowRoot!.querySelector('[part="toggle"] md-icon-button') as HTMLElement;
           const rtl = getComputedStyle(rail).direction === 'rtl';
-          const sample = () => {
+          const sample = (at: number) => {
             const r = rail.getBoundingClientRect(), i = icon.getBoundingClientRect(), p = indicator.getBoundingClientRect(), t = toggle.getBoundingClientRect();
             return {
-              at: performance.now(), railWidth: r.width,
+              at, railWidth: r.width,
               iconLeading: rtl ? r.right - (i.left + i.width / 2) : i.left + i.width / 2 - r.left,
               iconTop: i.top + i.height / 2 - r.top,
               toggleLeading: rtl ? r.right - (t.left + t.width / 2) : t.left + t.width / 2 - r.left,
@@ -274,13 +274,15 @@ describe('md-navigation-rail e2e', () => {
           };
           // Awaiting an RAF before the command ensures the baseline itself was
           // painted. Every subsequent sample is a frame, not an endpoint snapshot.
-          await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
-          const samples = [sample()], start = performance.now();
+          // Use the animation frame's clock: layout work can delay performance.now()
+          // enough to undercount the animation time between consecutive samples.
+          let frameAt = await new Promise<number>(resolve => requestAnimationFrame(resolve));
+          const samples = [sample(frameAt)], start = frameAt;
           await rail[method]();
           do {
-            await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
-            samples.push(sample());
-          } while (performance.now() - start < 550);
+            frameAt = await new Promise<number>(resolve => requestAnimationFrame(resolve));
+            samples.push(sample(frameAt));
+          } while (frameAt - start < 550);
           return samples;
         }, method);
 
@@ -360,10 +362,10 @@ describe('md-navigation-rail e2e', () => {
         };
         rail.addEventListener('mdExpand', () => { rail.labelVisibility = 'all'; });
         rail.addEventListener('mdCollapse', () => { rail.labelVisibility = 'none'; });
-        const sample = () => {
+        const sample = (at: number) => {
           const r = rail.getBoundingClientRect(), i = icon.getBoundingClientRect(), p = indicator.getBoundingClientRect(), t = toggle.getBoundingClientRect();
           return {
-            at: performance.now(), iconLeading: rtl ? r.right - (i.left + i.width / 2) : i.left + i.width / 2 - r.left,
+            at, iconLeading: rtl ? r.right - (i.left + i.width / 2) : i.left + i.width / 2 - r.left,
             iconTop: i.top + i.height / 2 - r.top,
             toggleLeading: rtl ? r.right - (t.left + t.width / 2) : t.left + t.width / 2 - r.left,
             indicatorLeading: rtl ? r.right - p.right : p.left - r.left,
@@ -373,18 +375,18 @@ describe('md-navigation-rail e2e', () => {
           };
         };
         await document.fonts.ready;
-        await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
-        const samples = [sample()], start = performance.now();
+        let frameAt = await new Promise<number>(resolve => requestAnimationFrame(resolve));
+        const samples = [sample(frameAt)], start = frameAt;
         let reversal = -1;
         await rail.expand();
         do {
-          await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
-          samples.push(sample());
-          if (reversal < 0 && performance.now() - start >= 85) {
+          frameAt = await new Promise<number>(resolve => requestAnimationFrame(resolve));
+          samples.push(sample(frameAt));
+          if (reversal < 0 && frameAt - start >= 85) {
             reversal = samples.length - 1;
             await rail.toggle();
           }
-        } while (performance.now() - start < 650);
+        } while (frameAt - start < 650);
         return { samples, reversal, variant: rail.variant, expanded: tab.expanded, labels: tab.labelVisibility };
       });
 

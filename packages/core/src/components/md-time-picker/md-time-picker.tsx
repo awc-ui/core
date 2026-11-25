@@ -1,3 +1,13 @@
+import {
+  activateInteractionMotion, canAnimateInteraction,
+  beginInitialInteractionMotion,
+  completeInitialInteractionMotion,
+  initialInteractionMotionRendered,
+  reconnectInteractionMotion,
+  disconnectInteractionMotion,
+  prepareInteractionUpdate,
+} from '../../utils/initial-motion';
+import { finishShellMotion, OverlayLifecycle } from '../../utils/overlay-lifecycle';
 import { createId } from '../../utils/id';
 import { checkValidityOf, getValidityOf, InlineValidationPresenter, reportValidityOf } from '../../utils/form';
 import { AttachInternals, Build, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, Watch, h } from '@stencil/core';
@@ -124,11 +134,11 @@ let bodyOverflowBeforeLock = '';
    re-pushes it to the tail, so array position is unreliable. Each picker
    stamps openSeq when it actually opens (not on a reparent re-arm), and
    the topmost owner is the open picker with the greatest openSeq. */
-let openSeqCounter = 0;  
+let openSeqCounter = 0;
 
 @Component({
   tag: 'md-time-picker',
-  styleUrl: 'md-time-picker.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-time-picker.css'],
   shadow: true,
   formAssociated: true,
 })
@@ -420,6 +430,11 @@ export class MdTimePicker {
      via the form-associated `formDisabledCallback` — merged with the
      `disabled` prop through `isDisabled` so both channels behave alike. */
   @State() private formDisabled: boolean = false;
+  @State() private dialogEntering = false;
+  @State() private modeEntering = false;
+
+  private overlayLifecycle = new OverlayLifecycle(() => this.el, () => this.isOpen);
+  private modeMotionRequest = 0;
 
   private committedHours: number = 12;
   private committedMinutes: number = 0;
@@ -463,6 +478,7 @@ export class MdTimePicker {
   // ───────────────────────────── LIFECYCLE ─────────────────────────────
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     if (!this.parseValueInto(this.value)) {
       if (Build.isDev) {
         console.warn(
@@ -500,21 +516,28 @@ export class MdTimePicker {
   }
 
   componentDidLoad() {
-    // Re-assert validity now that renderTrigger's ref bound
-    // triggerFieldEl — the willLoad pass ran without an anchor, and an
-    // un-anchored valueMissing means the first form submit would show
-    // no validation UI.
-    this.updateValidity();
-    if (this.isOpen) {
-      this.openSeq = ++openSeqCounter;
-      this.previousFocus = MdTimePicker.deepActiveElement();
-      this.attachOpenEnvironment();
-      this.mdOpen.emit();
-      requestAnimationFrame(() => this.focusInitial());
+    try {
+      // Re-assert validity now that renderTrigger's ref bound
+      // triggerFieldEl — the willLoad pass ran without an anchor, and an
+      // un-anchored valueMissing means the first form submit would show
+      // no validation UI.
+      this.updateValidity();
+      if (this.isOpen) {
+        this.openSeq = ++openSeqCounter;
+        this.previousFocus = MdTimePicker.deepActiveElement();
+        this.attachOpenEnvironment();
+        this.mdOpen.emit();
+        requestAnimationFrame(() => this.focusInitial());
+      }
+    } finally {
+      completeInitialInteractionMotion(this);
+      this.overlayLifecycle.loaded();
     }
   }
 
   connectedCallback() {
+    reconnectInteractionMotion(this);
+    this.overlayLifecycle.connected();
     // Stencil fires disconnected/connected on a DOM *move* (reparent).
     // disconnectedCallback tears the open-dialog environment down, so an
     // open picker that gets reparented must re-arm Escape handling, the
@@ -524,6 +547,10 @@ export class MdTimePicker {
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
+    this.overlayLifecycle.disconnect();
+    this.dialogEntering = false;
+    this.modeEntering = false;
     this.detachOpenEnvironment();
   }
 
@@ -554,6 +581,11 @@ export class MdTimePicker {
   @Watch('variant')
   handleVariantChange(v: MdTimePickerMode) {
     if (!this.isOpen) this.mode = v;
+  }
+
+  @Watch('mode')
+  handleModeChange() {
+    if (this.isOpen) this.startModeMotion();
   }
 
   @Watch('value')
@@ -703,12 +735,14 @@ export class MdTimePicker {
 
   @Method()
   async show(): Promise<void> {
-    this.openPicker();
+    if (this.isDisabled || this.isOpen) return;
+    await this.overlayLifecycle.show(this.openPicker);
   }
 
   /** Programmatically close the picker dialog (treated as Cancel). */
   @Method()
   async hide(): Promise<void> {
+    this.overlayLifecycle.cancelOpen();
     this.cancel();
   }
 
@@ -914,11 +948,30 @@ export class MdTimePicker {
     this.minuteCumulativeAngle = 0;
     this.lastHandMode = null;
     this.openSeq = ++openSeqCounter;
+    this.dialogEntering = canAnimateInteraction(this.el);
+    if (this.dialogEntering) {
+      const sequence = this.openSeq;
+      void finishShellMotion(this.el).then(() => {
+        if (this.openSeq === sequence) this.dialogEntering = false;
+      });
+    }
+    this.startModeMotion();
     this.isOpen = true;
     this.open = true;
+    this.overlayLifecycle.opened();
     this.mdOpen.emit();
     requestAnimationFrame(() => this.focusInitial());
   };
+
+  private startModeMotion() {
+    const request = ++this.modeMotionRequest;
+    this.modeEntering = canAnimateInteraction(this.el);
+    if (this.modeEntering) {
+      void finishShellMotion(this.el).then(() => {
+        if (request === this.modeMotionRequest) this.modeEntering = false;
+      });
+    }
+  }
 
   private focusInitial() {
     const root = this.el.shadowRoot;
@@ -945,6 +998,9 @@ export class MdTimePicker {
     if (!this.isOpen) return;
     this.isOpen = false;
     this.open = false;
+    this.dialogEntering = false;
+    this.modeEntering = false;
+    this.overlayLifecycle.closed();
     this.detachOpenEnvironment();
     this.mdClose.emit();
     this.restoreFocusAfterClose();
@@ -1345,6 +1401,7 @@ export class MdTimePicker {
   };
 
   private toggleMode = () => {
+    activateInteractionMotion(this.el);
     const previousMode = this.mode;
     this.mode = this.mode === 'dial' ? 'input' : 'dial';
     // Fire mdModeChange BEFORE re-seeding inputs / focusing so a
@@ -2128,7 +2185,10 @@ export class MdTimePicker {
 
     return (
       <div
-        class="md-time-picker__dial-wrap"
+        class={{
+          'md-time-picker__dial-wrap': true,
+          'md-time-picker__mode--entering': this.modeEntering,
+        }}
         part="dial-wrap"
       >
         <div
@@ -2289,7 +2349,13 @@ export class MdTimePicker {
   private renderInputs(inlinePeriod: boolean = true) {
     const isHour = this.selecting === 'hour';
     return (
-      <div class="md-time-picker__input-area" part="input-area">
+      <div
+        class={{
+          'md-time-picker__input-area': true,
+          'md-time-picker__mode--entering': this.modeEntering,
+        }}
+        part="input-area"
+      >
         <div class="md-time-picker__input-time">
           <div class="md-time-picker__input-group">
             <input
@@ -2400,7 +2466,10 @@ export class MdTimePicker {
 
     return (
       <div
-        class="md-time-picker__scrim"
+        class={{
+          'md-time-picker__scrim': true,
+          'md-time-picker__scrim--entering': this.dialogEntering,
+        }}
         part="scrim"
         onClick={(e) => {
           if (e.target === e.currentTarget) this.cancel();
@@ -2409,6 +2478,7 @@ export class MdTimePicker {
         <div
           class={{
             'md-time-picker__dialog': true,
+            'md-time-picker__dialog--entering': this.dialogEntering,
             'md-time-picker__dialog--dial': !isInput,
             'md-time-picker__dialog--input': isInput,
             'md-time-picker__dialog--horizontal': isHorizontalDialog,
@@ -2503,5 +2573,14 @@ export class MdTimePicker {
         {this.renderDialog()}
       </Host>
     );
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

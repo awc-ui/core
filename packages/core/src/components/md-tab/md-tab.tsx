@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Build, Component, Host, h, Prop, Event, EventEmitter, Element, State, Watch } from '@stencil/core';
 import { triggerRipple } from '../../utils/ripple';
 
@@ -14,7 +15,7 @@ import { triggerRipple } from '../../utils/ripple';
  */
 @Component({
   tag: 'md-tab',
-  styleUrl: 'md-tab.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-tab.css'],
   shadow: true,
 })
 export class MdTab {
@@ -68,6 +69,7 @@ export class MdTab {
   }
 
   connectedCallback() {
+    reconnectInteractionMotion(this);
     // A tab moved OUT of a tablist at runtime kept its parent-stamped
     // tabindex="-1" forever — re-evaluate ownership on every reconnect.
     if (this.didLoad) {
@@ -76,6 +78,7 @@ export class MdTab {
   }
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     // The icon slot only renders when hasIcon is true — with no icon PROP,
     // a slotted icon could never assign (slot absent -> no slotchange ->
     // hasSlottedIcon stays false forever). Seed from the light DOM.
@@ -85,17 +88,21 @@ export class MdTab {
   }
 
   componentDidLoad() {
-    this.didLoad = true;
-    this.syncStandaloneTabindex();
-    this.checkAccessibleName();
-    const shadow = this.el.shadowRoot;
-    if (!shadow) return;
+    try {
+      this.didLoad = true;
+      this.syncStandaloneTabindex();
+      this.checkAccessibleName();
+      const shadow = this.el.shadowRoot;
+      if (!shadow) return;
 
-    const iconSlot = shadow.querySelector('slot[name="icon"]') as HTMLSlotElement | null;
-    iconSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedIcon = (iconSlot.assignedElements().length > 0);
-      this.checkAccessibleName(); // slotted-icon-only tabs are nameless too
-    });
+      const iconSlot = shadow.querySelector('slot[name="icon"]') as HTMLSlotElement | null;
+      iconSlot?.addEventListener('slotchange', () => {
+        this.hasSlottedIcon = (iconSlot.assignedElements().length > 0);
+        this.checkAccessibleName(); // slotted-icon-only tabs are nameless too
+      });
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
 
   /** Dev-only nameless-tab warning (WCAG 4.1.2). Exempts every name source:
@@ -247,5 +254,18 @@ export class MdTab {
         <span class="md-tab__divider" part="divider" aria-hidden="true"></span>
       </Host>
     );
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

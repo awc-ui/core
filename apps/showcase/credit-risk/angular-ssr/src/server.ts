@@ -196,7 +196,12 @@ async function injectShadowRoots(html: string): Promise<string> {
   return stripLightDomAnnotations(hydrated);
 }
 
-const commonEngine = new CommonEngine();
+// Angular validates the render URL before bootstrapping. Without an allowlist,
+// current CommonEngine falls back to the empty CSR shell even on localhost.
+// NG_ALLOWED_HOSTS can override these defaults for another deployment host.
+const commonEngine = new CommonEngine({
+  allowedHosts: ['localhost', '127.0.0.1', '[::1]', 'awc-credit-risk-angular-ssr.netlify.app', 'awc-ui.dev'],
+});
 
 /**
  * The only thing the Netlify target is allowed to change about this app.

@@ -1,3 +1,4 @@
+import { Build } from '@stencil/core';
 import { newSpecPage } from '@stencil/core/testing';
 import { MdFab } from './md-fab';
 
@@ -155,6 +156,41 @@ describe('md-fab', () => {
   });
 
   // ── Extended FAB ────────────────────────────────────────────
+  it.each([null, 'max-inline-size', 'max-width', 'max-height'])('settles the initial font width with active transition %s', async transitionProperty => {
+    const build = jest.replaceProperty(Build, 'isBrowser', true);
+    try {
+      const page = await newSpecPage({ components: [MdFab], html: '' });
+      let finishFonts!: () => void;
+      Object.defineProperty(page.doc, 'fonts', {
+        configurable: true,
+        value: { ready: new Promise<void>(resolve => { finishFonts = resolve; }) },
+      });
+      await page.setContent('<md-fab label="Create"></md-fab>');
+      const fab = page.root!;
+      const label = fab.shadowRoot!.querySelector('.md-fab__label')!;
+      Object.defineProperty(label, 'scrollWidth', { configurable: true, value: 64 });
+      Object.defineProperty(label, 'getAnimations', {
+        value: () => transitionProperty ? [{ transitionProperty }] : [],
+      });
+      const readBounds = label.getBoundingClientRect.bind(label);
+      const flushWidth = jest.spyOn(label, 'getBoundingClientRect').mockImplementation(() => {
+        expect((label as HTMLElement).style.getPropertyValue('--_fab-label-width-duration')).toBe('0s');
+        expect(fab.style.getPropertyValue('--_fab-label-w')).toBe('64px');
+        return readBounds();
+      });
+      fab.setAttribute('data-awc-motion-ready', '');
+      finishFonts();
+      await Promise.resolve();
+
+      expect(fab.style.getPropertyValue('--_fab-label-w')).toBe('64px');
+      expect(fab.hasAttribute('data-awc-motion-ready')).toBe(true);
+      expect((label as HTMLElement).style.getPropertyValue('--_fab-label-width-duration')).toBe('');
+      expect(flushWidth).toHaveBeenCalledTimes(transitionProperty ? 0 : 1);
+    } finally {
+      build.restore();
+    }
+  });
+
   it('becomes extended when label is set', async () => {
     const page = await newSpecPage({
       components: [MdFab],

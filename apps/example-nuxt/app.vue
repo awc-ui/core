@@ -1,3 +1,11 @@
+<script setup lang="ts">
+const checked = ref(true);
+
+function updateChecked(event: Event) {
+  checked.value = (event as CustomEvent<{ checked: boolean }>).detail.checked;
+}
+</script>
+
 <template>
   <main style="padding:40px;font-family:system-ui,sans-serif;display:grid;gap:20px;max-width:640px">
     <h1 style="margin:0">AWC UI — Nuxt SSR (DSD)</h1>
@@ -9,7 +17,8 @@
           <md-button variant="outlined">Outlined</md-button>
           <md-badge value="3"></md-badge>
         </div>
-        <md-checkbox checked>Server-checked</md-checkbox>
+        <md-checkbox :checked="checked" @mdChange="updateChecked">Server-checked</md-checkbox>
+        <p v-if="!checked" style="margin:0">Selection cleared.</p>
       </div>
     </md-card>
   </main>

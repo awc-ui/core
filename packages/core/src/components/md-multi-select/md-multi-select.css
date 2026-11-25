@@ -509,6 +509,26 @@ md-menu::part(empty-text) {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Reserve built-in glyphs only; custom dropdown-icon slots retain their size. */
+.md-multi-select__caret.material-symbols-outlined {
+  display: inline-flex;
+  align-items: center;
+}
+
+slot[name='dropdown-icon']::slotted(*) {
+  flex-shrink: 0;
+}
+
+.material-symbols-outlined:not(.md-multi-select__caret),
+.md-multi-select__caret-glyph {
+  display: block;
+  inline-size: 1em;
+  block-size: 1em;
+  flex: none;
+  overflow: hidden;
+  text-align: center;
+}
+
 /* ── Virtualized list ──────────────────────────────────── */
 
 .md-multi-select__vspacer {

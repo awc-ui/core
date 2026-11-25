@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Element, Host, h } from '@stencil/core';
 
 /**
@@ -9,7 +10,7 @@ import { Component, Element, Host, h } from '@stencil/core';
  */
 @Component({
   tag: 'md-table-head',
-  styleUrl: 'md-table-head.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-table-head.css'],
   shadow: true,
 })
 export class MdTableHead {
@@ -29,5 +30,30 @@ export class MdTableHead {
         ></slot>
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidLoad() {
+    completeInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

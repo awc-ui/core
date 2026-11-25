@@ -1,8 +1,9 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Host, h, Prop, Event, EventEmitter, Element, State } from '@stencil/core';
 import { MenuElement, SelectableElement } from '../../utils/types';
 import { triggerRipple } from '../../utils/ripple';
 
-@Component({ tag: 'md-menu-item', styleUrl: 'md-menu-item.css', shadow: true })
+@Component({ tag: 'md-menu-item', styleUrls: ['../../utils/initial-motion.css', 'md-menu-item.css'], shadow: true })
 export class MdMenuItem {
   @Element() el!: HTMLElement;
 
@@ -64,6 +65,7 @@ export class MdMenuItem {
   @State() private hasTrailingIcon = false;
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     this.hasLeadingIcon = !!this.el.querySelector('[slot="leading-icon"]');
     this.hasTrailingIcon = !!this.el.querySelector('[slot="trailing-icon"]');
   }
@@ -212,5 +214,26 @@ export class MdMenuItem {
         )}
       </Host>
     );
+  }
+
+  componentDidLoad() {
+    completeInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

@@ -1,5 +1,6 @@
 import { createId } from '../../utils/id';
 import { AttachInternals, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, Watch, h } from '@stencil/core';
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, canAnimateInteraction, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { triggerRipple } from '../../utils/ripple';
 import {
   InlineValidationPresenter,
@@ -25,7 +26,7 @@ import {
  */
 @Component({
   tag: 'md-checkbox',
-  styleUrl: 'md-checkbox.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-checkbox.css'],
   shadow: true,
   formAssociated: true,
 })
@@ -69,11 +70,27 @@ export class MdCheckbox {
   }
 
   componentDidRender() {
+    initialInteractionMotionRendered(this);
     // The interactive host and its supporting text are in different roots.
     // Element references keep the description associated across that boundary.
     if (this.internals && 'ariaDescribedByElements' in this.internals) {
       this.internals.ariaDescribedByElements = this.supportEl ? [this.supportEl] : [];
     }
+    this.renderedGlyph = this.ariaCheckedValue;
+    if (!this.glyphEntering) {
+      this.glyphAnimation = undefined;
+      return;
+    }
+
+    const animation = this.el.shadowRoot?.querySelector('.md-checkbox__glyph--entering')
+      ?.getAnimations?.().find((motion) => (motion as CSSAnimation).animationName === 'md-checkbox-glyph-in');
+    if (animation && animation === this.glyphAnimation) return;
+    this.glyphAnimation = animation;
+    const clear = () => {
+      if (this.glyphAnimation !== animation) return;
+      this.glyphEntering = false;
+    };
+    void Promise.resolve(animation?.finished).then(clear, clear);
   }
 
 
@@ -146,6 +163,10 @@ export class MdCheckbox {
   @State() private prevChecked: boolean = false;
   @State() private prevIndeterminate: boolean = false;
   @State() private pressed = false;
+  @State() private glyphEntering = false;
+
+  private renderedGlyph = 'false';
+  private glyphAnimation?: Animation;
 
   private initialChecked = false;
   private initialIndeterminate = false;
@@ -160,14 +181,27 @@ export class MdCheckbox {
   // reaches the host).
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     this.initialChecked = this.checked;
     this.initialIndeterminate = this.indeterminate;
+    this.prevChecked = this.checked;
+    this.prevIndeterminate = this.indeterminate;
+    this.renderedGlyph = this.ariaCheckedValue;
     this.syncFormValue();
   }
 
   @Watch('checked')
   @Watch('indeterminate')
   onStateChange() {
+    const nextGlyph = this.ariaCheckedValue;
+    if (nextGlyph !== this.renderedGlyph) {
+      this.glyphEntering = nextGlyph !== 'false' && canAnimateInteraction(this.el);
+    } else {
+      // Multiple assignments can return to the committed glyph before render.
+      // Preserve existing playback, but never start a new entrance for a no-op.
+      this.glyphEntering = !!this.glyphAnimation &&
+        this.glyphAnimation.playState !== 'finished' && this.glyphAnimation.playState !== 'idle';
+    }
     this.prevChecked = this.checked;
     this.prevIndeterminate = this.indeterminate;
     this.syncFormValue();
@@ -384,7 +418,13 @@ export class MdCheckbox {
               than merely similar. (This replaced a hand-drawn SVG path whose
               stroke geometry never quite matched the font face.) */}
           <span class="md-checkbox__icon" part="icon" aria-hidden="true">
-            <span class="material-symbols-outlined">
+            <span
+              key={this.ariaCheckedValue}
+              class={{
+                'material-symbols-outlined': true,
+                'md-checkbox__glyph--entering': isSelected && this.glyphEntering,
+              }}
+            >
               {this.indeterminate ? 'remove' : 'check'}
             </span>
           </span>
@@ -408,5 +448,22 @@ export class MdCheckbox {
 
       </Host>
     );
+  }
+
+  componentDidLoad() {
+    completeInitialInteractionMotion(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

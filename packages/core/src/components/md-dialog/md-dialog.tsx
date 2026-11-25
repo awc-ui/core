@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { createId } from '../../utils/id';
 import { Component, Host, h, Prop, Event, EventEmitter, Method, Watch, State, Element, Listen } from '@stencil/core';
 import { OverlayLifecycle } from '../../utils/overlay-lifecycle';
@@ -5,7 +6,7 @@ import { resolveDialogLabel } from './dialog-utils';
 
 @Component({
   tag: 'md-dialog',
-  styleUrl: 'md-dialog.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-dialog.css'],
   shadow: true,
 })
 export class MdDialog {
@@ -111,6 +112,7 @@ export class MdDialog {
   }
 
   connectedCallback() {
+    reconnectInteractionMotion(this);
     this.overlayLifecycle.connected();
     if (this.open) {
       document.body.style.overflow = 'hidden';
@@ -118,6 +120,7 @@ export class MdDialog {
   }
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     // Seed slot-presence flags from the LIGHT-DOM children that are
     // already in place on first render. The headline / icon slots
     // are rendered *conditionally* — the surrounding wrapper only
@@ -146,17 +149,21 @@ export class MdDialog {
   }
 
   componentDidLoad() {
-    this.overlayLifecycle.loaded();
-    // Once the slot wrappers exist (because the seed above made them
-    // render), register `slotchange` listeners so dynamic add/remove
-    // of slotted children at runtime keeps the host state in sync.
-    this.bindSlotListener('icon', (v) => { this.hasSlottedIcon = v; });
-    this.bindSlotListener('headline', (v) => {
-      this.hasSlottedHeadline = v;
-    });
-    this.bindSlotListener('actions', (v) => {
-      this.hasSlottedActions = v;
-    });
+    try {
+      this.overlayLifecycle.loaded();
+      // Once the slot wrappers exist (because the seed above made them
+      // render), register `slotchange` listeners so dynamic add/remove
+      // of slotted children at runtime keeps the host state in sync.
+      this.bindSlotListener('icon', (v) => { this.hasSlottedIcon = v; });
+      this.bindSlotListener('headline', (v) => {
+        this.hasSlottedHeadline = v;
+      });
+      this.bindSlotListener('actions', (v) => {
+        this.hasSlottedActions = v;
+      });
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
 
   private bindSlotListener(
@@ -173,6 +180,7 @@ export class MdDialog {
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.cancelOpenFocus();
     this.overlayLifecycle.disconnect();
     document.body.style.overflow = '';
@@ -434,6 +442,15 @@ export class MdDialog {
         </div>
       </Host>
     );
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }
 

@@ -29,6 +29,25 @@ interface NavManager<T = any> {
   navigate: (options: T) => void;
 }
 
+type SsrAttributes = Record<string, string | [string | null, 'json' | 'values']>;
+
+function toSsrAttributes(props: Record<string, unknown>, attributes: SsrAttributes) {
+  const result: Record<string, unknown> = { class: props.class };
+  for (const [prop, value] of Object.entries(props)) {
+    const metadata = attributes[prop];
+    if (!metadata) continue;
+    const [attribute, encoding] = typeof metadata === 'string' ? [metadata] : metadata;
+    if (Array.isArray(value) && encoding === 'values' && value.every(item => typeof item === 'string')) {
+      result['data-awc-initial-values'] = JSON.stringify(value);
+    } else if (attribute && Array.isArray(value) && encoding === 'json') {
+      result[attribute] = JSON.stringify(value);
+    } else if (attribute && ['string', 'number', 'boolean'].includes(typeof value)) {
+      result[attribute] = value === true ? '' : value;
+    }
+  }
+  return result;
+}
+
 const getComponentClasses = (classes: unknown) => {
   return (classes as string)?.split(' ') || [];
 };
@@ -57,6 +76,7 @@ const getElementClasses = (
  */
 export const defineContainer = <Props, VModelType = string | number | boolean>(
   name: string,
+  ssrAttributes: SsrAttributes,
   defineCustomElement: any,
   componentProps: string[] = [],
   modelProp?: string,
@@ -193,7 +213,8 @@ export const defineContainer = <Props, VModelType = string | number | boolean>(
           emit(eventName, event);
         };
       }
-      return h(name, propsToAdd, slots.default && slots.default());
+      const renderProps = typeof window === 'undefined' ? toSsrAttributes(propsToAdd, ssrAttributes) : propsToAdd;
+      return h(name, renderProps, slots.default && slots.default());
     };
   });
 

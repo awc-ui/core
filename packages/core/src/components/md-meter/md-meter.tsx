@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Host, h, Prop, Element } from '@stencil/core';
 
 /** M3 circular size band (dp), shared with md-progress-indicator. */
@@ -29,7 +30,7 @@ const CIRCULAR_SIZE_DEFAULT = 48;
  */
 @Component({
   tag: 'md-meter',
-  styleUrl: 'md-meter.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-meter.css'],
   shadow: true,
 })
 export class MdMeter {
@@ -374,5 +375,30 @@ export class MdMeter {
         )}
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidLoad() {
+    completeInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

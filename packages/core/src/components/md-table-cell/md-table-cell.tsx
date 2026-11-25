@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Host, h, Prop } from '@stencil/core';
 
 /**
@@ -20,7 +21,7 @@ import { Component, Host, h, Prop } from '@stencil/core';
  */
 @Component({
   tag: 'md-table-cell',
-  styleUrl: 'md-table-cell.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-table-cell.css'],
   shadow: true,
 })
 export class MdTableCell {
@@ -136,5 +137,30 @@ export class MdTableCell {
         </span>
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidLoad() {
+    completeInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

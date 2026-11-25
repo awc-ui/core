@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import {
   Component,
   Host,
@@ -30,7 +31,7 @@ let _floatingZ = 1000;
 
 @Component({
   tag: 'md-accordion',
-  styleUrl: 'md-accordion.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-accordion.css'],
   shadow: true,
 })
 export class MdAccordion {
@@ -234,6 +235,7 @@ export class MdAccordion {
   } | null = null;
 
   connectedCallback() {
+    reconnectInteractionMotion(this);
     this.collectItems();
     this.el.addEventListener('pointerdown', this.onPointerDown);
     this.el.addEventListener(
@@ -243,6 +245,7 @@ export class MdAccordion {
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.el.removeEventListener('pointerdown', this.onPointerDown);
     this.el.removeEventListener(
       'mdItemRequestReorder',
@@ -252,24 +255,28 @@ export class MdAccordion {
   }
 
   componentDidLoad() {
-    this.collectItems();
-    this.originalOrder = [...this.items];
-    // IMPORTANT: assign indexes BEFORE applying initial state. The
-    // child `@Watch('expanded')` fires synchronously and emits
-    // `mdItemToggle` carrying `this.index`, which the parent's
-    // exclusive-mode listener uses to decide which other items to
-    // collapse. If indexes are still -1 at that moment, the listener
-    // collapses every item — including the one we just expanded.
-    this.assignIndexes();
-    this.applyInitialState();
-    this.syncChildren();
-    // Seed floating-mode position from the initial-x / initial-y props.
-    if (this.floating) {
-      this.chassisX = this.initialX;
-      this.chassisY = this.initialY;
-      if (this.bringToFront) {
-        this.el.style.zIndex = String(++_floatingZ);
+    try {
+      this.collectItems();
+      this.originalOrder = [...this.items];
+      // IMPORTANT: assign indexes BEFORE applying initial state. The
+      // child `@Watch('expanded')` fires synchronously and emits
+      // `mdItemToggle` carrying `this.index`, which the parent's
+      // exclusive-mode listener uses to decide which other items to
+      // collapse. If indexes are still -1 at that moment, the listener
+      // collapses every item — including the one we just expanded.
+      this.assignIndexes();
+      this.applyInitialState();
+      this.syncChildren();
+      // Seed floating-mode position from the initial-x / initial-y props.
+      if (this.floating) {
+        this.chassisX = this.initialX;
+        this.chassisY = this.initialY;
+        if (this.bringToFront) {
+          this.el.style.zIndex = String(++_floatingZ);
+        }
       }
+} finally {
+      completeInitialInteractionMotion(this);
     }
   }
 
@@ -852,5 +859,18 @@ export class MdAccordion {
         <slot></slot>
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

@@ -316,6 +316,8 @@
 }
 
 .md-step__bubble .material-symbols-outlined {
+  opacity: 1;
+  transform: scale(1);
   font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons');
   font-size: calc(var(--_size) * 0.56);
   line-height: 1;
@@ -340,9 +342,8 @@
   60% { transform: scale(1.18); opacity: 1; }
   100% { transform: scale(1); opacity: 1; }
 }
-:host(.md-step--completed) .md-step__bubble .material-symbols-outlined,
-:host(.md-step--error) .md-step__bubble .material-symbols-outlined {
-  animation: md-step-glyph-in var(--_spring-duration) var(--_spring-easing) both;
+.md-step__glyph--entering {
+  animation: md-step-glyph-in var(--_spring-duration) var(--_spring-easing);
 }
 
 /* Active: spring up (stays circular) + a single soft halo. No elevation drop
@@ -361,7 +362,10 @@
 :host(.md-step--error) .md-step__bubble {
   background-color: var(--_error-color);
   color: var(--_error-text);
-  animation: md-step-error-pulse var(--md-sys-motion-duration-medium2, 300ms) var(--_state-easing) both;
+  transform: scale(1);
+}
+.md-step__bubble--pulsing {
+  animation: md-step-error-pulse var(--md-sys-motion-duration-medium2, 300ms) var(--_state-easing);
 }
 @keyframes md-step-error-pulse {
   0% { transform: scale(1); }
@@ -581,7 +585,7 @@
 }
 
 /* Lazy panel — only the active step's panel is mounted, so there is no collapse
-   to animate: drop the grid-rows trick and just fade+slide it in on mount. */
+   to animate: render the initial panel directly; later activation may enter. */
 .md-step__content--lazy {
   display: block;
   grid-template-rows: none;
@@ -590,6 +594,8 @@
      flattened-tree parent, so it must not out-rank an ancestor's hide. */
   visibility: inherit;
   transition: none;
+}
+.md-step__content--lazy.md-step__content--entering {
   animation: md-step-content-enter var(--_expand-duration) var(--_expand-easing) both;
 }
 .md-step__content--lazy .md-step__content-sizer { overflow: visible; }

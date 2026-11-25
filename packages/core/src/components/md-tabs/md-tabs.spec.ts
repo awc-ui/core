@@ -205,6 +205,43 @@ describe('md-tabs', () => {
       expect(tabs[0].getAttribute('tabindex')).toBe('-1');
     });
 
+    it.each([
+      { index: 99, disabled: [], selected: 2 },
+      { index: 1, disabled: [1], selected: 2 },
+      { index: 1, disabled: [0, 1, 2], selected: -1 },
+    ])('normalizes initial index $index with disabled tabs $disabled without emitting', async ({ index, disabled, selected }) => {
+      const html = ['A', 'B', 'C'].map((label, i) => `<md-tab label="${label}" ${disabled.includes(i) ? 'disabled' : ''}></md-tab>`).join('');
+      const page = await newSpecPage({
+        components: [MdTabs, MdTab],
+        html: `<md-tabs active-tab-index="${index}">${html}</md-tabs>`,
+        flushQueue: false,
+      });
+      const tablist = page.body.querySelector('md-tabs')!;
+      const change = jest.fn();
+      tablist.addEventListener('mdTabChange', change);
+      await page.waitForChanges();
+
+      const tabs = Array.from(tablist.querySelectorAll('md-tab'));
+      expect(tabs.findIndex(tab => tab.getAttribute('aria-selected') === 'true')).toBe(selected);
+      expect(tabs.findIndex(tab => tab.tabIndex === 0)).toBe(selected);
+      expect(change).not.toHaveBeenCalled();
+    });
+
+    it('leaves the requested index intact before a forwarded slot resolves', async () => {
+      const render = MdTabs.prototype.render;
+      const beforeRender = jest.fn();
+      const spy = jest.spyOn(MdTabs.prototype, 'render').mockImplementation(function (this: MdTabs) {
+        beforeRender(this.activeTabIndex);
+        return render.call(this);
+      });
+      try {
+        await setup('<md-tabs active-tab-index="1"><md-tab label="Direct"></md-tab><slot></slot></md-tabs>');
+        expect(beforeRender).toHaveBeenNthCalledWith(1, 1);
+      } finally {
+        spy.mockRestore();
+      }
+    });
+
     it('variant propagates to every child tab (incl. late prop change)', async () => {
       const page = await setup('<md-tabs aria-label="t" variant="secondary"><md-tab label="A" active></md-tab><md-tab label="B"></md-tab></md-tabs>');
       let variants = Array.from(page.body.querySelectorAll('md-tab')).map((t) => t.getAttribute('variant'));

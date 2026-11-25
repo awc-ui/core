@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, canAnimateInteraction, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import {
   Component,
   Host,
@@ -8,8 +9,11 @@ import {
   EventEmitter,
   Listen,
   State,
+  Watch,
 } from '@stencil/core';
 import { triggerRipple } from '../../utils/ripple';
+
+type StepStatus = 'pending' | 'completed' | 'error';
 
 /**
  * `md-step` — one step inside an `<md-stepper>`.
@@ -49,7 +53,7 @@ import { triggerRipple } from '../../utils/ripple';
  */
 @Component({
   tag: 'md-step',
-  styleUrl: 'md-step.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-step.css'],
   shadow: true,
 })
 export class MdStep {
@@ -120,8 +124,12 @@ export class MdStep {
   @Event({ bubbles: true, composed: false }) mdStepBack: EventEmitter<{ index: number }>;
 
   @State() private hasSlottedContent = false;
+  @State() private enteringGlyph?: 'completed' | 'error';
+  @State() private pulsingError = false;
+  @State() private animatePanel = false;
 
   private contentObserver?: MutationObserver;
+  private renderedStatus: StepStatus = 'pending';
 
   // ─── Parent-pushed layout / i18n (read from data-* attributes) ────────────
   private attr(name: string, fallback = ''): string {
@@ -150,6 +158,7 @@ export class MdStep {
   private get readonlyMode(): boolean { return this.el.getAttribute('data-readonly') === 'true'; }
 
   connectedCallback() {
+    reconnectInteractionMotion(this);
     this.computeSlottedContent();
     // Slot-based `slotchange` can't be used here: the default slot is only
     // rendered while the panel exists, so content appended when there is no
@@ -161,6 +170,10 @@ export class MdStep {
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
+    this.animatePanel = false;
+    this.enteringGlyph = undefined;
+    this.pulsingError = false;
     this.contentObserver?.disconnect();
     this.contentObserver = undefined;
   }
@@ -212,6 +225,30 @@ export class MdStep {
     return this.disabled || !this.reachable;
   }
 
+  private get indicatorStatus(): StepStatus {
+    if (this.error) return 'error';
+    return this.completed ? 'completed' : 'pending';
+  }
+
+  @Watch('completed')
+  @Watch('error')
+  onIndicatorStatusChange() {
+    const status = this.indicatorStatus;
+    if (status === this.renderedStatus) {
+      if (this.enteringGlyph !== status) this.enteringGlyph = undefined;
+      if (status !== 'error') this.pulsingError = false;
+      return;
+    }
+    const canAnimate = this.el.isConnected && this.indicatorKind === 'numbered' && canAnimateInteraction(this.el);
+    this.enteringGlyph = canAnimate && status !== 'pending' ? status : undefined;
+    this.pulsingError = canAnimate && status === 'error';
+  }
+
+  @Watch('active')
+  onPanelActiveChange(next: boolean, previous: boolean) {
+    this.animatePanel = next && !previous && canAnimateInteraction(this.el);
+  }
+
   // ─── Handlers ─────────────────────────────────────────────────────────────
   private handleClick = (e: Event) => {
     if (this.readonlyMode || this.effectivelyDisabled) return;
@@ -234,6 +271,16 @@ export class MdStep {
   private emitNext = () => this.mdStepNext.emit({ index: this.index });
   private emitBack = () => this.mdStepBack.emit({ index: this.index });
 
+  private onIndicatorAnimationDone = (event: AnimationEvent) => {
+    if (!(event.target as HTMLElement).isConnected) return;
+    if (event.animationName === 'md-step-glyph-in') this.enteringGlyph = undefined;
+    if (event.animationName === 'md-step-error-pulse') this.pulsingError = false;
+  };
+
+  private onPanelAnimationDone = (event: AnimationEvent) => {
+    if (event.target === event.currentTarget && event.animationName === 'md-step-content-enter') this.animatePanel = false;
+  };
+
   /** The built-in action buttons are internal chrome — their composed
    *  `mdClick` retargets to this host; stop it there so it never masquerades
    *  as an app-level button event. Slotted user buttons (target ≠ host) are
@@ -245,9 +292,19 @@ export class MdStep {
 
   // ─── Render helpers ───────────────────────────────────────────────────────
   private glyph(name: string) {
+    const status = this.indicatorStatus;
     return (
-      <span class="md-step__bubble" part="bubble" aria-hidden="true">
-        <span class="material-symbols-outlined">{name}</span>
+      <span
+        class={{ 'md-step__bubble': true, 'md-step__bubble--pulsing': status === 'error' && this.pulsingError }}
+        part="bubble"
+        aria-hidden="true"
+        on-animationcancel={this.onIndicatorAnimationDone}
+        onAnimationEnd={this.onIndicatorAnimationDone}
+      >
+        <span
+          key={status}
+          class={{ 'material-symbols-outlined': true, 'md-step__glyph--entering': this.enteringGlyph === status }}
+        >{name}</span>
       </span>
     );
   }
@@ -412,8 +469,11 @@ export class MdStep {
               'md-step__content': true,
               'md-step__content--open': this.active,
               'md-step__content--lazy': lazy,
+              'md-step__content--entering': lazy && this.active && this.animatePanel,
             }}
             part="content"
+            onAnimationEnd={this.onPanelAnimationDone}
+            on-animationcancel={this.onPanelAnimationDone}
             role="region"
             aria-label={this.label || this.composeA11yLabel()}
           >
@@ -442,5 +502,23 @@ export class MdStep {
         )}
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidLoad() {
+    completeInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    this.renderedStatus = this.indicatorStatus;
+    initialInteractionMotionRendered(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

@@ -31,19 +31,19 @@ Drop the file in your project and import it **after** the base tokens:
 
 ```ts
 import '@awc-ui/core/define';      // components
-import '@awc-ui/tokens';           // base MD3 tokens
+import '@awc-ui/core/css/tokens.css'; // base MD3 tokens and upgrade visibility
 import './theme.css';              // ← your generated theme, last
 ```
 
 :::danger[Order matters]
-`theme.css` must come **after** `@awc-ui/tokens`. It redefines the same custom
+`theme.css` must come **after** the base token stylesheet. It redefines the same custom
 properties, so if it loads first the base tokens overwrite your brand.
 :::
 
 With a plain `<link>`:
 
 ```html
-<link rel="stylesheet" href="/node_modules/@awc-ui/tokens/tokens.css">
+<link rel="stylesheet" href="/node_modules/@awc-ui/core/dist/md3/md3.css">
 <link rel="stylesheet" href="/theme.css">
 ```
 
@@ -55,22 +55,22 @@ to configure per component.
 
 ```ts
 // Next.js — app/layout.tsx
-import '@awc-ui/tokens';
+import '@awc-ui/core/css/tokens.css';
 import '@/styles/theme.css';
 
 // Nuxt — nuxt.config.ts
 export default defineNuxtConfig({
-  css: ['@awc-ui/tokens/tokens.css', '~/assets/theme.css'],
+  css: ['@awc-ui/core/css/tokens.css', '~/assets/theme.css'],
 });
 
 // Angular — angular.json "styles" (order is the array order)
 "styles": [
-  "node_modules/@awc-ui/tokens/tokens.css",
+  "node_modules/@awc-ui/core/dist/md3/md3.css",
   "src/theme.css"
 ]
 
 // Vite / SvelteKit — in your root entry
-import '@awc-ui/tokens';
+import '@awc-ui/core/css/tokens.css';
 import './theme.css';
 ```
 

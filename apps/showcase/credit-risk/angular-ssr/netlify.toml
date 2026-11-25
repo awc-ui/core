@@ -44,16 +44,15 @@
   # could disagree with the first. See scripts/build-netlify.mjs.
   command = "pnpm --filter \"@awc-ui/showcase-credit-risk-angular-ssr^...\" build && pnpm --filter @awc-ui/showcase-credit-risk-angular-ssr build:netlify"
 
-  # `dist/browser` restaged under the app's own base path, minus the one
-  # `index.html` Angular emits — see scripts/build-netlify.mjs for why that file
-  # must never be deployed.
+  # `dist/browser` restaged under the app's own base path, excluding Angular's
+  # client document shells (`index.html` and `index.csr.html`). Every document
+  # must come from the SSR function; see scripts/build-netlify.mjs.
   publish = "dist/netlify/static"
 
 [build.environment]
-  # Matches .github/workflows/*.yml. Angular 17.3's builder and the Stencil
-  # hydrate app are both tested on 20 in this repo; letting Netlify pick its
-  # current default is how a build starts differing from CI.
-  NODE_VERSION = "20"
+  # Matches the repository engines and .github/workflows/*.yml. Pinning the
+  # major keeps Netlify builds aligned with the tested CI runtime.
+  NODE_VERSION = "22"
 
 [functions]
   directory = "netlify/functions"

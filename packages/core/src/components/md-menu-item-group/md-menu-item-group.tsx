@@ -1,6 +1,7 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Host, h, Prop } from '@stencil/core';
 
-@Component({ tag: 'md-menu-item-group', styleUrl: 'md-menu-item-group.css', shadow: true })
+@Component({ tag: 'md-menu-item-group', styleUrls: ['../../utils/initial-motion.css', 'md-menu-item-group.css'], shadow: true })
 export class MdMenuItemGroup {
   /** Optional label shown above the group items. */
   @Prop() label: string = '';
@@ -23,5 +24,30 @@ export class MdMenuItemGroup {
         </div>
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidLoad() {
+    completeInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

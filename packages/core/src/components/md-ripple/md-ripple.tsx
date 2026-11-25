@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Element, h, Host, Method, Prop } from '@stencil/core';
 
 const PRESS_GROW_MS = 450;
@@ -8,7 +9,7 @@ const EASING_STANDARD = 'cubic-bezier(0.2, 0, 0, 1)';
 const GROW_DURATION_PROP = '--md-ripple-grow-duration';
 const GROW_EASING_PROP = '--md-ripple-grow-easing';
 
-@Component({ tag: 'md-ripple', styleUrl: 'md-ripple.css', shadow: true })
+@Component({ tag: 'md-ripple', styleUrls: ['../../utils/initial-motion.css', 'md-ripple.css'], shadow: true })
 export class MdRipple {
   @Element() el!: HTMLElement;
 
@@ -196,6 +197,7 @@ export class MdRipple {
   }
 
   connectedCallback() {
+    reconnectInteractionMotion(this);
     this.bind();
     if (!this.bound) {
       queueMicrotask(() => this.bind());
@@ -203,6 +205,7 @@ export class MdRipple {
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.hostEl?.removeEventListener('pointerdown', this.onPointerDown);
     this.hostEl = null;
     this.bound = false;
@@ -350,5 +353,22 @@ export class MdRipple {
         <div class="md-ripple"></div>
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidLoad() {
+    completeInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

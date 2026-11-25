@@ -1,6 +1,6 @@
 {
   "name": "@awc-ui/react",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Typed React 18+ components for accessible Material Design 3 Web Components, with Next.js SSR, server rendering, and tree-shaking",
   "keywords": [
     "react",
@@ -58,11 +58,13 @@
   "files": [
     "dist",
     "src",
-    "LICENSE"
+    "LICENSE",
+    "THIRD_PARTY_LICENSES.md"
   ],
   "scripts": {
     "build": "rm -rf dist && tsc -p tsconfig.json",
     "test:overlay": "node --test scripts/use-overlay.test.mjs",
+    "test:ssr": "pnpm build && node --test scripts/ssr*.test.mjs",
     "size": "size-limit"
   },
   "size-limit": [
@@ -78,7 +80,8 @@
     }
   ],
   "dependencies": {
-    "@stencil/react-output-target": "^1.6.1"
+    "@stencil/react-output-target": "^1.6.1",
+    "html-react-parser": "^5.2.17"
   },
   "peerDependencies": {
     "@awc-ui/core": "workspace:*",

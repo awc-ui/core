@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Host, h, Prop, State, Event, EventEmitter, Element, Watch } from '@stencil/core';
 import { triggerRipple } from '../../utils/ripple';
 
@@ -16,7 +17,7 @@ export interface MdCardDragDetail {
   startY: number;
 }
 
-@Component({ tag: 'md-card', styleUrl: 'md-card.css', shadow: true })
+@Component({ tag: 'md-card', styleUrls: ['../../utils/initial-motion.css', 'md-card.css'], shadow: true })
 export class MdCard {
   @Element() el!: HTMLElement;
 
@@ -138,10 +139,12 @@ export class MdCard {
   }
 
   connectedCallback() {
+    reconnectInteractionMotion(this);
     this.el.addEventListener('pointerdown', this.onPointerDown);
   }
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     // Initial (deep) scan BEFORE the first render — querySelectorAll traverses
     // the whole light-DOM subtree (present at connect time for declarative
     // markup), so `hasInteractiveContent` is already settled when render() first
@@ -155,21 +158,26 @@ export class MdCard {
   }
 
   componentDidLoad() {
-    // A late deep scan catches any focusable content that only became present
-    // between componentWillLoad and mount; the guard inside
-    // detectInteractiveContent makes this a no-op (no re-render) when the state
-    // is already correct.
-    this.detectInteractiveContent();
-    // slotchange only fires for top-level slottable add/remove; a MutationObserver
-    // (subtree) additionally catches controls added/removed deep inside slotted
-    // wrappers after mount. Matches the md-list-item light-DOM observer pattern.
-    if (typeof MutationObserver !== 'undefined') {
-      this.contentObserver = new MutationObserver(this.detectInteractiveContent);
-      this.contentObserver.observe(this.el, { childList: true, subtree: true });
+    try {
+      // A late deep scan catches any focusable content that only became present
+      // between componentWillLoad and mount; the guard inside
+      // detectInteractiveContent makes this a no-op (no re-render) when the state
+      // is already correct.
+      this.detectInteractiveContent();
+      // slotchange only fires for top-level slottable add/remove; a MutationObserver
+      // (subtree) additionally catches controls added/removed deep inside slotted
+      // wrappers after mount. Matches the md-list-item light-DOM observer pattern.
+      if (typeof MutationObserver !== 'undefined') {
+        this.contentObserver = new MutationObserver(this.detectInteractiveContent);
+        this.contentObserver.observe(this.el, { childList: true, subtree: true });
+      }
+} finally {
+      completeInitialInteractionMotion(this);
     }
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.el.removeEventListener('pointerdown', this.onPointerDown);
     this.contentObserver?.disconnect();
     this.contentObserver = null;
@@ -315,5 +323,14 @@ export class MdCard {
         <slot onSlotchange={this.detectInteractiveContent} />
       </Host>
     );
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

@@ -1080,6 +1080,11 @@ md-avatar.md-list-item__avatar {
 }
 
 :host(.md-list-item--selected) .md-list-item__image-selection-circle {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.md-list-item__image-selection-circle--entering {
   animation: md-list-item-image-selection-in var(--md-sys-motion-duration-medium2, 250ms)
     var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)) both;
 }
@@ -1510,10 +1515,13 @@ md-tooltip.md-list-item__supporting-tooltip--empty {
 /* Reduced motion: snap, don't animate */
 @media (prefers-reduced-motion: reduce) {
   :host {
-    transition-property: box-shadow;
+    transition-property: box-shadow !important;
   }
 
-  .md-list-item__row,
+  .md-list-item__row {
+    transition: none !important;
+  }
+
   .md-list-item__expanded-panel,
   .md-list-item__expanded-panel-inner,
   .md-list-item__drag-handle {
@@ -1532,10 +1540,8 @@ md-tooltip.md-list-item__supporting-tooltip--empty {
     transition: none;
   }
 
-  :host(.md-list-item--selected) .md-list-item__image-selection-circle {
+  .md-list-item__image-selection-circle--entering {
     animation: none;
-    transform: scale(1);
-    opacity: 1;
   }
 }
 

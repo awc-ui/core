@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import {
   Component,
   Host,
@@ -67,7 +68,7 @@ import {
  */
 @Component({
   tag: 'md-line-chart',
-  styleUrl: 'md-line-chart.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-line-chart.css'],
   shadow: true,
 })
 export class MdLineChart {
@@ -367,14 +368,19 @@ export class MdLineChart {
   // ─────────────────── lifecycle ───────────────────
 
   componentDidLoad() {
-    this.initChart();
-    // Repaint whenever the resolved tokens change — an OS dark-mode flip, a
-    // data-theme toggle, or a seed/accent palette written as --md-sys-color-*
-    // overrides at runtime. A canvas is pixels: nothing retints it for us.
-    this.disposeThemeWatch = watchMdChartTheme(this.el, () => this.applyEngine());
+    try {
+      this.initChart();
+      // Repaint whenever the resolved tokens change — an OS dark-mode flip, a
+      // data-theme toggle, or a seed/accent palette written as --md-sys-color-*
+      // overrides at runtime. A canvas is pixels: nothing retints it for us.
+      this.disposeThemeWatch = watchMdChartTheme(this.el, () => this.applyEngine());
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.ro?.disconnect();
     this.ro = null;
     this.engine?.dispose();
@@ -1300,5 +1306,22 @@ export class MdLineChart {
         </div>
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

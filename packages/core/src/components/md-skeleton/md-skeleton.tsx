@@ -1,8 +1,9 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Host, h, Prop, State, Element } from '@stencil/core';
 
 @Component({
   tag: 'md-skeleton',
-  styleUrl: 'md-skeleton.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-skeleton.css'],
   shadow: true,
 })
 export class MdSkeleton {
@@ -92,6 +93,7 @@ export class MdSkeleton {
   private motionListener?: () => void;
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     if (typeof window !== 'undefined' && window.matchMedia) {
       this.motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
       this.prefersReducedMotion = this.motionQuery.matches;
@@ -99,14 +101,19 @@ export class MdSkeleton {
   }
 
   componentDidLoad() {
-    if (!this.motionQuery) return;
-    this.motionListener = () => {
-      this.prefersReducedMotion = this.motionQuery!.matches;
-    };
-    this.motionQuery.addEventListener('change', this.motionListener);
+    try {
+      if (!this.motionQuery) return;
+      this.motionListener = () => {
+        this.prefersReducedMotion = this.motionQuery!.matches;
+      };
+      this.motionQuery.addEventListener('change', this.motionListener);
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     if (this.motionQuery && this.motionListener) {
       this.motionQuery.removeEventListener('change', this.motionListener);
     }
@@ -164,5 +171,18 @@ export class MdSkeleton {
         )}
       </Host>
     );
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

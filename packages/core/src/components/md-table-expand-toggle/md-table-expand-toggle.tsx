@@ -1,6 +1,7 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Host, h, Prop, Element, State } from '@stencil/core';
 
-type ExpandableRow = HTMLElement & { expanded: boolean; toggle: () => Promise<void> };
+type ExpandableRow = HTMLElement & { expanded?: boolean; toggle?: () => Promise<void> };
 
 /**
  * Material Design 3 — Table Expand Toggle.
@@ -24,7 +25,7 @@ type ExpandableRow = HTMLElement & { expanded: boolean; toggle: () => Promise<vo
  */
 @Component({
   tag: 'md-table-expand-toggle',
-  styleUrl: 'md-table-expand-toggle.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-table-expand-toggle.css'],
   shadow: true,
 })
 export class MdTableExpandToggle {
@@ -52,7 +53,9 @@ export class MdTableExpandToggle {
 
   private bindRow() {
     this.row = this.el.closest('md-table-row') as ExpandableRow | null;
-    this.expanded = !!this.row?.expanded;
+    const expanded = this.row?.expanded;
+    const authored = this.row?.getAttribute('expanded');
+    this.expanded = typeof expanded === 'boolean' ? expanded : authored != null && authored !== 'false';
     this.row?.addEventListener('mdRowExpandedChange', this.onRowExpandedChange);
   }
 
@@ -61,10 +64,12 @@ export class MdTableExpandToggle {
   // willLoad-only bind would leave the toggle permanently dead after the
   // first reorder (disconnectedCallback nulls the row).
   connectedCallback() {
+    reconnectInteractionMotion(this);
     this.bindRow();
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.row?.removeEventListener('mdRowExpandedChange', this.onRowExpandedChange);
     this.row = null;
   }
@@ -92,5 +97,22 @@ export class MdTableExpandToggle {
         ></md-icon-button>
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidLoad() {
+    completeInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

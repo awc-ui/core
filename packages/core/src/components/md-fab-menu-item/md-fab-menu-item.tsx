@@ -1,9 +1,10 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Host, h, Prop, State, Event, EventEmitter, Element } from '@stencil/core';
 import { triggerRipple } from '../../utils/ripple';
 
 @Component({
   tag: 'md-fab-menu-item',
-  styleUrl: 'md-fab-menu-item.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-fab-menu-item.css'],
   shadow: true,
 })
 export class MdFabMenuItem {
@@ -45,19 +46,24 @@ export class MdFabMenuItem {
   }
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     if (!this.el.hasAttribute('tabindex')) {
       this.el.setAttribute('tabindex', '-1');
     }
   }
 
   componentDidLoad() {
-    const shadow = this.el.shadowRoot;
-    if (!shadow) return;
+    try {
+      const shadow = this.el.shadowRoot;
+      if (!shadow) return;
 
-    const iconSlot = shadow.querySelector('slot[name="icon"]') as HTMLSlotElement | null;
-    iconSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedIcon = iconSlot.assignedElements().length > 0;
-    });
+      const iconSlot = shadow.querySelector('slot[name="icon"]') as HTMLSlotElement | null;
+      iconSlot?.addEventListener('slotchange', () => {
+        this.hasSlottedIcon = iconSlot.assignedElements().length > 0;
+      });
+} finally {
+      completeInitialInteractionMotion(this);
+    }
   }
 
   private handleClick = (e: MouseEvent) => {
@@ -110,5 +116,22 @@ export class MdFabMenuItem {
         </span>
       </Host>
     );
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

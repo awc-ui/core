@@ -2,7 +2,7 @@
 /* auto-generated angular directive proxies */
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, NgZone } from '@angular/core';
 
-import { ProxyCmp, proxyOutputs } from './angular-component-lib/utils';
+import { initializeSsrInputs, ProxyCmp, proxyOutputs } from './ssr-inputs';
 
 import type { Components } from '@awc-ui/core/dist/components';
 
@@ -104,6 +104,7 @@ export class MdAccordion {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdToggle', 'mdReorder', 'mdDragStart', 'mdDragMove', 'mdDragEnd']);
   }
 }
@@ -157,6 +158,7 @@ export class MdAccordionItem {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdItemToggle', 'mdItemRequestFocus', 'mdItemRequestReorder']);
   }
 }
@@ -199,6 +201,7 @@ export class MdAppBar {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdLeadingClick', 'mdSearchActivate', 'mdSearchInput']);
   }
 }
@@ -223,6 +226,7 @@ the full-screen search view per the MD3 spec.
 
 
 @ProxyCmp({
+  ssrAttributes: {"series":false,"xAxis":false,"yAxis":false,"valueFormatter":false,"tooltipRenderer":false,"heightProp":"height","tableLabels":false},
   defineCustomElementFn: defineMdAreaChart,
   inputs: ['animation', 'animationDuration', 'axisTicks', 'connectNulls', 'curve', 'density', 'fillOpacity', 'grid', 'heightProp', 'inverted', 'label', 'labelEmpty', 'labelPlot', 'labelPoint', 'labelZoomEnd', 'labelZoomStart', 'legend', 'lineWidth', 'loading', 'loadingLabel', 'locale', 'markSize', 'noAnimation', 'series', 'seriesLabels', 'showLabels', 'showLine', 'showMarks', 'stack', 'subtitle', 'summary', 'tableLabels', 'titleAlign', 'tooltip', 'tooltipRenderer', 'valueFormatter', 'xAxis', 'yAxis', 'zoom'],
   methods: ['refreshTheme', 'resize', 'replay', 'toDataURL', 'getInstance', 'setZoom', 'resetZoom']
@@ -240,6 +244,7 @@ export class MdAreaChart {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdMarkerClick', 'mdLineClick', 'mdAreaClick', 'mdAxisClick', 'mdLegendClick', 'mdHover', 'mdReady', 'mdZoom']);
   }
 }
@@ -282,6 +287,7 @@ mark, line or area): the nearest x plus every visible series' value there.
 
 
 @ProxyCmp({
+  ssrAttributes: {"options":["options","json"],"value":["value","values"],"filterer":false},
   defineCustomElementFn: defineMdAutocomplete,
   inputs: ['chipPosition', 'clearIcon', 'clearOnBlur', 'clearable', 'density', 'disableCloseOnSelect', 'disabled', 'dropdownIcon', 'error', 'errorText', 'filterMode', 'filterer', 'freeSolo', 'inputValue', 'label', 'limitResults', 'loading', 'loadingText', 'matchTriggerWidth', 'maxHeight', 'maxSelected', 'multiple', 'name', 'noOptionsText', 'noResultsText', 'open', 'options', 'placeholder', 'placement', 'required', 'reserveSupportingSpace', 'rowHeight', 'softDisabled', 'statusTemplate', 'supportingText', 'value', 'valueMissingLabel', 'variant', 'virtualize'],
   methods: ['focusInput', 'showMenu', 'closeMenu', 'loadOptions', 'getLabels', 'getValidity', 'checkValidity', 'reportValidity', 'setCustomValidity']
@@ -299,6 +305,7 @@ export class MdAutocomplete {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdChange', 'mdInput', 'mdOpen', 'mdClose', 'mdClear', 'mdValidityChange']);
   }
 }
@@ -357,6 +364,7 @@ export class MdAvatar {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdLoad', 'mdError']);
   }
 }
@@ -391,6 +399,7 @@ export class MdBadge {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
   }
 }
 
@@ -399,6 +408,7 @@ export declare interface MdBadge extends Components.MdBadge {}
 
 
 @ProxyCmp({
+  ssrAttributes: {"series":false,"xAxis":false,"yAxis":false,"yAxis2":false,"valueFormatter":false,"tooltipRenderer":false,"heightProp":"height"},
   defineCustomElementFn: defineMdBarChart,
   inputs: ['animation', 'animationDuration', 'axisTicks', 'barGap', 'barWidth', 'categoryGap', 'chevron', 'clickable', 'cornerRadius', 'density', 'heightProp', 'label', 'labelPlot', 'labelPoint', 'labelZoomEnd', 'labelZoomStart', 'layout', 'legend', 'loading', 'loadingLabel', 'locale', 'noAnimation', 'polar', 'polarHole', 'polarSweep', 'series', 'showLabels', 'showTotals', 'stack', 'subtitle', 'titleAlign', 'tooltip', 'tooltipRenderer', 'valueFormatter', 'xAxis', 'yAxis', 'yAxis2', 'zoom'],
   methods: ['refreshTheme', 'resize', 'replay', 'drill', 'toDataURL', 'getInstance', 'setZoom', 'resetZoom']
@@ -416,6 +426,7 @@ export class MdBarChart {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdBarClick', 'mdLegendClick', 'mdHover', 'mdReady', 'mdZoom']);
   }
 }
@@ -442,6 +453,7 @@ export declare interface MdBarChart extends Components.MdBarChart {
 
 
 @ProxyCmp({
+  ssrAttributes: {"sheetAriaLabel":"aria-label"},
   defineCustomElementFn: defineMdBottomSheet,
   inputs: ['bottomDivider', 'closeable', 'contentAlign', 'density', 'headline', 'headlineAlign', 'open', 'scrimDismissible', 'scrollShadow', 'sheetAriaLabel', 'showDragHandle', 'topDivider', 'variant'],
   methods: ['show', 'close']
@@ -459,6 +471,7 @@ export class MdBottomSheet {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdOpen', 'mdClose', 'mdCancel']);
   }
 }
@@ -497,6 +510,7 @@ export class MdBreadcrumbItem {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdSelect']);
   }
 }
@@ -550,6 +564,7 @@ export class MdBreadcrumbs {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdExpand']);
   }
 }
@@ -589,6 +604,7 @@ export class MdButton {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdClick', 'mdChange']);
   }
 }
@@ -648,6 +664,7 @@ export class MdButtonGroup {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdSelectionChange']);
   }
 }
@@ -696,6 +713,7 @@ export class MdCard {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdClick', 'mdDragStart', 'mdDragMove', 'mdDragEnd']);
   }
 }
@@ -741,6 +759,7 @@ export class MdCheckbox {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdChange', 'mdValidityChange']);
   }
 }
@@ -783,6 +802,7 @@ export class MdChip {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdClick', 'mdSelect', 'mdRemove']);
   }
 }
@@ -811,6 +831,7 @@ list and will re-render with the chip gone).
 
 
 @ProxyCmp({
+  ssrAttributes: {"ariaLabelProp":"aria-label"},
   defineCustomElementFn: defineMdColorPicker,
   inputs: ['alpha', 'ariaLabelProp', 'density', 'disabled', 'dismissOnOutsideClick', 'format', 'locale', 'open', 'presets', 'showHex', 'showInputs', 'value', 'variant'],
   methods: ['show', 'close']
@@ -828,6 +849,7 @@ export class MdColorPicker {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdInput', 'mdChange', 'mdOpenChange']);
   }
 }
@@ -851,6 +873,7 @@ Enter, or click a preset).
 
 
 @ProxyCmp({
+  ssrAttributes: {"isDateDisabled":false},
   defineCustomElementFn: defineMdDatePicker,
   inputs: ['calendarIcon', 'cancelLabel', 'chooseMonthAndYearLabel', 'chooseMonthLabel', 'chooseMonthYearLabel', 'chooseYearLabel', 'clearLabel', 'clearable', 'closeCalendarLabel', 'commitOnSelect', 'dateSeparator', 'density', 'disabled', 'enterDatesLabel', 'error', 'errorText', 'fieldVariant', 'firstDayOfWeek', 'headline', 'invalidDateLabel', 'isDateDisabled', 'label', 'locale', 'max', 'min', 'name', 'nextMonthLabel', 'nextYearLabel', 'okLabel', 'open', 'openCalendarLabel', 'outsideClickDismissible', 'placeholder', 'previousMonthLabel', 'previousYearLabel', 'required', 'reserveSupportingSpace', 'scrimDismissible', 'selectDateLabel', 'supportingText', 'toggleCalendarLabel', 'toggleTextLabel', 'value', 'valueMissingLabel', 'variant', 'yearGridLabel'],
   methods: ['show', 'close', 'clear', 'focusInput', 'getValidity', 'checkValidity', 'reportValidity', 'setCustomValidity']
@@ -868,6 +891,7 @@ export class MdDatePicker {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdChange', 'mdSelected', 'mdInput', 'mdOpen', 'mdClose', 'mdCancel', 'mdViewChange', 'mdMenuOpen', 'mdMenuSelect', 'mdModeChange', 'mdValidityChange']);
   }
 }
@@ -954,6 +978,7 @@ export class MdDialog {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdOpen', 'mdClose', 'mdCancel']);
   }
 }
@@ -992,6 +1017,7 @@ export class MdDivider {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
   }
 }
 
@@ -1017,6 +1043,7 @@ export class MdFab {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdClick']);
   }
 }
@@ -1058,6 +1085,7 @@ export class MdFabMenu {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdOpen', 'mdClose']);
   }
 }
@@ -1092,6 +1120,7 @@ export class MdFabMenuItem {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdClick']);
   }
 }
@@ -1122,6 +1151,7 @@ export class MdIconButton {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdClick']);
   }
 }
@@ -1136,6 +1166,7 @@ export declare interface MdIconButton extends Components.MdIconButton {
 
 
 @ProxyCmp({
+  ssrAttributes: {"markLines":false,"series":false,"xAxis":false,"yAxis":false,"yAxes":false,"tableLabels":false,"valueFormatter":false,"tooltipRenderer":false,"heightProp":"height"},
   defineCustomElementFn: defineMdLineChart,
   inputs: ['animation', 'animationDuration', 'area', 'axisTicks', 'connectNulls', 'curve', 'density', 'grid', 'heightProp', 'inverted', 'label', 'labelEmpty', 'labelPlot', 'labelPoint', 'labelZoomEnd', 'labelZoomStart', 'legend', 'lineWidth', 'loading', 'loadingLabel', 'locale', 'markLines', 'markSize', 'noAnimation', 'series', 'seriesLabels', 'showLabels', 'showLine', 'showMarks', 'stack', 'subtitle', 'summary', 'tableLabels', 'titleAlign', 'tooltip', 'tooltipRenderer', 'valueFormatter', 'xAxis', 'yAxes', 'yAxis', 'zoom'],
   methods: ['refreshTheme', 'resize', 'replay', 'toDataURL', 'getInstance', 'setZoom', 'resetZoom']
@@ -1153,6 +1184,7 @@ export class MdLineChart {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdMarkerClick', 'mdLineClick', 'mdAreaClick', 'mdAxisClick', 'mdLegendClick', 'mdHover', 'mdReady', 'mdZoom']);
   }
 }
@@ -1224,6 +1256,7 @@ export class MdList {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdSelect', 'mdActivate', 'mdReorder']);
   }
 }
@@ -1271,6 +1304,7 @@ export class MdListItem {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdClick', 'mdItemClick', 'mdItemSelect', 'mdRequestActivation', 'mdItemRequestReorder', 'mdExpand']);
   }
 }
@@ -1327,6 +1361,7 @@ export class MdLoadingIndicator {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
   }
 }
 
@@ -1352,6 +1387,7 @@ export class MdMenu {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdOpen', 'mdClose']);
   }
 }
@@ -1394,6 +1430,7 @@ export class MdMenuItem {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdClick']);
   }
 }
@@ -1424,6 +1461,7 @@ export class MdMenuItemGroup {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
   }
 }
 
@@ -1432,6 +1470,7 @@ export declare interface MdMenuItemGroup extends Components.MdMenuItemGroup {}
 
 
 @ProxyCmp({
+  ssrAttributes: {"formatOptions":false},
   defineCustomElementFn: defineMdMeter,
   inputs: ['color', 'density', 'formatOptions', 'label', 'locale', 'max', 'min', 'showLabel', 'showValue', 'size', 'thickness', 'value', 'valueText', 'variant']
 })
@@ -1448,6 +1487,7 @@ export class MdMeter {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
   }
 }
 
@@ -1456,6 +1496,7 @@ export declare interface MdMeter extends Components.MdMeter {}
 
 
 @ProxyCmp({
+  ssrAttributes: {"options":["options","json"],"value":[null,"values"],"countFormatter":false},
   defineCustomElementFn: defineMdMultiSelect,
   inputs: ['chipOverflow', 'chipPosition', 'clearIcon', 'clearLabel', 'clearable', 'countFormatter', 'density', 'disabled', 'displayMode', 'dropdownIcon', 'error', 'errorText', 'filterLabel', 'filterMode', 'filterable', 'label', 'loading', 'loadingText', 'matchTriggerWidth', 'maxHeight', 'maxSelected', 'name', 'noOptionsText', 'noResultsText', 'open', 'options', 'placeholder', 'placement', 'required', 'reserveSupportingSpace', 'rowHeight', 'searchPlaceholder', 'searchingLabel', 'selectAllLabel', 'showSelectAll', 'softDisabled', 'supportingText', 'trigger', 'triggerIcon', 'triggerLabel', 'value', 'valueMissingLabel', 'variant', 'virtualize'],
   methods: ['show', 'close', 'focusTrigger', 'reset', 'loadOptions', 'setQuery', 'getLabels', 'getValidity', 'checkValidity', 'reportValidity', 'setCustomValidity']
@@ -1473,6 +1514,7 @@ export class MdMultiSelect {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdChange', 'mdOpen', 'mdClose', 'mdRemove', 'mdClear', 'mdValidityChange']);
   }
 }
@@ -1532,6 +1574,7 @@ export class MdNavigationBar {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdChange']);
   }
 }
@@ -1566,6 +1609,7 @@ export class MdNavigationRail {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdTabChange', 'mdExpand', 'mdCollapse']);
   }
 }
@@ -1605,6 +1649,7 @@ export class MdNavigationRailTab {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdTabClick', 'mdSubmenuToggle']);
   }
 }
@@ -1643,6 +1688,7 @@ export class MdNavigationTab {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdTabClick']);
   }
 }
@@ -1661,6 +1707,7 @@ selection; external code may also listen to detect per-tab activation
 
 
 @ProxyCmp({
+  ssrAttributes: {"readOnly":"readonly"},
   defineCustomElementFn: defineMdNumberField,
   inputs: ['allowOutOfRange', 'allowWheelScrub', 'decrementLabel', 'density', 'disabled', 'error', 'errorText', 'formatOptions', 'incrementLabel', 'label', 'largeStep', 'locale', 'max', 'min', 'name', 'placeholder', 'readOnly', 'required', 'reserveSupportingSpace', 'smallStep', 'snapOnStep', 'step', 'steppers', 'supportingText', 'value', 'valueMissingLabel', 'variant'],
   methods: ['setFocus', 'select', 'stepUp', 'stepDown', 'getValidity', 'checkValidity', 'reportValidity', 'setCustomValidity']
@@ -1678,6 +1725,7 @@ export class MdNumberField {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdInput', 'mdChange', 'mdValidityChange']);
   }
 }
@@ -1707,6 +1755,7 @@ lets a `<form>` or app root hear every control.
 
 
 @ProxyCmp({
+  ssrAttributes: {"nodes":["nodes","json"],"selectedIds":false},
   defineCustomElementFn: defineMdOrganizationChart,
   inputs: ['collapseLabel', 'collapsible', 'density', 'expandLabel', 'label', 'nodes', 'orientation', 'selectedIds', 'selectionMode']
 })
@@ -1723,6 +1772,7 @@ export class MdOrganizationChart {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdSelectionChange', 'mdNodeToggle']);
   }
 }
@@ -1744,6 +1794,7 @@ export declare interface MdOrganizationChart extends Components.MdOrganizationCh
 
 
 @ProxyCmp({
+  ssrAttributes: {"inputMode":"inputmode","readOnly":"readonly"},
   defineCustomElementFn: defineMdOtpField,
   inputs: ['autoSubmit', 'cellLabelTemplate', 'density', 'disabled', 'error', 'errorText', 'groupSize', 'incompleteLabel', 'inputMode', 'label', 'length', 'mask', 'name', 'readOnly', 'required', 'reserveSupportingSpace', 'supportingText', 'transform', 'validationType', 'value', 'valueMissingLabel'],
   methods: ['setFocus', 'clear', 'getValidity', 'setCustomValidity', 'checkValidity', 'reportValidity']
@@ -1761,6 +1812,7 @@ export class MdOtpField {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdInput', 'mdChange', 'mdComplete', 'mdInvalidInput', 'mdValidityChange']);
   }
 }
@@ -1798,6 +1850,7 @@ reaches `<form>`-level listeners in the same DOM tree.
 
 
 @ProxyCmp({
+  ssrAttributes: {"data":false,"tableLabels":false,"tooltipRenderer":false,"valueFormatter":false,"ringWidths":false,"heightProp":"height"},
   defineCustomElementFn: defineMdPieChart,
   inputs: ['animation', 'animationDuration', 'cornerRadius', 'data', 'density', 'endAngle', 'gradient', 'heightProp', 'highlight', 'innerRadius', 'label', 'labelEmpty', 'labelMode', 'labelPlot', 'labelPoint', 'legend', 'loading', 'loadingLabel', 'locale', 'monochrome', 'noAnimation', 'outerRadius', 'paddingAngle', 'ringWidths', 'showLabels', 'startAngle', 'subtitle', 'summary', 'tableLabels', 'titleAlign', 'tooltip', 'tooltipRenderer', 'valueFormatter'],
   methods: ['refreshTheme', 'resize', 'replay', 'drill', 'toDataURL', 'getInstance']
@@ -1815,6 +1868,7 @@ export class MdPieChart {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdSliceClick', 'mdLegendClick', 'mdReady']);
   }
 }
@@ -1850,6 +1904,7 @@ export class MdProgressIndicator {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdComplete']);
   }
 }
@@ -1882,6 +1937,7 @@ export class MdRadio {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdChange', 'mdFocus', 'mdBlur', 'mdValidityChange']);
   }
 }
@@ -1916,6 +1972,7 @@ it uncomposed means each component reports only for itself, while
 
 
 @ProxyCmp({
+  ssrAttributes: {"getLabel":false},
   defineCustomElementFn: defineMdRating,
   inputs: ['defaultValue', 'density', 'disabled', 'emptyIcon', 'getLabel', 'hover', 'icon', 'max', 'name', 'outlineEmpty', 'precision', 'ratingLabel', 'readonly', 'showValueLabel', 'size', 'softDisabled', 'value'],
   methods: ['focusRating']
@@ -1933,6 +1990,7 @@ export class MdRating {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdHover', 'mdChange']);
   }
 }
@@ -1968,6 +2026,7 @@ export class MdRipple {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
   }
 }
 
@@ -1976,6 +2035,7 @@ export declare interface MdRipple extends Components.MdRipple {}
 
 
 @ProxyCmp({
+  ssrAttributes: {"triggerElement":false},
   defineCustomElementFn: defineMdSearch,
   inputs: ['announceResults', 'debounce', 'density', 'disabled', 'dismissOnOutsideClick', 'elevation', 'escapeCloses', 'fullWidth', 'initialFocus', 'inputAriaLabel', 'layout', 'leadingIcon', 'loading', 'loadingLabel', 'maxBlockSize', 'noResultsLabel', 'open', 'openLeadingIcon', 'placeholder', 'resultsLabel', 'scrollShadow', 'showClearButton', 'throttle', 'trigger', 'triggerElement', 'triggerFor', 'triggerIcon', 'value', 'variant', 'voiceSearch'],
   methods: ['show', 'close', 'whenClosed', 'toggle', 'focusInput', 'startVoice', 'stopVoice']
@@ -1993,6 +2053,7 @@ export class MdSearch {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdInput', 'mdSearch', 'mdSubmit', 'mdChange', 'mdOpen', 'mdClose', 'mdClear', 'mdVoice', 'mdLeadingIconClick', 'mdTrailingIconClick']);
   }
 }
@@ -2077,6 +2138,7 @@ export class MdSegmentedButton {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdSegmentClick']);
   }
 }
@@ -2107,6 +2169,7 @@ export class MdSegmentedButtonSet {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdChange']);
   }
 }
@@ -2121,6 +2184,7 @@ export declare interface MdSegmentedButtonSet extends Components.MdSegmentedButt
 
 
 @ProxyCmp({
+  ssrAttributes: {"options":["options","json"]},
   defineCustomElementFn: defineMdSelect,
   inputs: ['clearIcon', 'clearLabel', 'clearable', 'density', 'disabled', 'dropdownIcon', 'error', 'errorText', 'filterLabel', 'filterMode', 'filterable', 'fullWidth', 'label', 'loading', 'loadingText', 'matchTriggerWidth', 'maxHeight', 'name', 'noOptionsText', 'noResultsText', 'open', 'options', 'placeholder', 'placement', 'required', 'reserveSupportingSpace', 'rowHeight', 'searchPlaceholder', 'searchingLabel', 'supportingText', 'value', 'valueMissingLabel', 'variant', 'virtualize'],
   methods: ['show', 'close', 'focusTrigger', 'reset', 'loadOptions', 'setQuery', 'getLabels', 'getValidity', 'checkValidity', 'reportValidity', 'setCustomValidity']
@@ -2138,6 +2202,7 @@ export class MdSelect {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdChange', 'mdOpen', 'mdClose', 'mdValidityChange']);
   }
 }
@@ -2188,6 +2253,7 @@ export class MdSelectOption {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdSelectOptionChange']);
   }
 }
@@ -2203,6 +2269,7 @@ parent picker can re-read its option set.
 
 
 @ProxyCmp({
+  ssrAttributes: {"sheetAriaLabel":"aria-label"},
   defineCustomElementFn: defineMdSideSheet,
   inputs: ['bottomDivider', 'closeable', 'density', 'detached', 'headline', 'open', 'scrimDismissible', 'sheetAriaLabel', 'showBack', 'side', 'topDivider', 'variant'],
   methods: ['show', 'whenClosed', 'close']
@@ -2220,6 +2287,7 @@ export class MdSideSheet {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdOpen', 'mdClose', 'mdCancel', 'mdBack']);
   }
 }
@@ -2246,6 +2314,7 @@ export declare interface MdSideSheet extends Components.MdSideSheet {
 
 
 @ProxyCmp({
+  ssrAttributes: {"ariaLabelProp":"aria-label"},
   defineCustomElementFn: defineMdSkeleton,
   inputs: ['animation', 'announce', 'ariaLabelProp', 'density', 'fullHeight', 'fullWidth', 'height', 'lines', 'variant', 'width']
 })
@@ -2262,6 +2331,7 @@ export class MdSkeleton {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
   }
 }
 
@@ -2270,6 +2340,7 @@ export declare interface MdSkeleton extends Components.MdSkeleton {}
 
 
 @ProxyCmp({
+  ssrAttributes: {"sliderAriaLabel":"aria-label","ariaLabelStart":"label-start","ariaLabelEnd":"label-end"},
   defineCustomElementFn: defineMdSlider,
   inputs: ['ariaLabelEnd', 'ariaLabelStart', 'controlled', 'density', 'disabled', 'fullHeight', 'icon', 'insetIcon', 'labeled', 'max', 'min', 'name', 'nameEnd', 'nameStart', 'orientation', 'range', 'size', 'sliderAriaLabel', 'step', 'stops', 'value', 'valueEnd', 'valueEndText', 'valueIndicator', 'valueStart', 'valueStartText', 'valueText', 'variant']
 })
@@ -2286,6 +2357,7 @@ export class MdSlider {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdInput', 'mdChange', 'mdFocus', 'mdBlur', 'mdDragStart', 'mdDragEnd']);
   }
 }
@@ -2341,6 +2413,7 @@ export class MdSnackbar {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdOpen', 'mdClose', 'mdAction']);
   }
 }
@@ -2363,6 +2436,7 @@ export declare interface MdSnackbar extends Components.MdSnackbar {
 
 
 @ProxyCmp({
+  ssrAttributes: {"data":false,"labels":false,"referenceAreas":false,"valueFormatter":false,"heightProp":"height"},
   defineCustomElementFn: defineMdSparkline,
   inputs: ['barWidth', 'color', 'cornerRadius', 'curve', 'data', 'heightProp', 'labels', 'lineWidth', 'markSize', 'max', 'min', 'noAnimation', 'referenceAreas', 'showMarks', 'showTooltip', 'valueFormatter', 'variant'],
   methods: ['refreshTheme', 'resize', 'getInstance']
@@ -2380,6 +2454,7 @@ export class MdSparkline {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdSparkClick', 'mdReady']);
   }
 }
@@ -2410,6 +2485,7 @@ export class MdSplitButton {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdLeadingClick', 'mdTrailingClick']);
   }
 }
@@ -2444,6 +2520,7 @@ export class MdStatusDot {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
   }
 }
 
@@ -2468,6 +2545,7 @@ export class MdStep {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdStepClick', 'mdStepNext', 'mdStepBack']);
   }
 }
@@ -2508,6 +2586,7 @@ export class MdStepper {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdBeforeChange', 'mdStepChange', 'mdComplete']);
   }
 }
@@ -2552,6 +2631,7 @@ export class MdSubMenuItem {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdClick']);
   }
 }
@@ -2583,6 +2663,7 @@ export class MdSwitch {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdInput', 'mdChange', 'mdValidityChange']);
   }
 }
@@ -2645,6 +2726,7 @@ export class MdTab {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdTabClick']);
   }
 }
@@ -2675,6 +2757,7 @@ export class MdTabPanel {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
   }
 }
 
@@ -2699,6 +2782,7 @@ export class MdTabPanels {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
   }
 }
 
@@ -2724,6 +2808,7 @@ export class MdTable {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdSortChange', 'mdSelectionChange', 'mdPinChange', 'mdColumnVisibilityChange', 'mdScroll']);
   }
 }
@@ -2772,6 +2857,7 @@ export class MdTableBody {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
   }
 }
 
@@ -2780,6 +2866,7 @@ export declare interface MdTableBody extends Components.MdTableBody {}
 
 
 @ProxyCmp({
+  ssrAttributes: {"colSpan":"colspan","rowSpan":"rowspan"},
   defineCustomElementFn: defineMdTableCell,
   inputs: ['align', 'colSpan', 'density', 'ellipsis', 'head', 'noPinIndicator', 'numeric', 'padding', 'pinIcon', 'rowSpan', 'scope', 'sticky', 'variant']
 })
@@ -2796,6 +2883,7 @@ export class MdTableCell {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
   }
 }
 
@@ -2820,6 +2908,7 @@ export class MdTableContainer {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
   }
 }
 
@@ -2844,6 +2933,7 @@ export class MdTableExpandToggle {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
   }
 }
 
@@ -2867,6 +2957,7 @@ export class MdTableFoot {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
   }
 }
 
@@ -2890,6 +2981,7 @@ export class MdTableHead {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
   }
 }
 
@@ -2915,6 +3007,7 @@ export class MdTablePagination {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdPageChange', 'mdRowsPerPageChange']);
   }
 }
@@ -2950,6 +3043,7 @@ export class MdTableRow {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdRowClick', 'mdRowSelectionChange', 'mdRowExpandedChange']);
   }
 }
@@ -2989,6 +3083,7 @@ export class MdTableSortLabel {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdSortRequest']);
   }
 }
@@ -3019,6 +3114,7 @@ export class MdTableToolbar {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
   }
 }
 
@@ -3027,6 +3123,7 @@ export declare interface MdTableToolbar extends Components.MdTableToolbar {}
 
 
 @ProxyCmp({
+  ssrAttributes: {"ariaLabelProp":"aria-label"},
   defineCustomElementFn: defineMdTabs,
   inputs: ['activeTabIndex', 'ariaLabelProp', 'divider', 'tabWidth', 'variant', 'width'],
   methods: ['selectTab']
@@ -3044,6 +3141,7 @@ export class MdTabs {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdTabChange']);
   }
 }
@@ -3058,6 +3156,7 @@ export declare interface MdTabs extends Components.MdTabs {
 
 
 @ProxyCmp({
+  ssrAttributes: {"inputMode":"inputmode","enterKeyHint":"enterkeyhint","autoCapitalize":"autocapitalize","readOnly":"readonly","formatter":false,"parser":false},
   defineCustomElementFn: defineMdTextField,
   inputs: ['appearFocused', 'autoCapitalize', 'autocomplete', 'chipsWrap', 'clearable', 'debounce', 'density', 'disabled', 'enterKeyHint', 'error', 'errorText', 'focusBorderWidth', 'formatOn', 'formatter', 'hidePasswordLabel', 'inputAriaAutocomplete', 'inputExpanded', 'inputMode', 'inputRole', 'label', 'max', 'maxLength', 'min', 'minLength', 'multiline', 'name', 'parser', 'passwordToggle', 'pattern', 'placeholder', 'prefixText', 'readOnly', 'required', 'reserveSupportingSpace', 'restrict', 'rows', 'showPasswordLabel', 'speechLang', 'speechToText', 'spellcheck', 'step', 'suffixText', 'supportingText', 'throttle', 'type', 'value', 'variant'],
   methods: ['setFocus', 'select', 'getInputElement', 'getValidity', 'setCustomValidity', 'checkValidity', 'reportValidity']
@@ -3075,6 +3174,7 @@ export class MdTextField {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdInput', 'mdChange', 'mdSearch', 'mdClear', 'mdPasswordToggle', 'mdSpeechResult', 'mdValidityChange']);
   }
 }
@@ -3128,6 +3228,7 @@ export class MdTimePicker {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdChange', 'mdInput', 'mdOpen', 'mdClose', 'mdCancel', 'mdModeChange', 'mdValidityChange']);
   }
 }
@@ -3197,6 +3298,7 @@ it uncomposed means each component reports only for itself, while
 
 
 @ProxyCmp({
+  ssrAttributes: {"ariaLabelProp":"aria-label"},
   defineCustomElementFn: defineMdToolbar,
   inputs: ['alignment', 'ariaLabelProp', 'ariaLabelledby', 'color', 'containerSemantics', 'density', 'layout', 'variant'],
   methods: ['setFocus']
@@ -3214,6 +3316,7 @@ export class MdToolbar {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
   }
 }
 
@@ -3239,6 +3342,7 @@ export class MdTooltip {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdOpen', 'mdClose']);
   }
 }
@@ -3259,6 +3363,7 @@ documented composed-event-leak class — see md-date-picker's swallow guards).
 
 
 @ProxyCmp({
+  ssrAttributes: {"items":["items","json"],"value":false},
   defineCustomElementFn: defineMdTransferList,
   inputs: ['countTemplate', 'density', 'disabled', 'emptyIcon', 'emptyText', 'items', 'moveAllLeftIcon', 'moveAllLeftLabel', 'moveAllRightIcon', 'moveAllRightLabel', 'moveLeftIcon', 'moveLeftLabel', 'moveRightIcon', 'moveRightLabel', 'searchIcon', 'searchable', 'showSelectAll', 'singleStepOnly', 'sourceSearchPlaceholder', 'sourceTitle', 'targetSearchPlaceholder', 'targetTitle', 'value'],
   methods: ['moveSelectedRight', 'moveSelectedLeft']
@@ -3276,6 +3381,7 @@ export class MdTransferList {
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
+    initializeSsrInputs(this);
     proxyOutputs(this, this.el, ['mdChange', 'mdMove']);
   }
 }

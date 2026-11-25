@@ -1,0 +1,1075 @@
+{
+  "date": "2026-11-25",
+  "baselineCommit": "d4f4f9f51",
+  "implementationCommit": "8a37fd1d3",
+  "profile": {
+    "browser": "Chromium headless",
+    "viewport": "390×844",
+    "slowComparison": "Five cold runs per build; median; 4 Mbps download, 80 ms latency, 4× CPU slowdown",
+    "localUnthrottled": "Three cold runs of the optimized build; median; localhost with no CPU or network throttling, not a real-world internet measurement",
+    "compression": "Brotli quality 5",
+    "cache": "Fresh browser contexts with browser cache disabled; server compression cache warmed only",
+    "externalFonts": "Blocked equally in timing runs. Separate browser gates use real Roboto font bytes with held stylesheet and font requests.",
+    "comparison": "Immutable production copies before the change versus final production builds; identical measurement harness; serial before/after/unthrottled groups with no concurrent builds or tests",
+    "fcpMs": "Browser first contentful paint; catalogHeadingMs independently verifies the actual existing catalog title paint",
+    "themeReadyMs": "First sampled animation frame where the enabled, hydrated theme button label has visible nonzero geometry; not a measured click latency. A separate first-action gate clicks it while the icon font remains held.",
+    "controlsReadyMs": "Complete expected nested hydrated host census with shadows and visible semantic title, theme button, checkbox and text input",
+    "allReadyMs": "Complete catalog controls plus the local icon font ready. The external Roboto stylesheet is excluded from these timing runs."
+  },
+  "changes": [
+    "Warm the initial button, checkbox, text-field, select and loading-indicator static module graphs at app kickoff. Resolve stable tag names through generated export metadata and deduplicate grouped modules.",
+    "Reduce the catalog-only Material Symbols font from 349,324 to 137,148 bytes by selecting production literals and conservative catalog tokens instead of test/comment/identifier matches. Preserve all variable axes.",
+    "Run the Angular catalog with provideZonelessChangeDetection, omitting the zone.js browser polyfill while retaining tested template and reactive-form event updates.",
+    "Make the four Vite catalogs’ remote Roboto stylesheet nonblocking with a CSP-compatible module load handler that covers both stylesheet/entry ordering races.",
+    "Keep catalog headings and subtitles on their initial local font to prevent a late Roboto download changing title line counts. Component previews continue to load Roboto."
+  ],
+  "catalogs": {
+    "html": {
+      "before": {
+        "summary": {
+          "themeReadyMs": 1215.2,
+          "controlsReadyMs": 1276.2,
+          "fontsReadyMs": 1832.1,
+          "allReadyMs": 1832.1,
+          "fcpMs": 248,
+          "lcpMs": 248,
+          "cls": 0,
+          "totalLayoutShift": 0,
+          "longTasks": 0,
+          "longTaskMs": 0,
+          "scriptMs": 158.047,
+          "taskMs": 611.321,
+          "heapBytes": 8477136,
+          "catalogHeadingMs": 248,
+          "jsRequests": 44,
+          "jsEncodedBytes": 199320,
+          "cssRequests": 1,
+          "cssEncodedBytes": 3428,
+          "fontRequests": 1,
+          "fontEncodedBytes": 349324
+        },
+        "runs": [
+          {
+            "fcpMs": 264,
+            "catalogHeadingMs": 264,
+            "themeReadyMs": 1203.1,
+            "controlsReadyMs": 1267.5,
+            "allReadyMs": 1831.9,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 248,
+            "catalogHeadingMs": 248,
+            "themeReadyMs": 1215.2,
+            "controlsReadyMs": 1279.9,
+            "allReadyMs": 1832.1,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 248,
+            "catalogHeadingMs": 248,
+            "themeReadyMs": 1217.1,
+            "controlsReadyMs": 1260.7,
+            "allReadyMs": 1833.6,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 248,
+            "catalogHeadingMs": 248,
+            "themeReadyMs": 1265.2,
+            "controlsReadyMs": 1326,
+            "allReadyMs": 1883,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 244,
+            "catalogHeadingMs": 244,
+            "themeReadyMs": 1211,
+            "controlsReadyMs": 1276.2,
+            "allReadyMs": 1824.8,
+            "cls": 0,
+            "hydratedHosts": 180
+          }
+        ]
+      },
+      "after": {
+        "summary": {
+          "themeReadyMs": 506.1,
+          "controlsReadyMs": 1230.3,
+          "fontsReadyMs": 1213.4,
+          "allReadyMs": 1237.5,
+          "fcpMs": 256,
+          "lcpMs": 256,
+          "cls": 0,
+          "totalLayoutShift": 0,
+          "longTasks": 0,
+          "longTaskMs": 0,
+          "scriptMs": 178.313,
+          "taskMs": 602.091,
+          "heapBytes": 6835868,
+          "catalogHeadingMs": 256,
+          "jsRequests": 44,
+          "jsEncodedBytes": 199551,
+          "cssRequests": 1,
+          "cssEncodedBytes": 3429,
+          "fontRequests": 1,
+          "fontEncodedBytes": 137148
+        },
+        "runs": [
+          {
+            "fcpMs": 256,
+            "catalogHeadingMs": 256,
+            "themeReadyMs": 503.7,
+            "controlsReadyMs": 1230.6,
+            "allReadyMs": 1238.8,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 252,
+            "catalogHeadingMs": 252,
+            "themeReadyMs": 506.1,
+            "controlsReadyMs": 1223.3,
+            "allReadyMs": 1229.4,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 256,
+            "catalogHeadingMs": 256,
+            "themeReadyMs": 503.9,
+            "controlsReadyMs": 1223.1,
+            "allReadyMs": 1230.5,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 256,
+            "catalogHeadingMs": 256,
+            "themeReadyMs": 509,
+            "controlsReadyMs": 1237.2,
+            "allReadyMs": 1244.8,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 260,
+            "catalogHeadingMs": 260,
+            "themeReadyMs": 508.1,
+            "controlsReadyMs": 1230.3,
+            "allReadyMs": 1237.5,
+            "cls": 0,
+            "hydratedHosts": 180
+          }
+        ]
+      },
+      "localUnthrottled": {
+        "summary": {
+          "themeReadyMs": 51.7,
+          "controlsReadyMs": 99.2,
+          "fontsReadyMs": 57.8,
+          "allReadyMs": 103,
+          "fcpMs": 24,
+          "lcpMs": 24,
+          "cls": 0,
+          "totalLayoutShift": 0,
+          "longTasks": 0,
+          "longTaskMs": 0,
+          "scriptMs": 30.882,
+          "taskMs": 116.462,
+          "heapBytes": 6815808,
+          "catalogHeadingMs": 24,
+          "jsRequests": 44,
+          "jsEncodedBytes": 199551,
+          "cssRequests": 1,
+          "cssEncodedBytes": 3429,
+          "fontRequests": 1,
+          "fontEncodedBytes": 137148
+        },
+        "runs": [
+          {
+            "fcpMs": 24,
+            "catalogHeadingMs": 24,
+            "themeReadyMs": 51.7,
+            "controlsReadyMs": 97.8,
+            "allReadyMs": 102.9,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 24,
+            "catalogHeadingMs": 24,
+            "themeReadyMs": 52.5,
+            "controlsReadyMs": 99.2,
+            "allReadyMs": 103.4,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 24,
+            "catalogHeadingMs": 24,
+            "themeReadyMs": 50.3,
+            "controlsReadyMs": 100,
+            "allReadyMs": 103,
+            "cls": 0,
+            "hydratedHosts": 180
+          }
+        ]
+      }
+    },
+    "react": {
+      "before": {
+        "summary": {
+          "themeReadyMs": 1347.1,
+          "controlsReadyMs": 1385,
+          "fontsReadyMs": 1934,
+          "allReadyMs": 1934,
+          "fcpMs": 352,
+          "lcpMs": 352,
+          "cls": 0,
+          "totalLayoutShift": 0,
+          "longTasks": 0,
+          "longTaskMs": 0,
+          "scriptMs": 181.429,
+          "taskMs": 629.787,
+          "heapBytes": 9106812,
+          "catalogHeadingMs": 352,
+          "jsRequests": 44,
+          "jsEncodedBytes": 245257,
+          "cssRequests": 1,
+          "cssEncodedBytes": 3501,
+          "fontRequests": 1,
+          "fontEncodedBytes": 349324
+        },
+        "runs": [
+          {
+            "fcpMs": 352,
+            "catalogHeadingMs": 352,
+            "themeReadyMs": 1344.6,
+            "controlsReadyMs": 1380.6,
+            "allReadyMs": 1934,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 348,
+            "catalogHeadingMs": 348,
+            "themeReadyMs": 1348.9,
+            "controlsReadyMs": 1384.2,
+            "allReadyMs": 1931.3,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 352,
+            "catalogHeadingMs": 352,
+            "themeReadyMs": 1347.1,
+            "controlsReadyMs": 1387.6,
+            "allReadyMs": 1945.3,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 356,
+            "catalogHeadingMs": 356,
+            "themeReadyMs": 1329.5,
+            "controlsReadyMs": 1389.2,
+            "allReadyMs": 1944,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 348,
+            "catalogHeadingMs": 348,
+            "themeReadyMs": 1350.1,
+            "controlsReadyMs": 1385,
+            "allReadyMs": 1931.4,
+            "cls": 0,
+            "hydratedHosts": 180
+          }
+        ]
+      },
+      "after": {
+        "summary": {
+          "themeReadyMs": 603.9,
+          "controlsReadyMs": 1328.4,
+          "fontsReadyMs": 1323.8,
+          "allReadyMs": 1336.5,
+          "fcpMs": 352,
+          "lcpMs": 352,
+          "cls": 0,
+          "totalLayoutShift": 0,
+          "longTasks": 0,
+          "longTaskMs": 0,
+          "scriptMs": 202.212,
+          "taskMs": 615.156,
+          "heapBytes": 7779112,
+          "catalogHeadingMs": 352,
+          "jsRequests": 44,
+          "jsEncodedBytes": 245498,
+          "cssRequests": 1,
+          "cssEncodedBytes": 3525,
+          "fontRequests": 1,
+          "fontEncodedBytes": 137148
+        },
+        "runs": [
+          {
+            "fcpMs": 360,
+            "catalogHeadingMs": 360,
+            "themeReadyMs": 609.6,
+            "controlsReadyMs": 1329.1,
+            "allReadyMs": 1339.4,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 352,
+            "catalogHeadingMs": 352,
+            "themeReadyMs": 604.1,
+            "controlsReadyMs": 1327.4,
+            "allReadyMs": 1334.6,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 352,
+            "catalogHeadingMs": 352,
+            "themeReadyMs": 603.9,
+            "controlsReadyMs": 1329.7,
+            "allReadyMs": 1337.5,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 352,
+            "catalogHeadingMs": 352,
+            "themeReadyMs": 601.1,
+            "controlsReadyMs": 1326.6,
+            "allReadyMs": 1334.3,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 356,
+            "catalogHeadingMs": 356,
+            "themeReadyMs": 601.2,
+            "controlsReadyMs": 1328.4,
+            "allReadyMs": 1336.5,
+            "cls": 0,
+            "hydratedHosts": 180
+          }
+        ]
+      },
+      "localUnthrottled": {
+        "summary": {
+          "themeReadyMs": 54,
+          "controlsReadyMs": 101.7,
+          "fontsReadyMs": 62.3,
+          "allReadyMs": 107.2,
+          "fcpMs": 32,
+          "lcpMs": 32,
+          "cls": 0,
+          "totalLayoutShift": 0,
+          "longTasks": 0,
+          "longTaskMs": 0,
+          "scriptMs": 37.72,
+          "taskMs": 122.413,
+          "heapBytes": 7403104,
+          "catalogHeadingMs": 32,
+          "jsRequests": 44,
+          "jsEncodedBytes": 245498,
+          "cssRequests": 1,
+          "cssEncodedBytes": 3525,
+          "fontRequests": 1,
+          "fontEncodedBytes": 137148
+        },
+        "runs": [
+          {
+            "fcpMs": 32,
+            "catalogHeadingMs": 32,
+            "themeReadyMs": 54,
+            "controlsReadyMs": 104.2,
+            "allReadyMs": 110.2,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 28,
+            "catalogHeadingMs": 28,
+            "themeReadyMs": 52.9,
+            "controlsReadyMs": 99.5,
+            "allReadyMs": 103.7,
+            "cls": 0,
+            "hydratedHosts": 180
+          },
+          {
+            "fcpMs": 32,
+            "catalogHeadingMs": 32,
+            "themeReadyMs": 54.3,
+            "controlsReadyMs": 101.7,
+            "allReadyMs": 107.2,
+            "cls": 0,
+            "hydratedHosts": 180
+          }
+        ]
+      }
+    },
+    "vue": {
+      "before": {
+        "summary": {
+          "themeReadyMs": 1299,
+          "controlsReadyMs": 1367.5,
+          "fontsReadyMs": 1955.9,
+          "allReadyMs": 1955.9,
+          "fcpMs": 304,
+          "lcpMs": 304,
+          "cls": 0,
+          "totalLayoutShift": 0,
+          "longTasks": 0,
+          "longTaskMs": 0,
+          "scriptMs": 171.861,
+          "taskMs": 588.812,
+          "heapBytes": 8830360,
+          "catalogHeadingMs": 304,
+          "jsRequests": 45,
+          "jsEncodedBytes": 233166,
+          "cssRequests": 1,
+          "cssEncodedBytes": 3663,
+          "fontRequests": 1,
+          "fontEncodedBytes": 349324
+        },
+        "runs": [
+          {
+            "fcpMs": 308,
+            "catalogHeadingMs": 308,
+            "themeReadyMs": 1310.3,
+            "controlsReadyMs": 1370.3,
+            "allReadyMs": 1966,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 304,
+            "catalogHeadingMs": 304,
+            "themeReadyMs": 1306.3,
+            "controlsReadyMs": 1367.5,
+            "allReadyMs": 1940.5,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 304,
+            "catalogHeadingMs": 304,
+            "themeReadyMs": 1299,
+            "controlsReadyMs": 1358,
+            "allReadyMs": 1955.1,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 308,
+            "catalogHeadingMs": 308,
+            "themeReadyMs": 1287.2,
+            "controlsReadyMs": 1374.7,
+            "allReadyMs": 1981.6,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 304,
+            "catalogHeadingMs": 304,
+            "themeReadyMs": 1255.9,
+            "controlsReadyMs": 1339.6,
+            "allReadyMs": 1955.9,
+            "cls": 0,
+            "hydratedHosts": 171
+          }
+        ]
+      },
+      "after": {
+        "summary": {
+          "themeReadyMs": 568.1,
+          "controlsReadyMs": 1313.9,
+          "fontsReadyMs": 1283.1,
+          "allReadyMs": 1320.7,
+          "fcpMs": 308,
+          "lcpMs": 308,
+          "cls": 0,
+          "totalLayoutShift": 0,
+          "longTasks": 0,
+          "longTaskMs": 0,
+          "scriptMs": 194.249,
+          "taskMs": 591.526,
+          "heapBytes": 8795452,
+          "catalogHeadingMs": 308,
+          "jsRequests": 45,
+          "jsEncodedBytes": 233408,
+          "cssRequests": 1,
+          "cssEncodedBytes": 3686,
+          "fontRequests": 1,
+          "fontEncodedBytes": 137148
+        },
+        "runs": [
+          {
+            "fcpMs": 312,
+            "catalogHeadingMs": 312,
+            "themeReadyMs": 571.1,
+            "controlsReadyMs": 1327.8,
+            "allReadyMs": 1335.2,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 308,
+            "catalogHeadingMs": 308,
+            "themeReadyMs": 568.1,
+            "controlsReadyMs": 1313.9,
+            "allReadyMs": 1320.7,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 308,
+            "catalogHeadingMs": 308,
+            "themeReadyMs": 569.3,
+            "controlsReadyMs": 1314.3,
+            "allReadyMs": 1321.6,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 304,
+            "catalogHeadingMs": 304,
+            "themeReadyMs": 566.8,
+            "controlsReadyMs": 1312,
+            "allReadyMs": 1318.9,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 304,
+            "catalogHeadingMs": 304,
+            "themeReadyMs": 567.3,
+            "controlsReadyMs": 1306.5,
+            "allReadyMs": 1313.9,
+            "cls": 0,
+            "hydratedHosts": 171
+          }
+        ]
+      },
+      "localUnthrottled": {
+        "summary": {
+          "themeReadyMs": 50.3,
+          "controlsReadyMs": 99.2,
+          "fontsReadyMs": 61.2,
+          "allReadyMs": 103.1,
+          "fcpMs": 28,
+          "lcpMs": 28,
+          "cls": 0,
+          "totalLayoutShift": 0,
+          "longTasks": 0,
+          "longTaskMs": 0,
+          "scriptMs": 35.386,
+          "taskMs": 118.914,
+          "heapBytes": 7141528,
+          "catalogHeadingMs": 28,
+          "jsRequests": 45,
+          "jsEncodedBytes": 233408,
+          "cssRequests": 1,
+          "cssEncodedBytes": 3686,
+          "fontRequests": 1,
+          "fontEncodedBytes": 137148
+        },
+        "runs": [
+          {
+            "fcpMs": 36,
+            "catalogHeadingMs": 36,
+            "themeReadyMs": 51.5,
+            "controlsReadyMs": 103.2,
+            "allReadyMs": 105.9,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 28,
+            "catalogHeadingMs": 28,
+            "themeReadyMs": 49.8,
+            "controlsReadyMs": 99.2,
+            "allReadyMs": 103.1,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 28,
+            "catalogHeadingMs": 28,
+            "themeReadyMs": 50.3,
+            "controlsReadyMs": 98.1,
+            "allReadyMs": 100.3,
+            "cls": 0,
+            "hydratedHosts": 171
+          }
+        ]
+      }
+    },
+    "svelte": {
+      "before": {
+        "summary": {
+          "themeReadyMs": 1253.2,
+          "controlsReadyMs": 1339.6,
+          "fontsReadyMs": 1922.8,
+          "allReadyMs": 1922.8,
+          "fcpMs": 280,
+          "lcpMs": 280,
+          "cls": 0,
+          "totalLayoutShift": 0,
+          "longTasks": 0,
+          "longTaskMs": 0,
+          "scriptMs": 175.226,
+          "taskMs": 590.862,
+          "heapBytes": 8696900,
+          "catalogHeadingMs": 280,
+          "jsRequests": 45,
+          "jsEncodedBytes": 222985,
+          "cssRequests": 1,
+          "cssEncodedBytes": 3684,
+          "fontRequests": 1,
+          "fontEncodedBytes": 349324
+        },
+        "runs": [
+          {
+            "fcpMs": 280,
+            "catalogHeadingMs": 280,
+            "themeReadyMs": 1251.1,
+            "controlsReadyMs": 1327.4,
+            "allReadyMs": 1947,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 280,
+            "catalogHeadingMs": 280,
+            "themeReadyMs": 1250.1,
+            "controlsReadyMs": 1339.6,
+            "allReadyMs": 1919.4,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 284,
+            "catalogHeadingMs": 284,
+            "themeReadyMs": 1253.2,
+            "controlsReadyMs": 1335.7,
+            "allReadyMs": 1941.5,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 280,
+            "catalogHeadingMs": 280,
+            "themeReadyMs": 1288.6,
+            "controlsReadyMs": 1356.1,
+            "allReadyMs": 1922.6,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 280,
+            "catalogHeadingMs": 280,
+            "themeReadyMs": 1298.5,
+            "controlsReadyMs": 1346.5,
+            "allReadyMs": 1922.8,
+            "cls": 0,
+            "hydratedHosts": 171
+          }
+        ]
+      },
+      "after": {
+        "summary": {
+          "themeReadyMs": 546.6,
+          "controlsReadyMs": 1298.3,
+          "fontsReadyMs": 1268.2,
+          "allReadyMs": 1304,
+          "fcpMs": 288,
+          "lcpMs": 288,
+          "cls": 0,
+          "totalLayoutShift": 0,
+          "longTasks": 0,
+          "longTaskMs": 0,
+          "scriptMs": 188.733,
+          "taskMs": 589.415,
+          "heapBytes": 8674376,
+          "catalogHeadingMs": 288,
+          "jsRequests": 45,
+          "jsEncodedBytes": 223228,
+          "cssRequests": 1,
+          "cssEncodedBytes": 3705,
+          "fontRequests": 1,
+          "fontEncodedBytes": 137148
+        },
+        "runs": [
+          {
+            "fcpMs": 288,
+            "catalogHeadingMs": 288,
+            "themeReadyMs": 546.6,
+            "controlsReadyMs": 1291.7,
+            "allReadyMs": 1299.3,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 284,
+            "catalogHeadingMs": 284,
+            "themeReadyMs": 543.1,
+            "controlsReadyMs": 1289.5,
+            "allReadyMs": 1296.6,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 284,
+            "catalogHeadingMs": 284,
+            "themeReadyMs": 542.8,
+            "controlsReadyMs": 1298.3,
+            "allReadyMs": 1304,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 288,
+            "catalogHeadingMs": 288,
+            "themeReadyMs": 551.6,
+            "controlsReadyMs": 1303,
+            "allReadyMs": 1310.1,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 288,
+            "catalogHeadingMs": 288,
+            "themeReadyMs": 547.9,
+            "controlsReadyMs": 1301.5,
+            "allReadyMs": 1308.7,
+            "cls": 0,
+            "hydratedHosts": 171
+          }
+        ]
+      },
+      "localUnthrottled": {
+        "summary": {
+          "themeReadyMs": 51.4,
+          "controlsReadyMs": 99.5,
+          "fontsReadyMs": 60.8,
+          "allReadyMs": 101.6,
+          "fcpMs": 36,
+          "lcpMs": 36,
+          "cls": 0,
+          "totalLayoutShift": 0,
+          "longTasks": 0,
+          "longTaskMs": 0,
+          "scriptMs": 35.002,
+          "taskMs": 115.955,
+          "heapBytes": 7045412,
+          "catalogHeadingMs": 36,
+          "jsRequests": 45,
+          "jsEncodedBytes": 223228,
+          "cssRequests": 1,
+          "cssEncodedBytes": 3705,
+          "fontRequests": 1,
+          "fontEncodedBytes": 137148
+        },
+        "runs": [
+          {
+            "fcpMs": 28,
+            "catalogHeadingMs": 28,
+            "themeReadyMs": 48.5,
+            "controlsReadyMs": 98.1,
+            "allReadyMs": 101.3,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 36,
+            "catalogHeadingMs": 36,
+            "themeReadyMs": 51.4,
+            "controlsReadyMs": 99.5,
+            "allReadyMs": 101.6,
+            "cls": 0,
+            "hydratedHosts": 171
+          },
+          {
+            "fcpMs": 36,
+            "catalogHeadingMs": 36,
+            "themeReadyMs": 51.9,
+            "controlsReadyMs": 101,
+            "allReadyMs": 103.7,
+            "cls": 0,
+            "hydratedHosts": 171
+          }
+        ]
+      }
+    },
+    "angular": {
+      "before": {
+        "summary": {
+          "themeReadyMs": 1018.3,
+          "controlsReadyMs": 1077.9,
+          "fontsReadyMs": 1742,
+          "allReadyMs": 1742.5,
+          "fcpMs": 1040,
+          "lcpMs": 1040,
+          "cls": 0,
+          "totalLayoutShift": 0,
+          "longTasks": 1,
+          "longTaskMs": 391,
+          "scriptMs": 215.842,
+          "taskMs": 664.178,
+          "heapBytes": 11681660,
+          "catalogHeadingMs": 1040,
+          "jsRequests": 4,
+          "jsEncodedBytes": 215726,
+          "cssRequests": 1,
+          "cssEncodedBytes": 3236,
+          "fontRequests": 1,
+          "fontEncodedBytes": 349324
+        },
+        "runs": [
+          {
+            "fcpMs": 1044,
+            "catalogHeadingMs": 1044,
+            "themeReadyMs": 1024.1,
+            "controlsReadyMs": 1085.9,
+            "allReadyMs": 1751.6,
+            "cls": 0,
+            "hydratedHosts": 183
+          },
+          {
+            "fcpMs": 1040,
+            "catalogHeadingMs": 1040,
+            "themeReadyMs": 1018.3,
+            "controlsReadyMs": 1074.8,
+            "allReadyMs": 1742,
+            "cls": 0,
+            "hydratedHosts": 183
+          },
+          {
+            "fcpMs": 1036,
+            "catalogHeadingMs": 1036,
+            "themeReadyMs": 1016.5,
+            "controlsReadyMs": 1074.3,
+            "allReadyMs": 1742.5,
+            "cls": 0,
+            "hydratedHosts": 183
+          },
+          {
+            "fcpMs": 1040,
+            "catalogHeadingMs": 1040,
+            "themeReadyMs": 1017,
+            "controlsReadyMs": 1077.9,
+            "allReadyMs": 1741.9,
+            "cls": 0,
+            "hydratedHosts": 183
+          },
+          {
+            "fcpMs": 1052,
+            "catalogHeadingMs": 1052,
+            "themeReadyMs": 1029.4,
+            "controlsReadyMs": 1089.7,
+            "allReadyMs": 1750.6,
+            "cls": 0,
+            "hydratedHosts": 183
+          }
+        ]
+      },
+      "after": {
+        "summary": {
+          "themeReadyMs": 919.5,
+          "controlsReadyMs": 982.3,
+          "fontsReadyMs": 1220.5,
+          "allReadyMs": 1220.6,
+          "fcpMs": 944,
+          "lcpMs": 944,
+          "cls": 0,
+          "totalLayoutShift": 0,
+          "longTasks": 1,
+          "longTaskMs": 319,
+          "scriptMs": 200.185,
+          "taskMs": 498.55,
+          "heapBytes": 7006052,
+          "catalogHeadingMs": 944,
+          "jsRequests": 3,
+          "jsEncodedBytes": 203186,
+          "cssRequests": 1,
+          "cssEncodedBytes": 3236,
+          "fontRequests": 1,
+          "fontEncodedBytes": 137148
+        },
+        "runs": [
+          {
+            "fcpMs": 940,
+            "catalogHeadingMs": 940,
+            "themeReadyMs": 919,
+            "controlsReadyMs": 983,
+            "allReadyMs": 1220.6,
+            "cls": 0,
+            "hydratedHosts": 183
+          },
+          {
+            "fcpMs": 944,
+            "catalogHeadingMs": 944,
+            "themeReadyMs": 921.8,
+            "controlsReadyMs": 979,
+            "allReadyMs": 1223.3,
+            "cls": 0,
+            "hydratedHosts": 183
+          },
+          {
+            "fcpMs": 940,
+            "catalogHeadingMs": 940,
+            "themeReadyMs": 918,
+            "controlsReadyMs": 972.4,
+            "allReadyMs": 1218.5,
+            "cls": 0,
+            "hydratedHosts": 183
+          },
+          {
+            "fcpMs": 952,
+            "catalogHeadingMs": 952,
+            "themeReadyMs": 929.7,
+            "controlsReadyMs": 988.3,
+            "allReadyMs": 1236.2,
+            "cls": 0,
+            "hydratedHosts": 183
+          },
+          {
+            "fcpMs": 944,
+            "catalogHeadingMs": 944,
+            "themeReadyMs": 919.5,
+            "controlsReadyMs": 982.3,
+            "allReadyMs": 1219.2,
+            "cls": 0,
+            "hydratedHosts": 183
+          }
+        ]
+      },
+      "localUnthrottled": {
+        "summary": {
+          "themeReadyMs": 92.6,
+          "controlsReadyMs": 106.8,
+          "fontsReadyMs": 101.8,
+          "allReadyMs": 110.1,
+          "fcpMs": 100,
+          "lcpMs": 100,
+          "cls": 0,
+          "totalLayoutShift": 0,
+          "longTasks": 1,
+          "longTaskMs": 73,
+          "scriptMs": 46.201,
+          "taskMs": 117.727,
+          "heapBytes": 6966708,
+          "catalogHeadingMs": 100,
+          "jsRequests": 3,
+          "jsEncodedBytes": 203186,
+          "cssRequests": 1,
+          "cssEncodedBytes": 3236,
+          "fontRequests": 1,
+          "fontEncodedBytes": 137148
+        },
+        "runs": [
+          {
+            "fcpMs": 104,
+            "catalogHeadingMs": 104,
+            "themeReadyMs": 93,
+            "controlsReadyMs": 106.8,
+            "allReadyMs": 110.1,
+            "cls": 0,
+            "hydratedHosts": 183
+          },
+          {
+            "fcpMs": 100,
+            "catalogHeadingMs": 100,
+            "themeReadyMs": 92.6,
+            "controlsReadyMs": 106.3,
+            "allReadyMs": 108.7,
+            "cls": 0,
+            "hydratedHosts": 183
+          },
+          {
+            "fcpMs": 100,
+            "catalogHeadingMs": 100,
+            "themeReadyMs": 91.4,
+            "controlsReadyMs": 108.5,
+            "allReadyMs": 111.2,
+            "cls": 0,
+            "hydratedHosts": 183
+          }
+        ]
+      }
+    }
+  },
+  "validation": {
+    "productionStartupCases": 22,
+    "scenarios": "Five catalogs and a nested relative deployment: desktop, delayed local CSS/icon font, and early theme click before font release. Four additional real-Roboto stylesheet/font cases at wrapping-boundary widths.",
+    "maxInitialCls": 0,
+    "robotoRegression": {
+      "baselineFirstSectionShiftPx": {
+        "html": 40,
+        "react": 35,
+        "vue": 35,
+        "svelte": 35
+      },
+      "wrappingWidthsPx": {
+        "html": 547,
+        "react": 426,
+        "vue": 384,
+        "svelte": 416
+      },
+      "afterCls": {
+        "html": 0,
+        "react": 0,
+        "vue": 0,
+        "svelte": 0
+      },
+      "actualLoadedRobotoWeights": [
+        400,
+        500
+      ]
+    },
+    "htmlFirstPaintTests": 5,
+    "angularInteractions": "Theme; input/model/form patch round trips; checkbox and switch; native form reset; dialog open and Cancel; menu toggle; bottom sheet Escape and its Angular close listener",
+    "font": {
+      "beforeBytes": 349324,
+      "afterBytes": 137148,
+      "ligatures": 165,
+      "glyphs": 285,
+      "variableAxes": [
+        "FILL",
+        "GRAD",
+        "opsz",
+        "wght"
+      ],
+      "shapeAndOutlineComparisons": 8910,
+      "axisLocations": 54,
+      "chromiumPixelComparisons": "165 icons × 6 axis configurations, exactly equal to the original full font",
+      "renderedCatalogCoverage": "All five production catalogs checked through initial rendering, password, switch, rail and date-picker states",
+      "reproducibility": "Deterministic generator --check passed on final sources"
+    },
+    "fontGeometry": {
+      "measuredBoxes": 37,
+      "maxShiftPx": 0
+    },
+    "preloadTests": "Static imports and export aliases; unknown tag rejection; grouped entries deduplicated; native lazy filenames; absolute/relative URLs; source maps",
+    "independentAdversarialReview": "PASS after reproducing and repairing the real-Roboto title-wrapping shifts",
+    "ci": "Source extraction, reproducible font generation, original/subset pixel comparison and rendered catalog glyph coverage are required in CI"
+  },
+  "limits": [
+    "These optimizations target the five private catalogs and their build tooling. They are not an automatic speedup of every application importing AWC UI.",
+    "FCP in the four Vite catalogs remained within 0–8 ms of the preceding build in the slow-profile medians. Earlier actionable controls and complete-control/font readiness are the major measured improvements. Angular FCP also improved.",
+    "The local unthrottled figures exclude internet latency and CPU throttling. They must not be presented as production network guarantees or as warm-cache measurements.",
+    "Font subsetting covers the current catalogs and production Core literals, not arbitrary consumer-supplied icon names. Newly assembled runtime names require explicit source coverage and regeneration.",
+    "Zoneless Angular is enabled in this catalog only. Applications changing state outside Angular’s notification mechanisms need their own change-detection integration."
+  ]
+}

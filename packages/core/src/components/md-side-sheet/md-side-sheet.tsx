@@ -1,3 +1,4 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { createId } from '../../utils/id';
 import { Component, Host, h, Prop, Event, EventEmitter, Method, Watch, State, Element } from '@stencil/core';
 import { OverlayLifecycle } from '../../utils/overlay-lifecycle';
@@ -23,7 +24,7 @@ import { OverlayLifecycle } from '../../utils/overlay-lifecycle';
  */
 @Component({
   tag: 'md-side-sheet',
-  styleUrl: 'md-side-sheet.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-side-sheet.css'],
   shadow: true,
 })
 export class MdSideSheet {
@@ -98,6 +99,7 @@ export class MdSideSheet {
   // ── Lifecycle ───────────────────────────────────────────
 
   connectedCallback() {
+    reconnectInteractionMotion(this);
     this.overlayLifecycle.connected();
     this.syncActions();
     // React can append children after the host connects. The actions slot is
@@ -121,19 +123,25 @@ export class MdSideSheet {
   }
 
   componentWillLoad() {
+    beginInitialInteractionMotion(this);
     this.syncActions();
   }
 
   componentDidLoad() {
-    this.syncActions();
-    this.overlayLifecycle.loaded();
+    try {
+      this.syncActions();
+      this.overlayLifecycle.loaded();
 
-    if (this.open) {
-      this.onOpenChange(true);
+      if (this.open) {
+        this.onOpenChange(true);
+      }
+} finally {
+      completeInitialInteractionMotion(this);
     }
   }
 
   disconnectedCallback() {
+    disconnectInteractionMotion(this);
     this.slotObserver?.disconnect();
     this.slotObserver = undefined;
     this.cancelOpenFocus();
@@ -453,5 +461,14 @@ export class MdSideSheet {
         </div>
       </Host>
     );
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }

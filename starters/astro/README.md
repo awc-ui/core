@@ -11,8 +11,10 @@ chart, a small table, and a dark-mode switch.
 
 ## How it's wired
 
-- **Tokens** — `src/pages/index.astro` imports `@awc-ui/tokens/tokens.css` so
-  the `--md-sys-*` custom properties are available document-wide.
+- **Tokens** — `src/pages/index.astro` imports `@awc-ui/core/css/tokens.css` so
+  the `--md-sys-*` custom properties and pre-hydration visibility rules are
+  available document-wide. Server-rendered components remain visible; client-only
+  components become visible when their styles are ready.
 - **SSR / SSG** — `src/middleware.ts` post-processes every rendered page with
   `@awc-ui/core/hydrate` (`renderToString`) to inject Declarative Shadow DOM
   for each `<md-*>` element at build time, so the first paint is styled.

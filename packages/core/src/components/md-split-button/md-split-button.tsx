@@ -1,9 +1,10 @@
+import { beginInitialInteractionMotion, completeInitialInteractionMotion, initialInteractionMotionRendered, reconnectInteractionMotion, disconnectInteractionMotion, prepareInteractionUpdate } from '../../utils/initial-motion';
 import { Component, Host, h, Prop, Event, EventEmitter, Element } from '@stencil/core';
 import { triggerRipple } from '../../utils/ripple';
 
 @Component({
   tag: 'md-split-button',
-  styleUrl: 'md-split-button.css',
+  styleUrls: ['../../utils/initial-motion.css', 'md-split-button.css'],
   shadow: true,
 })
 export class MdSplitButton {
@@ -81,17 +82,21 @@ export class MdSplitButton {
   }
 
   componentDidLoad() {
-    if (
-      typeof window !== 'undefined' &&
-      window.__STENCIL_DEV_MODE__ !== false
-    ) {
-      if (!this.label && !this.el.hasAttribute('aria-label')) {
-        console.warn(
-          `[md-split-button] WCAG 1.1.1: Leading button is missing an accessible name. ` +
-          `Provide a label prop or aria-label attribute.`,
-          this.el,
-        );
+    try {
+      if (
+        typeof window !== 'undefined' &&
+        window.__STENCIL_DEV_MODE__ !== false
+      ) {
+        if (!this.label && !this.el.hasAttribute('aria-label')) {
+          console.warn(
+            `[md-split-button] WCAG 1.1.1: Leading button is missing an accessible name. ` +
+            `Provide a label prop or aria-label attribute.`,
+            this.el,
+          );
+        }
       }
+} finally {
+      completeInitialInteractionMotion(this);
     }
   }
 
@@ -195,5 +200,26 @@ export class MdSplitButton {
         </button>
       </Host>
     );
+  }
+
+  componentWillLoad() {
+    beginInitialInteractionMotion(this);
+  }
+
+  componentDidRender() {
+    initialInteractionMotionRendered(this);
+  }
+
+  connectedCallback() {
+    reconnectInteractionMotion(this);
+  }
+
+  disconnectedCallback() {
+    disconnectInteractionMotion(this);
+  }
+
+  componentShouldUpdate() {
+    prepareInteractionUpdate(this);
+    return true;
   }
 }
