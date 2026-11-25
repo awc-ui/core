@@ -8,7 +8,9 @@
     "dev": "vite",
     "build": "vite build",
     "test:first-paint": "node --test scripts/first-paint.test.mjs",
-    "preview": "vite preview"
+    "test:ssr-preview": "node --test scripts/ssr-preview.test.mjs",
+    "preview": "vite preview",
+    "preview:ssr": "node scripts/ssr-preview.mjs"
   },
   "dependencies": {
     "@awc-ui/core": "workspace:*",

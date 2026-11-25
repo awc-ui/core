@@ -101,6 +101,7 @@ jobs:
           node --test scripts/vite-awc-runtime.test.mjs
           pnpm --filter @awc-ui/test-html build
           AWC_FIRST_PAINT_BUILD=1 pnpm --filter @awc-ui/test-html test:first-paint
+          pnpm --filter @awc-ui/test-html test:ssr-preview
 
       - name: Spec tests (with coverage)
         # Runs jest directly via jest.coverage.config.cjs — that file's header

@@ -13,7 +13,8 @@ const requireCore = createRequire(new URL('../packages/core/package.json', impor
 const { build } = requireCore('esbuild');
 const { renderToString } = requireCore('./hydrate/index.js');
 const puppeteer = createRequire(new URL('../apps/test-html/package.json', import.meta.url))('puppeteer');
-const components = ['switch', 'checkbox', 'radio', 'button', 'icon-button', 'card', 'text-field', 'multi-select', 'skeleton'];
+const components = ['switch', 'checkbox', 'radio', 'button', 'icon-button', 'card', 'text-field', 'multi-select', 'skeleton',
+  'date-picker', 'select', 'select-option', 'autocomplete'];
 const direct = (await build({ stdin: {
   contents: components.map(name => `import '@awc-ui/core/components/md-${name}';`).join('\n'),
   resolveDir: resolve(root, 'apps/example-sveltekit'),
@@ -37,7 +38,77 @@ function fixture(selected) {
     <md-switch id="client-override" selected="${checked}"></md-switch>
     <md-switch id="optional" required="${checked}" disabled="${checked}"></md-switch>
     <md-switch id="missing" selected="${checked}"></md-switch>
-    <md-switch id="malformed" selected="${checked}"></md-switch>`;
+    <md-switch id="malformed" selected="${checked}"></md-switch>
+    <md-date-picker id="picker" label="Date" value="2026-06-08"></md-date-picker>
+    <md-select id="select" label="Color"><md-select-option value="red">Red</md-select-option></md-select>
+    <md-autocomplete id="autocomplete" label="Search" clearable></md-autocomplete>`;
+}
+
+// Keep references from the server response. A successful on-client re-creation
+// would otherwise mask class ownership bugs in the adoption path.
+function captureNestedHosts() {
+  const children = {
+    date: ['picker', '[part="field"]', 'md-date-picker__textfield'],
+    calendar: ['picker', '[part="calendar-button"]', 'md-date-picker__calendar-button'],
+    color: ['select', '[part="field"]', 'md-select__field'],
+    menu: ['select', '[part="menu"]', null],
+    clear: ['autocomplete', '[part="clear"]', 'md-autocomplete__clear'],
+  };
+  window.nestedHosts = {};
+  for (const [name, [id, selector, parentClass]] of Object.entries(children)) {
+    const parent = document.getElementById(id);
+    const child = parent.shadowRoot.querySelector(selector);
+    nestedHosts[name] = {parent, selector, parentClass, child, shadow: child.shadowRoot};
+  }
+}
+
+async function assertNestedState(page, runtime, phase) {
+  const changed = phase === 'updated';
+  const observed = await page.evaluate(() => {
+    const state = {};
+    for (const [name, {parent, selector, parentClass, child, shadow}] of Object.entries(nestedHosts)) {
+      state[name] = {tag: child.localName, parentScope: `sc-${parent.localName}`, parentClass, classes: [...child.classList],
+        adopted: parent.shadowRoot.querySelector(selector) === child && child.shadowRoot === shadow};
+    }
+    return state;
+  });
+  for (const {tag, classes, parentClass, parentScope, adopted} of Object.values(observed)) {
+    const context = `${runtime} ${phase} ${parentClass ?? tag}: ${classes.join(' ')}`;
+    assert(adopted, context);
+    const stable = [tag, 'hydrated', `sc-${tag}`, parentScope, parentClass].filter(Boolean);
+    for (const token of stable) assert(classes.includes(token), `${context} missing ${token}`);
+  }
+  for (const [field, floating] of [[observed.date, !changed], [observed.color, changed]]) {
+    for (const [modifier, expected] of [['outlined', !changed], ['filled', changed], ['floating', floating]]) {
+      assert.equal(field.classes.includes(`md-text-field--${modifier}`), expected,
+        `${runtime} ${phase} ${field.parentClass} modifier ${modifier}: ${field.classes.join(' ')}`);
+    }
+  }
+  assert(observed.calendar.classes.includes('md-icon-button--standard'));
+  if (phase !== 'server') assert(observed.calendar.classes.includes('client-theme'), 'Preserve classes added before upgrade');
+  assert(observed.menu.classes.includes('md-menu--baseline'));
+  assert(observed.clear.classes.includes('md-icon-button--xs'));
+  assert.equal(observed.clear.classes.includes('md-autocomplete__clear--hidden'), phase === 'server' || changed,
+    `${runtime} ${phase}: the parent must be able to remove its own obsolete class`);
+}
+
+async function updateNestedParents(page, changed) {
+  await page.evaluate(changed => {
+    const picker = document.getElementById('picker');
+    const select = document.getElementById('select');
+    picker.fieldVariant = select.variant = changed ? 'filled' : 'outlined';
+    picker.value = changed ? '' : '2026-06-08';
+    select.value = changed ? 'red' : '';
+    document.getElementById('autocomplete').value = changed ? '' : 'client';
+  }, changed);
+  // Wait on the rendered inputs and outline elements, independently of classes.
+  await page.waitForFunction(changed => {
+    const {date: {child: date}, color: {child: color}, clear: {child: clear}} = nestedHosts;
+    return [date, color].every(field => Boolean(field.shadowRoot.querySelector('fieldset')) === !changed) &&
+      !!date.shadowRoot.querySelector('input').value === !changed &&
+      color.shadowRoot.querySelector('input').value === (changed ? 'Red' : '') &&
+      clear.hasAttribute('aria-hidden') === changed;
+  }, {}, changed);
 }
 const serverPages = new Map();
 for (const selected of [true, false]) {
@@ -47,7 +118,7 @@ for (const selected of [true, false]) {
   serverPages.set(selected, result.html);
 }
 const bytes = [...serverPages.values()].join('');
-const withoutAnnotations = bytes.replace(/ s-attrs="[^"]*"/g, '');
+const withoutAnnotations = bytes.replace(/ (?:s-attrs|c-class)="[^"]*"/g, '');
 console.log(`SSR ownership metadata: ${Buffer.byteLength(bytes) - Buffer.byteLength(withoutAnnotations)} raw bytes, ${gzipSync(bytes).length - gzipSync(withoutAnnotations).length} gzip bytes for ${[...bytes.matchAll(/ s-id=/g)].length} hosts`);
 
 const server = createServer(async (request, response) => {
@@ -73,7 +144,11 @@ try {
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(`http://127.0.0.1:${server.address().port}/`);
     await page.setContent(serverPages.get(serverSelected));
+    await page.evaluate(captureNestedHosts);
+    await assertNestedState(page, runtime, 'server');
     await page.evaluate(selected => {
+      document.getElementById('autocomplete').value = 'client';
+      document.getElementById('picker').shadowRoot.querySelector('[part="calendar-button"]').classList.add('client-theme');
       window.originalHosts = Array.from(document.body.children);
       window.originalShadows = originalHosts.map(host => host.shadowRoot);
       window.changes = []; window.renderCounts = {};
@@ -110,6 +185,12 @@ try {
     if (runtime === 'direct') await page.addScriptTag({url:'/direct.js'});
     else await page.addScriptTag({type:'module',content:"import {defineCustomElements} from '/core/loader/index.mjs'; defineCustomElements();"});
     await page.waitForFunction(() => originalHosts.every(host => host.hasAttribute('data-awc-motion-ready')));
+    await page.waitForFunction(() => Object.values(nestedHosts).every(({child}) => child.hasAttribute('data-awc-motion-ready')));
+    await assertNestedState(page, runtime, 'adopted');
+    for (const changed of [true, false]) {
+      await updateNestedParents(page, changed);
+      await assertNestedState(page, runtime, changed ? 'updated' : 'restored');
+    }
     const state = await page.evaluate(() => ({
       hosts:originalHosts.map((host,index) => ({id:host.id, selected:host.selected, checked:host.checked, aria:host.getAttribute('aria-checked') || host.getAttribute('aria-pressed'), classes:host.className,
         same:host === document.body.children[index] && host.shadowRoot === originalShadows[index], metadata:host.hasAttribute('s-attrs')})),
@@ -164,7 +245,7 @@ try {
     await page.waitForFunction(() => !document.querySelector('#face').matches(':disabled'));
     assert.equal(await page.$eval('#face', face => new FormData(face.closest('form')).get('choice')),'on');
     assert.deepEqual(errors, []);
-    console.log(`PASS ${runtime} SSR ${serverSelected} → client ${!serverSelected}: identity, properties, presentation, consumer overrides, fallback, first input`);
+    console.log(`PASS ${runtime} SSR ${serverSelected} → client ${!serverSelected}: identity, properties, nested parent/child classes and updates, consumer overrides, fallback, first input`);
     await page.close();
   }
   for (const runtime of ['direct','lazy']) {

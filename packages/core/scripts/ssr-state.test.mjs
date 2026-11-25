@@ -5,6 +5,19 @@ import { renderToString } from '../hydrate/index.mjs';
 
 const { JSDOM } = createRequire(import.meta.url)('jsdom');
 
+test('loading controls render nested indicators without a browser registry on repeated SSR requests', async () => {
+  for (let request = 0; request < 2; request++) {
+    for (const tag of ['md-button', 'md-select', 'md-multi-select', 'md-autocomplete', 'md-search']) {
+      const attributes = tag === 'md-search' ? 'loading trigger="bar"' : 'loading';
+      const doc = await render(`<${tag} ${attributes}></${tag}>`);
+      const host = doc.querySelector(tag);
+      const indicators = deepAll(shadow(host), 'md-loading-indicator');
+      assert(indicators.length > 0, `${tag} must include its loading state in server HTML`);
+      for (const indicator of indicators) assert(shadow(indicator).querySelector('.md-loading-indicator__shape'));
+    }
+  }
+});
+
 // Inspect the delivered HTML without registering custom elements or adopting
 // DSD. A later client render must not be able to repair a failing assertion.
 async function render(html, beforeHydrate) {

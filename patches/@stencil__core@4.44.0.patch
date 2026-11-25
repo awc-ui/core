@@ -1,5 +1,5 @@
 diff --git a/internal/client/index.js b/internal/client/index.js
-index 426c936a34ec6347332acbff81409a77215c455f..5c936d058bab2ebb401143c35fa65627d6157a50 100644
+index 426c936a34ec6347332acbff81409a77215c455f..6c5e77be9e40b3d89b06690cc123d5ad035d243b 100644
 --- a/internal/client/index.js
 +++ b/internal/client/index.js
 @@ -1364,6 +1364,29 @@ var initializeClientHydrate = (hostElm, tagName, hostId, hostRef) => {
@@ -32,7 +32,20 @@ index 426c936a34ec6347332acbff81409a77215c455f..5c936d058bab2ebb401143c35fa65627
    let scopeId2;
    if (BUILD14.scoped) {
      const cmpMeta = hostRef.$cmpMeta$;
-@@ -2348,7 +2371,7 @@ var parsePropertyValue = (propValue, propType, isFormAssociated) => {
+@@ -1534,8 +1557,11 @@ var clientHydrate = (parentVNode, childRenderNodes, slotNodes, shadowRootNodes,
+           $elm$: node,
+           // If we don't add the initial classes to the VNode, the first `vdom-render.ts` patch
+           // won't try to reconcile them. Classes set on the node will be blown away.
+-          $attrs$: { class: node.className || "" }
++          // Nested hosts have their own Host classes. Only the classes
++          // authored by this parent belong in its old VDOM.
++          $attrs$: { class: node.getAttribute("c-class") ?? (node.className || "") }
+         });
++        node.removeAttribute("c-class");
+         childRenderNodes.push(childVNode);
+         node.removeAttribute(HYDRATE_CHILD_ID);
+         if (!parentVNode.$children$) {
+@@ -2348,7 +2374,7 @@ var parsePropertyValue = (propValue, propType, isFormAssociated) => {
    if (propValue != null && !isComplexType(propValue)) {
      if (BUILD15.propBoolean && propType & 4 /* Boolean */) {
        if (BUILD15.formAssociated && isFormAssociated && typeof propValue === "string") {
@@ -41,7 +54,7 @@ index 426c936a34ec6347332acbff81409a77215c455f..5c936d058bab2ebb401143c35fa65627
        } else {
          return propValue === "false" ? false : propValue === "" || !!propValue;
        }
-@@ -2418,7 +2441,7 @@ var setAccessor = (elm, memberName, oldValue, newValue, isSvg, flags, initialRen
+@@ -2418,7 +2444,7 @@ var setAccessor = (elm, memberName, oldValue, newValue, isSvg, flags, initialRen
      const classList = elm.classList;
      const oldClasses = parseClassList(oldValue);
      let newClasses = parseClassList(newValue);
@@ -50,7 +63,7 @@ index 426c936a34ec6347332acbff81409a77215c455f..5c936d058bab2ebb401143c35fa65627
        const scopeId2 = elm["s-sc"] || elm["s-si"];
        newClasses.push(scopeId2);
        oldClasses.forEach((c) => {
-@@ -2533,7 +2556,7 @@ var setAccessor = (elm, memberName, oldValue, newValue, isSvg, flags, initialRen
+@@ -2533,7 +2559,7 @@ var setAccessor = (elm, memberName, oldValue, newValue, isSvg, flags, initialRen
        }
      }
      if (newValue == null || newValue === false) {
@@ -59,7 +72,7 @@ index 426c936a34ec6347332acbff81409a77215c455f..5c936d058bab2ebb401143c35fa65627
          if (BUILD18.vdomXlink && xlink) {
            elm.removeAttributeNS(XLINK_NS, memberName);
          } else {
-@@ -3071,6 +3094,15 @@ var renderVdom = (hostRef, renderFnResults, isInitialLoad = false) => {
+@@ -3071,6 +3097,15 @@ var renderVdom = (hostRef, renderFnResults, isInitialLoad = false) => {
    const oldVNode = hostRef.$vnode$ || newVNode(null, null);
    const isHostElement = isHost(renderFnResults);
    const rootVnode = isHostElement ? renderFnResults : h(null, null, renderFnResults);
@@ -75,7 +88,7 @@ index 426c936a34ec6347332acbff81409a77215c455f..5c936d058bab2ebb401143c35fa65627
    hostTagName = hostElm.tagName;
    if (BUILD20.isDev && Array.isArray(renderFnResults) && renderFnResults.some(isHost)) {
      throw new Error(`The <Host> must be the single root component.
-@@ -3099,7 +3131,8 @@ render() {
+@@ -3099,7 +3134,8 @@ render() {
    if (isInitialLoad && rootVnode.$attrs$) {
      for (const key of Object.keys(rootVnode.$attrs$)) {
        if (hostElm.hasAttribute(key) && !["key", "ref", "style", "class"].includes(key)) {
@@ -85,7 +98,7 @@ index 426c936a34ec6347332acbff81409a77215c455f..5c936d058bab2ebb401143c35fa65627
        }
      }
    }
-@@ -3116,6 +3149,15 @@ render() {
+@@ -3116,6 +3152,15 @@ render() {
      checkSlotFallbackVisibility = false;
    }
    patch(oldVNode, rootVnode, isInitialLoad);
@@ -101,7 +114,7 @@ index 426c936a34ec6347332acbff81409a77215c455f..5c936d058bab2ebb401143c35fa65627
    if (BUILD20.slotRelocation) {
      plt.$flags$ |= 1 /* isTmpDisconnected */;
      if (checkSlotRelocate) {
-@@ -3785,6 +3827,13 @@ More information: https://stenciljs.com/docs/properties#prop-mutability`
+@@ -3785,6 +3830,13 @@ More information: https://stenciljs.com/docs/properties#prop-mutability`
            var _a2;
            const propName = attrNameToPropName.get(attrName);
            const hostRef = getHostRef(this);
@@ -115,7 +128,7 @@ index 426c936a34ec6347332acbff81409a77215c455f..5c936d058bab2ebb401143c35fa65627
            if (BUILD23.serializer && hostRef.$serializerValues$.has(propName) && hostRef.$serializerValues$.get(propName) === newValue) {
              return;
            }
-@@ -3994,6 +4043,7 @@ var connectedCallback = (elm) => {
+@@ -3994,6 +4046,7 @@ var connectedCallback = (elm) => {
      }
      if (!(hostRef.$flags$ & 1 /* hasConnected */)) {
        hostRef.$flags$ |= 1 /* hasConnected */;
@@ -123,7 +136,7 @@ index 426c936a34ec6347332acbff81409a77215c455f..5c936d058bab2ebb401143c35fa65627
        let hostId;
        if (BUILD25.hydrateClientSide) {
          hostId = elm.getAttribute(HYDRATE_ID);
-@@ -4151,7 +4201,20 @@ var proxyCustomElement = (Cstr, compactMeta) => {
+@@ -4151,7 +4204,20 @@ var proxyCustomElement = (Cstr, compactMeta) => {
      Object.assign(Cstr.prototype, {
        __hasHostListenerAttached: false,
        __registerHost() {
@@ -145,7 +158,7 @@ index 426c936a34ec6347332acbff81409a77215c455f..5c936d058bab2ebb401143c35fa65627
        },
        connectedCallback() {
          if (!this.__hasHostListenerAttached) {
-@@ -4193,7 +4256,18 @@ var proxyCustomElement = (Cstr, compactMeta) => {
+@@ -4193,7 +4259,18 @@ var proxyCustomElement = (Cstr, compactMeta) => {
        value: cmpMeta.$tagName$,
        configurable: true
      });
@@ -165,7 +178,7 @@ index 426c936a34ec6347332acbff81409a77215c455f..5c936d058bab2ebb401143c35fa65627
    } catch (e) {
      consoleError(e);
      return Cstr;
-@@ -4672,6 +4746,10 @@ var insertVNodeAnnotations = (doc, hostElm, vnode, docData, cmpData) => {
+@@ -4672,6 +4749,10 @@ var insertVNodeAnnotations = (doc, hostElm, vnode, docData, cmpData) => {
    if (vnode != null) {
      const hostId = ++docData.hostIds;
      hostElm.setAttribute(HYDRATE_ID, hostId);
@@ -176,8 +189,20 @@ index 426c936a34ec6347332acbff81409a77215c455f..5c936d058bab2ebb401143c35fa65627
      if (hostElm["s-cr"] != null) {
        hostElm["s-cr"].nodeValue = `${CONTENT_REF_ID}.${hostId}`;
      }
+@@ -4710,6 +4791,11 @@ var insertChildVNodeAnnotations = (doc, vnodeChild, cmpData, hostId, depth, inde
+   childElm["s-node-id"] = nodeId;
+   if (childElm.nodeType === 1 /* ElementNode */) {
+     childElm.setAttribute(HYDRATE_CHILD_ID, childId);
++    if (getHostRef(childElm)) {
++      // Preserve exact parent ownership, including no authored class, without
++      // depending on whether the nested host upgrades before its parent.
++      childElm.setAttribute("c-class", parseClassList(vnodeChild.$attrs$?.class).join(" "));
++    }
+     if (typeof childElm["s-sn"] === "string" && !childElm.getAttribute("slot")) {
+       childElm.setAttribute("s-sn", childElm["s-sn"]);
+     }
 diff --git a/internal/hydrate/index.js b/internal/hydrate/index.js
-index ee52175e0f2d245d10eca073cd188bdcdf2ece4e..1ffee6082c2cbe75810b7dc716e971cf50e91cf9 100644
+index ee52175e0f2d245d10eca073cd188bdcdf2ece4e..950f17ab5e4b1af2fd3653ea6993aaf1d3a404b2 100644
 --- a/internal/hydrate/index.js
 +++ b/internal/hydrate/index.js
 @@ -1355,6 +1355,29 @@ var initializeClientHydrate = (hostElm, tagName, hostId, hostRef) => {
@@ -210,7 +235,20 @@ index ee52175e0f2d245d10eca073cd188bdcdf2ece4e..1ffee6082c2cbe75810b7dc716e971cf
    let scopeId2;
    if (BUILD8.scoped) {
      const cmpMeta = hostRef.$cmpMeta$;
-@@ -2339,7 +2362,7 @@ var parsePropertyValue = (propValue, propType, isFormAssociated) => {
+@@ -1525,8 +1548,11 @@ var clientHydrate = (parentVNode, childRenderNodes, slotNodes, shadowRootNodes,
+           $elm$: node,
+           // If we don't add the initial classes to the VNode, the first `vdom-render.ts` patch
+           // won't try to reconcile them. Classes set on the node will be blown away.
+-          $attrs$: { class: node.className || "" }
++          // Nested hosts have their own Host classes. Only the classes
++          // authored by this parent belong in its old VDOM.
++          $attrs$: { class: node.getAttribute("c-class") ?? (node.className || "") }
+         });
++        node.removeAttribute("c-class");
+         childRenderNodes.push(childVNode);
+         node.removeAttribute(HYDRATE_CHILD_ID);
+         if (!parentVNode.$children$) {
+@@ -2339,7 +2365,7 @@ var parsePropertyValue = (propValue, propType, isFormAssociated) => {
    if (propValue != null && !isComplexType(propValue)) {
      if (BUILD9.propBoolean && propType & 4 /* Boolean */) {
        if (BUILD9.formAssociated && isFormAssociated && typeof propValue === "string") {
@@ -219,7 +257,7 @@ index ee52175e0f2d245d10eca073cd188bdcdf2ece4e..1ffee6082c2cbe75810b7dc716e971cf
        } else {
          return propValue === "false" ? false : propValue === "" || !!propValue;
        }
-@@ -2409,7 +2432,7 @@ var setAccessor = (elm, memberName, oldValue, newValue, isSvg, flags, initialRen
+@@ -2409,7 +2435,7 @@ var setAccessor = (elm, memberName, oldValue, newValue, isSvg, flags, initialRen
      const classList = elm.classList;
      const oldClasses = parseClassList(oldValue);
      let newClasses = parseClassList(newValue);
@@ -228,7 +266,7 @@ index ee52175e0f2d245d10eca073cd188bdcdf2ece4e..1ffee6082c2cbe75810b7dc716e971cf
        const scopeId2 = elm["s-sc"] || elm["s-si"];
        newClasses.push(scopeId2);
        oldClasses.forEach((c) => {
-@@ -2524,7 +2547,7 @@ var setAccessor = (elm, memberName, oldValue, newValue, isSvg, flags, initialRen
+@@ -2524,7 +2550,7 @@ var setAccessor = (elm, memberName, oldValue, newValue, isSvg, flags, initialRen
        }
      }
      if (newValue == null || newValue === false) {
@@ -237,7 +275,7 @@ index ee52175e0f2d245d10eca073cd188bdcdf2ece4e..1ffee6082c2cbe75810b7dc716e971cf
          if (BUILD12.vdomXlink && xlink) {
            elm.removeAttributeNS(XLINK_NS, memberName);
          } else {
-@@ -3062,6 +3085,15 @@ var renderVdom = (hostRef, renderFnResults, isInitialLoad = false) => {
+@@ -3062,6 +3088,15 @@ var renderVdom = (hostRef, renderFnResults, isInitialLoad = false) => {
    const oldVNode = hostRef.$vnode$ || newVNode(null, null);
    const isHostElement = isHost(renderFnResults);
    const rootVnode = isHostElement ? renderFnResults : h(null, null, renderFnResults);
@@ -253,7 +291,7 @@ index ee52175e0f2d245d10eca073cd188bdcdf2ece4e..1ffee6082c2cbe75810b7dc716e971cf
    hostTagName = hostElm.tagName;
    if (BUILD14.isDev && Array.isArray(renderFnResults) && renderFnResults.some(isHost)) {
      throw new Error(`The <Host> must be the single root component.
-@@ -3090,7 +3122,8 @@ render() {
+@@ -3090,7 +3125,8 @@ render() {
    if (isInitialLoad && rootVnode.$attrs$) {
      for (const key of Object.keys(rootVnode.$attrs$)) {
        if (hostElm.hasAttribute(key) && !["key", "ref", "style", "class"].includes(key)) {
@@ -263,7 +301,7 @@ index ee52175e0f2d245d10eca073cd188bdcdf2ece4e..1ffee6082c2cbe75810b7dc716e971cf
        }
      }
    }
-@@ -3107,6 +3140,15 @@ render() {
+@@ -3107,6 +3143,15 @@ render() {
      checkSlotFallbackVisibility = false;
    }
    patch(oldVNode, rootVnode, isInitialLoad);
@@ -279,7 +317,7 @@ index ee52175e0f2d245d10eca073cd188bdcdf2ece4e..1ffee6082c2cbe75810b7dc716e971cf
    if (BUILD14.slotRelocation) {
      plt.$flags$ |= 1 /* isTmpDisconnected */;
      if (checkSlotRelocate) {
-@@ -3776,6 +3818,13 @@ More information: https://stenciljs.com/docs/properties#prop-mutability`
+@@ -3776,6 +3821,13 @@ More information: https://stenciljs.com/docs/properties#prop-mutability`
            var _a3;
            const propName = attrNameToPropName.get(attrName);
            const hostRef = getHostRef(this);
@@ -293,7 +331,7 @@ index ee52175e0f2d245d10eca073cd188bdcdf2ece4e..1ffee6082c2cbe75810b7dc716e971cf
            if (BUILD17.serializer && hostRef.$serializerValues$.has(propName) && hostRef.$serializerValues$.get(propName) === newValue) {
              return;
            }
-@@ -3985,6 +4034,7 @@ var connectedCallback = (elm) => {
+@@ -3985,6 +4037,7 @@ var connectedCallback = (elm) => {
      }
      if (!(hostRef.$flags$ & 1 /* hasConnected */)) {
        hostRef.$flags$ |= 1 /* hasConnected */;
@@ -301,7 +339,7 @@ index ee52175e0f2d245d10eca073cd188bdcdf2ece4e..1ffee6082c2cbe75810b7dc716e971cf
        let hostId;
        if (BUILD19.hydrateClientSide) {
          hostId = elm.getAttribute(HYDRATE_ID);
-@@ -4142,7 +4192,20 @@ var proxyCustomElement = (Cstr, compactMeta) => {
+@@ -4142,7 +4195,20 @@ var proxyCustomElement = (Cstr, compactMeta) => {
      Object.assign(Cstr.prototype, {
        __hasHostListenerAttached: false,
        __registerHost() {
@@ -323,7 +361,7 @@ index ee52175e0f2d245d10eca073cd188bdcdf2ece4e..1ffee6082c2cbe75810b7dc716e971cf
        },
        connectedCallback() {
          if (!this.__hasHostListenerAttached) {
-@@ -4184,7 +4247,18 @@ var proxyCustomElement = (Cstr, compactMeta) => {
+@@ -4184,7 +4250,18 @@ var proxyCustomElement = (Cstr, compactMeta) => {
        value: cmpMeta.$tagName$,
        configurable: true
      });
@@ -343,7 +381,7 @@ index ee52175e0f2d245d10eca073cd188bdcdf2ece4e..1ffee6082c2cbe75810b7dc716e971cf
    } catch (e) {
      consoleError(e);
      return Cstr;
-@@ -4641,6 +4715,10 @@ var insertVNodeAnnotations = (doc, hostElm, vnode, docData, cmpData) => {
+@@ -4641,6 +4718,10 @@ var insertVNodeAnnotations = (doc, hostElm, vnode, docData, cmpData) => {
    if (vnode != null) {
      const hostId = ++docData.hostIds;
      hostElm.setAttribute(HYDRATE_ID, hostId);
@@ -353,6 +391,18 @@ index ee52175e0f2d245d10eca073cd188bdcdf2ece4e..1ffee6082c2cbe75810b7dc716e971cf
 +    }
      if (hostElm["s-cr"] != null) {
        hostElm["s-cr"].nodeValue = `${CONTENT_REF_ID}.${hostId}`;
+     }
+@@ -4679,6 +4760,11 @@ var insertChildVNodeAnnotations = (doc, vnodeChild, cmpData, hostId, depth, inde
+   childElm["s-node-id"] = nodeId;
+   if (childElm.nodeType === 1 /* ElementNode */) {
+     childElm.setAttribute(HYDRATE_CHILD_ID, childId);
++    if (getHostRef(childElm)) {
++      // Preserve exact parent ownership, including no authored class, without
++      // depending on whether the nested host upgrades before its parent.
++      childElm.setAttribute("c-class", parseClassList(vnodeChild.$attrs$?.class).join(" "));
++    }
+     if (typeof childElm["s-sn"] === "string" && !childElm.getAttribute("slot")) {
+       childElm.setAttribute("s-sn", childElm["s-sn"]);
      }
 diff --git a/internal/hydrate/runner.js b/internal/hydrate/runner.js
 index 103c760ffee5e123cb20b7a5a85b9dc6b9cb1b29..34fedca69ba45b44746de46a2f26744083d6b3b6 100644
