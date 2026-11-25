@@ -22,6 +22,30 @@ The workflow retains Node 22 and installs **npm 11.19.1** only in trusted mode. 
 
 ## Choose the release path
 
+Production releases use the manual `Publish` workflow. The Changesets version-PR
+workflow is disabled and this repository has no `.changeset/config.json`; pending
+changeset notes are not consumed automatically. Do not run `changeset version`
+as part of this release path.
+
+1. Prepare the reviewed source and documentation on a feature branch. For a
+   coordinated release, set the same target version in all eight public package
+   manifests before merging; the publish workflow also stamps these versions
+   before building. This lets the production docs gate reject deployment until
+   that exact version is available on npm.
+2. Merge only after the candidate's CI succeeds. Dispatch `publish.yml` on `main`
+   with the intended version, `channel=prod`, `authentication=trusted`, and
+   `promote_latest=false`.
+3. Confirm the Publish run, all eight registry versions and `latest` tags, npm
+   provenance, and the GitHub release. Publishing may commit generated metadata
+   or the version bump back to `main`.
+4. Wait for successful CI on the resulting `main` revision, then manually
+   dispatch `deploy.yml` on that revision. The CI run dispatched by Publish has
+   event `workflow_dispatch`; automatic production deployment accepts CI runs
+   from `push` only. Keep `main` unchanged while deployment runs, because the
+   workflow checks that the built and deployed commits match.
+5. Verify the public documentation and examples before announcing the released
+   version to reporters.
+
 | Request | `token` | `trusted` |
 | --- | --- | --- |
 | Snapshot → `snapshot` | Existing behavior | Supported after setup |

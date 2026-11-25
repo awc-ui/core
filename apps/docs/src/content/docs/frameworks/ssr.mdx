@@ -49,6 +49,17 @@ SSR-capable `@awc-ui/core/components/*` entries register the used elements and
 allow the bundler to resolve their dependencies. Do not use `components-csr/*`
 to hydrate DSD.
 
+Build and deploy the server renderer and client component assets from the same
+`@awc-ui/core` version. Hydration metadata is internal and can change between
+releases. After an upgrade, regenerate prerendered HTML and invalidate cached
+HTML that would otherwise load a different client build. Preserve component
+attributes, shadow-root templates, and hydration comments during HTML processing.
+
+Initial selected, checked, open, and populated states render without replaying
+their interaction animations during adoption. Loading controls include their
+nested indicator markup in the server response; their intentional loading
+activity continues after registration.
+
 ## Preserve component classes during hydration
 
 Nuxt, Angular and Svelte can replace a host's `class` attribute while claiming
@@ -78,6 +89,13 @@ and shadow-root annotations are preserved.
 
 The SvelteKit helper below includes class protection automatically.
 
+Nested Core components also distinguish the parent's authored classes from the
+child's own classes during adoption. For example, a date picker's text field
+keeps its floating label, and a filled select keeps its background and padding.
+Later changes can still remove obsolete parent or child state classes. This
+Core behavior complements framework class protection; it does not replace the
+helper when a framework rewrites a host's classes.
+
 ## SvelteKit lifecycle
 
 `@awc-ui/core/ssr/sveltekit` contains two helpers with no framework dependencies:
@@ -104,6 +122,12 @@ Component structure and styles arrive in the initial response, avoiding an
 unstyled first paint while JavaScript loads. Interactions require registration.
 Canvas charts render their surrounding structure on the server and draw their
 plots in the browser.
+
+Check both the delivered HTML with JavaScript disabled and the same controls
+after registration. Verify layout as well as interaction: labels should remain
+separate from values, field insets and fills should match, and the original
+shadow roots should be adopted. A successful click alone does not prove that
+hydration preserved the initial appearance.
 
 The core SSR smoke test renders every component and fails on render errors or
 missing expected DSD. The Svelte integration regression checks framework

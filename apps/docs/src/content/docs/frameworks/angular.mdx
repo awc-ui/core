@@ -53,11 +53,36 @@ NgModule applications also put `AwcUiModule` in `imports`.
 component's template scope. `provideAwcUi()` is a compatibility adapter for
 the Core lazy loader.
 
-For raw custom elements, register each Core element used by the template and
-import its form accessor from `@awc-ui/angular/forms`. For example, import
-`@awc-ui/core/components/md-text-field` to register the element and add
-`TextValueAccessor` from `@awc-ui/angular/forms` and `FormsModule` to the
-component's `imports`. Set `schemas: [CUSTOM_ELEMENTS_SCHEMA]` on the component.
+### Register only the elements you use
+
+Applications that manage raw custom-element registration can import form
+accessors from `@awc-ui/angular/forms`. This entry avoids importing the full
+component proxy registry and uses the same SSR-aware directives as the main
+Angular entry:
+
+```ts
+import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { TextValueAccessor } from '@awc-ui/angular/forms';
+import '@awc-ui/core/components/md-text-field';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [FormsModule, TextValueAccessor],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  template: `<md-text-field label="Email" [(ngModel)]="email"></md-text-field>`,
+})
+export class AppComponent {
+  email = '';
+}
+```
+
+Register every Core element used by the template. The forms entry does not
+provide typed component proxies or their ordinary-input SSR serialization;
+when using raw tags, supply non-form initial state through server-renderable
+attributes. Keep SSR-capable `components/*` imports for SSR and prerendering.
+The main `@awc-ui/angular` entry and `AwcUiModule` remain supported.
 
 Radio controls bind the selected option's `value`, preserving each radio's
 identity. Import both `MdRadio` and `RadioValueAccessor` for individual imports:
@@ -91,6 +116,11 @@ and disabled values reach the first paint, and radio options keep their own
 identity. Array selections use the shared `data-awc-initial-values` seed,
 including an explicit empty array. Browser accessors continue to write properties
 and emit no synthetic change events during hydration.
+
+Initial form state is rendered without interaction animations. Subsequent model
+updates and user actions still update the controls normally. For the shared
+rules on first paint, class preservation, and deploying matching server/client
+Core builds, follow the [SSR guide](/frameworks/ssr/).
 
 Forward the request's `BootstrapContext` when bootstrapping on the server. Angular
 uses it to keep the platform injector scoped to that request:

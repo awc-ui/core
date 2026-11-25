@@ -161,6 +161,19 @@ import "@awc-ui/core/css/tokens.css";
 
 Only the imported components are included in your bundle.
 
+For an application that never hydrates server-rendered components, use the
+smaller client-only entries instead:
+
+```ts
+import "@awc-ui/core/components-csr/md-button";
+import "@awc-ui/core/components-csr/md-text-field";
+import "@awc-ui/core/css/tokens.css";
+```
+
+Choose one runtime family for an application. Keep the default `components/*`
+entries when using SSR or prerendering; the client-only entries omit Declarative
+Shadow DOM adoption. See the [SSR guide](/frameworks/ssr/) for server setup.
+
 ## Design Tokens
 
 The tokens CSS is loaded by `/define`. For loader or per-component imports, use
@@ -174,6 +187,19 @@ This provides the `--md-sys-*` CSS custom properties for colors, typography,
 shape, elevation and motion. Install `@awc-ui/tokens` separately when you want
 tokens independently of core; then use `@awc-ui/tokens/tokens.css` instead of
 loading both token sheets.
+
+## Initial rendering and motion
+
+Controls render their initial state without replaying interaction animations.
+This applies to custom-element registration, server hydration, and parent-owned
+initialization such as selecting a tab or navigation item. A populated field's
+label starts in its settled position, and a checked control starts checked.
+
+The first real action and later state changes retain their normal feedback,
+including when input arrives during startup. Loading indicators and other
+intentional ongoing activity remain animated; reduced-motion settings and
+component-specific static options still apply. No application timeout or
+global animation override is needed to establish the initial state.
 
 ## Preventing Layout Shift
 
@@ -213,6 +239,22 @@ real.
 This is a floor, not a measurement: it cannot know how wide a button's label
 will make it, or how tall a table will be once its data loads. It removes the
 shift that comes from a component having no size at all.
+
+### Measure your application
+
+Reserve space for application content and load the styles needed for the first
+view before it paints. Core also reserves built-in field icon geometry while
+icon fonts load; custom fonts, content, and application layout still affect
+startup measurements.
+
+The repository's [first-paint measurements](https://github.com/awc-ui/core/blob/main/docs/benchmarks/first-paint-2026-11-25.json)
+and [visible-startup measurements](https://github.com/awc-ui/core/blob/main/docs/benchmarks/visible-startup-2026-11-25.json)
+record the tested builds, device/network profiles, and separate first content
+from control and font readiness. Catalog-specific module warmup, icon-font
+subsetting, and the zoneless Angular catalog configuration are application
+optimizations; installing the library does not apply them to a consumer app or
+guarantee the same timings. Measure the production build with a cold cache,
+delayed scripts and fonts, and the first actual interaction.
 
 ## Next Steps
 
