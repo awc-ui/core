@@ -2,7 +2,13 @@
 export function getTablistTabs(tablist: HTMLElement): HTMLElement[] {
   const slot = tablist.shadowRoot?.querySelector<HTMLSlotElement>('slot:not([name])');
   const candidates = slot?.assignedElements({ flatten: true }) ??
-    Array.from(tablist.children).filter(child => !child.getAttribute('slot'));
+    Array.from(tablist.children)
+      .filter(child => !child.getAttribute('slot'))
+      // A wrapper's forwarding slot is already assigned before md-tabs renders
+      // its own shadow slot. Panel linkage must not depend on bundle load order.
+      .flatMap(child => child.tagName === 'SLOT'
+        ? (child as HTMLSlotElement).assignedElements({ flatten: true })
+        : [child]);
   return candidates.filter((child): child is HTMLElement => child.tagName === 'MD-TAB');
 }
 

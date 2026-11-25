@@ -361,6 +361,8 @@ describe('md-tabs interaction e2e', () => {
 
   it('links forwarded tabs and panels through the wrapper slots', async () => {
     const page = await newE2EPage();
+    let releaseTabs!: () => void;
+    const tabsGate = new Promise<void>(resolve => { releaseTabs = resolve; });
     await page.setContent(`
       <div id="w">
         <md-tab label="A" slot="tabs"></md-tab>
@@ -369,6 +371,15 @@ describe('md-tabs interaction e2e', () => {
         <md-tab-panel id="panel-b" slot="panels">B content</md-tab-panel>
       </div>
     `);
+    // setContent installs its own request handler for the fixture navigation.
+    page.removeAllListeners('request');
+    page.on('request', request => {
+      if (new URL(request.url()).pathname.endsWith('/md-tabs.entry.js')) {
+        void tabsGate.then(() => request.continue());
+      } else {
+        void request.continue();
+      }
+    });
     await page.evaluate(() => {
       const w = document.getElementById('w')!;
       const shadow = w.attachShadow({ mode: 'open' });
@@ -376,7 +387,23 @@ describe('md-tabs interaction e2e', () => {
         <md-tabs id="wrapped-tabs" active-tab-index="1" aria-label="wrapped"><slot name="tabs"></slot></md-tabs>
         <md-tab-panels for="wrapped-tabs"><slot name="panels"></slot></md-tab-panels>`;
     });
-    await page.waitForFunction(() => document.querySelector('#panel-b')!.hasAttribute('active'));
+    let beforeTabsLoad!: { controls: (string | null)[]; hydrated: boolean };
+    try {
+      await page.waitForFunction(() => document.querySelector('#panel-b')!.hasAttribute('active'));
+      // The panel region may load before its forwarded tablist. It must wire
+      // the existing tabs immediately, not wait for a future selection event.
+      beforeTabsLoad = await page.evaluate(() => ({
+        controls: Array.from(document.querySelectorAll('md-tab')).map(tab => tab.getAttribute('aria-controls')),
+        hydrated: document.getElementById('w')!.shadowRoot!.querySelector('md-tabs')!.classList.contains('hydrated'),
+      }));
+    } finally {
+      releaseTabs();
+    }
+    await page.waitForChanges();
+    await page.waitForFunction(() => document.getElementById('w')!.shadowRoot!
+      .querySelector('md-tabs')!.classList.contains('hydrated'));
+    expect(beforeTabsLoad.hydrated).toBe(false);
+    expect(beforeTabsLoad.controls).toEqual(['panel-a', 'panel-b']);
     const s = await page.evaluate(() => {
       const tabs = Array.from(document.querySelectorAll('md-tab'));
       const panels = Array.from(document.querySelectorAll('md-tab-panel'));
