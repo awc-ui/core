@@ -133,7 +133,7 @@ a port. `pnpm netlify:package` (`scripts/build-netlify.mjs`) stages the *same*
 
 | output | what it is |
 | --- | --- |
-| `dist/netlify/static/showcase/credit-risk/angular-ssr/` | everything in `dist/browser/` **except `index.html`**, under the prefix this build is compiled against, as the publish directory |
+| `dist/netlify/static/showcase/credit-risk/angular-ssr/` | browser assets **excluding `index.html` and `index.csr.html`**, under the prefix this build is compiled against, as the publish directory |
 | `dist/netlify/document.mjs` | `index.server.html` as an ES module, because a bundled Lambda has no `dist/server/` to read it from |
 
 and `netlify/functions/ssr.mjs` imports `app()` out of the compiled
@@ -146,7 +146,7 @@ that stops the imported bundle binding a port. Both are named in `src/server.ts`
 
 **`@netlify/angular-runtime` does not fit this build**, and it is worth knowing
 why before reaching for it. It does not run your server; it writes its own. For
-Angular < 19 — this is 17.3 — it emits a Deno edge function that calls
+Angular < 19 it emits a Deno edge function that calls
 `renderApplication(bootstrap, …)` against `main.server.mjs` and never imports
 `src/server.ts` at all, which drops the shadow-DOM injection, the render
 markers, the preboot script and `APP_BASE_HREF` in one go. The page still looks
@@ -164,14 +164,24 @@ publish root, and why `netlify/functions/ssr.mjs` routes with a function
 `config.path` instead of a `[[redirects]]` rule: `config.path` matches the
 reader's original URL, so express receives the path it was compiled to answer.
 
-**And `dist/browser/index.html` must never be deployed.** With SSR on and
-prerendering off the builder still writes one — the empty client-side-render
-shell. Netlify resolves a directory request to `index.html` before any function
-runs, so deploying it would answer `/showcase/credit-risk/angular-ssr/` with a
-document containing no components and no render markers, and every check in
-`verify-ssr.mjs` would fail against a page that paints correctly a moment later.
-`src/server.ts` excludes it with `index: false`; `scripts/build-netlify.mjs`
-excludes it from the copy and then asserts no HTML file survived.
+**Client-rendered browser shells must never be deployed.** With SSR on and
+prerendering off, the builder still writes `index.html` or `index.csr.html`,
+depending on its version. These shells contain no server-rendered components or
+render markers. Netlify can serve deployed HTML before invoking the function:
+`index.html` shadows a directory request, and other shell names expose a direct
+path that bypasses SSR.
+
+`scripts/build-netlify.mjs` excludes both known shell names from the public copy
+and independently asserts that no HTML file survived. It leaves `dist/browser/`
+and `dist/server/` intact for the server bundle's template dependencies, and
+inlines `dist/server/index.server.html` into the function's document module.
+The Netlify build configuration pins Node 22 to match the repository and CI.
+
+The function derives Express's `Host` from the incoming Fetch Request URL.
+Fetch headers can omit `Host`, and a conflicting header must not override the
+URL authority. CommonEngine's explicit allowed-host list still applies;
+`verify:netlify` checks missing and conflicting headers and rejection of a
+disallowed URL even when its `Host` header names an allowed site.
 
 ## The decisions worth knowing
 

@@ -65,8 +65,8 @@ const check = (ok, message) => {
   if (!ok) failures.push(message);
 };
 
-async function get(path) {
-  const response = await handler(new Request(`${ORIGIN}${path}`, { redirect: 'manual' }));
+async function get(path, headers) {
+  const response = await handler(new Request(`${ORIGIN}${path}`, { redirect: 'manual', headers }));
   return { response, body: await response.text() };
 }
 
@@ -94,6 +94,20 @@ check(
   first.response.headers.get('x-awc-ssr') === 'declarative-shadow-dom',
   'x-awc-ssr header missing — src/server.ts sets it only when the hydrate pass succeeded',
 );
+
+// A Fetch Request has an authoritative URL but does not automatically expose
+// a Host header. The first request above deliberately omits it. A conflicting
+// header must not override that URL or bypass CommonEngine's host allowlist.
+const conflictingHost = await get(BASE_HREF, { host: 'untrusted.invalid' });
+check(conflictingHost.response.status === 200, 'a conflicting Host header replaced the allowed Request URL authority');
+check(conflictingHost.response.headers.get('x-awc-ssr') === 'declarative-shadow-dom', 'conflicting Host request did not render DSD');
+const disallowedUrl = await handler(new Request(`https://untrusted.invalid${BASE_HREF}`, {
+  headers: { host: new URL(ORIGIN).host },
+}));
+check(disallowedUrl.status === 500, `disallowed Request URL answered ${disallowedUrl.status}, expected host validation failure`);
+check(!disallowedUrl.headers.has('x-awc-ssr'), 'an allowed Host header bypassed validation of the disallowed Request URL');
+await disallowedUrl.text();
+console.log(`[verify-netlify] URL authority — missing/conflicting Host renders; disallowed URL returns ${disallowedUrl.status}`);
 
 // ---------------------------------------------------------------------------
 // 2. Rendered for THIS request. Same test scripts/verify-ssr.mjs makes: two

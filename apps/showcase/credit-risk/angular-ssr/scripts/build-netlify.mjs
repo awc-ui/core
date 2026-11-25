@@ -17,7 +17,7 @@
  * itself at runtime:
  *
  *   dist/netlify/static/showcase/credit-risk/angular-ssr/
- *     Every file `dist/browser/` holds — `main.js`, the lazy chunks, the two
+ *     Every asset `dist/browser/` holds — `main.js`, the lazy chunks, the two
  *     stylesheets, `awc-runtime/md3/` — under the prefix the app is compiled
  *     against. Netlify serves the publish directory from the site root, and
  *     this build emits ABSOLUTE asset URLs beginning
@@ -78,20 +78,23 @@ if (existsSync(outDir)) rmSync(outDir, { recursive: true });
 mkdirSync(staticAppDir, { recursive: true });
 
 /*
- * THE ONE FILE THAT MUST NOT BE DEPLOYED.
+ * CLIENT DOCUMENT SHELLS MUST NOT BE DEPLOYED.
  *
- * With SSR on and prerendering off the builder still writes a single
- * `index.html` into `dist/browser/` — the client-side-render shell, an empty
+ * With SSR on and prerendering off the builder still writes a client-rendered
+ * shell into `dist/browser/`: `index.html` or `index.csr.html`, depending on
+ * the Angular builder version. It contains an empty
  * `<awc-root>`. `src/server.ts` refuses to serve it (`express.static(…, {
  * index: false })`) and the reason applies twice as hard here: Netlify resolves
  * a directory request to `index.html` on its own, before any function runs, so
  * deploying it would make the CDN answer `/showcase/credit-risk/angular-ssr/`
  * with an empty document — no components, no `<template shadowrootmode>`, no
  * render markers — and `scripts/verify-ssr.mjs` would fail against a page that
- * still looks correct in a browser once `main.js` has run. The filter drops it;
- * the assertion below proves it stayed dropped.
+ * still looks correct in a browser once `main.js` has run. The filter excludes
+ * both known shell names from the public copy. Keep the original browser and
+ * server outputs intact because the server bundle may reference their template
+ * assets. The assertion below continues to reject any unexpected HTML output.
  */
-const excluded = new Set([join(browserDir, 'index.html')]);
+const excluded = new Set(['index.html', 'index.csr.html'].map((name) => join(browserDir, name)));
 cpSync(browserDir, staticAppDir, { recursive: true, filter: (src) => !excluded.has(src) });
 
 const strays = [];

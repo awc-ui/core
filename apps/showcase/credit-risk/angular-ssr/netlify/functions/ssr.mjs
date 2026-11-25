@@ -9,7 +9,7 @@
  * WHY NOT `@netlify/angular-runtime`. It is the supported way to put Angular
  * SSR on Netlify and it does not fit this build, for a reason worth writing
  * down so nobody spends an afternoon rediscovering it. The plugin does not run
- * your server; it WRITES ITS OWN. For Angular < 19 (this build is 17.3) it
+ * your server; it WRITES ITS OWN. For Angular < 19 it
  * emits a Deno edge function whose entire body is
  *
  *     const html = await renderApplication(bootstrap, { url, document, … });
@@ -78,8 +78,8 @@ const FUNCTION_PREFIX = '/.netlify/functions/ssr';
  *
  * Modelled on `@netlify/aws-lambda-compat`'s `withLambda`, which is what the
  * platform itself uses for Lambda-signature functions; done here rather than by
- * depending on it because this needs exactly six fields and the package
- * declares `engines: node >= 22.12`, which is ahead of the repo's Node 20.
+ * depending on it so this small transport conversion stays explicit beside
+ * the Express wrapper.
  *
  * `serverless-http` fills in `requestContext`, `body` and `headers` if they are
  * missing (`lib/provider/aws/clean-up-event.js`), so the absent
@@ -105,6 +105,10 @@ async function toEvent(request) {
   request.headers.forEach((value, key) => {
     headers[key.toLowerCase()] = value;
   });
+  // Fetch Request headers need not include Host. Its URL is the request's
+  // authority; an absent or conflicting header must not change the origin
+  // passed to CommonEngine's existing allowed-host validation.
+  headers.host = url.host;
 
   // Base64 for every method that can carry one, because this has no business
   // guessing at a charset: `serverless-http` decodes it back to the exact bytes
@@ -190,15 +194,15 @@ export default async function handler(request) {
  * same division of labour as `express.static` followed by the render route in
  * `src/server.ts`, moved one layer out.
  *
- * The publish directory deliberately contains no `index.html` ANYWHERE, which
+ * The publish directory deliberately contains no HTML documents, which
  * is what keeps `preferStatic` from turning against us: Angular's builder emits
  * one — the empty client-side-render shell — and if it were deployed, the CDN
  * would answer `/showcase/credit-risk/angular-ssr/` with a document containing
  * no components, no render markers and no shadow roots, and every check in
  * `scripts/verify-ssr.mjs` would fail against a page that renders correctly in
- * a browser a moment later. `scripts/build-netlify.mjs` excludes it and then
- * asserts it is gone. `src/server.ts` makes the same exclusion for the same
- * reason, with `index: false`.
+ * a browser a moment later. `scripts/build-netlify.mjs` excludes both known
+ * browser shells (`index.html` and `index.csr.html`) and then asserts no HTML
+ * survived. `src/server.ts` also disables directory indexes with `index: false`.
  */
 export const config = {
   path: '/*',
