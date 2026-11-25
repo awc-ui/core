@@ -1,5 +1,5 @@
 diff --git a/internal/client/index.js b/internal/client/index.js
-index 426c936a34ec6347332acbff81409a77215c455f..d6982430a0b7e40580df25d8cf1d61cd236ce1d4 100644
+index 426c936a34ec6347332acbff81409a77215c455f..5c936d058bab2ebb401143c35fa65627d6157a50 100644
 --- a/internal/client/index.js
 +++ b/internal/client/index.js
 @@ -1364,6 +1364,29 @@ var initializeClientHydrate = (hostElm, tagName, hostId, hostRef) => {
@@ -123,17 +123,20 @@ index 426c936a34ec6347332acbff81409a77215c455f..d6982430a0b7e40580df25d8cf1d61cd
        let hostId;
        if (BUILD25.hydrateClientSide) {
          hostId = elm.getAttribute(HYDRATE_ID);
-@@ -4151,7 +4201,17 @@ var proxyCustomElement = (Cstr, compactMeta) => {
+@@ -4151,7 +4201,20 @@ var proxyCustomElement = (Cstr, compactMeta) => {
      Object.assign(Cstr.prototype, {
        __hasHostListenerAttached: false,
        __registerHost() {
 -        registerHost(this, cmpMeta);
 +        let values, attrs;
-+        for (const [name, [flags, attribute = name]] of Object.entries(cmpMeta.$members$ || {})) {
-+          if (flags & 31 /* Prop */ && Object.getOwnPropertyDescriptor(this, name)?.configurable) {
-+            (values ||= new Map()).set(name, this[name]);
-+            if (this.hasAttribute(attribute)) (attrs ||= new Map()).set(attribute, this.getAttribute(attribute));
-+            delete this[name];
++        // Fresh elements have no own properties before Stencil initializes them.
++        if (cmpMeta.$members$ && Object.getOwnPropertyNames(this).length) {
++          for (const [name, [flags, attribute = name]] of Object.entries(cmpMeta.$members$)) {
++            if (flags & 31 /* Prop */ && Object.getOwnPropertyDescriptor(this, name)?.configurable) {
++              (values ||= new Map()).set(name, this[name]);
++              if (this.hasAttribute(attribute)) (attrs ||= new Map()).set(attribute, this.getAttribute(attribute));
++              delete this[name];
++            }
 +          }
 +        }
 +        const ref = registerHost(this, cmpMeta);
@@ -142,7 +145,7 @@ index 426c936a34ec6347332acbff81409a77215c455f..d6982430a0b7e40580df25d8cf1d61cd
        },
        connectedCallback() {
          if (!this.__hasHostListenerAttached) {
-@@ -4193,7 +4253,18 @@ var proxyCustomElement = (Cstr, compactMeta) => {
+@@ -4193,7 +4256,18 @@ var proxyCustomElement = (Cstr, compactMeta) => {
        value: cmpMeta.$tagName$,
        configurable: true
      });
@@ -162,7 +165,7 @@ index 426c936a34ec6347332acbff81409a77215c455f..d6982430a0b7e40580df25d8cf1d61cd
    } catch (e) {
      consoleError(e);
      return Cstr;
-@@ -4672,6 +4743,10 @@ var insertVNodeAnnotations = (doc, hostElm, vnode, docData, cmpData) => {
+@@ -4672,6 +4746,10 @@ var insertVNodeAnnotations = (doc, hostElm, vnode, docData, cmpData) => {
    if (vnode != null) {
      const hostId = ++docData.hostIds;
      hostElm.setAttribute(HYDRATE_ID, hostId);
@@ -174,7 +177,7 @@ index 426c936a34ec6347332acbff81409a77215c455f..d6982430a0b7e40580df25d8cf1d61cd
        hostElm["s-cr"].nodeValue = `${CONTENT_REF_ID}.${hostId}`;
      }
 diff --git a/internal/hydrate/index.js b/internal/hydrate/index.js
-index ee52175e0f2d245d10eca073cd188bdcdf2ece4e..9eb6293ad5cbef9863dfb5ee5967f6df2e61aa47 100644
+index ee52175e0f2d245d10eca073cd188bdcdf2ece4e..1ffee6082c2cbe75810b7dc716e971cf50e91cf9 100644
 --- a/internal/hydrate/index.js
 +++ b/internal/hydrate/index.js
 @@ -1355,6 +1355,29 @@ var initializeClientHydrate = (hostElm, tagName, hostId, hostRef) => {
@@ -298,17 +301,20 @@ index ee52175e0f2d245d10eca073cd188bdcdf2ece4e..9eb6293ad5cbef9863dfb5ee5967f6df
        let hostId;
        if (BUILD19.hydrateClientSide) {
          hostId = elm.getAttribute(HYDRATE_ID);
-@@ -4142,7 +4192,17 @@ var proxyCustomElement = (Cstr, compactMeta) => {
+@@ -4142,7 +4192,20 @@ var proxyCustomElement = (Cstr, compactMeta) => {
      Object.assign(Cstr.prototype, {
        __hasHostListenerAttached: false,
        __registerHost() {
 -        registerHost(this, cmpMeta);
 +        let values, attrs;
-+        for (const [name, [flags, attribute = name]] of Object.entries(cmpMeta.$members$ || {})) {
-+          if (flags & 31 /* Prop */ && Object.getOwnPropertyDescriptor(this, name)?.configurable) {
-+            (values ||= new Map()).set(name, this[name]);
-+            if (this.hasAttribute(attribute)) (attrs ||= new Map()).set(attribute, this.getAttribute(attribute));
-+            delete this[name];
++        // Fresh elements have no own properties before Stencil initializes them.
++        if (cmpMeta.$members$ && Object.getOwnPropertyNames(this).length) {
++          for (const [name, [flags, attribute = name]] of Object.entries(cmpMeta.$members$)) {
++            if (flags & 31 /* Prop */ && Object.getOwnPropertyDescriptor(this, name)?.configurable) {
++              (values ||= new Map()).set(name, this[name]);
++              if (this.hasAttribute(attribute)) (attrs ||= new Map()).set(attribute, this.getAttribute(attribute));
++              delete this[name];
++            }
 +          }
 +        }
 +        const ref = registerHost(this, cmpMeta);
@@ -317,7 +323,7 @@ index ee52175e0f2d245d10eca073cd188bdcdf2ece4e..9eb6293ad5cbef9863dfb5ee5967f6df
        },
        connectedCallback() {
          if (!this.__hasHostListenerAttached) {
-@@ -4184,7 +4244,18 @@ var proxyCustomElement = (Cstr, compactMeta) => {
+@@ -4184,7 +4247,18 @@ var proxyCustomElement = (Cstr, compactMeta) => {
        value: cmpMeta.$tagName$,
        configurable: true
      });
@@ -337,7 +343,7 @@ index ee52175e0f2d245d10eca073cd188bdcdf2ece4e..9eb6293ad5cbef9863dfb5ee5967f6df
    } catch (e) {
      consoleError(e);
      return Cstr;
-@@ -4641,6 +4712,10 @@ var insertVNodeAnnotations = (doc, hostElm, vnode, docData, cmpData) => {
+@@ -4641,6 +4715,10 @@ var insertVNodeAnnotations = (doc, hostElm, vnode, docData, cmpData) => {
    if (vnode != null) {
      const hostId = ++docData.hostIds;
      hostElm.setAttribute(HYDRATE_ID, hostId);

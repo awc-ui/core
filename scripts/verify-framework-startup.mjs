@@ -7,8 +7,9 @@
  *
  * Override output directories with name=directory arguments, for example
  * html=apps/test-html/dist. All six cases always run; no dev server is used.
- * External fonts are blocked; the mobile pass also holds local CSS and the
- * bundled icon font to check their arrival independently of component loading.
+ * External fonts are blocked. Mobile runs hold local CSS and the icon font
+ * to check stable layout, then test the first action with the font still held
+ * on a separate navigation.
  */
 import assert from 'node:assert/strict';
 import { createReadStream } from 'node:fs';
@@ -158,11 +159,62 @@ async function awaitHydration(page) {
   }, { timeout: 15_000, polling: 'raf' });
 }
 
-async function verify(browser, name, root, slowAssets = false) {
+async function clickThemeToggle(page) {
+  const selector = 'md-button[variant="tonal"]';
+  await page.click(selector);
+  await page.waitForFunction(selector => document.documentElement.dataset.theme === 'dark' &&
+    document.querySelector(selector).textContent.includes('Light Mode'), {}, selector);
+}
+
+async function verifyAngularForm(page) {
+  const form = '[data-reactive-form]';
+  const model = `${form} [data-model]`;
+  assert.deepEqual(await page.$eval(model, element => JSON.parse(element.textContent)), {
+    name: '', country: '', terms: false, newsletter: false, score: 0,
+  }, 'Angular reactive form must start with its configured values');
+
+  await page.type(`${form} md-text-field >>> input`, 'From input');
+  await page.waitForFunction(form => {
+    const element = document.querySelector(form);
+    return JSON.parse(element.querySelector('[data-model]').textContent).name === 'From input' &&
+      element.querySelector('[data-status]').textContent.trim() === 'VALID';
+  }, {}, form);
+
+  await page.click(`${form} [data-patch]`);
+  await page.waitForFunction(form => {
+    const element = document.querySelector(form);
+    const { name, country, terms, newsletter, score } = JSON.parse(element.querySelector('[data-model]').textContent);
+    return name === 'From model' && country === 'pt' && terms === true && newsletter === true && score === 5 &&
+      element.querySelector('md-text-field').shadowRoot.querySelector('input').value === name &&
+      element.querySelector('md-select').value === country &&
+      element.querySelector('md-checkbox').getAttribute('aria-checked') === 'true' &&
+      element.querySelector('md-switch').getAttribute('aria-checked') === 'true' &&
+      element.querySelector('md-rating').value === score;
+  }, {}, form);
+
+  await page.click(`${form} md-checkbox`);
+  await page.click(`${form} md-switch`);
+  await page.waitForFunction(form => {
+    const element = document.querySelector(form);
+    const { terms, newsletter } = JSON.parse(element.querySelector('[data-model]').textContent);
+    return terms === false && newsletter === false &&
+      element.querySelector('md-checkbox').getAttribute('aria-checked') === 'false' &&
+      element.querySelector('md-switch').getAttribute('aria-checked') === 'false';
+  }, {}, form);
+}
+
+async function verify(browser, name, root, profile = 'desktop') {
+  const slowAssets = profile === 'slow-assets';
+  const earlyInput = profile === 'early-input';
   const mount = name === 'html-relative' ? '/preview/nested/' : '/';
   const missingAssets = new Set();
   const runtimeErrors = new Set();
   const localFailures = new Set();
+  const assertNoFailures = () => {
+    assert.deepEqual([...missingAssets], [], `${name}: missing production assets`);
+    assert.deepEqual([...localFailures], [], `${name}: failed local requests`);
+    assert.deepEqual([...runtimeErrors], [], `${name}: browser runtime errors`);
+  };
   const runtimeGate = latch();
   const stylesheetRequested = latch();
   const stylesheetGate = latch();
@@ -174,8 +226,8 @@ async function verify(browser, name, root, slowAssets = false) {
   try {
     const page = await context.newPage();
     page.setDefaultTimeout(15_000);
-    await page.setViewport(slowAssets ? { width: 390, height: 844 } : { width: 1440, height: 1050 });
-    await page.evaluateOnNewDocument(installStartupProbe);
+    await page.setViewport(profile === 'desktop' ? { width: 1440, height: 1050 } : { width: 390, height: 844 });
+    if (!earlyInput) await page.evaluateOnNewDocument(installStartupProbe);
     page.on('pageerror', error => runtimeErrors.add(error.message));
     page.on('console', message => {
       if (message.type() === 'error') runtimeErrors.add(message.text());
@@ -192,7 +244,7 @@ async function verify(browser, name, root, slowAssets = false) {
         await request.respond({ status: 200, contentType: 'text/css', body: '' });
         return;
       }
-      if (url.pathname === `${mount}awc-esm/loader.js`) {
+      if (!earlyInput && url.pathname === `${mount}awc-esm/loader.js`) {
         heldRuntime = true;
         await runtimeGate.promise;
       }
@@ -200,7 +252,7 @@ async function verify(browser, name, root, slowAssets = false) {
         stylesheetRequested.release();
         await stylesheetGate.promise;
       }
-      if (slowAssets && request.resourceType() === 'font') {
+      if ((slowAssets || earlyInput) && request.resourceType() === 'font') {
         heldFont = true;
         await fontGate.promise;
       }
@@ -229,6 +281,25 @@ async function verify(browser, name, root, slowAssets = false) {
       stylesheetGate.release();
     }
     await navigation;
+    if (earlyInput) {
+      // Click the first visibly styled theme control without waiting for the
+      // rest of the components or the held icon font to settle.
+      await page.waitForFunction(() => {
+        const toggle = document.querySelector('md-button[variant="tonal"].hydrated');
+        const label = toggle?.shadowRoot?.querySelector('[part~="label"]');
+        return performance.getEntriesByName('first-contentful-paint', 'paint').length > 0 &&
+          toggle?.getAttribute('aria-disabled') === 'false' && toggle.textContent.includes('Dark Mode') &&
+          label?.checkVisibility({ opacityProperty: true, visibilityProperty: true }) &&
+          [...document.fonts].some(font => font.family.includes('Material Symbols Outlined') && font.status === 'loading');
+      });
+      assert(heldFont, `${name}: the first action must run while the local icon font is held`);
+      await clickThemeToggle(page);
+      fontGate.release();
+      await page.waitForNetworkIdle({ idleTime: 250, timeout: 10_000 });
+      assertNoFailures();
+      console.log(`PASS ${name} mobile/early input: theme changed before the icon font was released`);
+      return;
+    }
     if (name !== 'angular') {
       await page.waitForFunction(() => document.querySelector('md-button') &&
         performance.getEntriesByName('first-contentful-paint', 'paint').length > 0);
@@ -237,11 +308,18 @@ async function verify(browser, name, root, slowAssets = false) {
         const probe = window.awcStartupProbe;
         const firstSample = probe.samples;
         while (probe.samples < firstSample + 3) await new Promise(requestAnimationFrame);
+        const heading = document.querySelector('.app h1');
+        const headingStyle = heading && getComputedStyle(heading);
         return {
           pending: probe.hosts().filter(host => !host.classList.contains('hydrated')).length,
           visible: probe.visibleUnhydrated,
+          styledHeading: heading?.textContent.includes('AWC UI') &&
+            heading.checkVisibility({ opacityProperty: true, visibilityProperty: true }) &&
+            heading.getBoundingClientRect().height > 0 && headingStyle.fontSize === '32px' &&
+            Boolean(headingStyle.getPropertyValue('--md-sys-color-on-background').trim()),
         };
       });
+      assert(delayed.styledHeading, `${name}: the styled catalog heading must paint before the runtime arrives`);
       assert(delayed.pending > 0, `${name}: delayed-runtime case must include unhydrated controls`);
       assert.deepEqual(delayed.visible, [], `${name}: raw controls flashed before the runtime loaded`);
     }
@@ -286,11 +364,13 @@ async function verify(browser, name, root, slowAssets = false) {
     }));
     assert(layout.cls <= 0.001, `${name}: initial layout shift ${layout.cls}: ${JSON.stringify(layout.shifts)}`);
 
-    await page.click('md-button[variant="tonal"]');
-    await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark' &&
-      document.querySelector('md-button[variant="tonal"]').textContent.includes('Light Mode'));
-    await page.click('md-checkbox');
-    await page.waitForFunction(() => document.querySelector('md-checkbox').getAttribute('aria-checked') === 'true');
+    await clickThemeToggle(page);
+    if (name === 'angular') {
+      await verifyAngularForm(page);
+    } else {
+      await page.click('md-checkbox');
+      await page.waitForFunction(() => document.querySelector('md-checkbox').getAttribute('aria-checked') === 'true');
+    }
     await page.waitForNetworkIdle({ idleTime: 250, timeout: 10_000 });
     await awaitHydration(page);
     const result = await page.evaluate(() => {
@@ -300,9 +380,7 @@ async function verify(browser, name, root, slowAssets = false) {
     });
     assert(result.samples > 0, `${name}: startup must be observed after first paint`);
     assert.deepEqual(result.visibleUnhydrated, [], `${name}: unhydrated controls flashed during startup`);
-    assert.deepEqual([...missingAssets], [], `${name}: missing production assets`);
-    assert.deepEqual([...localFailures], [], `${name}: failed local requests`);
-    assert.deepEqual([...runtimeErrors], [], `${name}: browser runtime errors`);
+    assertNoFailures();
     console.log(`PASS ${name}${slowAssets ? ' mobile/delayed CSS+font' : ' desktop'}: ${result.hydrated} nested hosts hydrated; stable layout (CLS ${layout.cls}); no raw-control flash; first input responds; no asset/runtime errors`);
   } catch (error) {
     throw new Error(`${name}: ${error.message}\nMissing assets: ${JSON.stringify([...missingAssets])}\nRuntime errors: ${JSON.stringify([...runtimeErrors])}`, { cause: error });
@@ -322,7 +400,8 @@ const browser = await puppeteer.launch({
 try {
   for (const [name, root] of Object.entries(outputs)) {
     await verify(browser, name, root);
-    await verify(browser, name, root, true);
+    await verify(browser, name, root, 'slow-assets');
+    await verify(browser, name, root, 'early-input');
   }
 } finally {
   await browser.close();

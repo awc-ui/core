@@ -1,7 +1,13 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { JsonPipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { AwcUiModule } from '@awc-ui/angular';
+import {
+  BooleanValueAccessor,
+  NumericValueAccessor,
+  SelectValueAccessor,
+  SwitchValueAccessor,
+  TextValueAccessor,
+} from '@awc-ui/angular/forms';
 
 /**
  * Reactive-forms binding check for the AWC UI ControlValueAccessors.
@@ -16,7 +22,16 @@ import { AwcUiModule } from '@awc-ui/angular';
 @Component({
   selector: 'app-reactive-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, AwcUiModule],
+  imports: [
+    JsonPipe,
+    ReactiveFormsModule,
+    BooleanValueAccessor,
+    NumericValueAccessor,
+    SelectValueAccessor,
+    SwitchValueAccessor,
+    TextValueAccessor,
+  ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
     <form [formGroup]="form" data-reactive-form>
       <md-text-field formControlName="name" label="Name" variant="outlined"></md-text-field>

@@ -1,15 +1,17 @@
 import { APP_INITIALIZER, CUSTOM_ELEMENTS_SCHEMA, NgModule, Provider } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { defineCustomElements } from '@awc-ui/core/loader';
+import {
+  BooleanValueAccessor,
+  MultiSelectValueAccessor,
+  NumericValueAccessor,
+  RadioValueAccessor,
+  SelectValueAccessor,
+  SwitchValueAccessor,
+  TextValueAccessor,
+} from '@awc-ui/angular/forms';
 
 import { DIRECTIVES } from './directives';
-import { TextValueAccessor } from './directives/text-value-accessor';
-import { SelectValueAccessor } from './directives/select-value-accessor';
-import { BooleanValueAccessor } from './directives/boolean-value-accessor';
-import { MultiSelectValueAccessor } from './directives/multi-select-value-accessor';
-import { RadioValueAccessor } from './directives/radio-value-accessor';
-import { NumericValueAccessor } from './directives/number-value-accessor';
-import { SwitchValueAccessor } from './directives/switch-value-accessor';
 
 /**
  * ControlValueAccessor directives, so `[(ngModel)]` and `formControlName` bind
@@ -68,18 +70,16 @@ export function provideAwcUi(): Provider {
  * Convenience module exporting ALL AWC UI component proxies (typed inputs,
  * outputs and methods) plus the form value accessors.
  *
- * NOTE: the proxies are standalone components that register their own custom
- * element on import — no loader bootstrap needed. For the smallest bundles,
- * prefer importing individual components over this module: this module
- * references every proxy, including nested parts, so all 56 components ship
- * with your app.
+ * Standalone proxies add typed elements to the template scope and register
+ * their custom elements on import. Apps that register Core elements directly
+ * can import their form accessors from `@awc-ui/angular/forms`.
  *
  * @example
- * // Smallest bundle — standalone component imports exactly what it uses:
+ * // Standalone component imports:
  * import { MdButton } from '@awc-ui/angular';
  * @Component({ standalone: true, imports: [MdButton], ... })
  *
- * // Convenience — everything at once (ships all components):
+ * // Convenience module:
  * import { AwcUiModule } from '@awc-ui/angular';
  * @NgModule({ imports: [AwcUiModule, ...] })
  * export class AppModule {}

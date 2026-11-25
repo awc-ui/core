@@ -15,7 +15,15 @@ const options = Object.fromEntries(process.argv.slice(2).map(arg => {
   return [name, value.length ? value.join('=') : true];
 }));
 const app = options.app || 'html';
-assert(['html', 'react', 'vue', 'svelte', 'angular'].includes(app), 'Unknown playground');
+const catalogs = {
+  html: { heading: 'AWC UI — Vanilla HTML Playground', hosts: 180 },
+  react: { heading: 'AWC UI React Integration', hosts: 180 },
+  vue: { heading: 'AWC UI Vue Integration', hosts: 171 },
+  svelte: { heading: 'AWC UI Svelte Integration', hosts: 171 },
+  angular: { heading: 'AWC UI Angular Integration', hosts: 183 },
+};
+assert(Object.hasOwn(catalogs, app), 'Unknown playground');
+const catalog = catalogs[app];
 const directory = resolve(repo, options.directory || `apps/test-${app}/dist${app === 'angular' ? '/test-angular' : ''}`);
 const runs = Number(options.runs || 3);
 assert(Number.isInteger(runs) && runs > 0 && runs <= 20, 'runs must be 1–20');
@@ -77,9 +85,27 @@ try {
         });
         await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
       }
-      await page.evaluateOnNewDocument(() => {
+      await page.evaluateOnNewDocument(({ heading: expectedHeading, hosts: expectedHosts }) => {
         performance.setResourceTimingBufferSize(5000);
         const state = window.__loadMeasure = { cls: 0, totalLayoutShift: 0, lcp: 0, longTasks: 0, longTaskMs: 0, fontsReadyMs: 0 };
+        if (PerformanceObserver.supportedEntryTypes.includes('element')) {
+          // Tag the existing heading in both builds before it paints. A generic
+          // FCP can otherwise reflect earlier incidental text elsewhere.
+          const identifier = 'catalog-heading';
+          const observer = new MutationObserver(() => {
+            const heading = document.querySelector('h1');
+            if (heading?.textContent.trim() === expectedHeading) {
+              heading.setAttribute('elementtiming', identifier);
+              observer.disconnect();
+            }
+          });
+          observer.observe(document, { childList: true, subtree: true });
+          new PerformanceObserver(list => {
+            for (const entry of list.getEntries()) if (entry.identifier === identifier && entry.renderTime > 0) {
+              state.catalogHeadingMs ??= entry.renderTime;
+            }
+          }).observe({ type: 'element', buffered: true });
+        }
         let sessionStart = 0, lastShift = 0, sessionValue = 0;
         new PerformanceObserver(list => {
           for (const entry of list.getEntries()) if (!entry.hadRecentInput) {
@@ -110,14 +136,31 @@ try {
           visit(document);
           return hosts;
         };
-        const ready = () => {
+        const visible = element => {
+          if (!element?.checkVisibility({ opacityProperty: true, visibilityProperty: true })) return false;
+          const { width, height } = element.getBoundingClientRect();
+          return width > 0 && height > 0;
+        };
+        state.catalogReady = () => {
           const hosts = state.hosts();
-          if (hosts.length > 80 && hosts.every(el => el.classList.contains('hydrated') && el.shadowRoot)) {
-            state.controlsReadyMs = performance.now();
-          } else requestAnimationFrame(ready);
+          if (hosts.length !== expectedHosts || !hosts.every(el => el.classList.contains('hydrated') && el.shadowRoot)) return false;
+          const heading = document.querySelector('h1');
+          const theme = document.querySelector('md-button[variant="tonal"]');
+          const checkbox = document.querySelector('md-checkbox');
+          const field = document.querySelector('md-text-field');
+          return heading?.textContent.trim() === expectedHeading && visible(heading) &&
+            getComputedStyle(heading).fontSize === '32px' &&
+            theme?.textContent.includes('Dark Mode') && theme.getAttribute('aria-disabled') === 'false' &&
+            visible(theme.shadowRoot.querySelector('[part~="label"]')) &&
+            checkbox?.getAttribute('role') === 'checkbox' && visible(checkbox.shadowRoot.querySelector('[part~="container"]')) &&
+            visible(field?.shadowRoot.querySelector('input:not([disabled])'));
+        };
+        const ready = () => {
+          if (state.catalogReady()) state.controlsReadyMs = performance.now();
+          else requestAnimationFrame(ready);
         };
         requestAnimationFrame(ready);
-      });
+      }, catalog);
       await page.goto(origin, { waitUntil: 'domcontentloaded', timeout: 60_000 });
       await page.waitForFunction(() => window.__loadMeasure.controlsReadyMs > 0, { timeout: 60_000 });
       const allReadyMs = await page.evaluate(async () => { await document.fonts.ready; return performance.now(); });
@@ -129,13 +172,16 @@ try {
         const resources = performance.getEntriesByType('resource').filter(entry => entry.name.startsWith(location.origin)).map(entry => ({
           path: new URL(entry.name).pathname, kind: /\.(?:woff2?|ttf)(?:$|\?)/.test(entry.name) ? 'font' :
             /\.css(?:$|\?)/.test(entry.name) ? 'css' : /\.m?js(?:$|\?)/.test(entry.name) ? 'js' : 'other',
+          initiatorType: entry.initiatorType, fetchStartMs: entry.fetchStart, responseEndMs: entry.responseEnd,
           encodedBytes: entry.encodedBodySize, decodedBytes: entry.decodedBodySize,
         }));
         return { controlsReadyMs: state.controlsReadyMs, fontsReadyMs: state.fontsReadyMs,
           fcpMs: performance.getEntriesByName('first-contentful-paint')[0]?.startTime,
+          catalogHeadingMs: state.catalogHeadingMs,
           lcpMs: state.lcp, cls: state.cls, totalLayoutShift: state.totalLayoutShift,
           longTasks: state.longTasks, longTaskMs: state.longTaskMs,
-          hydratedHosts: state.hosts().length, resources };
+          hydratedHosts: state.hosts().filter(host => host.classList.contains('hydrated') && host.shadowRoot).length,
+          catalogReady: state.catalogReady(), resources };
       });
       result.allReadyMs = allReadyMs;
       const metrics = Object.fromEntries((await cdp.send('Performance.getMetrics')).metrics.map(item => [item.name, item.value]));
@@ -143,6 +189,9 @@ try {
       result.taskMs = metrics.TaskDuration * 1000;
       result.heapBytes = metrics.JSHeapUsedSize;
       assert.deepEqual(failures, [], 'Measured page must work');
+      assert(result.fcpMs > 0, 'Measured page must paint content');
+      assert(result.catalogReady && result.hydratedHosts === catalog.hosts, 'Measured catalog must stay fully hydrated and visible');
+      delete result.catalogReady;
       results.push(result);
     } finally { await context.close(); }
   }
@@ -157,6 +206,7 @@ const median = values => {
   return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
 };
 const measures = ['controlsReadyMs', 'fontsReadyMs', 'allReadyMs', 'fcpMs', 'lcpMs', 'cls', 'totalLayoutShift', 'longTasks', 'longTaskMs', 'scriptMs', 'taskMs', 'heapBytes'];
+if (results.every(result => result.catalogHeadingMs > 0)) measures.push('catalogHeadingMs');
 const summary = Object.fromEntries(measures.map(key => [key, median(results.map(result => result[key]))]));
 for (const kind of ['js', 'css', 'font']) {
   summary[`${kind}Requests`] = median(results.map(result => result.resources.filter(resource => resource.kind === kind).length));

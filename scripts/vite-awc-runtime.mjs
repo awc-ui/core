@@ -20,10 +20,10 @@ export async function staticModuleImports(source, name) {
  * second runtime. Preserve module boundaries/import names while minifying each
  * production module independently. The browser still gets exactly one runtime.
  */
-export function awcLazyRuntime() {
+export function awcLazyRuntime({ initialEntries = [] } = {}) {
   let loaderReference;
   let config;
-  let preloadFiles = [];
+  let preloadReferences = [];
   return {
     name: 'awc-playground-lazy-runtime',
     apply: 'build',
@@ -31,7 +31,8 @@ export function awcLazyRuntime() {
     configResolved(resolved) { config = resolved; },
     async buildStart() {
       loaderReference = undefined;
-      preloadFiles = [];
+      preloadReferences = [];
+      const references = new Map();
       const sources = new Map();
       const minify = config.build.minify !== false;
       const sourceMaps = config.build.sourcemap;
@@ -72,14 +73,17 @@ export function awcLazyRuntime() {
               fileName: `awc-esm/${name}`,
               source,
             });
+            references.set(name, reference);
             if (name === 'loader.js') loaderReference = reference;
           }
         }
       };
       await emitDirectory(runtimeDirectory);
       if (!loaderReference) this.error('Build @awc-ui/core before building a playground.');
-      // Fetch the small bootstrap graph with the document, eliminating the
-      // app -> loader -> runtime waterfall without executing registration early.
+      // Warm the bootstrap and explicitly requested initial nested components
+      // when the app starts. Document-time preloads compete with the app entry
+      // that renders the first content; waiting for a nested component to render
+      // instead adds avoidable loader -> entry -> implementation round trips.
       const visited = new Set();
       const visit = async name => {
         if (visited.has(name) || !sources.has(name)) return;
@@ -89,7 +93,11 @@ export function awcLazyRuntime() {
         }
       };
       await visit('loader.js');
-      preloadFiles = [...visited].map(name => `awc-esm/${name}`);
+      for (const name of initialEntries) {
+        if (!sources.has(name)) this.error(`Missing initial AWC runtime entry: ${name}`);
+        await visit(name);
+      }
+      preloadReferences = [...visited].map(name => references.get(name));
     },
     resolveId(source) {
       if (source === '@awc-ui/core/loader') return loaderModule;
@@ -98,22 +106,22 @@ export function awcLazyRuntime() {
       if (id !== loaderModule) return;
       // Rollup resolves this emitted asset relative to the importing chunk,
       // including deployments with a nested or relative Vite base.
-      return `export async function defineCustomElements(win, options) {
+      return `let warmed = false;
+      export async function defineCustomElements(win, options) {
+        const doc = win?.document;
+        if (!warmed && doc?.head) {
+          warmed = true;
+          for (const href of [${preloadReferences.map(reference => `import.meta.ROLLUP_FILE_URL_${reference}`).join(',')}]) {
+            const link = doc.createElement('link');
+            link.rel = 'modulepreload';
+            link.crossOrigin = '';
+            link.href = href;
+            doc.head.appendChild(link);
+          }
+        }
         const loader = await import(/* @vite-ignore */ import.meta.ROLLUP_FILE_URL_${loaderReference});
         return loader.defineCustomElements(win, options);
       }`;
-    },
-    transformIndexHtml: {
-      order: 'post',
-      handler(_html, context) {
-        return preloadFiles.map(file => ({
-          tag: 'link', injectTo: 'head',
-          attrs: { rel: 'modulepreload', crossorigin: '',
-            href: config.base === './' || config.base === ''
-              ? './' + posix.relative(posix.dirname(context.path), '/' + file)
-              : config.base + file },
-        }));
-      },
     },
   };
 }

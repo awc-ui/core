@@ -50,12 +50,9 @@ export const config: Config = {
     }),
     withAngularSsrAccessors(angularOutputTarget({
       componentCorePackage: '@awc-ui/core',
-      // `standalone`: each generated component is standalone and statically
-      // imports + registers its own custom element from the tree-shakable
-      // dist-custom-elements build. Consumers add components to `imports: []`
-      // and bundle only what they use; the lazy-loader bootstrap
-      // (provideAwcUi()/defineCustomElements) is no longer required, though it
-      // remains harmless — element definition is idempotent.
+      // Standalone Angular proxies can be added directly to template imports.
+      // Each proxy registers its custom element from the dist-custom-elements
+      // build, so the lazy-loader bootstrap is optional.
       outputType: 'standalone',
       customElementsDir: 'dist/components',
       directivesProxyFile: '../angular/src/directives/proxies.ts',

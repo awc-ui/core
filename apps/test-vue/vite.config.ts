@@ -8,7 +8,7 @@ import { awcLazyRuntime } from '../../scripts/vite-awc-runtime.mjs';
 // the rationale; `strictPort: true` here for the same reason.
 export default defineConfig({
   plugins: [
-    awcLazyRuntime(),
+    awcLazyRuntime({ initialEntries: ['md-loading-indicator.entry.js'] }),
     vue({
       template: {
         compilerOptions: {

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import { awcLazyRuntime, staticModuleImports } from './vite-awc-runtime.mjs';
@@ -17,22 +17,35 @@ test('bootstrap discovery parses multiline and same-line static imports without 
     import('./later.js'); const text = "import './fake.js'";`, 'loader.js'), ['./a.js', './b.mjs', './c.js']);
 });
 
-test('production runtime keeps native chunks, preloads bootstrap, and emits requested maps', async t => {
+test('production runtime warms initial dependencies from the app, preserves bases and requested maps', async t => {
   const scratch = await mkdtemp(join(tmpdir(), 'awc-vite-runtime-'));
   t.after(() => rm(scratch, { recursive: true, force: true }));
   for (const [name, base, sourcemap] of [
     ['absolute', '/preview/', false], ['relative', './', false], ['maps', '/', true],
   ]) {
     const outDir = join(scratch, name);
-    await build({ root: app, configFile: false, base, logLevel: 'silent', plugins: [awcLazyRuntime()],
+    await build({ root: app, configFile: false, base, logLevel: 'silent',
+      plugins: [awcLazyRuntime({ initialEntries: ['md-loading-indicator.entry.js'] })],
       build: { outDir, emptyOutDir: true, sourcemap } });
     const html = await readFile(join(outDir, 'index.html'), 'utf8');
     const preloads = [...html.matchAll(/<link[^>]*rel="modulepreload"[^>]*href="([^"]+)"/g)].map(match => match[1]);
     const bootstrap = preloads.filter(url => url.includes('awc-esm/'));
-    assert.equal(new Set(bootstrap).size, bootstrap.length, 'No duplicated modulepreloads');
-    assert(bootstrap.some(url => url.endsWith('/loader.js')), 'Loader starts with the document');
-    assert(bootstrap.some(url => /\/index-[^/]+\.js$/.test(url)), 'Runtime dependency starts with the loader');
-    assert(bootstrap.every(url => url.startsWith(base)), 'Preloads follow absolute and relative deployment bases');
+    assert.equal(bootstrap.length, 0, 'Runtime must not compete with the app entry before first content');
+    const entryUrl = html.match(/<script[^>]*src="([^"]+)"/)[1];
+    const entry = await readFile(join(outDir, 'assets', basename(entryUrl)), 'utf8');
+    assert.match(entry, /modulepreload/, 'App kickoff warms dependencies');
+    assert.match(entry, /awc-esm\/loader\.js/, 'Loader is warmed');
+    assert.match(entry, /awc-esm\/index-[^/]+\.js/, 'Runtime is warmed alongside the loader');
+    assert.match(entry, /awc-esm\/md-loading-indicator\.entry\.js/, 'Initial nested spinner entry is warmed');
+    assert.match(entry, /awc-esm\/md-loading-indicator-[^/]+\.js/, 'Spinner implementation avoids a second waterfall');
+    const mount = base === './' ? '/arbitrary/nested/' : base;
+    const scriptUrl = new URL(entryUrl, `https://example.test${mount}`);
+    const assetUrls = [...entry.matchAll(/new URL\("([^\"]+)",import\.meta\.url\)/g)]
+      .map(match => new URL(match[1], scriptUrl));
+    assert(assetUrls.some(url => url.pathname === `${mount}awc-esm/loader.js`),
+      'Loader resolves from the emitted script at the configured deployment base');
+    assert(assetUrls.every(url => url.origin === scriptUrl.origin && url.pathname.startsWith(`${mount}awc-esm/`)),
+      'Warmup assets resolve inside the same absolute or nested relative deployment');
     const originalNames = await readdir(join(repo, 'packages/core/dist/esm'));
     const emitted = await readdir(join(outDir, 'awc-esm'));
     assert.deepEqual(emitted.filter(file => file.endsWith('.js')).sort(), originalNames.filter(file => file.endsWith('.js')).sort(),

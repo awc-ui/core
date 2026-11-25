@@ -39,6 +39,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/fesm2022/awc-ui-angular.mjs"
     },
+    "./forms": {
+      "types": "./dist/forms/index.d.ts",
+      "default": "./dist/fesm2022/awc-ui-angular-forms.mjs"
+    },
     "./package.json": {
       "default": "./package.json"
     }
@@ -52,8 +56,9 @@
   "scripts": {
     "build": "ng-packagr -p ng-package.json -c tsconfig.lib.json",
     "clean": "rm -rf dist",
-    "lint": "tsc --noEmit",
-    "test:integration": "node tests/forms.mjs"
+    "lint": "tsc -p tsconfig.lint.json",
+    "test:integration": "node tests/forms.mjs",
+    "test:package": "node tests/public-package.mjs"
   },
   "dependencies": {
     "tslib": "^2.8.1"

@@ -1,5 +1,6 @@
 // Requires built @awc-ui/core and @awc-ui/angular. Uses their public exports.
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { createRequire } from "node:module";
 import { createServer } from "node:http";
 import { readFile, writeFile, mkdtemp, rm } from "node:fs/promises";
@@ -7,17 +8,24 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { stripLightDomAnnotations } from "../../../scripts/lib/html-comments.mjs";
+
+// The tarball and workspace contain distinct proxy classes. Run the pack check
+// separately so Angular only sees one library per process.
+execFileSync(process.execPath, [fileURLToPath(new URL("./public-package.mjs", import.meta.url))], {
+  stdio: "inherit",
+});
+
 const root = fileURLToPath(new URL("../../../", import.meta.url)).replace(
   /\/$/,
   "",
 );
 const angular = createRequire(root + "/apps/test-angular/package.json");
 const ssr = createRequire(root + "/apps/example-angular-ssr/package.json");
-const out = await mkdtemp(join(tmpdir(), "awc-angular-ssr-forms-"));
 const req = createRequire(root + "/package.json");
 const core = createRequire(root + "/packages/core/package.json");
 const { build } = core("esbuild");
 const { default: puppeteer } = await import(req.resolve("puppeteer"));
+const out = await mkdtemp(join(tmpdir(), "awc-angular-ssr-forms-"));
 let source = `import 'zone.js';import '@angular/compiler';import {Component,ApplicationRef,NgZone} from '@angular/core';import {CommonModule} from '@angular/common';import {bootstrapApplication} from '@angular/platform-browser';import {FormControl,FormGroup,ReactiveFormsModule} from '@angular/forms';import {AwcUiModule} from '@awc-ui/angular';
 class Probe {
  form=new FormGroup({text:new FormControl('Initial'),checked:new FormControl(true),selected:new FormControl(true),amount:new FormControl(3),country:new FormControl('ro'),many:new FormControl(['a']),plan:new FormControl('pro')});
@@ -120,7 +128,7 @@ const document = stripLightDomAnnotations(rendered.html)
 source =
   component +
   `import {provideClientHydration} from '@angular/platform-browser';import {preserveSsrClasses} from '@awc-ui/core/ssr/classes';
-const finish=preserveSsrClasses();bootstrapApplication(Probe,{providers:[provideClientHydration()]}).then(async app=>{window.app=app;window.zone=app.injector.get(NgZone);await app.whenStable();finish();window.done=true;}).catch(error=>{window.failure=error.message;console.error(error)});`;
+const finish=preserveSsrClasses();bootstrapApplication(Probe,{providers:[provideClientHydration()]}).then(async app=>{window.app=app;window.zone=app.injector.get(NgZone);await app.whenStable();finish();window.done=true;}).catch(error=>{window.failure=error.stack ?? error.message;console.error(error)});`;
 const js = (
   await build({
     stdin: { contents: source, resolveDir: root + "/apps/test-angular" },

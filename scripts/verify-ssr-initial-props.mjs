@@ -176,7 +176,8 @@ try {
       window.detached = document.createElement('md-multi-select');
       detached.id = 'detached'; detached.value = ['before-upgrade'];
       window.detachedField = document.createElement('md-text-field');
-      detachedField.id = 'detached-field'; detachedField.setAttribute('value','attribute'); detachedField.value = 'own-before';
+      detachedField.id = 'detached-field'; detachedField.setAttribute('value','attribute');
+      Object.defineProperty(detachedField, 'value', { value: 'own-before', configurable: true, writable: true });
     });
     if (runtime === 'direct') await page.addScriptTag({url:'/direct.js'});
     else await page.addScriptTag({type:'module',content:"import {defineCustomElements} from '/core/loader/index.mjs'; defineCustomElements();"});
@@ -186,12 +187,13 @@ try {
       const before = {values:[...detached.value],text:detachedField.value};
       detached.value = [];
       detachedField.value = 'own-after';
+      const afterProperty = detachedField.value;
       // A new attribute write after native upgrade also remains meaningful.
       detachedField.setAttribute('value','attribute-after');
       document.body.append(detached,detachedField);
-      return before;
+      return {...before,afterProperty};
     });
-    assert.deepEqual(upgrade, {values:['before-upgrade'],text:'own-before'});
+    assert.deepEqual(upgrade, {values:['before-upgrade'],text:'own-before',afterProperty:'own-after'});
     await page.waitForFunction(() => detached.hasAttribute('data-awc-motion-ready') && detachedField.hasAttribute('data-awc-motion-ready'));
     assert.deepEqual(await page.evaluate(() => ({connected:[...document.querySelector('#connected').value],detached:[...detached.value],text:detachedField.value})),
       {connected:[],detached:[],text:'attribute-after'});

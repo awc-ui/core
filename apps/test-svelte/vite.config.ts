@@ -7,7 +7,7 @@ import { awcLazyRuntime } from '../../scripts/vite-awc-runtime.mjs';
 // Svelte=5173, Angular=4200). See the React playground's vite.config for
 // the rationale; `strictPort: true` here for the same reason.
 export default defineConfig({
-  plugins: [svelte(), awcLazyRuntime()],
+  plugins: [svelte(), awcLazyRuntime({ initialEntries: ['md-loading-indicator.entry.js'] })],
   server: {
     port: 5173,
     strictPort: true,

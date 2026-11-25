@@ -8,7 +8,7 @@ import { awcLazyRuntime } from '../../scripts/vite-awc-runtime.mjs';
 // of silently hopping to the next free port, which would defeat the point
 // of having a predictable URL per framework.
 export default defineConfig({
-  plugins: [react(), awcLazyRuntime()],
+  plugins: [react(), awcLazyRuntime({ initialEntries: ['md-loading-indicator.entry.js'] })],
   server: {
     port: 5171,
     strictPort: true,

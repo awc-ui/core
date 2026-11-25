@@ -7,7 +7,7 @@ sidebar:
 ---
 
 `@awc-ui/angular` provides standalone component proxies and Angular form value
-accessors. Imports register their custom elements automatically.
+accessors. Component proxy imports register their custom elements automatically.
 
 Use Angular **20.3.31 or newer**. The wrapper and examples use the patched Angular
 20 compiler and runtime; applications on Angular 17–19 must upgrade Angular before
@@ -50,8 +50,14 @@ and accessor. Use `ReactiveFormsModule` for `formControl` and `formControlName`.
 NgModule applications also put `AwcUiModule` in `imports`.
 
 `importProvidersFrom(AwcUiModule)` does not add directives to a standalone
-component's template scope. `provideAwcUi()` is only needed for applications
-using the lazy loader with raw tags; imported proxies already register themselves.
+component's template scope. `provideAwcUi()` is a compatibility adapter for
+the Core lazy loader.
+
+For raw custom elements, register each Core element used by the template and
+import its form accessor from `@awc-ui/angular/forms`. For example, import
+`@awc-ui/core/components/md-text-field` to register the element and add
+`TextValueAccessor` from `@awc-ui/angular/forms` and `FormsModule` to the
+component's `imports`. Set `schemas: [CUSTOM_ELEMENTS_SCHEMA]` on the component.
 
 Radio controls bind the selected option's `value`, preserving each radio's
 identity. Import both `MdRadio` and `RadioValueAccessor` for individual imports:
@@ -69,22 +75,22 @@ selection. Multi-select accessors normalize a form reset to an empty array.
 Angular can server-render the surrounding application normally. AWC UI's
 `@awc-ui/core/hydrate` module then transforms the rendered `md-*` markup into
 Declarative Shadow DOM, preserving styles and content in the server response.
-On the client, the imported Angular proxies register their custom elements and
-hydrate that server-rendered output.
+On the client, Angular proxies or direct Core imports register the elements
+and hydrate that server-rendered output.
 
-Ordinary input bindings such as `[label]`, `[value]` and `[selected]` also
-serialize their server state using Core's declared attribute names, including
-custom aliases. Supported option/item/node arrays use JSON attributes, and
-selection arrays use the same initial-value seed as forms. Callback and other
-property-only inputs stay out of the HTML. On the client, bindings continue to
-update properties without adding synthetic events or reflecting extra attributes.
+Typed proxies from `@awc-ui/angular` serialize ordinary input bindings such as
+`[label]`, `[value]` and `[selected]` using Core's declared attribute names,
+including custom aliases. Supported option/item/node arrays use JSON attributes,
+and selection arrays use the same initial-value seed as forms. Callback and
+other property-only inputs stay out of the HTML. On the client, bindings continue
+to update properties without adding synthetic events or reflecting extra attributes.
 
-Angular form accessors serialize their initial values on the server before the
-Core HTML transform runs. Text, numeric, checked, selected and disabled values
-therefore reach the first paint; radio options keep their own identity. Array
-selections use the shared `data-awc-initial-values` seed, including an explicit
-empty array. Browser accessors continue to write properties and emit no synthetic
-change events during hydration.
+The form accessors from either Angular entry point serialize initial form
+values before Core transforms the server HTML. Text, numeric, checked, selected
+and disabled values reach the first paint, and radio options keep their own
+identity. Array selections use the shared `data-awc-initial-values` seed,
+including an explicit empty array. Browser accessors continue to write properties
+and emit no synthetic change events during hydration.
 
 Forward the request's `BootstrapContext` when bootstrapping on the server. Angular
 uses it to keep the platform injector scoped to that request:

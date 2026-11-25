@@ -48,7 +48,7 @@ patchedDependencies:
     hash: tg6fxsxmyxxvo7wjre7oitcbwi
     path: patches/@nuxt__devtools@3.4.1.patch
   '@stencil/core@4.44.0':
-    hash: o5s3asenvktefvgxmezqghofha
+    hash: ploxqaiitdrzzgtndp3fkxai2m
     path: patches/@stencil__core@4.44.0.patch
   braces@3.0.3:
     hash: i2xhy6322d5qixisiobs73zcfe
@@ -126,7 +126,7 @@ importers:
         version: link:../../packages/react
       '@stencil/react-output-target':
         specifier: 1.6.1
-        version: 1.6.1(@stencil/core@4.44.0(patch_hash=o5s3asenvktefvgxmezqghofha))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 1.6.1(@stencil/core@4.44.0(patch_hash=ploxqaiitdrzzgtndp3fkxai2m))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -518,7 +518,7 @@ importers:
         version: 5.3.0
       '@stencil/react-output-target':
         specifier: 1.6.1
-        version: 1.6.1(@stencil/core@4.44.0(patch_hash=o5s3asenvktefvgxmezqghofha))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 1.6.1(@stencil/core@4.44.0(patch_hash=ploxqaiitdrzzgtndp3fkxai2m))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       material-symbols:
         specifier: ^0.40.2
         version: 0.40.2
@@ -2482,16 +2482,16 @@ importers:
         version: 11.2.0(size-limit@11.2.0)
       '@stencil/angular-output-target':
         specifier: ^0.9.0
-        version: 0.9.1(@stencil/core@4.44.0(patch_hash=o5s3asenvktefvgxmezqghofha))
+        version: 0.9.1(@stencil/core@4.44.0(patch_hash=ploxqaiitdrzzgtndp3fkxai2m))
       '@stencil/core':
         specifier: ^4.20.0
-        version: 4.44.0(patch_hash=o5s3asenvktefvgxmezqghofha)
+        version: 4.44.0(patch_hash=ploxqaiitdrzzgtndp3fkxai2m)
       '@stencil/react-output-target':
         specifier: ^1.6.1
-        version: 1.6.2(@stencil/core@4.44.0(patch_hash=o5s3asenvktefvgxmezqghofha))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        version: 1.6.2(@stencil/core@4.44.0(patch_hash=ploxqaiitdrzzgtndp3fkxai2m))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@stencil/vue-output-target':
         specifier: ^0.8.8
-        version: 0.8.9(@stencil/core@4.44.0(patch_hash=o5s3asenvktefvgxmezqghofha))
+        version: 0.8.9(@stencil/core@4.44.0(patch_hash=ploxqaiitdrzzgtndp3fkxai2m))
       '@types/jest':
         specifier: ^29.5.0
         version: 29.5.14
@@ -2552,7 +2552,7 @@ importers:
     dependencies:
       '@stencil/react-output-target':
         specifier: ^1.6.1
-        version: 1.6.2(@stencil/core@4.44.0(patch_hash=o5s3asenvktefvgxmezqghofha))(@types/react@18.2.79)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        version: 1.6.2(@stencil/core@4.44.0(patch_hash=ploxqaiitdrzzgtndp3fkxai2m))(@types/react@18.2.79)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       html-react-parser:
         specifier: ^5.2.17
         version: 5.2.17(@types/react@18.2.79)(react@19.3.0)
@@ -22380,11 +22380,11 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@stencil/angular-output-target@0.9.1(@stencil/core@4.44.0(patch_hash=o5s3asenvktefvgxmezqghofha))':
+  '@stencil/angular-output-target@0.9.1(@stencil/core@4.44.0(patch_hash=ploxqaiitdrzzgtndp3fkxai2m))':
     dependencies:
-      '@stencil/core': 4.44.0(patch_hash=o5s3asenvktefvgxmezqghofha)
+      '@stencil/core': 4.44.0(patch_hash=ploxqaiitdrzzgtndp3fkxai2m)
 
-  '@stencil/core@4.44.0(patch_hash=o5s3asenvktefvgxmezqghofha)':
+  '@stencil/core@4.44.0(patch_hash=ploxqaiitdrzzgtndp3fkxai2m)':
     optionalDependencies:
       '@rollup/rollup-darwin-arm64': 4.44.0
       '@rollup/rollup-darwin-x64': 4.44.0
@@ -22395,10 +22395,10 @@ snapshots:
       '@rollup/rollup-win32-arm64-msvc': 4.44.0
       '@rollup/rollup-win32-x64-msvc': 4.44.0
 
-  '@stencil/react-output-target@1.6.1(@stencil/core@4.44.0(patch_hash=o5s3asenvktefvgxmezqghofha))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@stencil/react-output-target@1.6.1(@stencil/core@4.44.0(patch_hash=ploxqaiitdrzzgtndp3fkxai2m))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@lit/react': 1.0.8(@types/react@18.3.31)
-      '@stencil/core': 4.44.0(patch_hash=o5s3asenvktefvgxmezqghofha)
+      '@stencil/core': 4.44.0(patch_hash=ploxqaiitdrzzgtndp3fkxai2m)
       html-react-parser: 5.2.17(@types/react@18.3.31)(react@18.3.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
@@ -22407,10 +22407,10 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
-  '@stencil/react-output-target@1.6.2(@stencil/core@4.44.0(patch_hash=o5s3asenvktefvgxmezqghofha))(@types/react@18.2.79)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+  '@stencil/react-output-target@1.6.2(@stencil/core@4.44.0(patch_hash=ploxqaiitdrzzgtndp3fkxai2m))(@types/react@18.2.79)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
     dependencies:
       '@lit/react': 1.0.8(@types/react@18.2.79)
-      '@stencil/core': 4.44.0(patch_hash=o5s3asenvktefvgxmezqghofha)
+      '@stencil/core': 4.44.0(patch_hash=ploxqaiitdrzzgtndp3fkxai2m)
       html-react-parser: 5.2.17(@types/react@18.2.79)(react@19.3.0)
       react: 19.3.0
       react-dom: 19.3.0(react@19.3.0)
@@ -22419,10 +22419,10 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
-  '@stencil/react-output-target@1.6.2(@stencil/core@4.44.0(patch_hash=o5s3asenvktefvgxmezqghofha))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+  '@stencil/react-output-target@1.6.2(@stencil/core@4.44.0(patch_hash=ploxqaiitdrzzgtndp3fkxai2m))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
     dependencies:
       '@lit/react': 1.0.8(@types/react@19.3.0)
-      '@stencil/core': 4.44.0(patch_hash=o5s3asenvktefvgxmezqghofha)
+      '@stencil/core': 4.44.0(patch_hash=ploxqaiitdrzzgtndp3fkxai2m)
       html-react-parser: 5.2.17(@types/react@19.3.0)(react@19.3.0)
       react: 19.3.0
       react-dom: 19.3.0(react@19.3.0)
@@ -22431,9 +22431,9 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
-  '@stencil/vue-output-target@0.8.9(@stencil/core@4.44.0(patch_hash=o5s3asenvktefvgxmezqghofha))':
+  '@stencil/vue-output-target@0.8.9(@stencil/core@4.44.0(patch_hash=ploxqaiitdrzzgtndp3fkxai2m))':
     dependencies:
-      '@stencil/core': 4.44.0(patch_hash=o5s3asenvktefvgxmezqghofha)
+      '@stencil/core': 4.44.0(patch_hash=ploxqaiitdrzzgtndp3fkxai2m)
 
   '@storybook/addon-a11y@10.5.9(storybook@10.5.9(@types/react@18.3.31)(prettier@3.9.6)(react@18.3.1))':
     dependencies:
