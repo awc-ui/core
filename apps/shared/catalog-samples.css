@@ -1,5 +1,10 @@
 /* Reserve catalog sample positions before the custom elements are upgraded.
    These slots describe the demo rows and keep wrapping consistent during load. */
+.app :is(h1, h2, h1 + p) {
+  /* Keep headings on their initial font to preserve wrapping as Roboto loads. */
+  font-family: sans-serif;
+}
+
 .catalog-theme-sample {
   display: flex;
   align-items: center;

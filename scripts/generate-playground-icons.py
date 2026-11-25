@@ -7,6 +7,7 @@ import itertools
 import json
 from pathlib import Path
 import re
+import subprocess
 import sys
 
 from fontTools import subset
@@ -18,8 +19,9 @@ ROOT = Path(__file__).resolve().parents[1]
 DEST = ROOT / "apps/shared/fonts"
 SOURCE = ROOT / "apps/test-html/node_modules/material-symbols/material-symbols-outlined.woff2"
 SOURCE_SHA = "9ce39572570b5af3719ea4d0673329a4052a62595caf274dd47148d75927b2a4"
-SOURCE_ROOTS = ["packages/core/src"] + [f"apps/test-{app}/src" for app in ("html", "react", "vue", "svelte", "angular")]
+CATALOGS = ("html", "react", "vue", "svelte", "angular")
 EXTENSIONS = {".ts", ".tsx", ".js", ".jsx", ".css", ".html", ".vue", ".svelte", ".json"}
+TEST_DIRECTORIES = {"test", "tests", "__tests__", "__fixtures__"}
 
 
 def digest(data):
@@ -44,18 +46,40 @@ def ligatures(font):
     return result
 
 
+def runtime_sources(directory):
+    for path in directory.rglob("*"):
+        if (path.suffix in EXTENSIONS and not path.name.endswith(".d.ts")
+                and not TEST_DIRECTORIES.intersection(path.relative_to(directory).parts[:-1])
+                and not re.search(r"\.(?:spec|test|e2e)\.", path.name)):
+            yield path.relative_to(ROOT).as_posix()
+
+
 def source_coverage(available):
-    # A conservative superset: match complete source tokens, including comments,
-    # tests, unquoted template text, defaults and every conditional branch. Do not
-    # subset by alphabet: the letters are shared by thousands of other ligatures.
-    files = {ROOT / "apps/test-html/index.html"}
-    for relative in SOURCE_ROOTS:
-        files.update(p for p in (ROOT / relative).rglob("*") if p.suffix in EXTENSIONS and not p.name.endswith(".d.ts"))
+    catalogs = {"apps/shared/catalog-samples.css"}
+    for app in CATALOGS:
+        directory = ROOT / f"apps/test-{app}"
+        catalogs.update(runtime_sources(directory / "src"))
+        if (directory / "index.html").is_file():
+            catalogs.add(f"apps/test-{app}/index.html")
+    core = set(runtime_sources(ROOT / "packages/core/src"))
+    files = catalogs | core
+    # Keep complete catalog tokens, and collect literals from production Core
+    # regardless of the component that renders them. JSX text, icon defaults,
+    # quoted CSS values and each conditional branch can all supply ligatures.
+    # The JS helper uses the workspace's TypeScript parser for syntax/escapes.
+    extracted = json.loads(subprocess.check_output(
+        ["node", "scripts/playground-icon-literals.mjs"], cwd=ROOT,
+        input=json.dumps(sorted(files)), text=True,
+    ))
     names, codepoints = {}, set()
     for path in sorted(files):
-        text = path.read_text()
-        for name in sorted(set(re.findall(r"[A-Za-z0-9_]+", text)) & available):
-            names.setdefault(name, []).append(str(path.relative_to(ROOT)))
+        text = (ROOT / path).read_text()
+        candidates = set(extracted[path]["names"])
+        if path in catalogs:
+            candidates.update(re.findall(r"[A-Za-z0-9_]+", text))
+        for name in sorted(candidates & available):
+            names.setdefault(name, []).append(path)
+        codepoints.update(extracted[path]["codepoints"])
         codepoints.update(ord(char) for char in text if 0xE000 <= ord(char) <= 0xF8FF)
         for match in re.finditer(r"\\u\{([0-9a-fA-F]+)\}|\\u([0-9a-fA-F]{4})|&#x([0-9a-fA-F]+);", text):
             value = int(next(group for group in match.groups() if group), 16)

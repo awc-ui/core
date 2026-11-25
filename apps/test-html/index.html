@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="/src/styles.css" />
     <link
       rel="stylesheet"
+      media="print"
+      data-deferred-fonts
       href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
     />
     <style>
@@ -31,6 +33,10 @@
         padding: 24px;
         max-width: 1100px;
         margin-inline: auto;
+      }
+      h1, h2, .subtitle {
+        /* Keep the title's line count stable while the demo font loads. */
+        font-family: system-ui, -apple-system, sans-serif;
       }
       h1 {
         font-size: 32px;

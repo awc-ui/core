@@ -1,14 +1,16 @@
 #!/usr/bin/env node
-// Pixel equivalence of the actual WOFF2 artifacts; no app/Core build needed.
+// Pixel equivalence of the WOFF2 artifacts, with optional built-catalog coverage.
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 import puppeteer from 'puppeteer';
+import { verifyCatalogIconCoverage } from './lib/playground-catalog-icons.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const output = process.argv.find(arg => arg.startsWith('--artifacts='))?.slice('--artifacts='.length);
+const catalogs = process.argv.includes('--catalogs');
 const coverage = JSON.parse(await readFile(resolve(root, 'apps/shared/fonts/coverage.json'), 'utf8'));
 const icons = Object.keys(coverage.icons);
 const fonts = {
@@ -67,6 +69,7 @@ try {
     assert(snapshots[0].equals(snapshots[1]), `Icon pixels differ at ${JSON.stringify(location)}`);
   }
   console.log(`PASS: ${icons.length} icons × ${locations.length} axis configurations have identical original/subset Chromium pixels`);
+  if (catalogs) await verifyCatalogIconCoverage(browser, root, coverage);
 } finally {
   await browser?.close();
   await new Promise(resolve => server.close(resolve));

@@ -5,16 +5,30 @@ import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
-import { awcLazyRuntime, staticModuleImports } from './vite-awc-runtime.mjs';
+import { awcLazyRuntime, moduleMetadata } from './vite-awc-runtime.mjs';
 
 const repo = fileURLToPath(new URL('../', import.meta.url));
 const app = join(repo, 'apps/test-html');
 const { build } = await import(createRequire(join(app, 'package.json')).resolve('vite'));
 
-test('bootstrap discovery parses multiline and same-line static imports without eager dynamic chunks', async () => {
-  assert.deepEqual(await staticModuleImports(`import './a.js'; import { b } from './b.mjs';
+test('bootstrap discovery parses static imports and exported aliases without eager dynamic chunks', async () => {
+  assert.deepEqual(await moduleMetadata(`import './a.js'; import { b } from './b.mjs';
     export {\n c\n} from './c.js';
-    import('./later.js'); const text = "import './fake.js'";`, 'loader.js'), ['./a.js', './b.mjs', './c.js']);
+    import('./later.js'); const text = "import './fake.js'";
+    export { b as md_first, text as md_second };`, 'loader.js'), {
+    imports: ['./a.js', './b.mjs', './c.js'],
+    exports: ['c', 'md_first', 'md_second'],
+  });
+});
+
+test('tag lookup rejects an unknown component', async () => {
+  const plugin = awcLazyRuntime({ initialTags: ['md-not-a-component'] });
+  plugin.configResolved({ build: { minify: false, sourcemap: false } });
+  await assert.rejects(plugin.buildStart.call({
+    addWatchFile() {},
+    emitFile: ({ fileName }) => fileName,
+    error(message) { throw new Error(message); },
+  }), /Missing initial AWC runtime tag: md-not-a-component/);
 });
 
 test('production runtime warms initial dependencies from the app, preserves bases and requested maps', async t => {
@@ -25,7 +39,10 @@ test('production runtime warms initial dependencies from the app, preserves base
   ]) {
     const outDir = join(scratch, name);
     await build({ root: app, configFile: false, base, logLevel: 'silent',
-      plugins: [awcLazyRuntime({ initialEntries: ['md-loading-indicator.entry.js'] })],
+      plugins: [awcLazyRuntime({
+        initialEntries: ['md-loading-indicator.entry.js'],
+        initialTags: ['md-button', 'md-ripple', 'md-checkbox', 'md-text-field', 'md-select', 'md-loading-indicator'],
+      })],
       build: { outDir, emptyOutDir: true, sourcemap } });
     const html = await readFile(join(outDir, 'index.html'), 'utf8');
     const preloads = [...html.matchAll(/<link[^>]*rel="modulepreload"[^>]*href="([^"]+)"/g)].map(match => match[1]);
@@ -46,6 +63,18 @@ test('production runtime warms initial dependencies from the app, preserves base
       'Loader resolves from the emitted script at the configured deployment base');
     assert(assetUrls.every(url => url.origin === scriptUrl.origin && url.pathname.startsWith(`${mount}awc-esm/`)),
       'Warmup assets resolve inside the same absolute or nested relative deployment');
+    const warmedEntries = assetUrls.filter(url => url.pathname.endsWith('.entry.js')).map(url => basename(url.pathname));
+    assert.equal(warmedEntries.length, new Set(warmedEntries).size,
+      'A shared entry is warmed once when requested by several tags or by filename');
+    const warmedExports = await Promise.all(warmedEntries.map(async name => {
+      const source = await readFile(join(outDir, 'awc-esm', name), 'utf8');
+      return (await moduleMetadata(source, name)).exports;
+    }));
+    const grouped = warmedExports.find(exports => exports.includes('md_button'));
+    assert(grouped?.includes('md_ripple'), 'Distinct component export aliases resolve to their grouped entry');
+    for (const exported of ['md_checkbox', 'md_text_field', 'md_select', 'md_loading_indicator']) {
+      assert(warmedExports.flat().includes(exported), `Warmup includes the entry exporting ${exported}`);
+    }
     const originalNames = await readdir(join(repo, 'packages/core/dist/esm'));
     const emitted = await readdir(join(outDir, 'awc-esm'));
     assert.deepEqual(emitted.filter(file => file.endsWith('.js')).sort(), originalNames.filter(file => file.endsWith('.js')).sort(),

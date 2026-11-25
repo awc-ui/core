@@ -156,6 +156,12 @@ try {
             visible(field?.shadowRoot.querySelector('input:not([disabled])'));
         };
         const ready = () => {
+          if (!state.themeReadyMs) {
+            const theme = document.querySelector('md-button[variant="tonal"]');
+            const label = theme?.shadowRoot?.querySelector('[part~="label"]');
+            if (theme?.classList.contains('hydrated') && theme.getAttribute('aria-disabled') === 'false' &&
+              theme.textContent.includes('Dark Mode') && visible(label)) state.themeReadyMs = performance.now();
+          }
           if (state.catalogReady()) state.controlsReadyMs = performance.now();
           else requestAnimationFrame(ready);
         };
@@ -175,7 +181,7 @@ try {
           initiatorType: entry.initiatorType, fetchStartMs: entry.fetchStart, responseEndMs: entry.responseEnd,
           encodedBytes: entry.encodedBodySize, decodedBytes: entry.decodedBodySize,
         }));
-        return { controlsReadyMs: state.controlsReadyMs, fontsReadyMs: state.fontsReadyMs,
+        return { themeReadyMs: state.themeReadyMs, controlsReadyMs: state.controlsReadyMs, fontsReadyMs: state.fontsReadyMs,
           fcpMs: performance.getEntriesByName('first-contentful-paint')[0]?.startTime,
           catalogHeadingMs: state.catalogHeadingMs,
           lcpMs: state.lcp, cls: state.cls, totalLayoutShift: state.totalLayoutShift,
@@ -205,7 +211,7 @@ const median = values => {
   const middle = Math.floor(sorted.length / 2);
   return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
 };
-const measures = ['controlsReadyMs', 'fontsReadyMs', 'allReadyMs', 'fcpMs', 'lcpMs', 'cls', 'totalLayoutShift', 'longTasks', 'longTaskMs', 'scriptMs', 'taskMs', 'heapBytes'];
+const measures = ['themeReadyMs', 'controlsReadyMs', 'fontsReadyMs', 'allReadyMs', 'fcpMs', 'lcpMs', 'cls', 'totalLayoutShift', 'longTasks', 'longTaskMs', 'scriptMs', 'taskMs', 'heapBytes'];
 if (results.every(result => result.catalogHeadingMs > 0)) measures.push('catalogHeadingMs');
 const summary = Object.fromEntries(measures.map(key => [key, median(results.map(result => result[key]))]));
 for (const kind of ['js', 'css', 'font']) {

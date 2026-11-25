@@ -7,7 +7,9 @@
  * for the interactive bits (theme toggle, dialog/menu open state, etc.).
  */
 import { defineCustomElements } from '@awc-ui/core/loader';
+import { activateDeferredFontStylesheet } from '../../shared/deferred-fonts';
 
+activateDeferredFontStylesheet();
 defineCustomElements(window);
 
 // ---------------------------------------------------------------------------

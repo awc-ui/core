@@ -8,7 +8,7 @@ import { awcLazyRuntime } from '../../scripts/vite-awc-runtime.mjs';
 // more here than dev convenience, because the whole point of these apps
 // is to inspect each framework on a known address side-by-side.
 export default defineConfig({
-  plugins: [awcLazyRuntime({ initialEntries: ['md-loading-indicator.entry.js'] })],
+  plugins: [awcLazyRuntime({ initialTags: ['md-button', 'md-checkbox', 'md-text-field', 'md-select', 'md-loading-indicator'] })],
   server: {
     port: 5170,
     strictPort: true,

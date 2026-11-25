@@ -2,13 +2,13 @@
   "source": "material-symbols@0.40.2/material-symbols-outlined.woff2",
   "sourceSha256": "9ce39572570b5af3719ea4d0673329a4052a62595caf274dd47148d75927b2a4",
   "sourceBytes": 3829152,
-  "subsetBytes": 349324,
-  "subsetSha256": "9e9a061c15ccbc0fa06aad06cb0e6f5ee2d23609842ac23b69c17584973ad691",
+  "subsetBytes": 137148,
+  "subsetSha256": "edb7eb8e3038cbbe58b8d28ebd1e49620f1680df48d0effb0885483f66062d28",
   "sourceGlyphs": 6421,
-  "subsetGlyphs": 660,
+  "subsetGlyphs": 285,
   "sourceLigatures": 4167,
-  "selectedLigatures": 409,
-  "sourceFilesScanned": 521,
+  "selectedLigatures": 165,
+  "sourceFilesScanned": 244,
   "axes": [
     [
       "FILL",
@@ -36,84 +36,33 @@
     ]
   ],
   "verifiedAxisLocations": 54,
-  "verifiedShapesAndOutlines": 22086,
+  "verifiedShapesAndOutlines": 8910,
   "codepoints": [],
   "icons": {
-    "10k": {
-      "glyph": "_10k",
-      "sourceExamples": [
-        "packages/core/src/utils/charts/engine/scale.ts"
-      ],
-      "sourceFileCount": 1
-    },
-    "123": {
-      "glyph": "_123",
-      "sourceExamples": [
-        "packages/core/src/components/md-number-field/md-number-field.e2e.ts",
-        "packages/core/src/components/md-otp-field/md-otp-field.e2e.ts",
-        "packages/core/src/components/md-otp-field/md-otp-field.spec.ts"
-      ],
-      "sourceFileCount": 6
-    },
-    "1k": {
-      "glyph": "_1k",
-      "sourceExamples": [
-        "packages/core/src/utils/charts/engine/scale.ts"
-      ],
-      "sourceFileCount": 1
-    },
     "2d": {
       "glyph": "_2d",
       "sourceExamples": [
-        "packages/core/src/components/md-bar-chart/md-bar-chart.e2e.ts",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.late-data.e2e.ts",
-        "packages/core/src/components/md-skeleton/md-skeleton.surfaces.e2e.ts"
+        "packages/core/src/utils/charts/engine/bar-chart.ts",
+        "packages/core/src/utils/charts/engine/chart.ts",
+        "packages/core/src/utils/charts/engine/color.ts"
       ],
-      "sourceFileCount": 8
+      "sourceFileCount": 4
     },
     "360": {
       "glyph": "_360",
       "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.pointer.spec.ts",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.pointer.spec.ts",
-        "packages/core/src/components/md-color-picker/color-utils.ts"
+        "packages/core/src/components/md-color-picker/md-color-picker.tsx"
       ],
-      "sourceFileCount": 17
-    },
-    "60fps": {
-      "glyph": "_60fps",
-      "sourceExamples": [
-        "packages/core/src/components/md-tooltip/md-tooltip.tsx",
-        "packages/core/src/utils/charts/engine/overlay.ts"
-      ],
-      "sourceFileCount": 2
-    },
-    "abc": {
-      "glyph": "abc",
-      "sourceExamples": [
-        "packages/core/src/components/md-app-bar/md-app-bar.search.spec.ts",
-        "packages/core/src/components/md-number-field/md-number-field.spec.ts",
-        "packages/core/src/components/md-progress-indicator/md-progress-indicator.spec.ts"
-      ],
-      "sourceFileCount": 12
-    },
-    "accessibility": {
-      "glyph": "accessibility",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion-item/md-accordion-item.spec.ts",
-        "packages/core/src/components/md-app-bar/md-app-bar.spec.ts",
-        "packages/core/src/components/md-area-chart/md-area-chart.spec.ts"
-      ],
-      "sourceFileCount": 72
+      "sourceFileCount": 1
     },
     "accessible": {
       "glyph": "accessible",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.axe.spec.ts",
-        "packages/core/src/components/md-accordion/test-utils/axe-spec.ts",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.axe.spec.ts"
+        "packages/core/src/components/md-fab/md-fab.tsx",
+        "packages/core/src/components/md-segmented-button/md-segmented-button.tsx",
+        "packages/core/src/components/md-split-button/md-split-button.tsx"
       ],
-      "sourceFileCount": 65
+      "sourceFileCount": 5
     },
     "add": {
       "glyph": "add",
@@ -122,49 +71,7 @@
         "apps/test-html/index.html",
         "apps/test-html/src/main.ts"
       ],
-      "sourceFileCount": 131
-    },
-    "add_circle": {
-      "glyph": "add_circle",
-      "sourceExamples": [
-        "packages/core/src/components/md-table-expand-toggle/md-table-expand-toggle.spec.ts"
-      ],
-      "sourceFileCount": 1
-    },
-    "adjust": {
-      "glyph": "adjust",
-      "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.css",
-        "packages/core/src/components/md-badge/md-badge.css",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.css"
-      ],
-      "sourceFileCount": 29
-    },
-    "air": {
-      "glyph": "air",
-      "sourceExamples": [
-        "packages/core/src/components/md-dialog/md-dialog.css",
-        "packages/core/src/components/md-organization-chart/md-organization-chart.tsx"
-      ],
-      "sourceFileCount": 2
-    },
-    "altitude": {
-      "glyph": "altitude",
-      "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.tsx",
-        "packages/core/src/components/md-line-chart/md-line-chart.tsx",
-        "packages/core/src/utils/charts/engine/fixes.spec.ts"
-      ],
-      "sourceFileCount": 5
-    },
-    "analytics": {
-      "glyph": "analytics",
-      "sourceExamples": [
-        "packages/core/src/components/md-breadcrumbs/md-breadcrumbs.tsx",
-        "packages/core/src/components/md-button/md-button.tsx",
-        "packages/core/src/components/md-switch/md-switch.tsx"
-      ],
-      "sourceFileCount": 4
+      "sourceFileCount": 10
     },
     "anchor": {
       "glyph": "anchor",
@@ -173,138 +80,45 @@
         "apps/test-html/index.html",
         "apps/test-html/src/main.ts"
       ],
-      "sourceFileCount": 91
-    },
-    "android": {
-      "glyph": "android",
-      "sourceExamples": [
-        "packages/core/src/components/md-button/md-button.css",
-        "packages/core/src/components/md-loading-indicator/md-loading-indicator.css"
-      ],
-      "sourceFileCount": 2
+      "sourceFileCount": 11
     },
     "animation": {
       "glyph": "animation",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.css",
-        "packages/core/src/components/md-accordion/md-accordion.tsx",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css"
-      ],
-      "sourceFileCount": 110
-    },
-    "announcement": {
-      "glyph": "sms_failed",
-      "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.pointer.spec.ts",
         "packages/core/src/components/md-area-chart/md-area-chart.tsx",
-        "packages/core/src/components/md-avatar/md-avatar.spec.ts"
-      ],
-      "sourceFileCount": 23
-    },
-    "api": {
-      "glyph": "api",
-      "sourceExamples": [
-        "packages/core/src/components/md-time-picker/md-time-picker.e2e.ts"
-      ],
-      "sourceFileCount": 1
-    },
-    "apps": {
-      "glyph": "apps",
-      "sourceExamples": [
-        "packages/core/src/components/md-app-bar/md-app-bar.spec.ts",
-        "packages/core/src/components/md-list-item/md-list-item.css"
-      ],
-      "sourceFileCount": 2
-    },
-    "architecture": {
-      "glyph": "architecture",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.tsx",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.tsx",
-        "packages/core/src/components/md-table/md-table.tsx"
+        "packages/core/src/components/md-bar-chart/md-bar-chart.tsx",
+        "packages/core/src/components/md-line-chart/md-line-chart.tsx"
       ],
       "sourceFileCount": 4
     },
     "arrow_back": {
       "glyph": "arrow_back",
       "sourceExamples": [
-        "packages/core/src/components/md-search/md-search.css",
-        "packages/core/src/components/md-search/md-search.spec.ts",
-        "packages/core/src/components/md-search/md-search.tsx"
+        "packages/core/src/components/md-search/md-search.tsx",
+        "packages/core/src/components/md-side-sheet/md-side-sheet.tsx"
       ],
-      "sourceFileCount": 6
+      "sourceFileCount": 2
     },
     "arrow_drop_down": {
       "glyph": "arrow_drop_down",
       "sourceExamples": [
         "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
-        "packages/core/src/components/md-button/md-button.css",
-        "packages/core/src/components/md-button/md-button.spec.ts"
+        "packages/core/src/components/md-date-picker/md-date-picker.tsx",
+        "packages/core/src/components/md-multi-select/md-multi-select.tsx"
       ],
-      "sourceFileCount": 11
+      "sourceFileCount": 5
     },
     "arrow_drop_up": {
       "glyph": "arrow_drop_up",
       "sourceExamples": [
-        "packages/core/src/components/md-date-picker/md-date-picker.css",
-        "packages/core/src/components/md-date-picker/md-date-picker.spec.ts",
         "packages/core/src/components/md-date-picker/md-date-picker.tsx"
       ],
-      "sourceFileCount": 3
-    },
-    "arrow_forward": {
-      "glyph": "arrow_forward",
-      "sourceExamples": [
-        "packages/core/src/components/md-button/md-button.css",
-        "packages/core/src/components/md-button/md-button.spec.ts",
-        "packages/core/src/components/md-transfer-list/md-transfer-list.spec.ts"
-      ],
-      "sourceFileCount": 3
+      "sourceFileCount": 1
     },
     "arrow_right": {
       "glyph": "arrow_right",
       "sourceExamples": [
-        "packages/core/src/components/md-sub-menu-item/md-sub-menu-item.css",
-        "packages/core/src/components/md-sub-menu-item/md-sub-menu-item.spec.ts",
         "packages/core/src/components/md-sub-menu-item/md-sub-menu-item.tsx"
-      ],
-      "sourceFileCount": 3
-    },
-    "arrow_upward": {
-      "glyph": "arrow_upward",
-      "sourceExamples": [
-        "packages/core/src/components/md-table-sort-label/md-table-sort-label.tsx"
-      ],
-      "sourceFileCount": 1
-    },
-    "article": {
-      "glyph": "article",
-      "sourceExamples": [
-        "packages/core/src/components/md-skeleton/md-skeleton.axe.spec.ts",
-        "packages/core/src/components/md-skeleton/md-skeleton.tsx"
-      ],
-      "sourceFileCount": 2
-    },
-    "assignment": {
-      "glyph": "assignment",
-      "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.tsx",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.tsx",
-        "packages/core/src/components/md-chip/md-chip.spec.ts"
-      ],
-      "sourceFileCount": 19
-    },
-    "auto_awesome": {
-      "glyph": "auto_awesome",
-      "sourceExamples": [
-        "packages/core/src/components/md-app-bar/md-app-bar.e2e.ts"
-      ],
-      "sourceFileCount": 1
-    },
-    "automation": {
-      "glyph": "automation",
-      "sourceExamples": [
-        "packages/core/src/components/md-time-picker/md-time-picker.spec.ts"
       ],
       "sourceFileCount": 1
     },
@@ -312,60 +126,19 @@
       "glyph": "badge",
       "sourceExamples": [
         "apps/test-angular/src/app/app.component.ts",
-        "apps/test-html/index.html",
-        "apps/test-react/src/App.tsx"
+        "apps/test-angular/src/main.ts",
+        "apps/test-html/index.html"
       ],
-      "sourceFileCount": 37
-    },
-    "balance": {
-      "glyph": "balance",
-      "sourceExamples": [
-        "packages/core/src/components/md-date-picker/md-date-picker.css",
-        "packages/core/src/components/md-time-picker/md-time-picker.e2e.ts",
-        "packages/core/src/components/md-time-picker/md-time-picker.spec.ts"
-      ],
-      "sourceFileCount": 4
-    },
-    "blanket": {
-      "glyph": "blanket",
-      "sourceExamples": [
-        "packages/core/src/components/md-bottom-sheet/md-bottom-sheet.css",
-        "packages/core/src/components/md-menu-item/md-menu-item.css",
-        "packages/core/src/components/md-sub-menu-item/md-sub-menu-item.css"
-      ],
-      "sourceFileCount": 4
-    },
-    "blind": {
-      "glyph": "blind",
-      "sourceExamples": [
-        "packages/core/src/components/md-bar-chart/md-bar-chart.e2e.ts"
-      ],
-      "sourceFileCount": 1
+      "sourceFileCount": 11
     },
     "block": {
       "glyph": "block",
       "sourceExamples": [
+        "apps/shared/catalog-samples.css",
         "apps/test-angular/src/app/app.component.ts",
-        "apps/test-html/src/styles.css",
-        "apps/test-react/src/App.tsx"
+        "apps/test-html/src/styles.css"
       ],
-      "sourceFileCount": 156
-    },
-    "bolt": {
-      "glyph": "bolt",
-      "sourceExamples": [
-        "packages/core/src/components/md-button-group/md-button-group.spec.ts",
-        "packages/core/src/components/md-rating/md-rating.css",
-        "packages/core/src/components/md-rating/md-rating.tsx"
-      ],
-      "sourceFileCount": 6
-    },
-    "book": {
-      "glyph": "book",
-      "sourceExamples": [
-        "packages/core/src/components/md-time-picker/md-time-picker.tsx"
-      ],
-      "sourceFileCount": 1
+      "sourceFileCount": 11
     },
     "bookmark": {
       "glyph": "bookmark",
@@ -374,7 +147,7 @@
         "apps/test-html/index.html",
         "apps/test-react/src/App.tsx"
       ],
-      "sourceFileCount": 6
+      "sourceFileCount": 5
     },
     "box": {
       "glyph": "box",
@@ -383,195 +156,90 @@
         "apps/test-svelte/src/App.svelte",
         "apps/test-vue/src/App.vue"
       ],
-      "sourceFileCount": 165
-    },
-    "brick": {
-      "glyph": "brick",
-      "sourceExamples": [
-        "packages/core/src/components/md-number-field/md-number-field.tsx"
-      ],
-      "sourceFileCount": 1
-    },
-    "browse": {
-      "glyph": "browse",
-      "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.spec.ts",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.spec.ts"
-      ],
       "sourceFileCount": 4
-    },
-    "brush": {
-      "glyph": "brush",
-      "sourceExamples": [
-        "packages/core/src/components/md-toolbar/md-toolbar.e2e.ts"
-      ],
-      "sourceFileCount": 1
     },
     "bubble": {
       "glyph": "bubble",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.tsx",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
-        "packages/core/src/components/md-button/md-button.tsx"
+        "packages/core/src/components/md-step/md-step.tsx"
       ],
-      "sourceFileCount": 30
+      "sourceFileCount": 1
     },
     "bubbles": {
       "glyph": "bubbles",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.spec.ts",
-        "packages/core/src/components/md-accordion/md-accordion.tsx",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.spec.ts"
+        "packages/core/src/components/md-accordion-item/md-accordion-item.tsx",
+        "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
+        "packages/core/src/components/md-breadcrumb-item/md-breadcrumb-item.tsx"
       ],
-      "sourceFileCount": 127
+      "sourceFileCount": 30
     },
     "build": {
       "glyph": "build",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion/test-utils/axe-spec.ts",
-        "packages/core/src/components/md-button-group/md-button-group.spec.ts",
-        "packages/core/src/components/md-fab/md-fab.spec.ts"
-      ],
-      "sourceFileCount": 22
-    },
-    "business": {
-      "glyph": "domain",
-      "sourceExamples": [
-        "packages/core/src/components/md-step/md-step.tsx",
-        "packages/core/src/components/md-sub-menu-item/md-sub-menu-item.tsx",
-        "packages/core/src/utils/charts/engine/rtl.ts"
-      ],
-      "sourceFileCount": 3
-    },
-    "cached": {
-      "glyph": "cached",
-      "sourceExamples": [
-        "packages/core/src/components/md-color-picker/md-color-picker.css",
-        "packages/core/src/components/md-color-picker/md-color-picker.drag.spec.ts",
-        "packages/core/src/components/md-menu/md-menu.tsx"
-      ],
-      "sourceFileCount": 11
-    },
-    "cadence": {
-      "glyph": "cadence",
-      "sourceExamples": [
-        "packages/core/src/components/md-select/virtualized.e2e.ts",
-        "packages/core/src/components/md-time-picker/md-time-picker.spec.ts",
-        "packages/core/src/utils/wasm-option-store.ts"
-      ],
-      "sourceFileCount": 3
-    },
-    "cake": {
-      "glyph": "cake",
-      "sourceExamples": [
-        "packages/core/src/components/md-date-picker/md-date-picker.spec.ts"
-      ],
-      "sourceFileCount": 1
-    },
-    "calendar_month": {
-      "glyph": "calendar_month",
-      "sourceExamples": [
-        "packages/core/src/components/md-app-bar/md-app-bar.e2e.ts"
+        "packages/core/src/index.html"
       ],
       "sourceFileCount": 1
     },
     "calendar_today": {
       "glyph": "calendar_today",
       "sourceExamples": [
-        "packages/core/src/components/md-date-picker/md-date-picker.spec.ts",
-        "packages/core/src/components/md-date-picker/md-date-picker.tsx",
-        "packages/core/src/components/md-text-field/md-text-field.spec.ts"
+        "packages/core/src/components/md-date-picker/md-date-picker.tsx"
       ],
-      "sourceFileCount": 3
-    },
-    "call": {
-      "glyph": "call",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion/test-utils/axe-spec.ts",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.tsx"
-      ],
-      "sourceFileCount": 69
+      "sourceFileCount": 1
     },
     "cancel": {
       "glyph": "cancel",
       "sourceExamples": [
         "apps/test-html/index.html",
         "apps/test-html/src/main.ts",
-        "packages/core/src/components/md-button-group/md-button-group.spec.ts"
+        "packages/core/src/components/md-dialog/dialog-utils.ts"
       ],
-      "sourceFileCount": 42
+      "sourceFileCount": 5
     },
     "capture": {
       "glyph": "capture",
       "sourceExamples": [
-        "packages/core/src/components/md-card/md-card.e2e.ts",
-        "packages/core/src/components/md-color-picker/md-color-picker.drag.spec.ts",
-        "packages/core/src/components/md-date-picker/md-date-picker.spec.ts"
+        "packages/core/src/components/md-date-picker/md-date-picker.tsx",
+        "packages/core/src/components/md-table-container/md-table-container.tsx",
+        "packages/core/src/components/md-tooltip/md-tooltip.tsx"
       ],
-      "sourceFileCount": 23
+      "sourceFileCount": 3
     },
     "cards": {
       "glyph": "cards",
       "sourceExamples": [
         "apps/test-html/index.html",
-        "packages/core/src/components/md-card/md-card.css",
-        "packages/core/src/components/md-list/md-list.css"
+        "packages/core/src/index.html"
       ],
-      "sourceFileCount": 18
-    },
-    "cases": {
-      "glyph": "cases",
-      "sourceExamples": [
-        "packages/core/src/components/md-badge/md-badge.spec.ts",
-        "packages/core/src/components/md-icon-button/md-icon-button.spec.ts",
-        "packages/core/src/components/md-line-chart/md-line-chart.tsx"
-      ],
-      "sourceFileCount": 15
-    },
-    "cast": {
-      "glyph": "cast",
-      "sourceExamples": [
-        "packages/core/src/components/md-table/md-table.spec.ts",
-        "packages/core/src/components/md-table/md-table.tsx",
-        "packages/core/src/components/md-table-cell/md-table-cell.css"
-      ],
-      "sourceFileCount": 6
+      "sourceFileCount": 2
     },
     "category": {
       "glyph": "category",
       "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.pointer.spec.ts",
         "packages/core/src/components/md-area-chart/md-area-chart.tsx",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.e2e.ts"
+        "packages/core/src/components/md-line-chart/md-line-chart.tsx",
+        "packages/core/src/components/md-sparkline/md-sparkline.tsx"
       ],
-      "sourceFileCount": 42
-    },
-    "chat": {
-      "glyph": "chat",
-      "sourceExamples": [
-        "packages/core/src/components/md-dialog/md-dialog.css"
-      ],
-      "sourceFileCount": 1
+      "sourceFileCount": 7
     },
     "check": {
       "glyph": "check",
       "sourceExamples": [
         "apps/test-angular/src/app/reactive-form.component.ts",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.axe.spec.ts",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.spec.ts"
+        "packages/core/src/components/md-checkbox/md-checkbox.tsx",
+        "packages/core/src/components/md-list-item/md-list-item.tsx"
       ],
-      "sourceFileCount": 59
+      "sourceFileCount": 8
     },
     "chevron_left": {
       "glyph": "chevron_left",
       "sourceExamples": [
-        "packages/core/src/components/md-date-picker/md-date-picker.css",
         "packages/core/src/components/md-date-picker/md-date-picker.tsx",
-        "packages/core/src/components/md-search/md-search.css"
+        "packages/core/src/components/md-search/md-search.tsx",
+        "packages/core/src/components/md-table-pagination/md-table-pagination.tsx"
       ],
-      "sourceFileCount": 7
+      "sourceFileCount": 4
     },
     "chevron_right": {
       "glyph": "chevron_right",
@@ -580,34 +248,25 @@
         "apps/test-html/index.html",
         "apps/test-react/src/App.tsx"
       ],
-      "sourceFileCount": 14
+      "sourceFileCount": 9
     },
     "chips": {
       "glyph": "chips",
       "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.css",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.css",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.e2e.ts"
+        "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
+        "packages/core/src/components/md-multi-select/md-multi-select.tsx",
+        "packages/core/src/components/md-text-field/md-text-field.tsx"
       ],
-      "sourceFileCount": 31
+      "sourceFileCount": 3
     },
     "circle": {
       "glyph": "circle",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion-item/md-accordion-item.axe.spec.ts",
-        "packages/core/src/components/md-avatar/md-avatar.css",
-        "packages/core/src/components/md-avatar/md-avatar.spec.ts"
+        "packages/core/src/components/md-avatar/md-avatar.tsx",
+        "packages/core/src/components/md-badge/md-badge.tsx",
+        "packages/core/src/components/md-fab-menu/md-fab-menu.tsx"
       ],
-      "sourceFileCount": 60
-    },
-    "circles": {
-      "glyph": "circles",
-      "sourceExamples": [
-        "packages/core/src/components/md-date-picker/md-date-picker.css",
-        "packages/core/src/components/md-number-field/md-number-field.css",
-        "packages/core/src/components/md-progress-indicator/md-progress-indicator.spec.ts"
-      ],
-      "sourceFileCount": 8
+      "sourceFileCount": 10
     },
     "class": {
       "glyph": "book",
@@ -616,133 +275,30 @@
         "apps/test-angular/src/app/reactive-form.component.ts",
         "apps/test-html/index.html"
       ],
-      "sourceFileCount": 195
+      "sourceFileCount": 8
     },
     "clear": {
       "glyph": "close",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.tsx",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.api.spec.ts",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.css"
+        "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
+        "packages/core/src/components/md-multi-select/md-multi-select.tsx",
+        "packages/core/src/components/md-select/md-select.tsx"
       ],
-      "sourceFileCount": 88
+      "sourceFileCount": 3
     },
     "close": {
       "glyph": "close",
       "sourceExamples": [
         "apps/test-vue/src/App.vue",
-        "packages/core/src/components/md-accordion/md-accordion.tsx",
-        "packages/core/src/components/md-accordion/test-utils/axe-spec.ts"
+        "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
+        "packages/core/src/components/md-bottom-sheet/md-bottom-sheet.tsx"
       ],
-      "sourceFileCount": 93
-    },
-    "cloud": {
-      "glyph": "cloud",
-      "sourceExamples": [
-        "packages/core/src/components/md-fab-menu/md-fab-menu.spec.ts"
-      ],
-      "sourceFileCount": 1
+      "sourceFileCount": 15
     },
     "code": {
       "glyph": "code",
       "sourceExamples": [
-        "apps/test-html/index.html",
-        "packages/core/src/components/md-button-group/md-button-group.spec.ts",
-        "packages/core/src/components/md-date-picker/md-date-picker.spec.ts"
-      ],
-      "sourceFileCount": 26
-    },
-    "colors": {
-      "glyph": "colors",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.css",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css",
-        "packages/core/src/components/md-app-bar/md-app-bar.css"
-      ],
-      "sourceFileCount": 71
-    },
-    "comment": {
-      "glyph": "comment",
-      "sourceExamples": [
-        "packages/core/src/components/md-sub-menu-item/md-sub-menu-item.css",
-        "packages/core/src/components/md-table/md-table.tsx",
-        "packages/core/src/components/md-text-field/md-text-field.css"
-      ],
-      "sourceFileCount": 5
-    },
-    "commit": {
-      "glyph": "commit",
-      "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.tsx",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.e2e.ts",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.spec.ts"
-      ],
-      "sourceFileCount": 28
-    },
-    "compare": {
-      "glyph": "compare",
-      "sourceExamples": [
-        "packages/core/src/components/md-menu/md-menu.tsx",
-        "packages/core/src/components/md-select/customization.e2e.ts",
-        "packages/core/src/components/md-table/md-table.tsx"
-      ],
-      "sourceFileCount": 3
-    },
-    "compress": {
-      "glyph": "compress",
-      "sourceExamples": [
-        "packages/core/src/components/md-navigation-rail/md-navigation-rail.css"
-      ],
-      "sourceFileCount": 1
-    },
-    "conditions": {
-      "glyph": "conditions",
-      "sourceExamples": [
-        "packages/core/src/components/md-breadcrumb-item/md-breadcrumb-item.tsx",
-        "packages/core/src/components/md-progress-indicator/md-progress-indicator.spec.ts"
-      ],
-      "sourceFileCount": 2
-    },
-    "construction": {
-      "glyph": "construction",
-      "sourceExamples": [
-        "packages/core/src/components/md-breadcrumb-item/md-breadcrumb-item.spec.ts",
-        "packages/core/src/components/md-list/md-list.keyboard.spec.ts",
-        "packages/core/src/components/md-organization-chart/md-organization-chart.tsx"
-      ],
-      "sourceFileCount": 11
-    },
-    "contract": {
-      "glyph": "contract",
-      "sourceExamples": [
-        "packages/core/src/components/hidden-attribute.e2e.ts",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.axe.spec.ts"
-      ],
-      "sourceFileCount": 56
-    },
-    "contrast": {
-      "glyph": "contrast",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion/test-utils/axe-spec.ts",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.axe.spec.ts",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css"
-      ],
-      "sourceFileCount": 25
-    },
-    "create": {
-      "glyph": "edit",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.spec.ts",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.spec.ts",
-        "packages/core/src/components/md-app-bar/md-app-bar.search.spec.ts"
-      ],
-      "sourceFileCount": 106
-    },
-    "crop": {
-      "glyph": "crop",
-      "sourceExamples": [
-        "packages/core/src/components/md-toolbar/md-toolbar.e2e.ts"
+        "apps/test-html/index.html"
       ],
       "sourceFileCount": 1
     },
@@ -751,41 +307,9 @@
       "sourceExamples": [
         "apps/test-html/index.html",
         "apps/test-html/src/styles.css",
-        "apps/test-react/src/styles.css"
+        "apps/test-react/index.html"
       ],
-      "sourceFileCount": 117
-    },
-    "csv": {
-      "glyph": "csv",
-      "sourceExamples": [
-        "packages/core/src/components/md-segmented-button/md-segmented-button.axe.spec.ts"
-      ],
-      "sourceFileCount": 1
-    },
-    "cut": {
-      "glyph": "cut",
-      "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.tsx",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.tsx",
-        "packages/core/src/components/md-date-picker/md-date-picker.css"
-      ],
-      "sourceFileCount": 28
-    },
-    "cycle": {
-      "glyph": "cycle",
-      "sourceExamples": [
-        "packages/core/src/components/md-app-bar/md-app-bar.css",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
-        "packages/core/src/components/md-date-picker/docked-overflow.e2e.ts"
-      ],
-      "sourceFileCount": 22
-    },
-    "dangerous": {
-      "glyph": "dangerous",
-      "sourceExamples": [
-        "packages/core/src/utils/url.ts"
-      ],
-      "sourceFileCount": 1
+      "sourceFileCount": 9
     },
     "dashboard": {
       "glyph": "dashboard",
@@ -796,213 +320,61 @@
       ],
       "sourceFileCount": 5
     },
-    "dataset": {
-      "glyph": "dataset",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.tsx",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.api.spec.ts",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.spec.ts"
-      ],
-      "sourceFileCount": 33
-    },
-    "deck": {
-      "glyph": "deck",
-      "sourceExamples": [
-        "packages/core/src/components/md-table/md-table.features.e2e.ts",
-        "packages/core/src/components/md-table/md-table.tsx"
-      ],
-      "sourceFileCount": 2
-    },
-    "delete": {
-      "glyph": "delete",
-      "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.tsx",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.focus.spec.ts",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.tsx"
-      ],
-      "sourceFileCount": 35
-    },
     "description": {
       "glyph": "description",
       "sourceExamples": [
-        "packages/core/src/components/md-autocomplete/md-autocomplete.spec.ts",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
-        "packages/core/src/components/md-checkbox/md-checkbox.tsx"
+        "packages/core/src/components/md-step/md-step.tsx",
+        "packages/core/src/components/md-toolbar/md-toolbar.tsx"
       ],
-      "sourceFileCount": 20
-    },
-    "deselect": {
-      "glyph": "deselect",
-      "sourceExamples": [
-        "packages/core/src/components/md-autocomplete/md-autocomplete.spec.ts",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
-        "packages/core/src/components/md-chip/md-chip.spec.ts"
-      ],
-      "sourceFileCount": 6
-    },
-    "details": {
-      "glyph": "details",
-      "sourceExamples": [
-        "packages/core/src/components/md-dialog/md-dialog.e2e.ts",
-        "packages/core/src/components/md-number-field/md-number-field.spec.ts",
-        "packages/core/src/components/md-search/md-search.lifecycle.e2e.ts"
-      ],
-      "sourceFileCount": 9
-    },
-    "devices": {
-      "glyph": "devices",
-      "sourceExamples": [
-        "packages/core/src/components/md-avatar/md-avatar.tsx",
-        "packages/core/src/components/md-time-picker/md-time-picker.spec.ts",
-        "packages/core/src/components/md-toolbar/md-toolbar.css"
-      ],
-      "sourceFileCount": 3
+      "sourceFileCount": 2
     },
     "dialogs": {
       "glyph": "dialogs",
       "sourceExamples": [
-        "apps/test-html/src/styles.css",
-        "packages/core/src/components/md-bottom-sheet/md-bottom-sheet.css",
-        "packages/core/src/components/md-bottom-sheet/md-bottom-sheet.tsx"
+        "apps/test-html/src/styles.css"
       ],
-      "sourceFileCount": 9
+      "sourceFileCount": 1
     },
     "diamond": {
       "glyph": "diamond",
       "sourceExamples": [
-        "packages/core/src/components/md-loading-indicator/md-loading-indicator.css",
-        "packages/core/src/utils/charts/engine/fixes.spec.ts",
-        "packages/core/src/utils/charts/engine/geometry.ts"
+        "packages/core/src/utils/charts/engine/geometry.ts",
+        "packages/core/src/utils/charts/engine/hover.ts",
+        "packages/core/src/utils/charts/engine/layout.ts"
       ],
-      "sourceFileCount": 7
-    },
-    "dictionary": {
-      "glyph": "dictionary",
-      "sourceExamples": [
-        "packages/core/src/components/md-checkbox/md-checkbox.tsx",
-        "packages/core/src/components/md-date-picker/md-date-picker.tsx",
-        "packages/core/src/components/md-fab-menu/md-fab-menu.tsx"
-      ],
-      "sourceFileCount": 8
-    },
-    "difference": {
-      "glyph": "difference",
-      "sourceExamples": [
-        "packages/core/src/components/md-navigation-rail/md-navigation-rail.css",
-        "packages/core/src/components/md-navigation-tab/md-navigation-tab.css",
-        "packages/core/src/components/md-skeleton/md-skeleton.surfaces.e2e.ts"
-      ],
-      "sourceFileCount": 6
-    },
-    "directions": {
-      "glyph": "directions",
-      "sourceExamples": [
-        "packages/core/src/components/md-autocomplete/md-autocomplete.spec.ts",
-        "packages/core/src/components/md-date-picker/md-date-picker.css",
-        "packages/core/src/components/md-navigation-rail-tab/md-navigation-rail-tab.css"
-      ],
-      "sourceFileCount": 17
-    },
-    "directions_bus": {
-      "glyph": "directions_bus",
-      "sourceExamples": [
-        "packages/core/src/components/md-segmented-button/md-segmented-button.axe.spec.ts"
-      ],
-      "sourceFileCount": 1
-    },
-    "directions_car": {
-      "glyph": "directions_car",
-      "sourceExamples": [
-        "packages/core/src/components/md-segmented-button/md-segmented-button.axe.spec.ts"
-      ],
-      "sourceFileCount": 1
+      "sourceFileCount": 4
     },
     "distance": {
       "glyph": "distance",
       "sourceExamples": [
-        "packages/core/src/components/md-card/md-card.e2e.ts",
-        "packages/core/src/components/md-card/md-card.tsx",
-        "packages/core/src/components/md-dialog/md-dialog.css"
-      ],
-      "sourceFileCount": 16
-    },
-    "dock": {
-      "glyph": "dock",
-      "sourceExamples": [
-        "packages/core/src/components/md-segmented-button-set/md-segmented-button-set.tsx",
-        "packages/core/src/components/md-segmented-button-set/resync.e2e.ts"
+        "packages/core/src/components/md-time-picker/md-time-picker.tsx",
+        "packages/core/src/utils/charts/engine/chart.ts"
       ],
       "sourceFileCount": 2
-    },
-    "docs": {
-      "glyph": "docs",
-      "sourceExamples": [
-        "packages/core/src/components/hidden-attribute.e2e.ts",
-        "packages/core/src/components/md-dialog/dialog-utils.ts",
-        "packages/core/src/components/md-navigation-rail/md-navigation-rail.css"
-      ],
-      "sourceFileCount": 11
     },
     "domain": {
       "glyph": "domain",
       "sourceExamples": [
-        "packages/core/src/utils/charts/engine/bar-layout.spec.ts",
-        "packages/core/src/utils/charts/engine/bar-layout.ts",
-        "packages/core/src/utils/charts/engine/break.spec.ts"
+        "packages/core/src/utils/charts/engine/layout.ts",
+        "packages/core/src/utils/charts/engine/scale.ts"
       ],
-      "sourceFileCount": 10
-    },
-    "done": {
-      "glyph": "done",
-      "sourceExamples": [
-        "packages/core/src/components/md-dialog/md-dialog.e2e.ts",
-        "packages/core/src/components/md-list-item/md-list-item.css",
-        "packages/core/src/components/md-menu/md-menu.virtual.spec.ts"
-      ],
-      "sourceFileCount": 17
-    },
-    "draft": {
-      "glyph": "note",
-      "sourceExamples": [
-        "packages/core/src/components/md-date-picker/md-date-picker.tsx",
-        "packages/core/src/components/md-time-picker/md-time-picker.spec.ts",
-        "packages/core/src/components/md-time-picker/md-time-picker.tsx"
-      ],
-      "sourceFileCount": 3
-    },
-    "drafts": {
-      "glyph": "drafts",
-      "sourceExamples": [
-        "packages/core/src/components/md-navigation-rail/md-navigation-rail.css"
-      ],
-      "sourceFileCount": 1
+      "sourceFileCount": 2
     },
     "drag_indicator": {
       "glyph": "drag_indicator",
       "sourceExamples": [
         "packages/core/src/components/md-accordion-item/md-accordion-item.tsx",
-        "packages/core/src/components/md-list-item/md-list-item.css",
         "packages/core/src/components/md-list-item/md-list-item.tsx"
       ],
-      "sourceFileCount": 3
+      "sourceFileCount": 2
     },
     "draw": {
       "glyph": "draw",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css",
-        "packages/core/src/components/md-area-chart/md-area-chart.spec.ts",
-        "packages/core/src/components/md-area-chart/md-area-chart.tsx"
+        "packages/core/src/utils/charts/engine/animate.ts",
+        "packages/core/src/utils/charts/types.ts"
       ],
-      "sourceFileCount": 32
-    },
-    "dropdown": {
-      "glyph": "dropdown",
-      "sourceExamples": [
-        "packages/core/src/components/md-autocomplete/md-autocomplete.css",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.spec.ts",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.tsx"
-      ],
-      "sourceFileCount": 21
+      "sourceFileCount": 2
     },
     "edit": {
       "glyph": "edit",
@@ -1011,16 +383,14 @@
         "apps/test-html/index.html",
         "apps/test-react/src/App.tsx"
       ],
-      "sourceFileCount": 23
+      "sourceFileCount": 7
     },
     "elevation": {
       "glyph": "elevation",
       "sourceExamples": [
-        "apps/test-angular/src/tokens.css",
-        "packages/core/src/components/md-accordion/md-accordion.css",
-        "packages/core/src/components/md-accordion/md-accordion.spec.ts"
+        "apps/test-angular/src/tokens.css"
       ],
-      "sourceFileCount": 35
+      "sourceFileCount": 1
     },
     "email": {
       "glyph": "mail",
@@ -1029,16 +399,16 @@
         "apps/test-html/index.html",
         "apps/test-react/src/App.tsx"
       ],
-      "sourceFileCount": 8
+      "sourceFileCount": 5
     },
     "equal": {
       "glyph": "equal",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.css",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css",
-        "packages/core/src/components/md-app-bar/md-app-bar.css"
+        "packages/core/src/components/md-tabs/md-tabs.tsx",
+        "packages/core/src/utils/charts/engine/layout.ts",
+        "packages/core/src/utils/charts/engine/scale.ts"
       ],
-      "sourceFileCount": 98
+      "sourceFileCount": 4
     },
     "error": {
       "glyph": "error",
@@ -1047,132 +417,38 @@
         "apps/test-angular/src/tokens.css",
         "apps/test-html/index.html"
       ],
-      "sourceFileCount": 74
-    },
-    "euro": {
-      "glyph": "euro",
-      "sourceExamples": [
-        "packages/core/src/components/md-bar-chart/md-bar-chart.e2e.ts"
-      ],
-      "sourceFileCount": 1
+      "sourceFileCount": 11
     },
     "event": {
       "glyph": "event",
       "sourceExamples": [
         "apps/test-vue/src/App.vue",
-        "packages/core/src/components/md-accordion/md-accordion.spec.ts",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.tsx"
+        "packages/core/src/index.html"
       ],
-      "sourceFileCount": 109
-    },
-    "exercise": {
-      "glyph": "exercise",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion-item/md-accordion-item.axe.spec.ts",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.spec.ts",
-        "packages/core/src/components/md-bottom-sheet/md-bottom-sheet.spec.ts"
-      ],
-      "sourceFileCount": 10
-    },
-    "expand": {
-      "glyph": "expand",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.tsx",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.tsx"
-      ],
-      "sourceFileCount": 31
-    },
-    "expand_circle_right": {
-      "glyph": "expand_circle_right",
-      "sourceExamples": [
-        "packages/core/src/components/md-table-expand-toggle/md-table-expand-toggle.tsx"
-      ],
-      "sourceFileCount": 1
+      "sourceFileCount": 2
     },
     "expand_less": {
       "glyph": "expand_less",
       "sourceExamples": [
-        "packages/core/src/components/md-organization-chart/md-organization-chart.tsx",
-        "packages/core/src/components/md-table-sort-label/md-table-sort-label.tsx"
+        "packages/core/src/components/md-organization-chart/md-organization-chart.tsx"
       ],
-      "sourceFileCount": 2
+      "sourceFileCount": 1
     },
     "expand_more": {
       "glyph": "expand_more",
       "sourceExamples": [
-        "packages/core/src/components/md-list-item/md-list-item.css",
-        "packages/core/src/components/md-list-item/md-list-item.spec.ts",
-        "packages/core/src/components/md-list-item/md-list-item.tsx"
-      ],
-      "sourceFileCount": 5
-    },
-    "explicit": {
-      "glyph": "explicit",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.css",
-        "packages/core/src/components/md-accordion/test-utils/axe-spec.ts",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.tsx"
-      ],
-      "sourceFileCount": 84
-    },
-    "exposure": {
-      "glyph": "exposure",
-      "sourceExamples": [
-        "packages/core/src/components/md-table/md-table.axe.spec.ts",
-        "packages/core/src/utils/charts/engine/bar-layout.spec.ts"
+        "packages/core/src/components/md-list-item/md-list-item.tsx",
+        "packages/core/src/components/md-organization-chart/md-organization-chart.tsx"
       ],
       "sourceFileCount": 2
-    },
-    "extension": {
-      "glyph": "extension",
-      "sourceExamples": [
-        "packages/core/src/components/md-avatar/md-avatar.css",
-        "packages/core/src/components/md-time-picker/md-time-picker.e2e.ts",
-        "packages/core/src/components/md-time-picker/md-time-picker.tsx"
-      ],
-      "sourceFileCount": 3
-    },
-    "face": {
-      "glyph": "face",
-      "sourceExamples": [
-        "packages/core/src/components/md-checkbox/md-checkbox.css",
-        "packages/core/src/components/md-checkbox/md-checkbox.tsx",
-        "packages/core/src/components/md-meter/md-meter.css"
-      ],
-      "sourceFileCount": 12
-    },
-    "factory": {
-      "glyph": "factory",
-      "sourceExamples": [
-        "packages/core/src/components/md-autocomplete/md-autocomplete.api.spec.ts",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
-        "packages/core/src/components/md-multi-select/md-multi-select.api.spec.ts"
-      ],
-      "sourceFileCount": 14
     },
     "falling": {
       "glyph": "falling",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.tsx",
-        "packages/core/src/components/md-line-chart/md-line-chart.tsx",
-        "packages/core/src/components/md-multi-select/md-multi-select.tsx"
+        "packages/core/src/components/md-text-field/md-text-field.tsx",
+        "packages/core/src/utils/charts/engine/hover.ts"
       ],
-      "sourceFileCount": 12
-    },
-    "fast_forward": {
-      "glyph": "fast_forward",
-      "sourceExamples": [
-        "packages/core/src/components/md-transfer-list/md-transfer-list.spec.ts"
-      ],
-      "sourceFileCount": 1
-    },
-    "fast_rewind": {
-      "glyph": "fast_rewind",
-      "sourceExamples": [
-        "packages/core/src/components/md-transfer-list/md-transfer-list.spec.ts"
-      ],
-      "sourceFileCount": 1
+      "sourceFileCount": 2
     },
     "favorite": {
       "glyph": "favorite",
@@ -1180,40 +456,6 @@
         "apps/test-angular/src/app/app.component.ts",
         "apps/test-html/index.html",
         "apps/test-react/src/App.tsx"
-      ],
-      "sourceFileCount": 10
-    },
-    "favorite_border": {
-      "glyph": "favorite",
-      "sourceExamples": [
-        "packages/core/src/components/md-icon-button/md-icon-button.spec.ts"
-      ],
-      "sourceFileCount": 1
-    },
-    "feed": {
-      "glyph": "feed",
-      "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.keyboard.spec.ts",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.e2e.ts",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.late-data.e2e.ts"
-      ],
-      "sourceFileCount": 11
-    },
-    "feedback": {
-      "glyph": "sms_failed",
-      "sourceExamples": [
-        "packages/core/src/components/md-list-item/md-list-item.css",
-        "packages/core/src/components/md-menu/md-menu.tsx",
-        "packages/core/src/components/md-navigation-tab/md-navigation-tab.css"
-      ],
-      "sourceFileCount": 16
-    },
-    "files": {
-      "glyph": "files",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion/test-utils/axe-spec.ts",
-        "packages/core/src/components/md-navigation-rail/md-navigation-rail.spec.ts",
-        "packages/core/src/components/md-progress-indicator/md-progress-indicator.spec.ts"
       ],
       "sourceFileCount": 5
     },
@@ -1224,14 +466,7 @@
         "apps/test-html/index.html",
         "apps/test-react/src/App.tsx"
       ],
-      "sourceFileCount": 130
-    },
-    "fingerprint": {
-      "glyph": "fingerprint",
-      "sourceExamples": [
-        "packages/core/src/utils/charts/theme.ts"
-      ],
-      "sourceFileCount": 1
+      "sourceFileCount": 8
     },
     "first_page": {
       "glyph": "first_page",
@@ -1240,120 +475,12 @@
       ],
       "sourceFileCount": 1
     },
-    "fit_screen": {
-      "glyph": "fit_screen",
-      "sourceExamples": [
-        "packages/core/src/components/md-toolbar/md-toolbar.e2e.ts"
-      ],
-      "sourceFileCount": 1
-    },
-    "flag": {
-      "glyph": "flag",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.tsx",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.axe.spec.ts",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.spec.ts"
-      ],
-      "sourceFileCount": 39
-    },
-    "flight": {
-      "glyph": "flight",
-      "sourceExamples": [
-        "packages/core/src/components/md-autocomplete/md-autocomplete.spec.ts",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.tsx"
-      ],
-      "sourceFileCount": 29
-    },
-    "flip": {
-      "glyph": "flip",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.css",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css",
-        "packages/core/src/components/md-area-chart/md-area-chart.tsx"
-      ],
-      "sourceFileCount": 65
-    },
-    "floor": {
-      "glyph": "floor",
-      "sourceExamples": [
-        "packages/core/src/components/md-app-bar/md-app-bar.css",
-        "packages/core/src/components/md-area-chart/md-area-chart.css",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.css"
-      ],
-      "sourceFileCount": 45
-    },
-    "fluid": {
-      "glyph": "fluid",
-      "sourceExamples": [
-        "packages/core/src/components/md-card/md-card.css",
-        "packages/core/src/components/md-card/md-card.tsx",
-        "packages/core/src/components/md-line-chart/md-line-chart.css"
-      ],
-      "sourceFileCount": 4
-    },
-    "folder": {
-      "glyph": "folder",
-      "sourceExamples": [
-        "packages/core/src/components/md-fab-menu/md-fab-menu.spec.ts",
-        "packages/core/src/components/md-navigation-rail/md-navigation-rail.spec.ts"
-      ],
-      "sourceFileCount": 2
-    },
-    "footprint": {
-      "glyph": "footprint",
-      "sourceExamples": [
-        "packages/core/src/components/md-navigation-rail/md-navigation-rail.css",
-        "packages/core/src/components/md-navigation-tab/md-navigation-tab.css",
-        "packages/core/src/components/md-pie-chart/md-pie-chart.tsx"
-      ],
-      "sourceFileCount": 10
-    },
-    "format_bold": {
-      "glyph": "format_bold",
-      "sourceExamples": [
-        "packages/core/src/components/md-toolbar/md-toolbar.e2e.ts"
-      ],
-      "sourceFileCount": 1
-    },
-    "format_italic": {
-      "glyph": "format_italic",
-      "sourceExamples": [
-        "packages/core/src/components/md-toolbar/md-toolbar.e2e.ts"
-      ],
-      "sourceFileCount": 1
-    },
-    "format_underlined": {
-      "glyph": "format_underlined",
-      "sourceExamples": [
-        "packages/core/src/components/md-toolbar/md-toolbar.e2e.ts"
-      ],
-      "sourceFileCount": 1
-    },
     "forward": {
       "glyph": "forward",
       "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.keyboard.spec.ts",
-        "packages/core/src/components/md-area-chart/md-area-chart.tsx",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.css"
-      ],
-      "sourceFileCount": 43
-    },
-    "foundation": {
-      "glyph": "foundation",
-      "sourceExamples": [
-        "packages/core/src/utils/charts/engine/scale.ts"
+        "packages/core/src/components/md-date-picker/md-date-picker.tsx"
       ],
       "sourceFileCount": 1
-    },
-    "fullscreen": {
-      "glyph": "fullscreen",
-      "sourceExamples": [
-        "packages/core/src/components/md-dialog/md-dialog.css",
-        "packages/core/src/components/md-dialog/md-dialog.spec.ts",
-        "packages/core/src/components/md-dialog/md-dialog.tsx"
-      ],
-      "sourceFileCount": 6
     },
     "function": {
       "glyph": "function",
@@ -1362,77 +489,33 @@
         "apps/test-svelte/src/App.svelte",
         "apps/test-vue/src/App.vue"
       ],
-      "sourceFileCount": 234
-    },
-    "functions": {
-      "glyph": "functions",
-      "sourceExamples": [
-        "packages/core/src/components/md-bar-chart/md-bar-chart.pointer.spec.ts",
-        "packages/core/src/components/md-otp-field/md-otp-field.tsx",
-        "packages/core/src/components/md-text-field/md-text-field.tsx"
-      ],
-      "sourceFileCount": 7
-    },
-    "gate": {
-      "glyph": "gate",
-      "sourceExamples": [
-        "packages/core/src/components/md-autocomplete/md-autocomplete.spec.ts",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
-        "packages/core/src/components/md-date-picker/md-date-picker.spec.ts"
-      ],
-      "sourceFileCount": 22
-    },
-    "gesture": {
-      "glyph": "gesture",
-      "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.pointer.spec.ts",
-        "packages/core/src/components/md-area-chart/md-area-chart.tsx",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.pointer.spec.ts"
-      ],
-      "sourceFileCount": 21
+      "sourceFileCount": 44
     },
     "glyphs": {
       "glyph": "glyphs",
       "sourceExamples": [
-        "packages/core/src/components/md-app-bar/md-app-bar.css",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.css",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.e2e.ts"
+        "packages/core/src/utils/charts/engine/animate.ts",
+        "packages/core/src/utils/charts/engine/layout.ts",
+        "packages/core/src/utils/charts/engine/rtl.ts"
       ],
-      "sourceFileCount": 35
+      "sourceFileCount": 3
     },
     "gradient": {
       "glyph": "gradient",
       "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.tsx",
-        "packages/core/src/components/md-bottom-sheet/md-bottom-sheet.css",
-        "packages/core/src/components/md-color-picker/md-color-picker.css"
+        "packages/core/src/components/md-pie-chart/md-pie-chart.tsx",
+        "packages/core/src/utils/charts/engine/pie-layout.ts"
       ],
-      "sourceFileCount": 20
-    },
-    "grid_view": {
-      "glyph": "grid_view",
-      "sourceExamples": [
-        "packages/core/src/components/md-segmented-button/md-segmented-button.axe.spec.ts"
-      ],
-      "sourceFileCount": 1
+      "sourceFileCount": 2
     },
     "group": {
       "glyph": "group",
       "sourceExamples": [
         "apps/test-angular/src/app/reactive-form.component.ts",
-        "packages/core/src/components/md-accordion/md-accordion.axe.spec.ts",
-        "packages/core/src/components/md-accordion/md-accordion.e2e.ts"
+        "packages/core/src/components/md-accordion-item/md-accordion-item.tsx",
+        "packages/core/src/components/md-accordion/md-accordion.tsx"
       ],
-      "sourceFileCount": 91
-    },
-    "groups": {
-      "glyph": "groups",
-      "sourceExamples": [
-        "packages/core/src/components/md-button/md-button.css",
-        "packages/core/src/components/md-button-group/md-button-group.css",
-        "packages/core/src/components/md-button-group/md-button-group.tsx"
-      ],
-      "sourceFileCount": 19
+      "sourceFileCount": 17
     },
     "hearing": {
       "glyph": "hearing",
@@ -1448,40 +531,24 @@
         "apps/test-angular/src/tokens.css",
         "apps/test-html/index.html"
       ],
-      "sourceFileCount": 244
-    },
-    "help": {
-      "glyph": "help",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion/test-utils/axe-spec.ts",
-        "packages/core/src/components/md-menu/md-menu.css"
-      ],
-      "sourceFileCount": 2
+      "sourceFileCount": 22
     },
     "hide": {
       "glyph": "hide",
       "sourceExamples": [
         "apps/test-html/index.html",
         "apps/test-react/src/App.tsx",
-        "packages/core/src/components/hidden-attribute.e2e.ts"
+        "packages/core/src/components/md-table/md-table.tsx"
       ],
-      "sourceFileCount": 46
+      "sourceFileCount": 3
     },
     "highlight": {
       "glyph": "highlight",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.css",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css",
-        "packages/core/src/components/md-button/md-button.css"
+        "packages/core/src/components/md-pie-chart/md-pie-chart.tsx",
+        "packages/core/src/components/md-table-row/md-table-row.tsx"
       ],
-      "sourceFileCount": 41
-    },
-    "history": {
-      "glyph": "history",
-      "sourceExamples": [
-        "packages/core/src/components/md-text-field/inline-validation.e2e.ts"
-      ],
-      "sourceFileCount": 1
+      "sourceFileCount": 2
     },
     "home": {
       "glyph": "home",
@@ -1490,95 +557,50 @@
         "apps/test-html/index.html",
         "apps/test-react/src/App.tsx"
       ],
-      "sourceFileCount": 25
-    },
-    "home_filled": {
-      "glyph": "home",
-      "sourceExamples": [
-        "packages/core/src/components/md-navigation-tab/md-navigation-tab.e2e.ts",
-        "packages/core/src/components/md-navigation-tab/md-navigation-tab.spec.ts"
-      ],
-      "sourceFileCount": 2
+      "sourceFileCount": 5
     },
     "host": {
       "glyph": "host",
       "sourceExamples": [
         "apps/test-angular/src/app/app.component.ts",
-        "packages/core/src/components/hidden-attribute.e2e.ts",
-        "packages/core/src/components/md-accordion/md-accordion.css"
+        "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
+        "packages/core/src/components/md-checkbox/md-checkbox.tsx"
       ],
-      "sourceFileCount": 272
-    },
-    "house": {
-      "glyph": "house",
-      "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.css",
-        "packages/core/src/components/md-area-chart/md-area-chart.tsx",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.css"
-      ],
-      "sourceFileCount": 19
+      "sourceFileCount": 12
     },
     "html": {
       "glyph": "html",
       "sourceExamples": [
         "apps/test-angular/src/index.html",
         "apps/test-html/index.html",
-        "packages/core/src/components/md-accordion/md-accordion.axe.spec.ts"
+        "apps/test-react/index.html"
       ],
-      "sourceFileCount": 154
-    },
-    "http": {
-      "glyph": "http",
-      "sourceExamples": [
-        "packages/core/src/components/md-progress-indicator/md-progress-indicator.tsx",
-        "packages/core/src/components/md-table-cell/md-table-cell.tsx",
-        "packages/core/src/utils/url.spec.ts"
-      ],
-      "sourceFileCount": 4
+      "sourceFileCount": 6
     },
     "https": {
       "glyph": "lock",
       "sourceExamples": [
         "apps/test-angular/src/tokens.css",
         "apps/test-html/index.html",
-        "packages/core/src/components/md-app-bar/md-app-bar.css"
-      ],
-      "sourceFileCount": 69
-    },
-    "hub": {
-      "glyph": "hub",
-      "sourceExamples": [
-        "packages/core/src/utils/charts/engine/pie-layout.spec.ts",
-        "packages/core/src/utils/charts/engine/pie-layout.ts",
-        "packages/core/src/utils/charts/engine/renderer-canvas.spec.ts"
+        "apps/test-react/index.html"
       ],
       "sourceFileCount": 5
     },
     "iframe": {
       "glyph": "iframe",
       "sourceExamples": [
-        "packages/core/src/components/md-card/md-card.tsx",
-        "packages/core/src/utils/charts/tooltip.spec.ts",
-        "packages/core/src/utils/charts/tooltip.ts"
+        "packages/core/src/components/md-card/md-card.tsx"
       ],
-      "sourceFileCount": 5
+      "sourceFileCount": 1
     },
     "image": {
       "glyph": "image",
       "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.tsx",
-        "packages/core/src/components/md-avatar/md-avatar.css",
-        "packages/core/src/components/md-avatar/md-avatar.spec.ts"
+        "packages/core/src/components/md-avatar/md-avatar.tsx",
+        "packages/core/src/components/md-list-item/md-list-item.tsx",
+        "packages/core/src/utils/form.ts"
       ],
-      "sourceFileCount": 33
-    },
-    "inbox": {
-      "glyph": "inbox",
-      "sourceExamples": [
-        "packages/core/src/components/md-list-item/md-list-item.spec.ts",
-        "packages/core/src/components/md-transfer-list/md-transfer-list.spec.ts"
-      ],
-      "sourceFileCount": 2
+      "sourceFileCount": 3
     },
     "info": {
       "glyph": "info",
@@ -1587,7 +609,7 @@
         "apps/test-html/index.html",
         "apps/test-react/src/App.tsx"
       ],
-      "sourceFileCount": 19
+      "sourceFileCount": 9
     },
     "input": {
       "glyph": "input",
@@ -1596,50 +618,21 @@
         "apps/test-html/index.html",
         "apps/test-react/src/App.tsx"
       ],
-      "sourceFileCount": 137
-    },
-    "inventory": {
-      "glyph": "inventory",
-      "sourceExamples": [
-        "packages/core/src/components/md-time-picker/md-time-picker.e2e.ts"
-      ],
-      "sourceFileCount": 1
+      "sourceFileCount": 15
     },
     "iso": {
       "glyph": "exposure",
       "sourceExamples": [
-        "packages/core/src/components/md-date-picker/date-utils.ts",
-        "packages/core/src/components/md-date-picker/md-date-picker.spec.ts",
-        "packages/core/src/components/md-date-picker/md-date-picker.tsx"
+        "packages/core/src/components/md-time-picker/md-time-picker.tsx"
       ],
-      "sourceFileCount": 6
-    },
-    "javascript": {
-      "glyph": "javascript",
-      "sourceExamples": [
-        "packages/core/src/components/md-button/link.e2e.ts",
-        "packages/core/src/utils/href-safety.spec.ts",
-        "packages/core/src/utils/url.spec.ts"
-      ],
-      "sourceFileCount": 4
-    },
-    "join": {
-      "glyph": "join",
-      "sourceExamples": [
-        "packages/core/src/components/hidden-attribute.e2e.ts",
-        "packages/core/src/components/md-accordion/md-accordion.axe.spec.ts",
-        "packages/core/src/components/md-accordion/md-accordion.spec.ts"
-      ],
-      "sourceFileCount": 67
+      "sourceFileCount": 1
     },
     "keep": {
       "glyph": "keep",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.axe.spec.ts",
-        "packages/core/src/components/md-accordion/md-accordion.css",
-        "packages/core/src/components/md-accordion/md-accordion.e2e.ts"
+        "apps/shared/catalog-samples.css"
       ],
-      "sourceFileCount": 105
+      "sourceFileCount": 1
     },
     "key": {
       "glyph": "key",
@@ -1648,24 +641,22 @@
         "apps/test-svelte/src/App.svelte",
         "apps/test-vue/src/App.vue"
       ],
-      "sourceFileCount": 156
+      "sourceFileCount": 8
     },
     "keyboard": {
       "glyph": "keyboard",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.e2e.ts",
-        "packages/core/src/components/md-accordion/md-accordion.spec.ts",
-        "packages/core/src/components/md-accordion/md-accordion.tsx"
+        "packages/core/src/components/md-number-field/md-number-field.tsx",
+        "packages/core/src/components/md-time-picker/md-time-picker.tsx"
       ],
-      "sourceFileCount": 167
+      "sourceFileCount": 2
     },
     "keyboard_arrow_down": {
       "glyph": "keyboard_arrow_down",
       "sourceExamples": [
-        "packages/core/src/components/md-split-button/md-split-button.spec.ts",
         "packages/core/src/components/md-split-button/md-split-button.tsx"
       ],
-      "sourceFileCount": 2
+      "sourceFileCount": 1
     },
     "keyboard_double_arrow_left": {
       "glyph": "keyboard_double_arrow_left",
@@ -1681,13 +672,6 @@
       ],
       "sourceFileCount": 1
     },
-    "kitchen": {
-      "glyph": "kitchen",
-      "sourceExamples": [
-        "packages/core/src/components/md-time-picker/md-time-picker.spec.ts"
-      ],
-      "sourceFileCount": 1
-    },
     "label": {
       "glyph": "label",
       "sourceExamples": [
@@ -1695,25 +679,7 @@
         "apps/test-angular/src/app/reactive-form.component.ts",
         "apps/test-angular/src/tokens.css"
       ],
-      "sourceFileCount": 335
-    },
-    "landscape": {
-      "glyph": "landscape",
-      "sourceExamples": [
-        "packages/core/src/components/md-time-picker/md-time-picker.css",
-        "packages/core/src/components/md-time-picker/md-time-picker.e2e.ts",
-        "packages/core/src/components/md-time-picker/md-time-picker.spec.ts"
-      ],
-      "sourceFileCount": 4
-    },
-    "language": {
-      "glyph": "language",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion/test-utils/axe-spec.ts",
-        "packages/core/src/components/md-area-chart/md-area-chart.tsx",
-        "packages/core/src/components/md-color-picker/color-picker-labels.ts"
-      ],
-      "sourceFileCount": 9
+      "sourceFileCount": 50
     },
     "last_page": {
       "glyph": "last_page",
@@ -1722,109 +688,39 @@
       ],
       "sourceFileCount": 1
     },
-    "launch": {
-      "glyph": "open_in_new",
-      "sourceExamples": [
-        "packages/core/src/components/md-bar-chart/md-bar-chart.e2e.ts"
-      ],
-      "sourceFileCount": 1
-    },
-    "layers": {
-      "glyph": "layers",
-      "sourceExamples": [
-        "packages/core/src/components/md-card/md-card.css",
-        "packages/core/src/components/md-card/md-card.tsx",
-        "packages/core/src/components/md-icon-button/md-icon-button.css"
-      ],
-      "sourceFileCount": 17
-    },
-    "lens": {
-      "glyph": "brightness_1",
-      "sourceExamples": [
-        "packages/core/src/utils/charts/engine/scene.ts"
-      ],
-      "sourceFileCount": 1
-    },
     "library_music": {
       "glyph": "library_music",
       "sourceExamples": [
         "apps/test-html/index.html",
-        "apps/test-react/src/App.tsx",
-        "packages/core/src/components/md-navigation-bar/md-navigation-bar.e2e.ts"
+        "apps/test-react/src/App.tsx"
       ],
-      "sourceFileCount": 4
+      "sourceFileCount": 2
     },
     "light": {
       "glyph": "light",
       "sourceExamples": [
         "apps/test-html/index.html",
-        "packages/core/src/components/md-accordion/md-accordion.spec.ts",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css"
+        "packages/core/src/components/md-pie-chart/md-pie-chart.tsx"
       ],
-      "sourceFileCount": 67
+      "sourceFileCount": 2
     },
     "link": {
       "glyph": "link",
       "sourceExamples": [
         "apps/test-html/index.html",
-        "packages/core/src/components/md-app-bar/md-app-bar.tsx",
-        "packages/core/src/components/md-badge/md-badge.spec.ts"
+        "apps/test-react/index.html",
+        "apps/test-svelte/index.html"
       ],
-      "sourceFileCount": 55
+      "sourceFileCount": 12
     },
     "list": {
       "glyph": "list",
       "sourceExamples": [
         "apps/test-angular/src/app/app.component.ts",
-        "apps/test-html/index.html",
-        "apps/test-react/src/App.tsx"
+        "apps/test-angular/src/main.ts",
+        "apps/test-html/index.html"
       ],
-      "sourceFileCount": 111
-    },
-    "lists": {
-      "glyph": "lists",
-      "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.tsx",
-        "packages/core/src/components/md-bottom-sheet/md-bottom-sheet.css",
-        "packages/core/src/components/md-bottom-sheet/md-bottom-sheet.tsx"
-      ],
-      "sourceFileCount": 29
-    },
-    "living": {
-      "glyph": "living",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.tsx",
-        "packages/core/src/components/md-list-item/md-list-item.css",
-        "packages/core/src/components/md-menu/transformed-ancestor.e2e.ts"
-      ],
-      "sourceFileCount": 4
-    },
-    "lock": {
-      "glyph": "lock",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css",
-        "packages/core/src/components/md-bottom-sheet/md-bottom-sheet.css",
-        "packages/core/src/components/md-bottom-sheet/md-bottom-sheet.spec.ts"
-      ],
-      "sourceFileCount": 13
-    },
-    "looks": {
-      "glyph": "looks",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.spec.ts",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.tsx",
-        "packages/core/src/components/md-area-chart/md-area-chart.css"
-      ],
-      "sourceFileCount": 22
-    },
-    "loop": {
-      "glyph": "autorenew",
-      "sourceExamples": [
-        "packages/core/src/components/md-bar-chart/md-bar-chart.e2e.ts",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.tsx",
-        "packages/core/src/components/md-breadcrumbs/md-breadcrumbs.tsx"
-      ],
-      "sourceFileCount": 29
+      "sourceFileCount": 16
     },
     "mail": {
       "glyph": "mail",
@@ -1833,16 +729,14 @@
         "apps/test-html/index.html",
         "apps/test-react/src/App.tsx"
       ],
-      "sourceFileCount": 7
+      "sourceFileCount": 5
     },
     "map": {
       "glyph": "map",
       "sourceExamples": [
-        "apps/test-react/src/App.tsx",
-        "packages/core/src/components/hidden-attribute.e2e.ts",
-        "packages/core/src/components/md-accordion/md-accordion.e2e.ts"
+        "apps/test-react/src/App.tsx"
       ],
-      "sourceFileCount": 130
+      "sourceFileCount": 1
     },
     "margin": {
       "glyph": "margin",
@@ -1851,60 +745,23 @@
         "apps/test-html/index.html",
         "apps/test-react/src/App.tsx"
       ],
-      "sourceFileCount": 89
-    },
-    "masks": {
-      "glyph": "masks",
-      "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.css",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.css",
-        "packages/core/src/components/md-line-chart/md-line-chart.css"
-      ],
       "sourceFileCount": 6
-    },
-    "matter": {
-      "glyph": "matter",
-      "sourceExamples": [
-        "packages/core/src/components/md-breadcrumbs/md-breadcrumbs.tsx",
-        "packages/core/src/components/md-chip/md-chip.css",
-        "packages/core/src/components/md-menu-item/md-menu-item.css"
-      ],
-      "sourceFileCount": 15
-    },
-    "memory": {
-      "glyph": "memory",
-      "sourceExamples": [
-        "packages/core/src/components/md-line-chart/md-line-chart.spec.ts",
-        "packages/core/src/components/md-line-chart/md-line-chart.tsx",
-        "packages/core/src/components/md-table/md-table.css"
-      ],
-      "sourceFileCount": 8
     },
     "menu": {
       "glyph": "menu",
       "sourceExamples": [
         "apps/test-angular/src/app/app.component.ts",
-        "apps/test-html/index.html",
-        "apps/test-html/src/main.ts"
+        "apps/test-angular/src/main.ts",
+        "apps/test-html/index.html"
       ],
-      "sourceFileCount": 118
+      "sourceFileCount": 19
     },
     "menu_open": {
       "glyph": "menu_open",
       "sourceExamples": [
-        "packages/core/src/components/md-navigation-rail/md-navigation-rail.spec.ts",
         "packages/core/src/components/md-navigation-rail/md-navigation-rail.tsx"
       ],
-      "sourceFileCount": 2
-    },
-    "merge": {
-      "glyph": "merge",
-      "sourceExamples": [
-        "packages/core/src/components/md-line-chart/md-line-chart.spec.ts",
-        "packages/core/src/components/md-line-chart/md-line-chart.tsx",
-        "packages/core/src/components/md-progress-indicator/md-progress-indicator.tsx"
-      ],
-      "sourceFileCount": 8
+      "sourceFileCount": 1
     },
     "message": {
       "glyph": "chat",
@@ -1913,43 +770,31 @@
         "apps/test-html/index.html",
         "apps/test-react/src/App.tsx"
       ],
-      "sourceFileCount": 56
+      "sourceFileCount": 19
     },
     "mic": {
       "glyph": "mic",
       "sourceExamples": [
-        "packages/core/src/components/md-app-bar/md-app-bar.css",
-        "packages/core/src/components/md-app-bar/md-app-bar.e2e.ts",
-        "packages/core/src/components/md-app-bar/md-app-bar.spec.ts"
+        "packages/core/src/components/md-search/md-search.tsx",
+        "packages/core/src/components/md-text-field/md-text-field.tsx"
       ],
-      "sourceFileCount": 8
+      "sourceFileCount": 2
     },
     "mobile": {
       "glyph": "mobile",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.e2e.ts",
-        "packages/core/src/components/md-bottom-sheet/md-bottom-sheet.css"
+        "packages/core/src/components/md-stepper/md-stepper.tsx"
       ],
-      "sourceFileCount": 15
+      "sourceFileCount": 1
     },
     "mode": {
       "glyph": "edit",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.axe.spec.ts",
-        "packages/core/src/components/md-accordion/md-accordion.css",
-        "packages/core/src/components/md-accordion/md-accordion.e2e.ts"
+        "packages/core/src/components/md-accordion/test-utils/axe-spec.ts",
+        "packages/core/src/components/md-date-picker/md-date-picker.tsx",
+        "packages/core/src/components/md-stepper/md-stepper.tsx"
       ],
-      "sourceFileCount": 143
-    },
-    "more": {
-      "glyph": "more",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.spec.ts",
-        "packages/core/src/components/md-accordion/md-accordion.tsx",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.tsx"
-      ],
-      "sourceFileCount": 59
+      "sourceFileCount": 4
     },
     "more_horiz": {
       "glyph": "more_horiz",
@@ -1960,158 +805,30 @@
       ],
       "sourceFileCount": 6
     },
-    "more_vert": {
-      "glyph": "more_vert",
-      "sourceExamples": [
-        "packages/core/src/components/md-app-bar/md-app-bar.e2e.ts",
-        "packages/core/src/components/md-icon-button/md-icon-button.spec.ts",
-        "packages/core/src/components/md-split-button/md-split-button.spec.ts"
-      ],
-      "sourceFileCount": 4
-    },
-    "mouse": {
-      "glyph": "mouse",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion-item/md-accordion-item.tsx",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.e2e.ts",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.e2e.ts"
-      ],
-      "sourceFileCount": 40
-    },
     "move": {
       "glyph": "move",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.spec.ts",
-        "packages/core/src/components/md-area-chart/md-area-chart.css"
+        "packages/core/src/index.html"
       ],
-      "sourceFileCount": 91
-    },
-    "moving": {
-      "glyph": "moving",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.tsx",
-        "packages/core/src/components/md-list/md-list.tsx",
-        "packages/core/src/components/md-menu/md-menu.e2e.ts"
-      ],
-      "sourceFileCount": 29
-    },
-    "nature": {
-      "glyph": "nature",
-      "sourceExamples": [
-        "packages/core/src/components/md-navigation-rail/md-navigation-rail.spec.ts",
-        "packages/core/src/components/md-otp-field/md-otp-field.tsx"
-      ],
-      "sourceFileCount": 2
+      "sourceFileCount": 1
     },
     "navigation": {
       "glyph": "navigation",
       "sourceExamples": [
         "apps/test-angular/src/app/app.component.ts",
-        "apps/test-html/index.html",
-        "apps/test-react/src/App.tsx"
+        "apps/test-angular/src/main.ts",
+        "apps/test-html/index.html"
       ],
-      "sourceFileCount": 88
-    },
-    "news": {
-      "glyph": "news",
-      "sourceExamples": [
-        "packages/core/src/utils/form-controller.spec.ts"
-      ],
-      "sourceFileCount": 1
-    },
-    "north": {
-      "glyph": "north",
-      "sourceExamples": [
-        "packages/core/src/components/md-table-sort-label/md-table-sort-label.spec.ts",
-        "packages/core/src/components/md-table-sort-label/md-table-sort-label.tsx"
-      ],
-      "sourceFileCount": 2
-    },
-    "note": {
-      "glyph": "note",
-      "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.pointer.spec.ts",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.e2e.ts",
-        "packages/core/src/components/md-line-chart/md-line-chart.pointer.spec.ts"
-      ],
-      "sourceFileCount": 15
-    },
-    "notes": {
-      "glyph": "notes",
-      "sourceExamples": [
-        "packages/core/src/components/md-autocomplete/md-autocomplete.api.spec.ts",
-        "packages/core/src/components/md-dialog/md-dialog.e2e.ts"
-      ],
-      "sourceFileCount": 2
-    },
-    "notifications": {
-      "glyph": "notifications",
-      "sourceExamples": [
-        "packages/core/src/components/md-navigation-rail/md-navigation-rail.axe.spec.ts",
-        "packages/core/src/components/md-navigation-rail-tab/md-navigation-rail-tab.spec.ts",
-        "packages/core/src/components/md-navigation-rail-tab/md-navigation-rail-tab.tsx"
-      ],
-      "sourceFileCount": 3
-    },
-    "numbers": {
-      "glyph": "numbers",
-      "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.tsx",
-        "packages/core/src/components/md-avatar/md-avatar.spec.ts",
-        "packages/core/src/components/md-badge/md-badge.spec.ts"
-      ],
-      "sourceFileCount": 34
+      "sourceFileCount": 12
     },
     "opacity": {
       "glyph": "opacity",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.css",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css",
-        "packages/core/src/components/md-app-bar/md-app-bar.css"
-      ],
-      "sourceFileCount": 103
-    },
-    "orders": {
-      "glyph": "orders",
-      "sourceExamples": [
-        "packages/core/src/components/md-date-picker/date-utils.ts",
-        "packages/core/src/utils/charts/engine/break.spec.ts",
-        "packages/core/src/utils/charts/engine/range.spec.ts"
-      ],
-      "sourceFileCount": 4
-    },
-    "outbound": {
-      "glyph": "outbound",
-      "sourceExamples": [
-        "packages/core/src/utils/url.ts"
-      ],
-      "sourceFileCount": 1
-    },
-    "output": {
-      "glyph": "output",
-      "sourceExamples": [
+        "packages/core/src/components/md-color-picker/color-picker-labels.ts",
         "packages/core/src/components/md-color-picker/md-color-picker.tsx",
-        "packages/core/src/components/md-date-picker/md-date-picker.tsx",
-        "packages/core/src/components/md-meter/md-meter.spec.ts"
-      ],
-      "sourceFileCount": 12
-    },
-    "overview": {
-      "glyph": "overview",
-      "sourceExamples": [
-        "packages/core/src/components/md-bottom-sheet/md-bottom-sheet.css",
-        "packages/core/src/components/md-bottom-sheet/md-bottom-sheet.tsx",
-        "packages/core/src/components/md-line-chart/md-line-chart.css"
+        "packages/core/src/components/md-meter/md-meter.tsx"
       ],
       "sourceFileCount": 8
-    },
-    "package": {
-      "glyph": "package",
-      "sourceExamples": [
-        "packages/core/src/components/md-search/md-search.e2e.ts"
-      ],
-      "sourceFileCount": 1
     },
     "padding": {
       "glyph": "padding",
@@ -2120,84 +837,47 @@
         "apps/test-html/index.html",
         "apps/test-react/src/App.tsx"
       ],
-      "sourceFileCount": 122
-    },
-    "pages": {
-      "glyph": "pages",
-      "sourceExamples": [
-        "packages/core/src/components/md-button/link.e2e.ts",
-        "packages/core/src/components/md-list-item/md-list-item.css",
-        "packages/core/src/components/md-tabs/md-tabs.tsx"
-      ],
-      "sourceFileCount": 6
+      "sourceFileCount": 8
     },
     "palette": {
       "glyph": "palette",
       "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.tsx",
-        "packages/core/src/components/md-area-chart/theme-change.e2e.ts",
-        "packages/core/src/components/md-avatar/md-avatar.css"
-      ],
-      "sourceFileCount": 29
-    },
-    "park": {
-      "glyph": "park",
-      "sourceExamples": [
-        "packages/core/src/components/md-progress-indicator/md-progress-indicator.css"
+        "packages/core/src/utils/charts/theme.ts"
       ],
       "sourceFileCount": 1
     },
     "password": {
       "glyph": "password",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion-item/md-accordion-item.spec.ts",
-        "packages/core/src/components/md-meter/md-meter.css",
-        "packages/core/src/components/md-meter/md-meter.tsx"
+        "packages/core/src/components/md-otp-field/md-otp-field.tsx",
+        "packages/core/src/components/md-text-field/md-text-field.tsx"
       ],
-      "sourceFileCount": 11
+      "sourceFileCount": 2
     },
     "pattern": {
       "glyph": "pattern",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.css",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css",
-        "packages/core/src/components/md-app-bar/md-app-bar.css"
+        "packages/core/src/components/md-date-picker/date-utils.ts",
+        "packages/core/src/components/md-text-field/md-text-field.tsx"
       ],
-      "sourceFileCount": 61
-    },
-    "pause": {
-      "glyph": "pause",
-      "sourceExamples": [
-        "packages/core/src/components/md-button-group/md-button-group.spec.ts",
-        "packages/core/src/components/md-search/md-search.tsx",
-        "packages/core/src/components/md-snackbar/md-snackbar.tsx"
-      ],
-      "sourceFileCount": 3
+      "sourceFileCount": 2
     },
     "pending": {
       "glyph": "pending",
       "sourceExamples": [
-        "packages/core/src/components/md-autocomplete/md-autocomplete.focus.spec.ts",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.spec.ts",
-        "packages/core/src/components/md-button-group/md-button-group.spec.ts"
+        "packages/core/src/components/md-step/md-step.tsx",
+        "packages/core/src/utils/initial-motion.ts"
       ],
-      "sourceFileCount": 31
-    },
-    "people": {
-      "glyph": "group",
-      "sourceExamples": [
-        "packages/core/src/components/md-search/md-search.spec.ts"
-      ],
-      "sourceFileCount": 1
+      "sourceFileCount": 2
     },
     "percent": {
       "glyph": "percent",
       "sourceExamples": [
-        "packages/core/src/components/md-color-picker/color-utils.ts",
-        "packages/core/src/components/md-meter/md-meter.axe.spec.ts",
-        "packages/core/src/components/md-meter/md-meter.e2e.ts"
+        "packages/core/src/components/md-meter/md-meter.tsx",
+        "packages/core/src/components/md-number-field/md-number-field.tsx",
+        "packages/core/src/utils/charts/engine/pie-chart.ts"
       ],
-      "sourceFileCount": 12
+      "sourceFileCount": 3
     },
     "person": {
       "glyph": "person",
@@ -2206,158 +886,34 @@
         "apps/test-html/index.html",
         "apps/test-react/src/App.tsx"
       ],
-      "sourceFileCount": 15
-    },
-    "phishing": {
-      "glyph": "phishing",
-      "sourceExamples": [
-        "packages/core/src/utils/url.ts"
-      ],
-      "sourceFileCount": 1
-    },
-    "phone": {
-      "glyph": "call",
-      "sourceExamples": [
-        "packages/core/src/components/md-color-picker/md-color-picker.css",
-        "packages/core/src/components/md-otp-field/md-otp-field.spec.ts",
-        "packages/core/src/components/md-snackbar/md-snackbar.css"
-      ],
-      "sourceFileCount": 5
-    },
-    "photo": {
-      "glyph": "photo",
-      "sourceExamples": [
-        "packages/core/src/components/md-card/md-card.spec.ts",
-        "packages/core/src/components/md-list-item/md-list-item.e2e.ts",
-        "packages/core/src/components/md-organization-chart/md-organization-chart.tsx"
-      ],
-      "sourceFileCount": 3
+      "sourceFileCount": 6
     },
     "pill": {
       "glyph": "pill",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.tsx",
-        "packages/core/src/components/md-app-bar/md-app-bar.css"
+        "packages/core/src/utils/charts/engine/bar-layout.ts",
+        "packages/core/src/utils/charts/engine/pie-layout.ts"
       ],
-      "sourceFileCount": 54
+      "sourceFileCount": 2
     },
     "pin": {
       "glyph": "pin",
       "sourceExamples": [
-        "packages/core/src/components/md-avatar/md-avatar.css",
-        "packages/core/src/components/md-date-picker/md-date-picker.css",
-        "packages/core/src/components/md-dialog/md-dialog.css"
+        "packages/core/src/components/md-table-cell/md-table-cell.tsx"
       ],
-      "sourceFileCount": 32
-    },
-    "pinch": {
-      "glyph": "pinch",
-      "sourceExamples": [
-        "packages/core/src/components/md-menu-item-group/md-menu-item-group.css",
-        "packages/core/src/components/md-number-field/md-number-field.tsx",
-        "packages/core/src/utils/charts/engine/pie-layout.ts"
-      ],
-      "sourceFileCount": 3
-    },
-    "pip": {
-      "glyph": "pip",
-      "sourceExamples": [
-        "packages/core/src/components/md-status-dot/md-status-dot.css",
-        "packages/core/src/components/md-status-dot/md-status-dot.tsx",
-        "packages/core/src/components/md-status-dot/visual.e2e.ts"
-      ],
-      "sourceFileCount": 3
+      "sourceFileCount": 1
     },
     "place": {
       "glyph": "place",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.tsx",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css",
-        "packages/core/src/components/md-app-bar/md-app-bar.css"
+        "apps/shared/catalog-samples.css"
       ],
-      "sourceFileCount": 54
+      "sourceFileCount": 1
     },
     "playground": {
       "glyph": "playground",
       "sourceExamples": [
         "apps/test-html/src/main.ts"
-      ],
-      "sourceFileCount": 1
-    },
-    "plumbing": {
-      "glyph": "plumbing",
-      "sourceExamples": [
-        "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
-        "packages/core/src/components/md-number-field/md-number-field.tsx",
-        "packages/core/src/components/md-time-picker/md-time-picker.tsx"
-      ],
-      "sourceFileCount": 7
-    },
-    "policy": {
-      "glyph": "policy",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.e2e.ts",
-        "packages/core/src/components/md-accordion/md-accordion.spec.ts",
-        "packages/core/src/components/md-accordion/md-accordion.tsx"
-      ],
-      "sourceFileCount": 8
-    },
-    "poll": {
-      "glyph": "insert_chart",
-      "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.tsx",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.tsx",
-        "packages/core/src/components/md-fab-menu/md-fab-menu.tsx"
-      ],
-      "sourceFileCount": 6
-    },
-    "polyline": {
-      "glyph": "polyline",
-      "sourceExamples": [
-        "packages/core/src/utils/charts/engine/animate.ts",
-        "packages/core/src/utils/charts/engine/chart.spec.ts",
-        "packages/core/src/utils/charts/engine/fixes.spec.ts"
-      ],
-      "sourceFileCount": 10
-    },
-    "pool": {
-      "glyph": "pool",
-      "sourceExamples": [
-        "packages/core/src/components/md-transfer-list/md-transfer-list.tsx",
-        "packages/core/src/utils/charts/engine/scene.ts"
-      ],
-      "sourceFileCount": 2
-    },
-    "portrait": {
-      "glyph": "account_box",
-      "sourceExamples": [
-        "packages/core/src/components/md-avatar/md-avatar.spec.ts",
-        "packages/core/src/components/md-time-picker/md-time-picker.css",
-        "packages/core/src/components/md-time-picker/md-time-picker.e2e.ts"
-      ],
-      "sourceFileCount": 4
-    },
-    "post": {
-      "glyph": "post",
-      "sourceExamples": [
-        "packages/core/src/components/md-bar-chart/md-bar-chart.late-data.e2e.ts",
-        "packages/core/src/components/md-bottom-sheet/md-bottom-sheet.spec.ts",
-        "packages/core/src/components/md-bottom-sheet/md-bottom-sheet.tsx"
-      ],
-      "sourceFileCount": 12
-    },
-    "power": {
-      "glyph": "power",
-      "sourceExamples": [
-        "packages/core/src/utils/charts/engine/scale.ts"
-      ],
-      "sourceFileCount": 1
-    },
-    "power_off": {
-      "glyph": "power_off",
-      "sourceExamples": [
-        "packages/core/src/components/md-switch/md-switch.spec.ts"
       ],
       "sourceFileCount": 1
     },
@@ -2368,333 +924,134 @@
         "apps/test-svelte/src/App.svelte",
         "apps/test-vue/src/App.vue"
       ],
-      "sourceFileCount": 12
+      "sourceFileCount": 5
     },
     "print": {
       "glyph": "print",
       "sourceExamples": [
-        "packages/core/src/utils/charts/a11y.ts",
-        "packages/core/src/utils/charts/engine/bar-layout.ts",
-        "packages/core/src/utils/charts/engine/hover.ts"
+        "apps/test-html/index.html",
+        "apps/test-react/index.html",
+        "apps/test-svelte/index.html"
       ],
-      "sourceFileCount": 7
+      "sourceFileCount": 4
     },
     "priority": {
       "glyph": "priority",
       "sourceExamples": [
-        "packages/core/src/components/md-app-bar/md-app-bar.css",
-        "packages/core/src/components/md-app-bar/md-app-bar.tsx",
-        "packages/core/src/components/md-list/md-list.tsx"
+        "packages/core/src/components/md-navigation-rail-tab/md-navigation-rail-tab.tsx"
       ],
-      "sourceFileCount": 6
+      "sourceFileCount": 1
     },
     "priority_high": {
       "glyph": "priority_high",
       "sourceExamples": [
-        "packages/core/src/components/md-step/md-step.spec.ts",
         "packages/core/src/components/md-step/md-step.tsx"
       ],
-      "sourceFileCount": 2
-    },
-    "privacy": {
-      "glyph": "privacy",
-      "sourceExamples": [
-        "packages/core/src/components/md-otp-field/md-otp-field.spec.ts",
-        "packages/core/src/components/md-otp-field/md-otp-field.tsx"
-      ],
-      "sourceFileCount": 2
-    },
-    "problem": {
-      "glyph": "problem",
-      "sourceExamples": [
-        "packages/core/src/components/md-avatar/md-avatar.css",
-        "packages/core/src/utils/charts/engine/pie-layout.ts",
-        "packages/core/src/utils/form.spec.ts"
-      ],
-      "sourceFileCount": 4
+      "sourceFileCount": 1
     },
     "public": {
       "glyph": "public",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.css",
-        "packages/core/src/components/md-area-chart/md-area-chart.css",
-        "packages/core/src/components/md-area-chart/md-area-chart.spec.ts"
+        "apps/test-angular/src/main.ts"
       ],
-      "sourceFileCount": 52
-    },
-    "publish": {
-      "glyph": "publish",
-      "sourceExamples": [
-        "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
-        "packages/core/src/components/md-checkbox/md-checkbox.tsx",
-        "packages/core/src/components/md-date-picker/md-date-picker.tsx"
-      ],
-      "sourceFileCount": 14
-    },
-    "queue": {
-      "glyph": "library_add",
-      "sourceExamples": [
-        "packages/core/src/components/md-autocomplete/md-autocomplete.spec.ts",
-        "packages/core/src/components/md-date-picker/md-date-picker.spec.ts",
-        "packages/core/src/components/md-list/md-list.keyboard.spec.ts"
-      ],
-      "sourceFileCount": 6
+      "sourceFileCount": 1
     },
     "radio": {
       "glyph": "radio",
       "sourceExamples": [
         "apps/test-angular/src/app/app.component.ts",
-        "apps/test-html/index.html",
-        "apps/test-html/src/styles.css"
+        "apps/test-angular/src/main.ts",
+        "apps/test-html/index.html"
       ],
-      "sourceFileCount": 42
-    },
-    "rebase": {
-      "glyph": "rebase",
-      "sourceExamples": [
-        "packages/core/src/components/md-bar-chart/md-bar-chart.tsx"
-      ],
-      "sourceFileCount": 1
-    },
-    "rectangle": {
-      "glyph": "rectangle",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css",
-        "packages/core/src/components/md-area-chart/md-area-chart.tsx",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.tsx"
-      ],
-      "sourceFileCount": 12
-    },
-    "redo": {
-      "glyph": "redo",
-      "sourceExamples": [
-        "packages/core/src/components/md-toolbar/md-toolbar.e2e.ts"
-      ],
-      "sourceFileCount": 1
-    },
-    "refresh": {
-      "glyph": "refresh",
-      "sourceExamples": [
-        "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
-        "packages/core/src/components/md-checkbox/md-checkbox.tsx",
-        "packages/core/src/components/md-date-picker/md-date-picker.tsx"
-      ],
-      "sourceFileCount": 13
-    },
-    "relax": {
-      "glyph": "relax",
-      "sourceExamples": [
-        "packages/core/src/utils/isolation-escape.ts"
-      ],
-      "sourceFileCount": 1
+      "sourceFileCount": 17
     },
     "remove": {
       "glyph": "remove",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.spec.ts",
-        "packages/core/src/components/md-accordion/md-accordion.tsx",
-        "packages/core/src/components/md-accordion/test-utils/axe-spec.ts"
+        "packages/core/src/components/md-checkbox/md-checkbox.tsx",
+        "packages/core/src/components/md-chip/md-chip.tsx",
+        "packages/core/src/components/md-menu-item/md-menu-item.tsx"
       ],
-      "sourceFileCount": 70
+      "sourceFileCount": 6
     },
     "reorder": {
       "glyph": "reorder",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.css",
-        "packages/core/src/components/md-accordion/md-accordion.spec.ts",
-        "packages/core/src/components/md-accordion/md-accordion.tsx"
+        "packages/core/src/index.html"
       ],
-      "sourceFileCount": 25
+      "sourceFileCount": 1
     },
     "repeat": {
       "glyph": "repeat",
       "sourceExamples": [
+        "apps/shared/catalog-samples.css",
         "apps/test-html/src/styles.css",
-        "packages/core/src/components/md-date-picker/md-date-picker.css",
-        "packages/core/src/components/md-list-item/md-list-item.spec.ts"
+        "packages/core/src/index.html"
       ],
-      "sourceFileCount": 25
-    },
-    "replay": {
-      "glyph": "replay",
-      "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.tsx",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.tsx",
-        "packages/core/src/components/md-breadcrumbs/md-breadcrumbs.css"
-      ],
-      "sourceFileCount": 15
-    },
-    "reply": {
-      "glyph": "reply",
-      "sourceExamples": [
-        "packages/core/src/components/md-button/md-button.css",
-        "packages/core/src/components/md-button/md-button.tsx"
-      ],
-      "sourceFileCount": 2
+      "sourceFileCount": 3
     },
     "report": {
       "glyph": "report",
       "sourceExamples": [
-        "packages/core/src/components/md-bar-chart/md-bar-chart.late-data.e2e.ts",
-        "packages/core/src/components/md-date-picker/md-date-picker.tsx",
-        "packages/core/src/components/md-fab/md-fab.tsx"
+        "packages/core/src/utils/form.ts"
       ],
-      "sourceFileCount": 29
+      "sourceFileCount": 1
     },
     "resize": {
       "glyph": "resize",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css",
-        "packages/core/src/components/md-area-chart/md-area-chart.css",
-        "packages/core/src/components/md-area-chart/md-area-chart.pointer.spec.ts"
+        "packages/core/src/components/md-date-picker/md-date-picker.tsx",
+        "packages/core/src/components/md-menu/md-menu.tsx",
+        "packages/core/src/components/md-sub-menu-item/md-sub-menu-item.tsx"
       ],
-      "sourceFileCount": 51
+      "sourceFileCount": 4
     },
     "restore": {
       "glyph": "history",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css",
-        "packages/core/src/components/md-area-chart/md-area-chart.keyboard.spec.ts",
-        "packages/core/src/components/md-area-chart/md-area-chart.pointer.spec.ts"
-      ],
-      "sourceFileCount": 44
-    },
-    "resume": {
-      "glyph": "resume",
-      "sourceExamples": [
-        "packages/core/src/components/md-menu/md-menu.deferred.spec.ts",
-        "packages/core/src/components/md-progress-indicator/md-progress-indicator.tsx",
-        "packages/core/src/utils/initial-motion.ts"
-      ],
-      "sourceFileCount": 5
-    },
-    "ripples": {
-      "glyph": "ripples",
-      "sourceExamples": [
-        "packages/core/src/components/md-list-item/md-list-item.tsx",
-        "packages/core/src/components/md-navigation-rail-tab/md-navigation-rail-tab.css",
-        "packages/core/src/components/md-navigation-rail-tab/md-navigation-rail-tab.tsx"
-      ],
-      "sourceFileCount": 10
-    },
-    "room": {
-      "glyph": "place",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css",
-        "packages/core/src/components/md-app-bar/md-app-bar.css",
-        "packages/core/src/components/md-area-chart/md-area-chart.spec.ts"
-      ],
-      "sourceFileCount": 47
-    },
-    "route": {
-      "glyph": "route",
-      "sourceExamples": [
-        "packages/core/src/components/md-bar-chart/md-bar-chart.tsx",
-        "packages/core/src/components/md-breadcrumb-item/md-breadcrumb-item.tsx",
-        "packages/core/src/components/md-date-picker/md-date-picker.tsx"
-      ],
-      "sourceFileCount": 5
-    },
-    "router": {
-      "glyph": "router",
-      "sourceExamples": [
-        "packages/core/src/components/md-breadcrumb-item/md-breadcrumb-item.tsx"
+        "packages/core/src/utils/charts/engine/test-utils/canvas-harness.ts"
       ],
       "sourceFileCount": 1
-    },
-    "rule": {
-      "glyph": "rule",
-      "sourceExamples": [
-        "packages/core/src/components/hidden-attribute.e2e.ts",
-        "packages/core/src/components/md-accordion/md-accordion.css",
-        "packages/core/src/components/md-accordion/test-utils/axe-spec.ts"
-      ],
-      "sourceFileCount": 119
-    },
-    "sanitizer": {
-      "glyph": "sanitizer",
-      "sourceExamples": [
-        "packages/core/src/utils/href-safety.spec.ts"
-      ],
-      "sourceFileCount": 1
-    },
-    "save": {
-      "glyph": "save",
-      "sourceExamples": [
-        "packages/core/src/components/md-button/md-button.spec.ts",
-        "packages/core/src/components/md-dialog/md-dialog.e2e.ts",
-        "packages/core/src/components/md-split-button/md-split-button.spec.ts"
-      ],
-      "sourceFileCount": 9
     },
     "scale": {
       "glyph": "scale",
       "sourceExamples": [
         "apps/test-angular/src/index.html",
         "apps/test-html/index.html",
-        "packages/core/src/components/md-accordion/md-accordion.css"
+        "apps/test-react/index.html"
       ],
-      "sourceFileCount": 171
-    },
-    "scan": {
-      "glyph": "scan",
-      "sourceExamples": [
-        "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
-        "packages/core/src/components/md-card/md-card.tsx",
-        "packages/core/src/components/md-menu/md-menu.spec.ts"
-      ],
-      "sourceFileCount": 9
+      "sourceFileCount": 10
     },
     "scene": {
       "glyph": "scene",
       "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.keyboard.spec.ts",
-        "packages/core/src/components/md-area-chart/md-area-chart.pointer.spec.ts",
-        "packages/core/src/components/md-area-chart/md-area-chart.tsx"
+        "packages/core/src/utils/charts/engine/animate.ts",
+        "packages/core/src/utils/charts/engine/chart.ts"
       ],
-      "sourceFileCount": 38
+      "sourceFileCount": 2
     },
     "schedule": {
       "glyph": "schedule",
       "sourceExamples": [
-        "packages/core/src/components/md-date-picker/md-date-picker.spec.ts",
-        "packages/core/src/components/md-time-picker/md-time-picker.css",
-        "packages/core/src/components/md-time-picker/md-time-picker.spec.ts"
-      ],
-      "sourceFileCount": 8
-    },
-    "science": {
-      "glyph": "science",
-      "sourceExamples": [
-        "packages/core/src/components/md-navigation-rail/md-navigation-rail.e2e.ts"
+        "packages/core/src/components/md-time-picker/md-time-picker.tsx"
       ],
       "sourceFileCount": 1
     },
     "score": {
       "glyph": "score",
       "sourceExamples": [
-        "apps/test-angular/src/app/reactive-form.component.ts",
-        "packages/core/src/components/md-select/form-participation.e2e.ts"
+        "apps/test-angular/src/app/reactive-form.component.ts"
       ],
-      "sourceFileCount": 2
-    },
-    "screenshot": {
-      "glyph": "screenshot",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.css",
-        "packages/core/src/components/md-accordion/md-accordion.tsx",
-        "packages/core/src/components/md-organization-chart/md-organization-chart.css"
-      ],
-      "sourceFileCount": 6
+      "sourceFileCount": 1
     },
     "script": {
       "glyph": "script",
       "sourceExamples": [
         "apps/test-html/index.html",
-        "apps/test-svelte/src/App.svelte",
-        "apps/test-vue/src/App.vue"
+        "apps/test-react/index.html",
+        "apps/test-svelte/index.html"
       ],
-      "sourceFileCount": 15
+      "sourceFileCount": 7
     },
     "search": {
       "glyph": "search",
@@ -2703,58 +1060,25 @@
         "apps/test-html/index.html",
         "apps/test-react/src/App.tsx"
       ],
-      "sourceFileCount": 63
-    },
-    "security": {
-      "glyph": "security",
-      "sourceExamples": [
-        "packages/core/src/utils/href-safety.spec.ts",
-        "packages/core/src/utils/id.ts"
-      ],
-      "sourceFileCount": 2
-    },
-    "segment": {
-      "glyph": "segment",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css",
-        "packages/core/src/components/md-avatar/md-avatar.tsx",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.tsx"
-      ],
-      "sourceFileCount": 40
+      "sourceFileCount": 11
     },
     "select": {
       "glyph": "select",
       "sourceExamples": [
+        "apps/shared/catalog-samples.css",
         "apps/test-angular/src/app/app.component.ts",
-        "apps/test-angular/src/app/reactive-form.component.ts",
-        "apps/test-html/index.html"
+        "apps/test-angular/src/app/reactive-form.component.ts"
       ],
-      "sourceFileCount": 154
-    },
-    "send": {
-      "glyph": "send",
-      "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.tsx",
-        "packages/core/src/components/md-button/md-button.css",
-        "packages/core/src/components/md-button/md-button.tsx"
-      ],
-      "sourceFileCount": 8
-    },
-    "sensors": {
-      "glyph": "sensors",
-      "sourceExamples": [
-        "packages/core/src/utils/charts/xy.ts"
-      ],
-      "sourceFileCount": 1
+      "sourceFileCount": 12
     },
     "serif": {
       "glyph": "serif",
       "sourceExamples": [
+        "apps/shared/catalog-samples.css",
         "apps/test-angular/src/app/app.component.ts",
-        "apps/test-angular/src/tokens.css",
-        "apps/test-html/index.html"
+        "apps/test-angular/src/tokens.css"
       ],
-      "sourceFileCount": 65
+      "sourceFileCount": 8
     },
     "settings": {
       "glyph": "settings",
@@ -2763,25 +1087,16 @@
         "apps/test-html/index.html",
         "apps/test-react/src/App.tsx"
       ],
-      "sourceFileCount": 46
+      "sourceFileCount": 5
     },
     "shadow": {
       "glyph": "shadow",
       "sourceExamples": [
+        "apps/test-angular/src/main.ts",
         "apps/test-angular/src/tokens.css",
-        "packages/core/src/components/md-accordion/md-accordion.axe.spec.ts",
-        "packages/core/src/components/md-accordion/md-accordion.css"
+        "packages/core/src/components/md-accordion-item/md-accordion-item.tsx"
       ],
-      "sourceFileCount": 221
-    },
-    "shapes": {
-      "glyph": "shapes",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.tsx",
-        "packages/core/src/components/md-list-item/md-list-item.css"
-      ],
-      "sourceFileCount": 16
+      "sourceFileCount": 83
     },
     "share": {
       "glyph": "share",
@@ -2790,167 +1105,67 @@
         "apps/test-html/index.html",
         "apps/test-react/src/App.tsx"
       ],
-      "sourceFileCount": 61
-    },
-    "shift": {
-      "glyph": "shift",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.css",
-        "packages/core/src/components/md-accordion/md-accordion.spec.ts",
-        "packages/core/src/components/md-accordion/md-accordion.tsx"
-      ],
-      "sourceFileCount": 41
-    },
-    "shortcut": {
-      "glyph": "forward",
-      "sourceExamples": [
-        "packages/core/src/components/md-date-picker/md-date-picker.css",
-        "packages/core/src/components/md-date-picker/md-date-picker.spec.ts",
-        "packages/core/src/components/md-date-picker/md-date-picker.tsx"
-      ],
-      "sourceFileCount": 6
-    },
-    "signature": {
-      "glyph": "signature",
-      "sourceExamples": [
-        "packages/core/src/components/md-text-field/md-text-field.css",
-        "packages/core/src/index.ts",
-        "packages/core/src/utils/charts/engine/animate.ts"
-      ],
-      "sourceFileCount": 4
-    },
-    "signpost": {
-      "glyph": "signpost",
-      "sourceExamples": [
-        "packages/core/src/components/md-menu/md-menu.css"
-      ],
-      "sourceFileCount": 1
+      "sourceFileCount": 5
     },
     "skeleton": {
       "glyph": "skeleton",
       "sourceExamples": [
-        "packages/core/src/components/hidden-attribute.e2e.ts",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.tsx",
-        "packages/core/src/components/md-line-chart/md-line-chart.spec.ts"
+        "packages/core/src/components/md-table/md-table.tsx"
       ],
-      "sourceFileCount": 13
-    },
-    "sleep": {
-      "glyph": "sleep",
-      "sourceExamples": [
-        "packages/core/src/components/md-autocomplete/md-autocomplete.virtual.spec.ts",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.late-data.e2e.ts"
-      ],
-      "sourceFileCount": 2
+      "sourceFileCount": 1
     },
     "sliders": {
       "glyph": "sliders",
       "sourceExamples": [
-        "packages/core/src/components/md-color-picker/md-color-picker.css",
-        "packages/core/src/components/md-color-picker/md-color-picker.spec.ts",
         "packages/core/src/components/md-color-picker/md-color-picker.tsx"
       ],
-      "sourceFileCount": 5
-    },
-    "sms": {
-      "glyph": "sms",
-      "sourceExamples": [
-        "packages/core/src/utils/url.spec.ts",
-        "packages/core/src/utils/url.ts"
-      ],
-      "sourceFileCount": 2
+      "sourceFileCount": 1
     },
     "sort": {
       "glyph": "sort",
       "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.tsx",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.e2e.ts",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.tsx"
+        "packages/core/src/utils/charts/xy.ts"
       ],
-      "sourceFileCount": 33
+      "sourceFileCount": 1
     },
     "source": {
       "glyph": "topic",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.e2e.ts",
-        "packages/core/src/components/md-accordion/md-accordion.spec.ts",
-        "packages/core/src/components/md-accordion/test-utils/axe-spec.ts"
+        "packages/core/src/components/md-date-picker/md-date-picker.tsx",
+        "packages/core/src/components/md-transfer-list/md-transfer-list.tsx",
+        "packages/core/src/utils/navigation-rail-motion.ts"
       ],
-      "sourceFileCount": 57
-    },
-    "spa": {
-      "glyph": "spa",
-      "sourceExamples": [
-        "packages/core/src/components/md-select/md-select.spec.ts"
-      ],
-      "sourceFileCount": 1
-    },
-    "speed": {
-      "glyph": "speed",
-      "sourceExamples": [
-        "packages/core/src/components/md-autocomplete/md-autocomplete.focus.spec.ts",
-        "packages/core/src/components/md-progress-indicator/md-progress-indicator.spec.ts",
-        "packages/core/src/components/md-progress-indicator/md-progress-indicator.tsx"
-      ],
-      "sourceFileCount": 6
+      "sourceFileCount": 3
     },
     "spellcheck": {
       "glyph": "spellcheck",
       "sourceExamples": [
-        "packages/core/src/components/md-app-bar/md-app-bar.tsx",
-        "packages/core/src/components/md-color-picker/md-color-picker.tsx",
-        "packages/core/src/components/md-number-field/md-number-field.tsx"
+        "packages/core/src/components/md-text-field/md-text-field.tsx"
       ],
-      "sourceFileCount": 5
+      "sourceFileCount": 1
     },
     "square": {
       "glyph": "square",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css",
-        "packages/core/src/components/md-avatar/md-avatar.css",
-        "packages/core/src/components/md-avatar/md-avatar.spec.ts"
+        "packages/core/src/components/md-avatar/md-avatar.tsx",
+        "packages/core/src/components/md-button-group/md-button-group.tsx",
+        "packages/core/src/components/md-button/md-button.tsx"
       ],
-      "sourceFileCount": 50
+      "sourceFileCount": 9
     },
     "stack": {
       "glyph": "stack",
       "sourceExamples": [
         "apps/test-html/index.html",
-        "packages/core/src/components/md-area-chart/md-area-chart.spec.ts",
-        "packages/core/src/components/md-area-chart/md-area-chart.tsx"
+        "packages/core/src/components/md-area-chart/md-area-chart.tsx",
+        "packages/core/src/components/md-bar-chart/md-bar-chart.tsx"
       ],
-      "sourceFileCount": 61
-    },
-    "stacks": {
-      "glyph": "stacks",
-      "sourceExamples": [
-        "packages/core/src/components/md-app-bar/md-app-bar.tsx",
-        "packages/core/src/components/md-area-chart/md-area-chart.css",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.css"
-      ],
-      "sourceFileCount": 16
-    },
-    "stadium": {
-      "glyph": "stadium",
-      "sourceExamples": [
-        "packages/core/src/components/md-button/md-button.css",
-        "packages/core/src/components/md-navigation-rail-tab/md-navigation-rail-tab.css"
-      ],
-      "sourceFileCount": 2
+      "sourceFileCount": 6
     },
     "star": {
       "glyph": "star",
       "sourceExamples": [
-        "packages/core/src/components/md-button-group/md-button-group.spec.ts",
-        "packages/core/src/components/md-list-item/md-list-item.css",
-        "packages/core/src/components/md-list-item/md-list-item.spec.ts"
-      ],
-      "sourceFileCount": 15
-    },
-    "stars": {
-      "glyph": "stars",
-      "sourceExamples": [
-        "packages/core/src/components/md-rating/md-rating.pointer.spec.ts"
+        "packages/core/src/components/md-rating/md-rating.tsx"
       ],
       "sourceFileCount": 1
     },
@@ -2961,94 +1176,23 @@
         "apps/test-html/index.html",
         "apps/test-react/src/App.tsx"
       ],
-      "sourceFileCount": 186
+      "sourceFileCount": 41
     },
     "step": {
       "glyph": "step",
       "sourceExamples": [
-        "packages/core/src/components/hidden-attribute.e2e.ts",
-        "packages/core/src/components/md-accordion/md-accordion.css",
-        "packages/core/src/components/md-accordion/md-accordion.tsx"
+        "packages/core/src/components/md-area-chart/md-area-chart.tsx",
+        "packages/core/src/components/md-line-chart/md-line-chart.tsx",
+        "packages/core/src/components/md-step/md-step.tsx"
       ],
-      "sourceFileCount": 76
-    },
-    "steppers": {
-      "glyph": "steppers",
-      "sourceExamples": [
-        "packages/core/src/components/md-number-field/md-number-field.css",
-        "packages/core/src/components/md-number-field/md-number-field.e2e.ts",
-        "packages/core/src/components/md-number-field/md-number-field.spec.ts"
-      ],
-      "sourceFileCount": 7
-    },
-    "steps": {
-      "glyph": "steps",
-      "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.pointer.spec.ts",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.pointer.spec.ts",
-        "packages/core/src/components/md-card/md-card.e2e.ts"
-      ],
-      "sourceFileCount": 41
-    },
-    "stop": {
-      "glyph": "stop",
-      "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.spec.ts",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.spec.ts",
-        "packages/core/src/components/md-breadcrumb-item/md-breadcrumb-item.tsx"
-      ],
-      "sourceFileCount": 65
-    },
-    "storage": {
-      "glyph": "storage",
-      "sourceExamples": [
-        "packages/core/src/components/md-meter/md-meter.css",
-        "packages/core/src/components/md-meter/md-meter.tsx"
-      ],
-      "sourceFileCount": 2
-    },
-    "store": {
-      "glyph": "store",
-      "sourceExamples": [
-        "packages/core/src/components/md-autocomplete/md-autocomplete.spec.ts",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.virtual.spec.ts"
-      ],
-      "sourceFileCount": 17
-    },
-    "storm": {
-      "glyph": "storm",
-      "sourceExamples": [
-        "packages/core/src/components/md-list-item/md-list-item.tsx",
-        "packages/core/src/components/md-table/md-table.tsx"
-      ],
-      "sourceFileCount": 2
+      "sourceFileCount": 8
     },
     "straight": {
       "glyph": "straight",
       "sourceExamples": [
-        "apps/test-html/index.html",
-        "packages/core/src/components/md-app-bar/md-app-bar.css",
-        "packages/core/src/components/md-button/md-button.css"
+        "apps/test-html/index.html"
       ],
-      "sourceFileCount": 36
-    },
-    "strategy": {
-      "glyph": "strategy",
-      "sourceExamples": [
-        "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.tsx",
-        "packages/core/src/components/md-line-chart/md-line-chart.tsx"
-      ],
-      "sourceFileCount": 7
-    },
-    "stream": {
-      "glyph": "stream",
-      "sourceExamples": [
-        "packages/core/src/components/md-select/customization.e2e.ts",
-        "packages/core/src/utils/charts/engine/range.spec.ts"
-      ],
-      "sourceFileCount": 2
+      "sourceFileCount": 1
     },
     "style": {
       "glyph": "style",
@@ -3057,89 +1201,37 @@
         "apps/test-html/index.html",
         "apps/test-react/src/App.tsx"
       ],
-      "sourceFileCount": 223
-    },
-    "subscriptions": {
-      "glyph": "subscriptions",
-      "sourceExamples": [
-        "packages/core/src/components/md-tabs/md-tabs.tsx"
-      ],
-      "sourceFileCount": 1
-    },
-    "support": {
-      "glyph": "support",
-      "sourceExamples": [
-        "packages/core/src/components/md-bottom-sheet/md-bottom-sheet.spec.ts",
-        "packages/core/src/components/md-bottom-sheet/md-bottom-sheet.tsx",
-        "packages/core/src/components/md-button-group/md-button-group.tsx"
-      ],
-      "sourceFileCount": 31
-    },
-    "sweep": {
-      "glyph": "sweep",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.axe.spec.ts",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.axe.spec.ts",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.axe.spec.ts"
-      ],
-      "sourceFileCount": 38
-    },
-    "swipe": {
-      "glyph": "swipe",
-      "sourceExamples": [
-        "packages/core/src/components/md-table/md-table.touch.e2e.ts"
-      ],
-      "sourceFileCount": 1
+      "sourceFileCount": 10
     },
     "switch": {
       "glyph": "switch",
       "sourceExamples": [
+        "apps/shared/catalog-samples.css",
         "apps/test-angular/src/app/app.component.ts",
-        "apps/test-angular/src/app/reactive-form.component.ts",
-        "apps/test-html/index.html"
+        "apps/test-angular/src/app/reactive-form.component.ts"
       ],
-      "sourceFileCount": 64
-    },
-    "switches": {
-      "glyph": "switches",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.virtual.spec.ts"
-      ],
-      "sourceFileCount": 23
+      "sourceFileCount": 12
     },
     "sync": {
       "glyph": "sync",
       "sourceExamples": [
-        "apps/test-html/src/main.ts",
-        "packages/core/src/components/md-accordion/md-accordion.tsx",
-        "packages/core/src/components/md-button/md-button.spec.ts"
+        "apps/test-html/src/main.ts"
       ],
-      "sourceFileCount": 42
+      "sourceFileCount": 1
     },
     "tab": {
       "glyph": "tab",
       "sourceExamples": [
         "apps/test-angular/src/app/app.component.ts",
-        "apps/test-html/index.html",
-        "apps/test-react/src/App.tsx"
+        "apps/test-angular/src/main.ts",
+        "apps/test-html/index.html"
       ],
-      "sourceFileCount": 102
+      "sourceFileCount": 11
     },
     "table": {
       "glyph": "table",
       "sourceExamples": [
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css",
-        "packages/core/src/components/md-area-chart/md-area-chart.css",
-        "packages/core/src/components/md-area-chart/md-area-chart.spec.ts"
-      ],
-      "sourceFileCount": 82
-    },
-    "tablet": {
-      "glyph": "tablet",
-      "sourceExamples": [
-        "packages/core/src/components/md-time-picker/md-time-picker.tsx"
+        "packages/core/src/components/md-table/md-table.tsx"
       ],
       "sourceFileCount": 1
     },
@@ -3147,19 +1239,19 @@
       "glyph": "tabs",
       "sourceExamples": [
         "apps/test-angular/src/app/app.component.ts",
-        "apps/test-html/index.html",
-        "apps/test-react/src/App.tsx"
+        "apps/test-angular/src/main.ts",
+        "apps/test-html/index.html"
       ],
-      "sourceFileCount": 42
+      "sourceFileCount": 7
     },
     "tag": {
       "glyph": "tag",
       "sourceExamples": [
         "apps/test-vue/src/main.ts",
-        "packages/core/src/components/hidden-attribute.e2e.ts",
+        "packages/core/src/components/md-accordion-item/md-accordion-item.tsx",
         "packages/core/src/components/md-accordion/md-accordion.tsx"
       ],
-      "sourceFileCount": 102
+      "sourceFileCount": 82
     },
     "target": {
       "glyph": "target",
@@ -3168,43 +1260,14 @@
         "apps/test-html/index.html",
         "apps/test-react/src/App.tsx"
       ],
-      "sourceFileCount": 143
-    },
-    "task": {
-      "glyph": "task",
-      "sourceExamples": [
-        "packages/core/src/components/md-tab-panels/md-tab-panels.spec.ts",
-        "packages/core/src/components/md-text-field/md-text-field.tsx",
-        "packages/core/src/utils/initial-motion.ts"
-      ],
-      "sourceFileCount": 4
-    },
-    "terminal": {
-      "glyph": "terminal",
-      "sourceExamples": [
-        "packages/core/src/components/md-progress-indicator/md-progress-indicator.axe.spec.ts",
-        "packages/core/src/components/md-progress-indicator/md-progress-indicator.spec.ts",
-        "packages/core/src/components/md-progress-indicator/md-progress-indicator.tsx"
-      ],
-      "sourceFileCount": 7
-    },
-    "timeline": {
-      "glyph": "timeline",
-      "sourceExamples": [
-        "packages/core/src/components/md-button-group/md-button-group.spec.ts",
-        "packages/core/src/components/md-list-item/md-list-item.spec.ts",
-        "packages/core/src/utils/charts/engine/animate.ts"
-      ],
-      "sourceFileCount": 7
+      "sourceFileCount": 12
     },
     "timer": {
       "glyph": "timer",
       "sourceExamples": [
-        "packages/core/src/components/md-date-picker/md-date-picker.spec.ts",
-        "packages/core/src/components/md-fab-menu/md-fab-menu.spec.ts",
-        "packages/core/src/components/md-fab-menu/md-fab-menu.tsx"
+        "packages/core/src/utils/initial-motion.ts"
       ],
-      "sourceFileCount": 14
+      "sourceFileCount": 1
     },
     "title": {
       "glyph": "title",
@@ -3213,16 +1276,7 @@
         "apps/test-angular/src/index.html",
         "apps/test-angular/src/tokens.css"
       ],
-      "sourceFileCount": 64
-    },
-    "today": {
-      "glyph": "today",
-      "sourceExamples": [
-        "packages/core/src/components/md-autocomplete/md-autocomplete.virtual.spec.ts",
-        "packages/core/src/components/md-date-picker/md-date-picker.css",
-        "packages/core/src/components/md-date-picker/md-date-picker.spec.ts"
-      ],
-      "sourceFileCount": 7
+      "sourceFileCount": 21
     },
     "token": {
       "glyph": "token",
@@ -3231,49 +1285,24 @@
         "apps/test-svelte/src/styles.css",
         "apps/test-vue/src/styles.css"
       ],
-      "sourceFileCount": 73
-    },
-    "tonality": {
-      "glyph": "tonality",
-      "sourceExamples": [
-        "packages/core/src/components/md-table-container/md-table-container.css",
-        "packages/core/src/components/md-table-container/md-table-container.tsx"
-      ],
-      "sourceFileCount": 2
+      "sourceFileCount": 3
     },
     "toolbar": {
       "glyph": "toolbar",
       "sourceExamples": [
-        "packages/core/src/components/md-button-group/md-button-group.tsx",
-        "packages/core/src/components/md-line-chart/md-line-chart.css",
-        "packages/core/src/components/md-list/md-list.spec.ts"
+        "packages/core/src/components/md-table-toolbar/md-table-toolbar.tsx",
+        "packages/core/src/components/md-toolbar/md-toolbar.tsx"
       ],
-      "sourceFileCount": 20
+      "sourceFileCount": 2
     },
     "tooltip": {
       "glyph": "tooltip",
       "sourceExamples": [
         "apps/test-angular/src/app/app.component.ts",
-        "apps/test-html/index.html",
-        "apps/test-react/src/App.tsx"
+        "apps/test-angular/src/main.ts",
+        "apps/test-html/index.html"
       ],
-      "sourceFileCount": 55
-    },
-    "tour": {
-      "glyph": "tour",
-      "sourceExamples": [
-        "packages/core/src/components/md-navigation-bar/md-navigation-bar.spec.ts",
-        "packages/core/src/components/md-navigation-bar/md-navigation-bar.tsx",
-        "packages/core/src/components/md-navigation-tab/md-navigation-tab.tsx"
-      ],
-      "sourceFileCount": 3
-    },
-    "train": {
-      "glyph": "train",
-      "sourceExamples": [
-        "packages/core/src/components/md-segmented-button/md-segmented-button.axe.spec.ts"
-      ],
-      "sourceFileCount": 1
+      "sourceFileCount": 13
     },
     "transform": {
       "glyph": "transform",
@@ -3282,89 +1311,14 @@
         "apps/test-svelte/src/App.svelte",
         "apps/test-vue/src/App.vue"
       ],
-      "sourceFileCount": 105
-    },
-    "translate": {
-      "glyph": "translate",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.css",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css",
-        "packages/core/src/components/md-area-chart/md-area-chart.tsx"
-      ],
-      "sourceFileCount": 30
-    },
-    "travel": {
-      "glyph": "travel",
-      "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.tsx",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.tsx",
-        "packages/core/src/components/md-line-chart/md-line-chart.tsx"
-      ],
-      "sourceFileCount": 18
-    },
-    "travel_explore": {
-      "glyph": "travel_explore",
-      "sourceExamples": [
-        "packages/core/src/components/md-search/md-search.spec.ts"
-      ],
-      "sourceFileCount": 1
-    },
-    "trip": {
-      "glyph": "trip",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion/test-utils/axe-spec.ts",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.tsx",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.e2e.ts"
-      ],
-      "sourceFileCount": 22
-    },
-    "try": {
-      "glyph": "reviews",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion/md-accordion.tsx",
-        "packages/core/src/components/md-accordion/test-utils/axe-spec.ts",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.tsx"
-      ],
-      "sourceFileCount": 89
-    },
-    "tune": {
-      "glyph": "tune",
-      "sourceExamples": [
-        "packages/core/src/components/md-list-item/md-list-item.css"
-      ],
-      "sourceFileCount": 1
-    },
-    "tv": {
-      "glyph": "tv",
-      "sourceExamples": [
-        "packages/core/src/utils/charts/engine/layout.ts"
-      ],
-      "sourceFileCount": 1
-    },
-    "undo": {
-      "glyph": "undo",
-      "sourceExamples": [
-        "packages/core/src/components/md-organization-chart/md-organization-chart.css",
-        "packages/core/src/components/md-toolbar/md-toolbar.e2e.ts",
-        "packages/core/src/utils/charts/engine/bar-chart.ts"
-      ],
-      "sourceFileCount": 6
-    },
-    "unpin": {
-      "glyph": "keep_off",
-      "sourceExamples": [
-        "packages/core/src/components/md-table/md-table.tsx"
-      ],
-      "sourceFileCount": 1
+      "sourceFileCount": 13
     },
     "update": {
       "glyph": "update",
       "sourceExamples": [
-        "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.e2e.ts",
-        "packages/core/src/components/md-checkbox/md-checkbox.spec.ts"
+        "packages/core/src/utils/charts/engine/dpr.ts"
       ],
-      "sourceFileCount": 27
+      "sourceFileCount": 1
     },
     "upgrade": {
       "glyph": "upgrade",
@@ -3373,50 +1327,23 @@
         "apps/test-react/src/styles.css",
         "apps/test-svelte/src/styles.css"
       ],
-      "sourceFileCount": 13
+      "sourceFileCount": 4
     },
     "uppercase": {
       "glyph": "uppercase",
       "sourceExamples": [
-        "packages/core/src/components/md-avatar/md-avatar.css",
-        "packages/core/src/components/md-color-picker/md-color-picker.css",
-        "packages/core/src/components/md-list-item/md-list-item.css"
+        "packages/core/src/components/md-otp-field/md-otp-field.tsx",
+        "packages/core/src/index.html"
       ],
-      "sourceFileCount": 6
-    },
-    "variables": {
-      "glyph": "variables",
-      "sourceExamples": [
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css",
-        "packages/core/src/components/md-avatar/md-avatar.tsx",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.css"
-      ],
-      "sourceFileCount": 10
-    },
-    "verified": {
-      "glyph": "verified",
-      "sourceExamples": [
-        "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
-        "packages/core/src/components/md-button-group/md-button-group.spec.ts",
-        "packages/core/src/components/md-checkbox/md-checkbox.spec.ts"
-      ],
-      "sourceFileCount": 12
-    },
-    "view_list": {
-      "glyph": "view_list",
-      "sourceExamples": [
-        "packages/core/src/components/md-segmented-button/md-segmented-button.axe.spec.ts"
-      ],
-      "sourceFileCount": 1
+      "sourceFileCount": 2
     },
     "visibility": {
       "glyph": "visibility",
       "sourceExamples": [
-        "packages/core/src/components/md-autocomplete/md-autocomplete.css",
-        "packages/core/src/components/md-autocomplete/md-autocomplete.tsx",
-        "packages/core/src/components/md-breadcrumb-item/md-breadcrumb-item.tsx"
+        "packages/core/src/components/md-navigation-rail-tab/md-navigation-rail-tab.tsx",
+        "packages/core/src/components/md-text-field/md-text-field.tsx"
       ],
-      "sourceFileCount": 59
+      "sourceFileCount": 2
     },
     "visibility_off": {
       "glyph": "visibility_off",
@@ -3428,57 +1355,16 @@
     "warning": {
       "glyph": "warning",
       "sourceExamples": [
-        "packages/core/src/components/md-badge/md-badge.spec.ts",
-        "packages/core/src/components/md-breadcrumbs/md-breadcrumbs.tsx",
-        "packages/core/src/components/md-card/md-card.tsx"
+        "packages/core/src/components/md-chip/md-chip.tsx",
+        "packages/core/src/components/md-meter/md-meter.tsx",
+        "packages/core/src/utils/charts/theme.ts"
       ],
-      "sourceFileCount": 28
-    },
-    "wash": {
-      "glyph": "wash",
-      "sourceExamples": [
-        "packages/core/src/components/md-list-item/md-list-item.css",
-        "packages/core/src/components/md-search/md-search.css",
-        "packages/core/src/components/md-search/md-search.tsx"
-      ],
-      "sourceFileCount": 5
-    },
-    "watch": {
-      "glyph": "watch",
-      "sourceExamples": [
-        "packages/core/src/components/md-area-chart/md-area-chart.tsx",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.tsx",
-        "packages/core/src/components/md-date-picker/md-date-picker.tsx"
-      ],
-      "sourceFileCount": 25
-    },
-    "waves": {
-      "glyph": "waves",
-      "sourceExamples": [
-        "packages/core/src/components/md-progress-indicator/md-progress-indicator.tsx"
-      ],
-      "sourceFileCount": 1
-    },
-    "wc": {
-      "glyph": "wc",
-      "sourceExamples": [
-        "packages/core/src/components/md-tooltip/md-tooltip.spec.ts"
-      ],
-      "sourceFileCount": 1
+      "sourceFileCount": 4
     },
     "web": {
       "glyph": "web",
       "sourceExamples": [
-        "apps/test-html/src/main.ts",
-        "packages/core/src/components/md-list/md-list.css",
-        "packages/core/src/components/md-search/md-search.css"
-      ],
-      "sourceFileCount": 6
-    },
-    "weekend": {
-      "glyph": "weekend",
-      "sourceExamples": [
-        "packages/core/src/components/md-sparkline/md-sparkline.tsx"
+        "apps/test-html/src/main.ts"
       ],
       "sourceFileCount": 1
     },
@@ -3489,33 +1375,16 @@
         "apps/test-angular/src/tokens.css",
         "apps/test-html/index.html"
       ],
-      "sourceFileCount": 70
-    },
-    "widgets": {
-      "glyph": "widgets",
-      "sourceExamples": [
-        "packages/core/src/components/md-button/md-button.spec.ts",
-        "packages/core/src/components/md-button/md-button.tsx",
-        "packages/core/src/components/md-dialog/md-dialog.css"
-      ],
-      "sourceFileCount": 4
+      "sourceFileCount": 7
     },
     "width": {
       "glyph": "width",
       "sourceExamples": [
+        "apps/shared/catalog-samples.css",
         "apps/test-angular/src/app/app.component.ts",
-        "apps/test-angular/src/index.html",
-        "apps/test-html/index.html"
+        "apps/test-angular/src/index.html"
       ],
-      "sourceFileCount": 237
-    },
-    "wifi": {
-      "glyph": "wifi",
-      "sourceExamples": [
-        "packages/core/src/components/md-switch/md-switch.e2e.ts",
-        "packages/core/src/components/md-switch/md-switch.spec.ts"
-      ],
-      "sourceFileCount": 2
+      "sourceFileCount": 23
     },
     "window": {
       "glyph": "window",
@@ -3524,16 +1393,14 @@
         "apps/test-react/src/main.tsx",
         "apps/test-svelte/src/main.ts"
       ],
-      "sourceFileCount": 120
+      "sourceFileCount": 6
     },
     "work": {
       "glyph": "work",
       "sourceExamples": [
-        "apps/test-angular/src/app/reactive-form.component.ts",
-        "packages/core/src/components/md-accordion-item/md-accordion-item.css",
-        "packages/core/src/components/md-bar-chart/md-bar-chart.spec.ts"
+        "apps/test-angular/src/app/reactive-form.component.ts"
       ],
-      "sourceFileCount": 38
+      "sourceFileCount": 1
     }
   }
 }

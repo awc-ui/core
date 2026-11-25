@@ -1,3 +1,4 @@
+import { provideZonelessChangeDetection } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 // The demos use raw custom elements. Each public component entry registers
 // its element and any elements it renders inside its shadow root.
@@ -36,4 +37,6 @@ import '@awc-ui/core/components/md-text-field';
 import '@awc-ui/core/components/md-tooltip';
 import { AppComponent } from './app/app.component';
 
-bootstrapApplication(AppComponent).catch(err => console.error(err));
+bootstrapApplication(AppComponent, {
+  providers: [provideZonelessChangeDetection()],
+}).catch(err => console.error(err));

@@ -7,9 +7,9 @@
  *
  * Override output directories with name=directory arguments, for example
  * html=apps/test-html/dist. All six cases always run; no dev server is used.
- * External fonts are blocked. Mobile runs hold local CSS and the icon font
- * to check stable layout, then test the first action with the font still held
- * on a separate navigation.
+ * Mobile runs hold local CSS and the icon font, then test the first action on
+ * a separate navigation. Framework catalogs with deferred Roboto also run
+ * with its stylesheet and real font bytes held across separate paints.
  */
 import assert from 'node:assert/strict';
 import { createReadStream } from 'node:fs';
@@ -21,6 +21,17 @@ import puppeteer from 'puppeteer';
 
 const repository = fileURLToPath(new URL('../', import.meta.url));
 const iconCoverage = JSON.parse(await readFile(resolve(repository, 'apps/shared/fonts/coverage.json'), 'utf8'));
+// At these mobile widths, each catalog title is close to its wrapping boundary.
+const robotoWidths = { html: 547, react: 426, vue: 384, svelte: 416 };
+const robotoWeights = ['400', '500'];
+const robotoFiles = new Map(await Promise.all(robotoWeights.map(async weight => [
+  `/awc-test/roboto-${weight}.woff2`,
+  await readFile(resolve(repository, `apps/booking/public/fonts/roboto-latin-${weight}-normal.woff2`)),
+])));
+const robotoCss = robotoWeights.map(weight => `@font-face {
+  font-family: Roboto; font-weight: ${weight}; font-display: swap;
+  src: url("https://fonts.gstatic.com/awc-test/roboto-${weight}.woff2") format("woff2");
+}`).join('\n');
 assert(iconCoverage.subsetBytes < 400_000, 'Playground icon subset exceeds its transfer budget');
 const outputs = {
   html: 'apps/test-html/dist',
@@ -201,11 +212,45 @@ async function verifyAngularForm(page) {
       element.querySelector('md-checkbox').getAttribute('aria-checked') === 'false' &&
       element.querySelector('md-switch').getAttribute('aria-checked') === 'false';
   }, {}, form);
+
+  await page.$eval(form, element => element.reset());
+  await page.waitForFunction(form => {
+    const element = document.querySelector(form);
+    const model = JSON.parse(element.querySelector('[data-model]').textContent);
+    return Object.values(model).every(value => value === null) &&
+      element.querySelector('[data-status]').textContent.trim() === 'INVALID' &&
+      element.querySelector('md-text-field').shadowRoot.querySelector('input').value === '';
+  }, {}, form);
+
+  const clickButton = async text => {
+    for (const button of await page.$$('md-button')) {
+      if (await button.evaluate((element, text) => element.textContent.trim() === text, text)) {
+        await button.click();
+        return;
+      }
+    }
+    assert.fail(`Angular demo button not found: ${text}`);
+  };
+  await clickButton('Open Dialog');
+  await page.waitForFunction(() => document.querySelector('md-dialog').open === true);
+  await clickButton('Cancel');
+  await page.waitForFunction(() => document.querySelector('md-dialog').open === false &&
+    [...document.querySelectorAll('md-button')].some(button => button.textContent.trim() === 'Open Dialog'));
+  await page.click('#menu-anchor');
+  await page.waitForFunction(() => document.querySelector('md-menu[anchor="menu-anchor"]').open === true);
+  await page.click('#menu-anchor');
+  await page.waitForFunction(() => document.querySelector('md-menu[anchor="menu-anchor"]').open === false);
+  await clickButton('Open Bottom Sheet');
+  await page.waitForFunction(() => document.querySelector('md-bottom-sheet').open === true);
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => document.querySelector('md-bottom-sheet').open === false &&
+    [...document.querySelectorAll('md-button')].some(button => button.textContent.trim() === 'Open Bottom Sheet'));
 }
 
 async function verify(browser, name, root, profile = 'desktop') {
   const slowAssets = profile === 'slow-assets';
   const earlyInput = profile === 'early-input';
+  const delayedRoboto = profile === 'delayed-roboto';
   const mount = name === 'html-relative' ? '/preview/nested/' : '/';
   const missingAssets = new Set();
   const runtimeErrors = new Set();
@@ -223,10 +268,12 @@ async function verify(browser, name, root, profile = 'desktop') {
   const context = await browser.createBrowserContext();
   let heldRuntime = false;
   let heldFont = false;
+  let heldRobotoCss = false;
   try {
     const page = await context.newPage();
     page.setDefaultTimeout(15_000);
-    await page.setViewport(profile === 'desktop' ? { width: 1440, height: 1050 } : { width: 390, height: 844 });
+    await page.setViewport(profile === 'desktop' ? { width: 1440, height: 1050 } :
+      { width: delayedRoboto ? robotoWidths[name] : 390, height: 844 });
     if (!earlyInput) await page.evaluateOnNewDocument(installStartupProbe);
     page.on('pageerror', error => runtimeErrors.add(error.message));
     page.on('console', message => {
@@ -238,6 +285,18 @@ async function verify(browser, name, root, profile = 'desktop') {
     await page.setRequestInterception(true);
     const routeRequest = async request => {
       const url = new URL(request.url());
+      if (delayedRoboto && url.hostname === 'fonts.googleapis.com') {
+        heldRobotoCss = true;
+        await stylesheetGate.promise;
+        await request.respond({ status: 200, contentType: 'text/css', body: robotoCss });
+        return;
+      }
+      if (delayedRoboto && url.hostname === 'fonts.gstatic.com' && robotoFiles.has(url.pathname)) {
+        await fontGate.promise;
+        await request.respond({ status: 200, contentType: 'font/woff2',
+          headers: { 'Access-Control-Allow-Origin': '*' }, body: robotoFiles.get(url.pathname) });
+        return;
+      }
       if (['http:', 'https:'].includes(url.protocol) && url.origin !== server.origin) {
         // Resolve remote font stylesheets empty: no network dependence or font
         // swap, and no intentional ERR_FAILED noise hiding a real app error.
@@ -325,6 +384,22 @@ async function verify(browser, name, root, profile = 'desktop') {
     }
     runtimeGate.release();
     await awaitHydration(page);
+    if (delayedRoboto) {
+      assert(heldRobotoCss, `${name}: the remote stylesheet must be requested before hydration`);
+      assert(await page.$eval('[data-deferred-fonts]', link => link.media === 'print' && !link.sheet),
+        `${name}: the styled catalog must paint and hydrate while Roboto's stylesheet is pending`);
+      stylesheetGate.release();
+      await page.waitForFunction(() => document.querySelector('[data-deferred-fonts]').media === 'all' &&
+        [...document.fonts].some(font => font.family === 'Roboto' && font.status === 'loading'));
+      await page.evaluate(() => new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done))));
+      fontGate.release();
+      const weights = await page.evaluate(async () => {
+        await document.fonts.ready;
+        return [...document.fonts].filter(font => font.family === 'Roboto' && font.status === 'loaded')
+          .map(font => font.weight).sort();
+      });
+      assert.deepEqual(weights, robotoWeights, `${name}: the catalog uses the real Roboto files`);
+    }
     if (slowAssets) {
       // Icons reserve their footprint even while their font request is pending.
       // Compare actual visible controls before and after the font arrives.
@@ -360,7 +435,7 @@ async function verify(browser, name, root, profile = 'desktop') {
     const first = layout.frames[0];
     layout.frames.forEach(frame => frame.forEach((position, index) => {
       assert(Math.abs(position - first[index]) <= 1,
-        `${name}: initial section ${index + 1} shifted ${position - first[index]}px`);
+        `${name}: initial section ${index + 1} shifted ${position - first[index]}px (CLS ${layout.cls})`);
     }));
     assert(layout.cls <= 0.001, `${name}: initial layout shift ${layout.cls}: ${JSON.stringify(layout.shifts)}`);
 
@@ -381,7 +456,7 @@ async function verify(browser, name, root, profile = 'desktop') {
     assert(result.samples > 0, `${name}: startup must be observed after first paint`);
     assert.deepEqual(result.visibleUnhydrated, [], `${name}: unhydrated controls flashed during startup`);
     assertNoFailures();
-    console.log(`PASS ${name}${slowAssets ? ' mobile/delayed CSS+font' : ' desktop'}: ${result.hydrated} nested hosts hydrated; stable layout (CLS ${layout.cls}); no raw-control flash; first input responds; no asset/runtime errors`);
+    console.log(`PASS ${name} ${profile}: ${result.hydrated} nested hosts hydrated; stable layout (CLS ${layout.cls}); no raw-control flash; first input responds; no asset/runtime errors`);
   } catch (error) {
     throw new Error(`${name}: ${error.message}\nMissing assets: ${JSON.stringify([...missingAssets])}\nRuntime errors: ${JSON.stringify([...runtimeErrors])}`, { cause: error });
   } finally {
@@ -402,6 +477,7 @@ try {
     await verify(browser, name, root);
     await verify(browser, name, root, 'slow-assets');
     await verify(browser, name, root, 'early-input');
+    if (Object.hasOwn(robotoWidths, name)) await verify(browser, name, root, 'delayed-roboto');
   }
 } finally {
   await browser.close();

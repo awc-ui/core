@@ -279,11 +279,11 @@ jobs:
           python-version: '3.12'
           cache: pip
           cache-dependency-path: scripts/playground-icons-requirements.txt
-      - name: Verify compact icon coverage and unchanged rendering
+      - name: Verify compact icon source coverage
         run: |
           python -m pip install -r scripts/playground-icons-requirements.txt
+          node --test scripts/playground-icon-literals.test.mjs
           python scripts/generate-playground-icons.py --check
-          node scripts/verify-playground-icons.mjs
       - name: Build framework dependencies and production applications
         run: |
           pnpm --workspace-concurrency=2 --filter @awc-ui/angular --filter @awc-ui/react --filter @awc-ui/vue --filter @awc-ui/showcase-kit build
@@ -291,8 +291,10 @@ jobs:
           pnpm --filter @awc-ui/test-html exec vite build --base ./ --outDir dist/relative-base
           pnpm --workspace-concurrency=2 --filter @awc-ui/showcase-credit-risk-next --filter @awc-ui/showcase-credit-risk-nuxt --filter @awc-ui/showcase-credit-risk-sveltekit --filter @awc-ui/showcase-credit-risk-angular-ssr --filter @awc-ui/showcase-credit-risk-astro build
           pnpm --filter @awc-ui/example-angular-ssr build
-      - name: Verify cold loading and first input in all client frameworks
-        run: pnpm verify:framework-startup
+      - name: Verify cold loading, first input and rendered icons
+        run: |
+          pnpm verify:framework-startup
+          node scripts/verify-playground-icons.mjs --catalogs
       - name: Verify public wrappers and compiled framework updates
         run: pnpm verify:wrapper-startup
       - name: Verify server content and delayed hydration on every route

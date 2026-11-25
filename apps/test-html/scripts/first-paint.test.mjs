@@ -109,7 +109,20 @@ after(async () => {
 });
 
 function installFrameProbe(count) {
-  const probe = window.firstPaintProbe = { bodyTransitions: [], frames: [], stopped: false };
+  const probe = window.firstPaintProbe = { bodyTransitions: [], frames: [], stopped: false, cls: 0 };
+  const recordLayoutShifts = (entries) => {
+    for (const entry of entries) {
+      if (!entry.hadRecentInput) probe.cls += entry.value;
+    }
+  };
+  const layoutObserver = new PerformanceObserver((list) => recordLayoutShifts(list.getEntries()));
+  layoutObserver.observe({ type: 'layout-shift', buffered: true });
+  probe.finish = () => {
+    probe.stopped = true;
+    recordLayoutShifts(layoutObserver.takeRecords());
+    layoutObserver.disconnect();
+    return { frames: probe.frames, bodyTransitions: probe.bodyTransitions, cls: probe.cls };
+  };
   document.addEventListener('transitionrun', (event) => {
     if (event.target === document.body) probe.bodyTransitions.push(event.propertyName);
   }, true);
@@ -131,6 +144,8 @@ async function snapshot(page) {
     performance.getEntriesByName('first-contentful-paint', 'paint').length > 0);
   return page.evaluate(async (count) => {
     await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const title = document.querySelector('.app > h1');
+    const titleStyle = getComputedStyle(title);
     const components = [...document.querySelectorAll('*')].filter((host) => host.localName.startsWith('md-'));
     const pending = components.filter((host) => !host.classList.contains('hydrated'));
     const visibleUnhydrated = pending.filter((host) => {
@@ -143,6 +158,10 @@ async function snapshot(page) {
       hydrated: components.length - pending.length,
       buttonVisibility: getComputedStyle(document.querySelector('#theme-toggle')).visibility,
       background: getComputedStyle(document.body).backgroundColor,
+      styledTitle: title.textContent.trim() === 'AWC UI — Vanilla HTML Playground' &&
+        title.checkVisibility({ opacityProperty: true, visibilityProperty: true }) &&
+        title.getBoundingClientRect().height > 0 && titleStyle.fontSize === '32px' &&
+        Boolean(titleStyle.getPropertyValue('--md-sys-color-background').trim()),
       headings: [...document.querySelectorAll('.app > section > h2')].slice(0, count).map((heading) => ({
         label: heading.textContent.trim(),
         top: heading.getBoundingClientRect().top,
@@ -183,11 +202,13 @@ async function verifyCheckbox(page) {
     document.querySelector('#cb-label').textContent.trim() === 'Checkbox (checked)');
 }
 
-for (const { viewport, delayedRoboto } of [
-  ...viewports.map((viewport) => ({ viewport, delayedRoboto: false })),
-  { viewport: viewports[1], delayedRoboto: true },
+for (const { viewport, fontTiming } of [
+  ...viewports.map((viewport) => ({ viewport })),
+  { viewport: viewports[1], fontTiming: 'font files' },
+  { viewport: viewports[1], fontTiming: 'stylesheet and font files' },
 ]) {
-  const fontCase = delayedRoboto ? ' with delayed Roboto' : '';
+  const holdStylesheet = fontTiming === 'stylesheet and font files';
+  const fontCase = fontTiming ? ` with delayed Roboto ${fontTiming}` : '';
   test(`the HTML playground paints and hydrates without moving its first six sections at ${viewport.width}px${fontCase}`,
     { timeout: 45_000 }, async (t) => {
       const context = await browser.createBrowserContext();
@@ -196,17 +217,20 @@ for (const { viewport, delayedRoboto } of [
       const releaseApp = latch();
       const lazyRequest = latch();
       const releaseLazy = latch();
+      const fontStylesheetRequest = latch();
+      const releaseFontStylesheet = latch();
       const fontRequest = latch();
       const releaseFont = latch();
       const failures = observeFailures(page, origin);
       const fontPath = (weight) => `/awc-first-paint/roboto-${weight}.woff2`;
-      const fontFiles = new Map(delayedRoboto ? await Promise.all(fontWeights.map(async (weight) => [
+      const fontFiles = new Map(fontTiming ? await Promise.all(fontWeights.map(async (weight) => [
         fontPath(weight),
         await readFile(new URL(`../../booking/public/fonts/roboto-latin-${weight}-normal.woff2`, import.meta.url)),
       ])) : []);
       t.after(async () => {
         releaseApp.resolve();
         releaseLazy.resolve();
+        releaseFontStylesheet.resolve();
         releaseFont.resolve();
         await context.close();
       });
@@ -220,7 +244,9 @@ for (const { viewport, delayedRoboto } of [
         try {
           // Exercise the real font swap with local bytes and a request latch.
           // The two fallback cases block the remote font entirely.
-          if (delayedRoboto && target.hostname === 'fonts.googleapis.com') {
+          if (fontTiming && target.hostname === 'fonts.googleapis.com') {
+            fontStylesheetRequest.resolve();
+            if (holdStylesheet) await releaseFontStylesheet.promise;
             const body = fontWeights.map((weight) => `@font-face {
               font-family: Roboto;
               font-weight: ${weight};
@@ -260,19 +286,32 @@ for (const { viewport, delayedRoboto } of [
       });
 
       const loaded = page.goto(origin, { waitUntil: 'load', timeout: 35_000 });
-      // Navigation runs concurrently with the two deliberately blocked requests.
+      // Inspect painted frames while the selected requests are held.
       void loaded.catch(() => {});
       await deadline(appRequest.promise, 'the app module request');
-      if (delayedRoboto) await deadline(fontRequest.promise, 'the Roboto request');
+      if (fontTiming) {
+        await deadline(fontStylesheetRequest.promise, 'the Roboto stylesheet request');
+        if (!holdStylesheet) {
+          await page.waitForFunction(() => Boolean(document.querySelector('[data-deferred-fonts]').sheet));
+        }
+      }
       const beforeApp = await snapshot(page);
-      if (delayedRoboto) assert.equal(await page.evaluate(() => document.fonts.check('400 16px Roboto')), false);
+      assert.ok(beforeApp.styledTitle, 'the catalog title must paint with its local styles before app JS');
       releaseApp.resolve();
       await deadline(lazyRequest.promise, 'a lazy component entry request');
       await page.waitForFunction(() => Boolean(customElements.get('md-button')));
       const duringLazy = await snapshot(page);
       releaseLazy.resolve();
       await waitForHydratedControls(page);
-      if (delayedRoboto) {
+      if (fontTiming) {
+        if (holdStylesheet) {
+          assert.equal(await page.$eval('[data-deferred-fonts]', (link) => link.sheet), null,
+            'the catalog paints and hydrates while the remote stylesheet is held');
+          releaseFontStylesheet.resolve();
+        }
+        await deadline(fontRequest.promise, 'the Roboto font request');
+        assert.equal(await page.$eval('[data-deferred-fonts]', (link) => link.media), 'all');
+        assert.equal(await page.evaluate(() => document.fonts.check('400 16px Roboto')), false);
         releaseFont.resolve();
         const weights = await page.evaluate(async () => {
           await document.fonts.ready;
@@ -283,15 +322,13 @@ for (const { viewport, delayedRoboto } of [
       }
       await loaded;
       const settled = await snapshot(page);
-      const { frames, bodyTransitions } = await page.evaluate(() => {
-        window.firstPaintProbe.stopped = true;
-        return window.firstPaintProbe;
-      });
+      const { frames, bodyTransitions, cls } = await page.evaluate(() => window.firstPaintProbe.finish());
 
       assert.ok(settled.hydrated > 0, 'the component chunks must subsequently hydrate');
       assert.equal(settled.buttonVisibility, 'visible');
       assert.deepEqual(settled.headings.map(({ label }) => label), headings);
       assert.deepEqual(bodyTransitions, [], 'the body must not animate on boot');
+      assert.ok(cls <= 0.001, `the first paint and font swap produced CLS ${cls}`);
       for (const [label, early] of [['before app JS', beforeApp], ['during lazy loading', duringLazy]]) {
         assert.equal(early.hydrated, 0, label);
         assert.equal(early.buttonVisibility, 'hidden', label);

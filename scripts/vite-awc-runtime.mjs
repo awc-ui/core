@@ -8,11 +8,15 @@ const { build, transform } = createRequire(new URL('../packages/core/package.jso
 const runtimeDirectory = fileURLToPath(new URL('../packages/core/dist/esm/', import.meta.url));
 const loaderModule = '\0awc-playground-lazy-loader';
 
-export async function staticModuleImports(source, name) {
+export async function moduleMetadata(source, name) {
   const result = await build({ stdin: { contents: source, sourcefile: name },
     bundle: false, write: false, metafile: true, format: 'esm', logLevel: 'silent' });
-  return Object.values(result.metafile.outputs).flatMap(output => output.imports)
-    .filter(entry => entry.kind === 'import-statement' && entry.path.startsWith('.')).map(entry => entry.path);
+  const [output] = Object.values(result.metafile.outputs);
+  return {
+    imports: output.imports.filter(entry => entry.kind === 'import-statement' && entry.path.startsWith('.'))
+      .map(entry => entry.path),
+    exports: output.exports,
+  };
 }
 
 /** Keep Stencil's lazy loader and its computed entry imports in one runtime.
@@ -20,7 +24,7 @@ export async function staticModuleImports(source, name) {
  * second runtime. Preserve module boundaries/import names while minifying each
  * production module independently. The browser still gets exactly one runtime.
  */
-export function awcLazyRuntime({ initialEntries = [] } = {}) {
+export function awcLazyRuntime({ initialEntries = [], initialTags = [] } = {}) {
   let loaderReference;
   let config;
   let preloadReferences = [];
@@ -80,15 +84,20 @@ export function awcLazyRuntime({ initialEntries = [] } = {}) {
       };
       await emitDirectory(runtimeDirectory);
       if (!loaderReference) this.error('Build @awc-ui/core before building a playground.');
-      // Warm the bootstrap and explicitly requested initial nested components
+      // Warm the bootstrap and explicitly requested initial components
       // when the app starts. Document-time preloads compete with the app entry
       // that renders the first content; waiting for a nested component to render
       // instead adds avoidable loader -> entry -> implementation round trips.
+      const metadata = new Map();
+      const describe = name => {
+        if (!metadata.has(name)) metadata.set(name, moduleMetadata(sources.get(name), name));
+        return metadata.get(name);
+      };
       const visited = new Set();
       const visit = async name => {
         if (visited.has(name) || !sources.has(name)) return;
         visited.add(name);
-        for (const dependency of await staticModuleImports(sources.get(name), name)) {
+        for (const dependency of (await describe(name)).imports) {
           await visit(posix.normalize(posix.join(posix.dirname(name), dependency)));
         }
       };
@@ -96,6 +105,21 @@ export function awcLazyRuntime({ initialEntries = [] } = {}) {
       for (const name of initialEntries) {
         if (!sources.has(name)) this.error(`Missing initial AWC runtime entry: ${name}`);
         await visit(name);
+      }
+      if (initialTags.length) {
+        // Stencil's lazy loader maps tag names to these underscore-separated
+        // exports. A generated entry can export several custom elements.
+        const entries = [...sources.keys()].filter(name => name.endsWith('.entry.js'));
+        const exportsByEntry = await Promise.all(entries.map(async name => [name, (await describe(name)).exports]));
+        const entriesByExport = new Map();
+        for (const [name, exports] of exportsByEntry) {
+          for (const exported of exports) entriesByExport.set(exported, name);
+        }
+        for (const tag of initialTags) {
+          const name = entriesByExport.get(tag.replaceAll('-', '_'));
+          if (!name) this.error(`Missing initial AWC runtime tag: ${tag}`);
+          await visit(name);
+        }
       }
       preloadReferences = [...visited].map(name => references.get(name));
     },

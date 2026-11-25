@@ -6,33 +6,32 @@ It does not change published Core font selection or consumer assets. The source
 is `material-symbols@0.40.2` (Apache 2.0; see `LICENSE`). Existing legacy Material
 Icons families remain unchanged; they do not download unless used.
 
-The generator derives the actual GSUB ligature-name-to-glyph mapping, intersects
-it with complete tokens in Core source/tests and all five playgrounds, and keeps
-a conservative superset (including comment/identifier matches). Runtime branches
-such as `visibility`/`visibility_off`, `menu`/`menu_open`, `calendar_today`/`edit`
-and `check`/`close` are therefore included. It also preserves explicit PUA code
-points. Unselected ligature rules are removed **before** glyph closure, so the
-shared alphabet cannot accidentally retain the full font. FILL substitutions,
-composite glyph dependencies and all FILL/GRAD/opsz/wght axes remain variable.
+The generator derives the GSUB ligature-to-glyph mapping and keeps complete
+tokens from the five playgrounds. For Core, it uses the workspace TypeScript
+parser to retain production string literals, template literal values, JSX text
+and object keys. It keeps quoted CSS values and explicit private-use code
+points. Runtime branches such as `visibility`/`visibility_off`, `menu`/`menu_open`,
+`calendar_today`/`edit` and `check`/`close` are included. The generator removes
+unselected ligature rules before glyph closure and retains FILL substitutions,
+composite glyph dependencies and all FILL/GRAD/opsz/wght axes.
 
 `coverage.json` records the pinned source hash, exact selected ligatures, source
-examples, glyph count and verification results. Regenerate whenever demo/Core
-icon names change. Arbitrary external icon names are outside this subset's scope;
-a fallback font cannot repair a missing ligature whose letters exist in this font.
-If adding names assembled from fragments at runtime, change that data to complete
-source literals or extend the generator's explicit coverage and checks.
+examples, glyph count and verification results. Regenerate whenever demo or Core
+icon names change. Use complete source literals for names assembled from values
+that only exist at runtime, or extend the generator to cover that data. CSS font
+fallback operates on the input letters and cannot supply a missing ligature.
 
 ## Regenerate and check
 
-Run from the repository root after installing the playground dependencies. Use
-Python 3.12 with these isolated, pinned generation dependencies (not app runtime
-dependencies):
+Run from the repository root after installing workspace dependencies. Use
+Python 3.12 with the pinned generation dependencies in an isolated environment.
 
 ```sh
 python3.12 -m venv /tmp/awc-playground-fonts-venv
 /tmp/awc-playground-fonts-venv/bin/pip install -r scripts/playground-icons-requirements.txt
 /tmp/awc-playground-fonts-venv/bin/python scripts/generate-playground-icons.py
 /tmp/awc-playground-fonts-venv/bin/python scripts/generate-playground-icons.py --check
+node --test scripts/playground-icon-literals.test.mjs
 node scripts/verify-playground-icons.mjs --artifacts=/tmp/awc-playground-icons
 ```
 
@@ -40,6 +39,8 @@ Generation verifies every selected ligature's output glyph, advances and outline
 against the original at all 54 combinations of axis endpoints/defaults. `--check`
 regenerates deterministically and fails on stale assets or coverage. The browser
 check loads both actual WOFF2 files and compares Chromium pixels at six axis
-configurations, including FILL 0/1 and weight/optical-size/grade extremes. It also
-writes a sample original/subset image when `--artifacts` is supplied. No Core or
-playground build is required for either verification command.
+configurations, including FILL 0/1 and weight, optical-size and grade extremes.
+Use `--artifacts` to save sample original and subset images. After rebuilding the
+five production catalogs, run `node scripts/verify-playground-icons.mjs --catalogs`
+to check the served font hash and the ligatures rendered through catalog
+interactions, including inside shadow roots.
