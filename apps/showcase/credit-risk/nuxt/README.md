@@ -194,6 +194,28 @@ the deployed site answering on `/showcase/credit-risk/nuxt/` rather than at the
 root — which is what `apps/docs/netlify.toml` proxies to and what every asset
 URL in every rendered document already says. The publish directory is `dist`.
 
+For a manual upload, build the Netlify target first, then run this from
+`apps/showcase/credit-risk/nuxt`. Set `NETLIFY_SITE_ID` to the
+`awc-credit-risk-nuxt` site's ID explicitly; the repository's default site is
+the documentation site:
+
+```bash
+export NETLIFY_SITE_ID="ea8cc85d-212c-4720-b22c-d4b17e667dd9"
+pnpm exec netlify deploy --no-build --site "$NETLIFY_SITE_ID" \
+  --dir "$PWD/dist" \
+  --functions "$PWD/.netlify/functions-internal" \
+  --skip-functions-cache
+```
+
+Netlify CLI 27.10.2 with `@netlify/build-info` 11.3.0 did not detect the nested
+showcase workspace and looked for functions under the repository's `.netlify`,
+even with this app as the working directory. The explicit functions path is
+required for this manual deployment; publishing only `dist` can succeed while
+every SSR route returns 404. Do not pass `--context` with `--no-build`, or the
+unsupported `--config` option. Verify the draft's prefixed routes, changing SSR
+markers, assets and browser interactions, then promote that exact draft with
+Netlify's `restoreSiteDeploy` API operation.
+
 The Netlify Function runs the request through `nitroApp.localCall`, i.e. the
 same h3 stack, so `render:html` still fires and the components still arrive as
 declarative shadow DOM. That is checkable without deploying: import

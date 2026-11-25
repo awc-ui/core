@@ -63,6 +63,29 @@ functions get their URL patterns from route segments, which do not include
 `adapter-node` writes and the Netlify adapter empties its publish directory
 before using it.
 
+For a manual upload, build the Netlify target first, then run this from
+`apps/showcase/credit-risk/sveltekit`. Set `NETLIFY_SITE_ID` to the
+`awc-credit-risk-sveltekit` site's ID explicitly; the repository's default site
+is the documentation site:
+
+```bash
+export NETLIFY_SITE_ID="8bc6f88c-a0ad-4132-96f3-fa4dcc9203c2"
+pnpm exec netlify deploy --no-build --site "$NETLIFY_SITE_ID" \
+  --dir "$PWD/build-netlify" \
+  --functions "$PWD/.netlify/functions-internal" \
+  --skip-functions-cache
+```
+
+Netlify CLI 27.10.2 with `@netlify/build-info` 11.3.0 did not detect the nested
+showcase workspace and looked for functions under the repository's `.netlify`,
+even with this app as the working directory. The explicit functions path is
+required for this manual deployment; publishing only `build-netlify` can
+succeed while every SSR route returns 404. Keep the adapter's `_headers` and
+`_redirects` in the publish directory. Do not pass `--context` with `--no-build`,
+or the unsupported `--config` option. Verify the draft's prefixed routes,
+changing SSR markers, assets and browser interactions, then promote that exact
+draft with Netlify's `restoreSiteDeploy` API operation.
+
 The bare root is the one thing that does *not* carry over. `server.mjs`
 redirects `/` onto the mount; the Netlify target cannot, because Netlify
 [evaluates serverless functions before
