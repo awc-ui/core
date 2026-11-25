@@ -1,6 +1,6 @@
 # npm Trusted Publishing migration
 
-The manual `Publish` workflow now has an `authentication` choice. It defaults to `trusted`: GitHub Actions authenticates with a short-lived OIDC identity and passes no stored npm token. A real authorized release is still required to verify the account-side trust end to end. Existing release gates, version stamping, package selection, provenance, and GitHub release handling remain in place.
+The manual `Publish` workflow has an `authentication` choice. It defaults to `trusted`: GitHub Actions authenticates with a short-lived OIDC identity and passes no stored npm token. Verify account-side trust through an authorized publication for every package; a saved configuration or partial release does not prove all eight connections. Existing release gates, version stamping, package selection, provenance, and GitHub release handling remain in place.
 
 ## Complete npm setup
 
@@ -14,7 +14,7 @@ In each package's Settings → Trusted publishing, add GitHub Actions with:
 | Repository | `core` |
 | Workflow filename | `publish.yml` |
 | Environment name | Leave blank; this workflow declares no environment |
-| Allowed actions | Enable direct `npm publish` |
+| Allowed actions | Enable direct `npm publish`; leave `npm dist-tag` disabled for this workflow |
 
 New configurations permit staged publishing by default, so direct publishing must be enabled explicitly for this workflow. npm does not validate the connection when it is saved. The workflow must run on GitHub-hosted runners with `id-token: write`; Trusted Publishing requires npm ≥11.5.1 and Node ≥22.14.0. ([npm setup and requirements](https://docs.npmjs.com/trusted-publishers/))
 
@@ -54,7 +54,9 @@ as part of this release path.
 | Production → `latest` | Existing behavior | Supported; publish assigns latest directly |
 | Prerelease while latest points at a bootstrap snapshot | Automatically repairs latest | Rejected before publishing |
 
-OIDC authenticates publishing, not `npm dist-tag`. The trusted branch therefore performs no extra tag writes. A read-only preflight checks public metadata for all eight packages before versioning, and again immediately before publishing. It rejects bootstrap repairs, prerelease promotion, and existing versions whose requested tag differs; pnpm would skip those existing versions. The error identifies the package and the required action. ([npm OIDC command limitations](https://docs.npmjs.com/trusted-publishers/#limitations-and-future-improvements))
+This workflow's trusted branch performs no extra tag writes. npm now supports OIDC `npm dist-tag` with a separate **Allow npm dist-tag** permission and npm ≥11.21.0 on the 11.x line (or ≥12.2.0 on the 12.x line). The workflow pins npm 11.19.1 and does not request or use that permission. ([npm dist-tag requirements](https://docs.npmjs.com/adding-dist-tags-to-packages/))
+
+A read-only preflight checks public metadata for all eight packages before versioning, and again immediately before publishing. It rejects bootstrap repairs, prerelease promotion, and existing versions whose requested tag differs; pnpm would skip those existing versions. The error identifies the package and the required action.
 
 For a prerelease requiring latest promotion or bootstrap repair, a maintainer can perform the necessary tag update interactively under separate release authorization. The explicit `authentication=token` legacy fallback remains available during migration. For an existing version whose tag needs repair, the preflight prints the exact `npm dist-tag add` command. No tag command is run automatically in trusted mode.
 
@@ -64,11 +66,26 @@ Both authentication branches use `pnpm -r ... publish`, preserving pnpm's worksp
 
 1. Review the workflow and run `node --test scripts/check-publish-auth.test.mjs` locally. This checks runtime bounds, auth branches, promotion/repair rejection, and partial reruns without publishing anything.
 2. Confirm all eight npm configurations use the exact owner, repository, workflow filename, and direct-publish permission above. Package repository URLs already point at `https://github.com/awc-ui/core`.
-3. For the **next separately authorized release**, choose `authentication=trusted` and a compatible channel/tag plan. Inspect the published package versions, requested tags, and provenance for all eight packages.
+3. For an authorized release, choose `authentication=trusted` and a compatible channel/tag plan. Inspect the completed workflow, published versions, requested tags, and provenance for all eight packages, plus the GitHub release. A successful publication of one package validates only that package's trust.
 4. Trusted mode is already the default. After the first successful OIDC release, decide how maintainers will handle the remaining interactive dist-tag operations before removing the legacy fallback.
 5. Only then restrict token publishing and revoke/remove obsolete credentials. npm recommends validating Trusted Publishing before disabling tokens. ([npm migration sequence](https://docs.npmjs.com/trusted-publishers/#migration-tip))
 
 Packing and `publish --dry-run` validate artifacts but do not prove OIDC trust. `npm whoami` does not validate OIDC either; authentication happens during publish. This migration does not itself authorize or trigger a release. ([npm authentication limitations](https://docs.npmjs.com/trusted-publishers/#limitations-and-future-improvements))
+
+### Recover a partial publication
+
+Publishing is not atomic across the eight packages. If a later package fails,
+check which target versions and tags are already public before retrying. An
+OIDC `E404` on an existing public package can indicate missing package-specific
+trust: verify that package's publisher fields and direct-publish permission.
+Correct the account-side configuration, then rerun the failed workflow against
+the same source and inputs. pnpm skips versions already published; the trusted
+preflight permits this only when their requested tags already match.
+
+The legacy token path returned `E401` during 1.1.0 release preparation. Its presence
+in the workflow is not evidence that the stored credential is usable, and
+retrying with it does not validate OIDC. Keep credential removal separate from
+release recovery and follow the migration sequence above.
 
 ## npm token deprecation and install security
 

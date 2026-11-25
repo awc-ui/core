@@ -68,6 +68,49 @@ instead.
 is this directory**, which is also where `@netlify/plugin-nextjs` looks for
 `.next`.
 
+### Manual Netlify deployment
+
+Run the full Netlify build with `@netlify/plugin-nextjs` before uploading:
+`build:netlify` alone does not package the server and edge functions. From this
+app directory, explicitly select the showcase site; the repository's default
+site is the documentation site:
+
+```bash
+export NETLIFY_SITE_ID="f2502ec8-753d-4a7c-b910-9b0d528f9d85"
+pnpm exec netlify build --context production --filter @awc-ui/showcase-credit-risk-next
+```
+
+Netlify CLI 27.10.2 with `@netlify/build-info` 11.3.0 did not detect these nested
+`apps/showcase/*/*` workspaces. Even from the app directory it searched the
+repository's `.netlify` for functions and caches. Specify both upload paths
+explicitly; a successful static-only upload otherwise leaves SSR routes at 404.
+
+For a manual `--no-build` upload, preserve the plugin's generated routing and
+headers from `.netlify/netlify.toml` in `.netlify/static/_redirects` and
+`.netlify/static/_headers`. In particular, retain the image-service redirects
+and this asset header:
+
+```text
+/showcase/credit-risk/next/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+```
+
+Then create a draft from the same app directory, retaining `NETLIFY_SITE_ID`:
+
+```bash
+pnpm exec netlify deploy --no-build \
+  --dir "$PWD/.netlify/static" \
+  --functions "$PWD/.netlify/functions-internal" \
+  --skip-functions-cache
+```
+
+CLI 27.10.2 rejects `--context` with `--no-build` and has no `--config` option
+for this command. Check the reported configuration and functions paths, then
+verify the draft's prefixed routes, request-specific SSR markers, assets and
+browser interactions. Promote that exact verified draft using Netlify's
+`restoreSiteDeploy` API operation; rebuilding or uploading again creates a
+different artifact. The generated `.netlify` files stay untracked.
+
 ## Screens
 
 | Route | Screen |
