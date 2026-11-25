@@ -1,7 +1,10 @@
 // Build @awc-ui/core and @awc-ui/test-html before running this test.
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
+import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
 import { get } from 'node:http';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { after, before, test } from 'node:test';
 import puppeteer from 'puppeteer';
 import { createPreviewServer } from './ssr-preview.mjs';
@@ -31,9 +34,9 @@ after(async () => {
   }
 });
 
-function rawStatus(path) {
+function rawStatus(path, previewServer = server) {
   return new Promise((resolve, reject) => {
-    get({ host, port: server.address().port, path }, (response) => {
+    get({ host, port: previewServer.address().port, path }, (response) => {
       response.resume();
       resolve(response.statusCode);
     }).once('error', reject);
@@ -112,6 +115,46 @@ test('the HTTP preview serves fresh declarative shadow DOM and only known paths'
   assert.equal(await rawStatus('/assets/../index.html'), 404);
   assert.equal(await rawStatus('/awc-esm/%2e%2e/index.html'), 404);
   assert.equal((await fetch(origin, { method: 'POST' })).status, 405);
+});
+
+test('asset URLs only select inventoried files and cannot traverse or follow symlinks', async (t) => {
+  const directory = await mkdtemp(join(tmpdir(), 'awc-ssr-assets-'));
+  const dist = join(directory, 'dist');
+  await mkdir(join(dist, 'assets'), { recursive: true });
+  await mkdir(join(directory, 'outside'));
+  await writeFile(join(dist, 'assets', 'allowed.js'), 'export const allowed = true;');
+  await writeFile(join(dist, 'private.js'), 'not a public asset');
+  await writeFile(join(directory, 'private.js'), 'outside the distribution');
+  await writeFile(join(directory, 'outside', 'secret.js'), 'outside through a symlink');
+  await symlink(join(directory, 'private.js'), join(dist, 'assets', 'linked.js'));
+  await symlink(join(directory, 'outside'), join(dist, 'assets', 'linked'), 'dir');
+  await symlink(join(directory, 'outside'), join(dist, 'awc-esm'), 'dir');
+  const fixtureServer = createPreviewServer({ distDirectory: dist });
+  t.after(async () => {
+    fixtureServer.closeAllConnections();
+    await new Promise((resolve) => fixtureServer.close(resolve));
+    await rm(directory, { recursive: true, force: true });
+  });
+  fixtureServer.listen(0, host);
+  await once(fixtureServer, 'listening');
+  const fixtureOrigin = `http://${host}:${fixtureServer.address().port}`;
+  const allowed = await fetch(`${fixtureOrigin}/assets/allowed.js`);
+  assert.equal(allowed.status, 200);
+  assert.equal(await allowed.text(), 'export const allowed = true;');
+  for (const path of [
+    '/assets/../private.js',
+    '/assets/../../private.js',
+    '/assets/%2e%2e/%2e%2e/private.js',
+    '/assets/linked.js',
+    '/assets/linked/secret.js',
+    '/awc-esm/secret.js',
+  ]) assert.equal(await rawStatus(path, fixtureServer), 404, path);
+
+  // Even a later filesystem replacement cannot turn a known URL into a read
+  // of a new target: requests use the bytes inventoried for this build.
+  await rm(join(dist, 'assets', 'allowed.js'));
+  await symlink(join(directory, 'private.js'), join(dist, 'assets', 'allowed.js'));
+  assert.equal(await (await fetch(`${fixtureOrigin}/assets/allowed.js`)).text(), 'export const allowed = true;');
 });
 
 test('the preview paints without JavaScript and adopts the same nodes for interaction', { timeout: 30_000 }, async (t) => {

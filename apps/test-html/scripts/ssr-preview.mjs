@@ -1,6 +1,6 @@
-import { readFile, realpath } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { createServer } from 'node:http';
-import { isAbsolute, relative, resolve, sep } from 'node:path';
+import { extname, join, resolve } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { gzip } from 'node:zlib';
@@ -9,7 +9,6 @@ import { renderToString } from '@awc-ui/core/hydrate';
 const host = '127.0.0.1';
 const defaultDist = fileURLToPath(new URL('../dist/', import.meta.url));
 const compress = promisify(gzip);
-const assetPath = /^\/(?:assets|awc-esm)(?:\/[a-z\d_-][a-z\d_.-]*)+$/i;
 const mimeTypes = new Map([
   ['js', 'text/javascript; charset=utf-8'],
   ['mjs', 'text/javascript; charset=utf-8'],
@@ -63,20 +62,35 @@ function send(request, response, status, body, headers = {}) {
   response.end(request.method === 'HEAD' ? undefined : body);
 }
 
-async function readAsset(distDirectory, path) {
-  try {
-    const directory = await realpath(distDirectory);
-    const file = await realpath(resolve(directory, `.${path}`));
-    const fromDist = relative(directory, file);
-    if (isAbsolute(fromDist) || fromDist === '..' || fromDist.startsWith(`..${sep}`)) return null;
-    return await readFile(file);
-  } catch (error) {
-    if (['ENOENT', 'EISDIR', 'ENOTDIR'].includes(error.code)) return null;
-    throw error;
+async function loadAssets(distDirectory) {
+  const assets = new Map();
+  const visit = async (directory, prefix) => {
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+      // Never follow a symlink, including one of the two public directories.
+      if (entry.isSymbolicLink()) continue;
+      const filename = join(directory, entry.name);
+      const route = `${prefix}/${entry.name}`;
+      if (entry.isDirectory()) {
+        await visit(filename, route);
+      } else if (entry.isFile()) {
+        const contentType = mimeTypes.get(extname(entry.name).slice(1));
+        if (contentType) assets.set(route, { body: await readFile(filename), contentType });
+      }
+    }
+  };
+  for (const entry of await readdir(distDirectory, { withFileTypes: true })) {
+    if (entry.isDirectory() && ['assets', 'awc-esm'].includes(entry.name)) {
+      await visit(join(distDirectory, entry.name), `/${entry.name}`);
+    }
   }
+  return assets;
 }
 
 export function createPreviewServer({ distDirectory = defaultDist } = {}) {
+  // Built assets are immutable for this server instance. Inventory trusted
+  // filesystem entries once; request URLs only select already-loaded bytes.
+  // Rebuild and restart the preview together when the asset filenames change.
+  let assets;
   return createServer(async (request, response) => {
     if (request.method !== 'GET' && request.method !== 'HEAD') {
       send(request, response, 405, 'Method not allowed.\n', { Allow: 'GET, HEAD' });
@@ -89,13 +103,13 @@ export function createPreviewServer({ distDirectory = defaultDist } = {}) {
     const page = path === '/' || path === '/index.html';
     try {
       if (!page) {
-        const contentType = mimeTypes.get(path.slice(path.lastIndexOf('.') + 1));
-        const asset = contentType && assetPath.test(path) ? await readAsset(distDirectory, path) : null;
-        if (asset === null) {
+        assets ??= loadAssets(distDirectory);
+        const asset = (await assets).get(path);
+        if (!asset) {
           send(request, response, 404, 'Not found.\n');
           return;
         }
-        send(request, response, 200, asset, { 'Content-Type': contentType });
+        send(request, response, 200, asset.body, { 'Content-Type': asset.contentType });
         return;
       }
 

@@ -34,6 +34,8 @@ application. Use `http://127.0.0.1:5177/?client=off` to inspect the delivered
 markup without running application JavaScript. Run
 `pnpm --filter @awc-ui/test-html test:ssr-preview` after building to check
 server-only rendering, hydration layout, node reuse, and interactions.
+Restart the SSR preview after rebuilding: each server instance serves an
+allowlist of the built asset bytes and does not resolve request URLs as paths.
 
 ## Why it exists
 
