@@ -7,7 +7,7 @@ import { chromium } from "@playwright/test";
 import ts from "typescript";
 import { readAdvertisingMeasurement } from "./advertising.mjs";
 
-const VERSION = "advertising-2026-10-07-v2";
+const VERSION = "advertising-2026-10-17-v3";
 const CHOICE = "awc:advertising:choice";
 const REVOKE = "awc:advertising:revoke:";
 const oldToken = "A".repeat(43);
@@ -103,6 +103,132 @@ const serverProviders = {
   PUBLIC_REDDIT_MEASUREMENT_ENABLED: "true",
   PUBLIC_GOOGLE_MEASUREMENT_ENABLED: "true",
 };
+
+const linkedinOnly = {
+  PUBLIC_META_MEASUREMENT_ENABLED: "false",
+  PUBLIC_LINKEDIN_MEASUREMENT_ENABLED: "true",
+};
+
+test("LinkedIn captures only li_fat_id after current consent, without loading a tag or sending a browser conversion", async (t) => {
+  const { page, context, external } = await harness(t, {
+    env: linkedinOnly, url: "https://awc-ui.dev/?li_fat_id=linkedin_click-123#pro-tier",
+  });
+  assert.equal(await measurement(page), undefined);
+  assert.deepEqual(await cookies(context), []);
+  await accept(page);
+  const value = await measurement(page);
+  assert.equal(value.version, VERSION);
+  assert.equal(value.li_fat_id, "linkedin_click-123");
+  assert.deepEqual(Object.keys(value).sort(), ["consent", "li_fat_id", "token", "version"]);
+  const parsed = readAdvertisingMeasurement(value, "private UA", new Date(), { linkedin: true });
+  assert.deepEqual(parsed.providers, { linkedin: { li_fat_id: "linkedin_click-123" } });
+  assert.equal(parsed.userData, undefined);
+  const saved = await cookies(context);
+  assert.equal(saved.length, 1);
+  assert.equal(saved[0].name, "_awc_li_fat_id");
+  assert.equal(saved[0].secure, true);
+  assert.equal(saved[0].sameSite, "Lax");
+  assert.equal(saved[0].domain, "awc-ui.dev");
+  assert.ok(saved[0].expires * 1000 <= Date.now() + 90 * day);
+  assert.equal(external.length, 0);
+  assert.equal(await page.evaluate(() => typeof window.lintrk), "undefined");
+  assert.equal(await page.evaluate(() => window.dataLayer), undefined);
+});
+
+test("LinkedIn is default-off and fails closed on previews, sensitive pages, rejected consent and blocked storage", async (t) => {
+  for (const behavior of [
+    { env: { PUBLIC_META_MEASUREMENT_ENABLED: "false" } },
+    { env: { ...linkedinOnly, PROD: false } },
+    { env: { ...linkedinOnly, CONTEXT: "deploy-preview" } },
+    { env: linkedinOnly, sensitive: true },
+    { env: linkedinOnly, blocked: true },
+  ]) {
+    const { page, context, external } = await harness(t, { ...behavior, url: "https://awc-ui.dev/?li_fat_id=linkedin_click" });
+    await accept(page);
+    assert.equal(await measurement(page), undefined);
+    assert.deepEqual(await cookies(context), []);
+    assert.equal(external.length, 0);
+  }
+  const { page, context, external } = await harness(t, { env: linkedinOnly, url: "https://awc-ui.dev/?li_fat_id=linkedin_click" });
+  await reject(page);
+  await page.reload();
+  await page.waitForFunction(() => Boolean(window.awcAdvertising));
+  assert.equal(await measurement(page), undefined);
+  assert.deepEqual(await cookies(context), []);
+  assert.equal(external.length, 0);
+});
+
+test("LinkedIn missing, duplicate and malformed click IDs are never invented or retained", async (t) => {
+  for (const query of [
+    "", "?utm_source=linkedin", "?li_fat_id=", "?li_fat_id=one&li_fat_id=one",
+    "?li_fat_id=one&li_fat_id=two", "?li_fat_id=invalid%0A", "?li_fat_id=%3Cbad%3E",
+    "?li_fat_id=has%20space", `?li_fat_id=${"x".repeat(501)}`,
+  ]) {
+    const { page, context } = await harness(t, { env: linkedinOnly, url: `https://awc-ui.dev/${query}` });
+    await accept(page);
+    assert.equal(await measurement(page), undefined, query);
+    assert.deepEqual(await cookies(context), [], query);
+  }
+  const { page, context } = await harness(t, { env: linkedinOnly, url: "https://awc-ui.dev/?li_fat_id=first" });
+  await accept(page);
+  const first = (await cookies(context))[0];
+  await page.goto("https://awc-ui.dev/#pro-tier");
+  await page.waitForFunction(() => Boolean(window.awcAdvertising));
+  assert.equal((await measurement(page)).li_fat_id, "first");
+  assert.equal((await cookies(context))[0].expires, first.expires);
+  await page.goto("https://awc-ui.dev/?li_fat_id=one&li_fat_id=two");
+  await page.waitForFunction(() => Boolean(window.awcAdvertising));
+  assert.equal(await measurement(page), undefined);
+  assert.deepEqual(await cookies(context), []);
+});
+
+test("the previous consent version cannot enable newly introduced LinkedIn measurement", async (t) => {
+  const { page, context, withdrawals, external } = await harness(t, {
+    env: linkedinOnly,
+    url: "https://awc-ui.dev/?li_fat_id=new_click",
+    storage: { [CHOICE]: JSON.stringify({ version: "advertising-2026-10-07-v2", decision: "accepted", at: Date.now(), token: oldToken }) },
+    cookies: [["_awc_li_fat_id", "old_click"]],
+  });
+  await page.waitForFunction((key) => localStorage.getItem(key) === null, REVOKE + oldToken);
+  assert.ok(withdrawals.some((request) => request.postDataJSON().token === oldToken));
+  assert.equal(await measurement(page), undefined);
+  assert.deepEqual(await cookies(context), []);
+  assert.equal(await page.locator("section").isVisible(), true);
+  assert.equal(external.length, 0);
+  await accept(page);
+  assert.equal((await measurement(page)).li_fat_id, "new_click");
+  assert.equal((await measurement(page)).version, VERSION);
+});
+
+test("LinkedIn withdrawal clears persisted attribution across tabs and sends only the private capability", async (t) => {
+  const { page, context, withdrawals, external } = await harness(t, { env: linkedinOnly, url: "https://awc-ui.dev/?li_fat_id=linkedin_click" });
+  await accept(page);
+  const previous = await measurement(page);
+  const other = await context.newPage();
+  await other.goto("https://awc-ui.dev/#pro-tier");
+  await other.waitForFunction(() => Boolean(window.awcAdvertising));
+  assert.equal((await measurement(other)).li_fat_id, "linkedin_click");
+  await preferences(page);
+  await reject(page);
+  await other.waitForFunction(() => window.awcAdvertising.signupMeasurement() === undefined);
+  assert.deepEqual(await cookies(context), []);
+  assert.equal(await measurement(page), undefined);
+  assert.ok(withdrawals.length > 0);
+  assert.ok(withdrawals.every((request) => JSON.stringify(request.postDataJSON()) === JSON.stringify({ token: previous.token })));
+  assert.equal(external.length, 0);
+});
+
+test("LinkedIn attribution expires with its original consent while the page remains open", async (t) => {
+  const { page, context } = await harness(t, { env: linkedinOnly,
+    url: "https://awc-ui.dev/?li_fat_id=linkedin_click", clock: true,
+    storage: { [CHOICE]: JSON.stringify({ version: VERSION, decision: "accepted", at: Date.now() - 90 * day + 60_000, token: oldToken }) },
+  });
+  assert.ok(await measurement(page));
+  for (const item of await cookies(context)) assert.ok(item.expires * 1000 <= Date.now() + 60_000);
+  await page.clock.fastForward(60_001);
+  assert.equal(await measurement(page), undefined);
+  assert.deepEqual(await cookies(context), []);
+});
 
 test("Reddit and Google server attribution remain off by default, independently of Meta and the basic Google tag", async (t) => {
   const { page, context, external } = await harness(t, {

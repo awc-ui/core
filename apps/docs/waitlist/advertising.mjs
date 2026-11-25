@@ -4,7 +4,7 @@ import {
   providerDestination,
 } from "./advertising-providers.mjs";
 
-export const AD_CONSENT_VERSION = "advertising-2026-10-07-v2";
+export const AD_CONSENT_VERSION = "advertising-2026-10-17-v3";
 export const AD_EVENT_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 export const AD_MAX_ATTEMPTS = 6;
 export const AD_CONSENT_RETENTION_MS = 180 * 24 * 60 * 60 * 1000;
@@ -83,6 +83,7 @@ export function readAdvertisingMeasurement(
           "gclid",
           "gbraid",
           "wbraid",
+          "li_fat_id",
         ].includes(key),
     ) ||
     typeof userAgent !== "string" ||
@@ -108,6 +109,8 @@ export function readAdvertisingMeasurement(
   );
   if (enabled.google && googleIds.length === 1 && click(value[googleIds[0]]))
     providers.google = { [googleIds[0]]: value[googleIds[0]] };
+  const linkedinClick = enabled.linkedin ? click(value.li_fat_id) : undefined;
+  if (linkedinClick) providers.linkedin = { li_fat_id: linkedinClick };
   // Never invent attribution or substitute email/hash/IP identity.
   if (!fbp && !fbc && !Object.keys(providers).length) return null;
   return {
@@ -144,6 +147,9 @@ export function enabledAdvertisingProviders(config) {
       : {}),
     ...(config.advertisingProviders?.google
       ? { google: config.advertisingProviders.google }
+      : {}),
+    ...(config.advertisingProviders?.linkedin
+      ? { linkedin: config.advertisingProviders.linkedin }
       : {}),
   };
 }

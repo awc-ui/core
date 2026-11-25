@@ -48,7 +48,7 @@ export async function queueAdvertising(
     ...(measurement.providers ?? {}),
   };
   for (const [provider, userData] of Object.entries(destinations)) {
-    if (!["meta", "reddit", "google"].includes(provider))
+    if (!["meta", "reddit", "google", "linkedin"].includes(provider))
       throw new TypeError("Invalid provider");
     await client.query(
       `INSERT INTO waitlist_advertising_outbox
@@ -120,7 +120,7 @@ export function createAdvertisingStore(transaction) {
       !Array.isArray(providers) ||
       !providers.length ||
       providers.some(
-        (provider) => !["meta", "reddit", "google"].includes(provider),
+        (provider) => !["meta", "reddit", "google", "linkedin"].includes(provider),
       )
     )
       throw new TypeError("Invalid providers");

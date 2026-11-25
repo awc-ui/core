@@ -4,6 +4,7 @@ const GOOGLE_INGEST = "https://datamanager.googleapis.com/v1/events:ingest";
 const GOOGLE_STATUS =
   "https://datamanager.googleapis.com/v1/requestStatus:retrieve";
 const GOOGLE_TOKEN = "https://oauth2.googleapis.com/token";
+const LINKEDIN_EVENTS = "https://api.linkedin.com/rest/conversionEvents";
 const MAX_RESPONSE_BYTES = 64 * 1024;
 const GOOGLE_TRANSIENT = new Set([
   "UNAVAILABLE",
@@ -54,6 +55,15 @@ function validGoogle(settings) {
   );
 }
 
+function validLinkedIn(settings) {
+  return (
+    record(settings) &&
+    matches(settings.conversionId, /^[1-9]\d{0,29}$/) &&
+    matches(settings.apiVersion, /^20\d{2}(0[1-9]|1[0-2])$/) &&
+    secret(settings.accessToken)
+  );
+}
+
 export function readProviderConfigs(env = process.env) {
   const reddit = {
     pixelId: env.REDDIT_PIXEL_ID,
@@ -69,12 +79,21 @@ export function readProviderConfigs(env = process.env) {
     clientSecret: env.GOOGLE_OAUTH_CLIENT_SECRET,
     refreshToken: env.GOOGLE_OAUTH_REFRESH_TOKEN,
   };
+  const linkedin = {
+    conversionId: env.LINKEDIN_CONVERSION_ID,
+    apiVersion: env.LINKEDIN_API_VERSION,
+    accessToken: env.LINKEDIN_CAPI_ACCESS_TOKEN,
+  };
   return {
     reddit:
       env.REDDIT_CAPI_ENABLED === "true" && validReddit(reddit) ? reddit : null,
     google:
       env.GOOGLE_CONVERSIONS_ENABLED === "true" && validGoogle(google)
         ? google
+        : null,
+    linkedin:
+      env.LINKEDIN_CAPI_ENABLED === "true" && validLinkedIn(linkedin)
+        ? linkedin
         : null,
   };
 }
@@ -86,6 +105,8 @@ export function providerDestination(provider, settings) {
     return `reddit:${settings.pixelId}`;
   if (provider === "google" && validGoogle(settings))
     return `google:${settings.customerId}:${settings.conversionActionId}:${settings.loginCustomerId ?? settings.customerId}`;
+  if (provider === "linkedin" && validLinkedIn(settings))
+    return `linkedin:${settings.conversionId}`;
   return null;
 }
 
@@ -201,6 +222,39 @@ async function deliverReddit(settings, job, fetcher) {
   return body?.data?.message === "Successfully processed 1 conversion events."
     ? { status: "accepted" }
     : failure("reddit_invalid_response", true);
+}
+
+async function deliverLinkedIn(settings, job, fetcher, canSend) {
+  const data = identifiers(job.userData, ["li_fat_id"]);
+  const date = timestamp(job);
+  if (!data || !date) return failure("linkedin_invalid_job");
+  if (!(await canSend())) return { status: "cancelled" };
+  const { response, body } = await send(fetcher, LINKEDIN_EVENTS, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${settings.accessToken}`,
+      "LinkedIn-Version": settings.apiVersion,
+      "X-Restli-Protocol-Version": "2.0.0",
+    },
+    body: JSON.stringify({
+      conversion: `urn:lla:llaPartnerConversion:${settings.conversionId}`,
+      conversionHappenedAt: date.getTime(),
+      eventId: job.id,
+      user: {
+        userIds: [{
+          idType: "LINKEDIN_FIRST_PARTY_ADS_TRACKING_UUID",
+          idValue: data.li_fat_id,
+        }],
+      },
+    }),
+  });
+  if (!response.ok) return httpFailure("linkedin", "ingest", response, body);
+  // LinkedIn documents 201 as ingestion acceptance, not attribution. Reuse
+  // the same event ID and original time after any ambiguous response.
+  return response.status === 201
+    ? { status: "accepted" }
+    : failure("linkedin_invalid_response", true);
 }
 
 async function googleAccessToken(settings, fetcher) {
@@ -370,10 +424,13 @@ export async function deliverProvider({
   if (
     (provider === "reddit" && !validReddit(settings)) ||
     (provider === "google" && !validGoogle(settings)) ||
-    !["reddit", "google"].includes(provider)
+    (provider === "linkedin" && !validLinkedIn(settings)) ||
+    !["reddit", "google", "linkedin"].includes(provider)
   )
     return failure("invalid_provider_config");
   try {
+    if (provider === "linkedin")
+      return await deliverLinkedIn(settings, job, fetcher, canSend);
     return await (provider === "reddit"
       ? deliverReddit(settings, job, fetcher)
       : deliverGoogle(settings, job, fetcher, canSend));

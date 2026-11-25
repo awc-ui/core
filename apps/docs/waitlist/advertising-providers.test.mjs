@@ -68,12 +68,13 @@ const reddit = (fetcher, job = redditJob) =>
   });
 
 test("configuration is opt-in, independently validated and bounded", () => {
-  assert.deepEqual(readProviderConfigs({}), { reddit: null, google: null });
+  assert.deepEqual(readProviderConfigs({}), { reddit: null, google: null, linkedin: null });
   assert.deepEqual(
     readProviderConfigs({ ...env, GOOGLE_CONVERSIONS_ENABLED: "TRUE" }),
     {
       reddit: configs.reddit,
       google: null,
+      linkedin: null,
     },
   );
   for (const invalid of [
@@ -87,6 +88,7 @@ test("configuration is opt-in, independently validated and bounded", () => {
     assert.deepEqual(readProviderConfigs({ ...env, ...invalid }), {
       reddit: null,
       google: configs.google,
+      linkedin: null,
     });
   for (const invalid of [
     { GOOGLE_CONVERSION_CUSTOMER_ID: "123-456-7890" },
@@ -102,6 +104,7 @@ test("configuration is opt-in, independently validated and bounded", () => {
     assert.deepEqual(readProviderConfigs({ ...env, ...invalid }), {
       reddit: configs.reddit,
       google: null,
+      linkedin: null,
     });
 });
 
